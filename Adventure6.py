@@ -1,20 +1,13 @@
-def system_message_to_player(message: str):
-    print(f"📢 {message}")
 
-def internal_note_to_llm(llm, promptgen, state, note_text: str):
-    note_prompt = f"""[INTERNAL SYSTEM UPDATE]
-Folgende neue Information muss in den Spielkontext übernommen werden:
-{note_text}
-(Keine Tool-Calls erzeugen. Einfach im Gedächtnis behalten.)"""
-    try:
-        _ = llm.invoke(promptgen.build_prompt(state, note_prompt))
-    except Exception as e:
-        log_error(f"Fehler bei interner LLM-Notiz: {e}")
 import re
 import json
-from IPython.display import HTML, Markdown, display
 
-ALLOWED_TOOL_CALLS = ["gehe", "nimm", "untersuche", "anwenden", "umsehen", "inventory"]
+from Door import Door
+from GameObject import GameObject
+from InteractLLM import internal_note_to_llm, system_message_to_player, PromptGenerator
+from SysTest import SysTest
+
+
 #
 # Nächste Version des Adventures, 2025-04-22
 #
@@ -24,295 +17,13 @@ ALLOWED_TOOL_CALLS = ["gehe", "nimm", "untersuche", "anwenden", "umsehen", "inve
 # PromptGenerator-Klasse für Adventure5
 #
 
-class PromptGenerator:
-    def build_prompt_for_multiple_tool_calls(self, state, user_input, tool_calls, system_feedbacks):
-        """
-        Baut einen Prompt für das LLM, der mehrere Tool-Calls und deren Systemrückmeldungen zusammenfasst.
-        """
-        room_prompt = state.get("room_prompt", "")
-        inventory = state.get("inventory", [])
-        location = state.get("location", "")
-        rin = rooms[location].get("gegenstaende", []) if location else []
-        wege = rooms[location].get("wege", {}) if location else {}
 
-        # Formatierte Gegenstände-Liste (mit IDs)
-        if rin:
-            formatted_objekte = "\n".join([
-                f"- {obj} ({items[obj].name})" if obj in items else f"- {obj}"
-                for obj in rin
-            ])
-        else:
-            formatted_objekte = "Keine Gegenstände vorhanden."
+#
+# Diverse Prompts erzeugen
+#
 
-        # Formatierte Wege- und Türen-Liste
-        if wege:
-            lines = []
-            for richtung, daten in wege.items():
-                zielraum = daten.get("raum", "unbekannt")
-                status = "offen" if not daten.get("verschlossen", False) else "verschlossen"
-                tueren = [
-                    obj for obj in rin
-                    if isinstance(items.get(obj), Door)
-                    and items[obj].direction.lower() == richtung.lower()
-                    and items[obj].target_room == zielraum
-                ]
-                if tueren:
-                    tueren_str = ", ".join([f"{items[t].name} [ID: {t}]" for t in tueren])
-                    lines.append(
-                        f"- {richtung.capitalize()} ➔ {zielraum} | {status} | Tür: {tueren_str}"
-                    )
-                else:
-                    lines.append(
-                        f"- {richtung.capitalize()} ➔ {zielraum} | {status}"
-                    )
-            formatted_wege_tueren = "\n".join(lines)
-        else:
-            formatted_wege_tueren = "Keine Ausgänge vorhanden."
 
-        # Tool-Calls und Systemfeedbacks zusammenfassen
-        tc_lines = []
-        for tc, feedback in zip(tool_calls, system_feedbacks):
-            tc_lines.append(f'- Tool-Call: {tc}\n  Antwort: {feedback}')
-        tc_block = "\n".join(tc_lines)
-
-        return f"""=== BENUTZEREINGABE ===
-"{user_input}"
-
-=== TOOL-CALLS UND SYSTEMRÜCKMELDUNGEN ===
-{tc_block}
-
-== AUFGABE ==
-Formuliere eine kurze, stimmungsvolle Erzählung auf Basis dieser Aktionen und ihrer Auswirkungen.
-"""
-    def __init__(self, system_prompt: str):
-        self.system_prompt = """
-Du bist der Spielleiter eines Text-Adventures im Stil der 1980er-Jahre auf dem C64. Deine Aufgabe ist es, stimmungsvolle, geheimnisvolle Geschichten zu erzählen und auf die Aktionen des Spielers in einer strukturierten Form zu reagieren.
-
-=== FORMAT DER ANTWORT ===
-Gib deine gesamte Antwort ausschließlich im folgenden JSON-Format aus:
-
-{
-  "story": "Hier steht die atmosphärische Erzählung, die beschreibt, was der Spieler erlebt.",
-  "tool_calls": [
-    "tool_call_1",
-    "tool_call_2",
-    ...
-  ]
-}
-
-Hinweise:
-- Das Feld "story" enthält eine stimmungsvolle Beschreibung der aktuellen Situation. Bleibe immer bei den Fakten der Spielwelt.
-- Das Feld "tool_calls" enthält eine Liste aller aus der Eingabe abgeleiteten Aktionen als Strings. Jeder Tool-Call einzeln.
-- Wenn keine Tool-Calls nötig sind, gib ein leeres Array [] zurück.
-- Keine weiteren Kommentare, keine Markdown-Formatierung, keine zusätzlichen Texte außerhalb des JSON.
-
-=== ZULÄSSIGE TOOL-CALLS ===
-  'gehe("richtung")'
-  'nimm("gegenstand")'
-  'anwenden("objekt1", "objekt2")'
-  'untersuche("gegenstand")'
-  'umsehen()'
-  'inventory()'
-
-=== REGELN ZUR TOOL-CALL-GENERIERUNG ===
-- Jede einzelne logische Aktion muss ein eigener Tool-Call sein!
-- Wenn der Spieler mehrere Bewegungen beschreibt (z.B. "Ich gehe nach Süden und dann zweimal nach Westen"), erzeuge für jede Bewegung einen eigenen 'gehe()'-Tool-Call in korrekter Reihenfolge.
-- Objekt1 ist das, was der Spieler benutzt (z.B. Schlüssel, Zahlencode).
-- Objekt2 ist das Zielobjekt (z.B. Tür, Zahlenschloss).
-- Benutze exakt die angegebenen Tool-Call-Syntax.
-- Nutze nur die IDs und Begriffe, die im aktuellen Raum verfügbar sind.
-
-=== BEISPIELE ===
-Eingabe: "Ich schließe die Tür auf und gehe hindurch."
-Antwort:
-{
-  "story": "Mit einem satten Klicken öffnet sich die Tür. Ein dunkler Gang liegt vor dir.",
-  "tool_calls": [
-    "anwenden(\"Schluessel\", \"Tuer_Norden\")",
-    "gehe(\"norden\")"
-  ]
-}
-
-Eingabe: "Ich schaue mich um."
-Antwort:
-{
-  "story": "Du blickst dich um und entdeckst staubige Regale und eine alte Tür im Westen.",
-  "tool_calls": [
-    "umsehen()"
-  ]
-}
-"""
-
-    def build_prompt(self, state: dict, user_input: str, allowed_tool_calls: list = None) -> str:
-        """
-        Kombiniert den Systemprompt mit Raumkontext, Inventar und der aktuellen Benutzereingabe zu einem vollständigen Prompt.
-        """
-        room_prompt = state.get("room_prompt", "")
-        inventory = state.get("inventory", [])
-        actions = state.get("available_actions", [])
-        location = state.get("location", "")
-        rin = rooms[location].get("gegenstaende", []) if location else []
-        wege = rooms[location].get("wege", {}) if location else {}
-
-        tool_section = ""
-        if allowed_tool_calls:
-            tool_section = f"\n=== ZULÄSSIGE TOOL-CALLS (JETZT ERLAUBT) ===\n" + "\n".join(allowed_tool_calls)
-
-        # Formatierte Gegenstände-Liste (mit IDs)
-        if rin:
-            formatted_objekte = "\n".join([
-                f"- {obj} ({items[obj].name})" if obj in items else f"- {obj}"
-                for obj in rin
-            ])
-        else:
-            formatted_objekte = "Keine Gegenstände vorhanden."
-
-        # Formatierte Wege- und Türen-Liste
-        if wege:
-            lines = []
-            for richtung, daten in wege.items():
-                zielraum = daten.get("raum", "unbekannt")
-                status = "offen" if not daten.get("verschlossen", False) else "verschlossen"
-                # Versuche, die Tür zu finden (Gegenstand mit Typ Door, Richtung und Zielraum passend)
-                tueren = [
-                    obj for obj in rin
-                    if isinstance(items.get(obj), Door)
-                    and items[obj].direction.lower() == richtung.lower()
-                    and items[obj].target_room == zielraum
-                ]
-                if tueren:
-                    tueren_str = ", ".join([f"{items[t].name} [ID: {t}]" for t in tueren])
-                    lines.append(
-                        f"- {richtung.capitalize()} ➔ {zielraum} | {status} | Tür: {tueren_str}"
-                    )
-                else:
-                    lines.append(
-                        f"- {richtung.capitalize()} ➔ {zielraum} | {status}"
-                    )
-            formatted_wege_tueren = "\n".join(lines)
-        else:
-            formatted_wege_tueren = "Keine Ausgänge vorhanden."
-
-        return f"""{self.system_prompt}
-{tool_section}
-
-=== RAUMKONTEXT ===
-{room_prompt}
-
-=== SPIELZUSTAND ===
-Inventar: {', '.join(inventory) if inventory else 'nichts'}
-Aktionen: {', '.join(actions) if actions else 'keine'}
-
-=== VERFÜGBARE GEGENSTÄNDE ===
-{formatted_objekte}
-
-=== VERFÜGBARE WEGE UND TÜREN ===
-{formatted_wege_tueren}
-
-=== BENUTZEREINGABE ===
-"{user_input}"
-
-== AUFGABE ==
-Reagiere gemäß den Regeln. Sei stimmungsvoll, aber halte dich exakt an die vorhandenen strukturierten Daten.
-"""
-
-    def build_prompt_for_llm_answer(self, state: dict, user_input: str, tool_call_text: str, system_response_text:str, allowed_tool_calls: list = None) -> str:
-        """
-        Kombiniert den Systemprompt mit Raumkontext, Inventar, der aktuellen Benutzereingabe, dem aktuellen
-        Tool-Call und der Rückmeldung der Game-Engine zu einem vollständigen Prompt.
-        """
-        room_prompt = state.get("room_prompt", "")
-        inventory = state.get("inventory", [])
-        location = state.get("location","")
-        rin = rooms[location].get("gegenstaende", []) if location else []
-        wege = rooms[location].get("wege", {}) if location else {}
-
-        tool_section = ""
-        if allowed_tool_calls:
-            tool_section = f"\n=== ZULÄSSIGE TOOL-CALLS (JETZT ERLAUBT) ===\n" + "\n".join(allowed_tool_calls)
-
-        # Formatierte Gegenstände-Liste (mit IDs)
-        if rin:
-            formatted_objekte = "\n".join([
-                f"- {obj} ({items[obj].name})" if obj in items else f"- {obj}"
-                for obj in rin
-            ])
-        else:
-            formatted_objekte = "Keine Gegenstände vorhanden."
-
-        # Formatierte Wege- und Türen-Liste
-        if wege:
-            lines = []
-            for richtung, daten in wege.items():
-                zielraum = daten.get("raum", "unbekannt")
-                status = "offen" if not daten.get("verschlossen", False) else "verschlossen"
-                # Versuche, die Tür zu finden (Gegenstand mit Typ Door, Richtung und Zielraum passend)
-                tueren = [
-                    obj for obj in rin
-                    if isinstance(items.get(obj), Door)
-                    and items[obj].direction.lower() == richtung.lower()
-                    and items[obj].target_room == zielraum
-                ]
-                if tueren:
-                    tueren_str = ", ".join([f"{items[t].name} [ID: {t}]" for t in tueren])
-                    lines.append(
-                        f"- {richtung.capitalize()} ➔ {zielraum} | {status} | Tür: {tueren_str}"
-                    )
-                else:
-                    lines.append(
-                        f"- {richtung.capitalize()} ➔ {zielraum} | {status}"
-                    )
-            formatted_wege_tueren = "\n".join(lines)
-        else:
-            formatted_wege_tueren = "Keine Ausgänge vorhanden."
-
-        return f"""{self.system_prompt}
-{tool_section}
-
-=== RAUMKONTEXT ===
-{room_prompt}
-
-=== SPIELZUSTAND ===
-Inventar: {', '.join(inventory) if inventory else 'nichts'}
-
-=== VERFÜGBARE GEGENSTÄNDE ===
-{formatted_objekte}
-
-=== VERFÜGBARE WEGE UND TÜREN ===
-{formatted_wege_tueren}
-
-=== BENUTZEREINGABE ===
-"{user_input}"
-
-=== TOOL-CALL UND SYSTEMRÜCKMELDUNG ===
-Tool-Call: {tool_call_text}
-Antwort der Game-Engine: {system_response_text}
-
-== AUFGABE ==
-Formuliere eine passende Antwort für den Spieler gemäß der Regeln und der Rückmeldung. Erzeuge KEINE tool calls!
-"""
-
-    def is_game_related(self, llm, user_input: str, room_context: str) -> bool:
-        """
-        Fragt das LLM, ob die Eingabe sich auf das Spiel bezieht. Gibt True zurück, wenn ja, sonst False.
-        """
-        check_prompt = f"""{self.system_prompt}
-
-=== SYSTEMPRÜFUNG ===
-Du bist ein Prüfer für ein Text-Adventure. Prüfe, ob die folgende Eingabe sich auf das Spiel bezieht.
-
-=== RAUMKONTEXT ===
-{room_context}
-
-=== BENUTZEREINGABE ===
-"{user_input}"
-
-Antwort nur mit JA oder NEIN.
-"""
-        response = llm.invoke(check_prompt)
-        answer = response.content.strip().lower()
-        return answer.startswith("ja")
-
+ALLOWED_TOOL_CALLS = ["gehe", "nimm", "untersuche", "anwenden", "umsehen", "inventory"]
 
 # --- Spielwelt-Strukturen ---
 
@@ -416,19 +127,6 @@ rooms = {
 
 # --- Klassen für Spielobjekte ---
 
-class GameObject:
-    def __init__(self, name, examine, help_text="", fixed=False):
-        self.name = name
-        self.examine = examine
-        self.help_text = help_text
-        self.fixed = fixed  # False bedeutet: Kann aufgenommen werden
-
-class Door(GameObject):
-    def __init__(self, name, examine, direction, target_room, locked=True, help_text="Eine massive Tür."):
-        super().__init__(name, examine, help_text, fixed=True)
-        self.locked = locked
-        self.direction = direction
-        self.target_room = target_room
 
 # --- Neues Items-Dictionary basierend auf den Klassen ---
 
@@ -439,7 +137,8 @@ items = {
     ),
     "Schluessel": GameObject(
         name="großer Schlüssel",
-        examine="Ein großer Schlüssel aus Eisen. Könnte in ein Türschloss passen"
+        examine="Ein großer Schlüssel aus Eisen. Könnte in ein Türschloss passen",
+        # apply_fn =
     ),
     "Zettel": GameObject(
         name="zerknitterter Zettel",
@@ -494,39 +193,6 @@ state = {
 
 
 # --- Helper-Funktionen für Inventar und Raumgegenstände ---
-
-def get_inventory(state):
-    return state.get("inventory", [])
-
-def add_inventory(state, item):
-    inv = state.setdefault("inventory", [])
-    if item not in inv:
-        inv.append(item)
-
-def rem_inventory(state, item):
-    inv = state.get("inventory", [])
-    if item in inv:
-        inv.remove(item)
-
-def get_objects(state):
-    location = state.get("location", "")
-    if location and location in rooms:
-        return rooms[location].get("gegenstaende", [])
-    return []
-
-def add_object(state, item):
-    location = state.get("location", "")
-    if location and location in rooms:
-        objs = rooms[location].setdefault("gegenstaende", [])
-        if item not in objs:
-            objs.append(item)
-
-def rem_object(state, item):
-    location = state.get("location", "")
-    if location and location in rooms:
-        objs = rooms[location].get("gegenstaende", [])
-        if item in objs:
-            objs.remove(item)
 
 
 # --- Neue Hilfsfunktionen ---
@@ -785,191 +451,6 @@ def umsehen() -> str:
 # Hier gibt es Methoden, die verschiedene Aspekte des Spiels auf Funktion testen
 #
 
-class SysTest:
-    def __init__(self):
-        self.test_state = {
-            "room_prompt": rooms["halle"],
-            "inventory": state["inventory"],
-            "available_actions": ["umsehen", "nimm", "gehe", "öffne"]
-        }
-
-    def test1(self, llm):
-        promptgen = PromptGenerator(system_prompt=None)  # nutzt __init__-Standard
-        user_input = input("🧍 Was tust du? ")
-        is_related = promptgen.is_game_related(llm, user_input, self.test_state["room_prompt"])
-        if not is_related:
-            print("💡 Das scheint nichts mit dem Spiel zu tun zu haben.")
-        else:
-            full_prompt = promptgen.build_prompt(self.test_state, user_input)
-            response = llm.invoke(full_prompt)
-            print("📜", response.content.strip())
-
-    def test2(self):
-        promptgen = PromptGenerator(system_prompt=None)
-        test_state = {
-            "room_prompt": rooms["halle"]["room_prompt"],
-            "inventory": state["inventory"],
-            "available_actions": ["umsehen", "nimm", "gehe", "öffne"],
-            "location": "halle"
-        }
-        user_input = "Ich schaue mich um."
-        prompt = promptgen.build_prompt(test_state, user_input)
-        print("🔍 Test2 Prompt:\n", prompt)
-
-    def test3(self):
-        promptgen = PromptGenerator(system_prompt=None)
-        test_state = {
-            "room_prompt": rooms["halle"]["room_prompt"],
-            "inventory": state["inventory"],
-            "location": "halle"
-        }
-        user_input = "Ich gehe nach Norden"
-        tool_call = 'gehe("norden")'
-        system_response = "Geht nicht - Tür verschlossen"
-        prompt = promptgen.build_prompt_for_llm_answer(test_state, user_input, tool_call, system_response)
-        print("🛠️ Test3 Prompt mit Rückmeldung:\n", prompt)
-
-    def test4(self):
-        promptgen = PromptGenerator(system_prompt=None)
-        test_state = {
-            "room_prompt": rooms["halle"]["room_prompt"],
-            "inventory": state["inventory"],
-            "available_actions": ["nimm", "gehe"],
-            "location": "halle"
-        }
-        user_input = "Ich nehme das Kissen und gehe durch die Tür im Westen."
-        allowed_calls = ['nimm("Kissen")', 'gehe("westen")']
-        prompt = promptgen.build_prompt(test_state, user_input, allowed_tool_calls=allowed_calls)
-        print("🧪 Test4 Prompt mit erlaubten Tool-Calls (Raum: Halle):\n", prompt)
-
-    def test5(self):
-        print("📦 Test5: Objekt von Raum ins Inventar verschieben")
-        inv = get_inventory(state)
-        objs = get_objects(state)
-        print("Inventar vorher:",inv )
-        print("Objekte im Raum vorher:", objs)
-
-        # Beispiel: Nimm 'Kissen' aus Raum und lege es ins Inventar
-        objekt = "Kissen"
-        if objekt in objs:
-            rem_object(state, objekt)
-            add_inventory(state, objekt)
-            print(f"✔ '{objekt}' wurde ins Inventar verschoben.")
-        else:
-            print(f"❌ '{objekt}' ist nicht im Raum vorhanden.")
-
-        print("Inventar nachher:", get_inventory(state))
-        print("Objekte im Raum nachher:", get_objects(state))
-
-    def test6(self):
-        # Anzeige der Wege im aktuellen Raum
-        location = state.get("location", "")
-        if not location or location not in rooms:
-            print("Fehler: Unbekannter Standort.")
-            return
-        room = rooms[location]
-        print("Wege:", ", ".join([
-            f"{richtung} ({'verschlossen' if daten['verschlossen'] else 'offen'})"
-            for richtung, daten in room.get("wege", {}).items()
-        ]))
-
-    def test6(self):
-        print("🎮 Starte Adventure-Simulator (manuell ohne LLM)")
-        while True:
-            # Aktueller Raumstatus anzeigen
-            location = state.get("location")
-            room = rooms.get(location)
-            if not room:
-                print("❌ Ungültiger Raum.")
-                break
-
-            print("\n📍 Du bist in:", room.get("name", "Unbekannter Raum"))
-            print(room.get("beschreibung", "").strip())
-
-            # Gegenstände anzeigen
-            gegenstaende = room.get("gegenstaende", [])
-            if gegenstaende:
-                print("\n🧸 Gegenstände hier:")
-                for obj_key in gegenstaende:
-                    item = items.get(obj_key)
-                    if item:
-                        if isinstance(item, Door):
-                            locked_str = "locked" if item.locked else "unlocked"
-                            print(f"- 🚪 {item.name} (Tür, {locked_str}: {item.locked}, Ziel: {item.target_room})")
-                        else:
-                            print(f"- 📦 {item.name} (fixed: {item.fixed})")
-                    else:
-                        print(f"- ❓ Unbekanntes Objekt: {obj_key}")
-            else:
-                print("\n🧸 Keine Gegenstände hier.")
-
-            # Wege anzeigen
-            wege = room.get("wege", {})
-            if wege:
-                print("\n🚪 Wege:")
-                for richtung, daten in wege.items():
-                    status = "verschlossen" if daten.get("verschlossen", False) else "offen"
-                    zielraum = daten.get("raum", "unbekannt")
-                    print(f" - {richtung.capitalize()}: {status} ➔ {zielraum}")
-            else:
-                print("\n🚪 Keine Ausgänge.")
-
-            # Eingabe
-            user_input = input("\n🧍 Was tust du? (Befehl Argument(e)) ➔ ").strip()
-            if not user_input:
-                continue
-            parts = user_input.split()
-            command = parts[0].lower()
-            args = parts[1:]
-
-            if command == "gehe" and len(args) == 1:
-                print(gehe(args[0]))
-            elif command == "nimm" and len(args) == 1:
-                print(nimm(args[0]))
-            elif command == "untersuche" and len(args) == 1:
-                print(untersuche(args[0]))
-            elif command == "anwenden" and (len(args) == 1 or len(args) == 2):
-                if len(args) == 1:
-                    print(anwenden(args[0]))
-                else:
-                    print(anwenden(args[0], args[1]))
-            elif command == "umsehen" and len(args) == 0:
-                print(umsehen())
-            elif command == "inventory" and len(args) == 0:
-                print(inventory())
-            elif command in ["ende", "quit", "exit"]:
-                print("🏁 Spiel beendet.")
-                break
-            else:
-                print("❓ Unbekannter Befehl oder falsche Argumente.")
-
-    def test7(self):
-        print("🧪 Test7: Anwenden des Zahlenschlosses allein")
-
-        # Setze Test-Umgebung: Spieler befindet sich im 'finalraum' und hat nichts im Inventar
-        state["location"] = "finalraum"
-
-        # Teste, ob anwenden("zahlenschloss") die richtige Hinweis-Meldung ausgibt
-        result = anwenden("zahlenschloss")
-        print(f"Ergebnis:\n{result}")
-
-    def test8(self):
-        print("🧪 Test8: Anwenden von Code '8513' auf das Zahlenschloss")
-
-        # Setze Test-Umgebung: Spieler befindet sich im 'finalraum' und Zahlenschloss existiert
-        state["location"] = "finalraum"
-
-        # Teste, ob anwenden("8513", "zahlenschloss") die Tür öffnet
-        result = anwenden("8513", "zahlenschloss")
-        print(f"Ergebnis:\n{result}")
-
-        # Überprüfe danach, ob der Weg nach Westen jetzt offen ist
-        wege = rooms["finalraum"].get("wege", {})
-        if wege.get("westen", {}).get("verschlossen") == False:
-            print("✅ Tür im Westen erfolgreich geöffnet!")
-        else:
-            print("❌ Tür im Westen ist noch verschlossen.")
-
 def validate_game_data():
     print("🔍 Validierung der Spielwelt-Strukturen...")
     valid = True
@@ -1004,6 +485,7 @@ def extract_json_from_response(response_text: str) -> str:
     return response_text.strip()
 
 # --- LLM Game Loop ---
+
 def llm_game_loop(llm, promptgen):
     print("🏰 Starte LLM Adventure Engine")
 
@@ -1110,6 +592,7 @@ def llm_game_loop(llm, promptgen):
             # print("🎉 Glückwunsch! Du hast das Spiel beendet!")
             print("🎉 Glückwunsch! Du hast das Spiel beendet!")
             break
+
 
 if __name__ == "__main__":
     from langchain_google_genai import ChatGoogleGenerativeAI
