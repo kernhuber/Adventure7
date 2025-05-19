@@ -30,12 +30,12 @@ ALLOWED_TOOL_CALLS = ["gehe", "nimm", "untersuche", "anwenden", "umsehen", "inve
 rooms = {
     "halle": {
         "name": "Karger Raum",
-        "beschreibung": """
+        "description": """
         Du wachst in einem kargen Raum ohne Fenster auf. Der Raum hat Sandsteinmauern. Es liegen einige 
         Gegenstände im Raum herum. 
         """,
         "gegenstaende": ["Kissen", "Luftpumpe", "Schraubstock", "Schuhloeffel", "Schluessel", "Tuer_Norden", "Tuer_Westen"],
-        "wege": {
+        "ways": {
             "norden": {
                 "raum": "bibliothek",
                 "verschlossen": True
@@ -45,7 +45,7 @@ rooms = {
                 "verschlossen": False
             }
         },
-        "room_prompt": """
+        "place_prompt": """
         * Du bist ein begabter Erzähler, der gerne geheimnisvolle Geschichten erzählt. Halte dich an 
           die vorgegebenen Fakten. 
         * Wenn der Spieler sich umsieht:
@@ -63,62 +63,62 @@ rooms = {
     },
     "bibliothek": {
         "name": "Alte Bibliothek",
-        "beschreibung": "Eine staubige Bibliothek mit hohen Regalen voller Bücher.",
+        "description": "Eine staubige Bibliothek mit hohen Regalen voller Bücher.",
         "gegenstaende": ["buch"],
-        "wege": {
+        "ways": {
             "sueden": {
                 "raum": "halle",
                 "verschlossen": False,
-                "beschreibung": "Die Tür zur Halle steht offen."
+                "description": "Die Tür zur Halle steht offen."
             }
         },
-        "room_prompt": "Hier riecht es nach altem Papier. Erwähne die Vielzahl an Büchern."
+        "place_prompt": "Hier riecht es nach altem Papier. Erwähne die Vielzahl an Büchern."
     },
     "durchgang": {
         "name": "Durchgang",
-        "beschreibung": "Ein schmuckloser Durchgang. ",
-        "wege": {
+        "description": "Ein schmuckloser Durchgang. ",
+        "ways": {
             "osten": {
                 "raum": "halle",
                 "verschlossen": False,
-                "beschreibung": "Die Tür zurück zum Eingangsraum steht offen."
+                "description": "Die Tür zurück zum Eingangsraum steht offen."
             },
             "westen": {
                 "raum": "finalraum",
                 "verschlossen": False,
-                "beschreibung": "Die Tür zum nächsten raum steht offen."
+                "description": "Die Tür zum nächsten raum steht offen."
             }
         },
-        "room_prompt": "Es ist viel Staub hier. Man könnte hier mal wieder putzen. Ansonsten ist es rech langweilig hier"
+        "place_prompt": "Es ist viel Staub hier. Man könnte hier mal wieder putzen. Ansonsten ist es rech langweilig hier"
     },
     "finalraum":{
         "name": "Letzter Raum",
-        "beschreibung": "Dieser Raum ist eigentlich auch recht öde. Da hätten sie sich in diesem Game echt mal mehr ausdenken können!",
-        "wege": {
+        "description": "Dieser Raum ist eigentlich auch recht öde. Da hätten sie sich in diesem Game echt mal mehr ausdenken können!",
+        "ways": {
             "osten": {
                 "raum":"durchgang",
                 "verschlossen": False,
-                "beschreibung": "Hier geht es wieder in den Durchgang"
+                "description": "Hier geht es wieder in den Durchgang"
             },
             "westen": {
                 "raum": "ende",
                 "verschlossen": True,
-                "beschreibung": 'Eine Stahltür, darüber ein Schild, auf dem "Exit" steht'
+                "description": 'Eine Stahltür, darüber ein Schild, auf dem "Exit" steht'
             }
         },
         "gegenstaende": ["zahlenschloss"],
-        "room_prompt":"Der Raum ist aus Beton und völlig schmucklos. An der Wand hängt ein Zahlenschloss"
+        "place_prompt":"Der Raum ist aus Beton und völlig schmucklos. An der Wand hängt ein Zahlenschloss"
     },
     "ende": {
         "name": "wunderschöne Wiese",
-        "beschreibung":
+        "description":
             """Eine wunderschöne Wiese mit Blumen. Die Sonne scheint. Die Luft duftet nach Sommer. Hinter Dir ein 
                Betonklotz mit der Stahltür, durch die du gekommen bist. Die Tür ist nun verschlossen. 
                Du hast das Spiel gewonnen.      
             """,
-        "wege": {},
+        "ways": {},
         "gegenstaende": [],
-        "room_prompt": """
+        "place_prompt": """
         Der Spieler hat das Spiel gewonnen. Beschreibe ihm den Raum (also die Wiese) mit blumigen Worten
         """
     }
@@ -278,7 +278,7 @@ Beschreibe stimmungsvoll, was du erkennst, aber füge keine neuen Elemente hinzu
                     # Automatisches "umsehen()" nach Raumwechsel, aber gekürzt: nur Gegenstände und Türen
                     room = rooms.get(ziel, {})
                     gegenstaende = room.get("gegenstaende", [])
-                    wege = room.get("wege", {})
+                    wege = room.get("ways", {})
                     text = ""
                     if gegenstaende:
                         text += "🧸 Gegenstände: " + ", ".join([items[obj].name for obj in gegenstaende if obj in items]) + ". "
@@ -324,7 +324,7 @@ def gehe(richtung: str) -> str:
     if not location or location not in rooms:
         return "Fehler: Unbekannter Standort."
 
-    wege = rooms[location].get("wege", {})
+    wege = rooms[location].get("ways", {})
     weg = wege.get(richtung.lower())
     if not weg:
         return "Fehler: Weg existiert hier nicht."
@@ -334,7 +334,7 @@ def gehe(richtung: str) -> str:
 
     ziel = weg["raum"]
     state["location"] = ziel
-    beschreibung = rooms[ziel].get("beschreibung", "Du wechselst den Raum.")
+    beschreibung = rooms[ziel].get("description", "Du wechselst den Raum.")
     # Systemmessage und interne Notiz (Ausgabe erfolgt jetzt in execute_tool_call)
     return f"Erfolg: {beschreibung.strip()}"
 
@@ -378,7 +378,7 @@ def anwenden(gegenstand1: str, gegenstand2: str = None) -> str:
     objekte = get_objects(state)
     all_items = inventar + objekte
     location = state.get("location", "")
-    wege = rooms[location].get("wege", {})
+    wege = rooms[location].get("ways", {})
 
     matched_obj1_key = next((obj for obj in all_items if obj.lower() == gegenstand1.lower()), None)
     matched_obj2_key = next((obj for obj in all_items if obj.lower() == gegenstand2.lower()), None) if gegenstand2 else None
@@ -429,9 +429,9 @@ def umsehen() -> str:
         return "Fehler: Unbekannter Raum."
 
     room = rooms[location]
-    beschreibung = room.get("beschreibung", "").strip()
+    beschreibung = room.get("description", "").strip()
     gegenstaende = room.get("gegenstaende", [])
-    wege = room.get("wege", {})
+    wege = room.get("ways", {})
 
     text = beschreibung + "\n\n"
 
@@ -442,7 +442,7 @@ def umsehen() -> str:
         text += "🚪 Ausgänge:\n"
         for richtung, daten in wege.items():
             status = "verschlossen" if daten.get("verschlossen", False) else "offen"
-            text += f"- {richtung.capitalize()}: {status} ({daten.get('beschreibung', '').strip()})\n"
+            text += f"- {richtung.capitalize()}: {status} ({daten.get('description', '').strip()})\n"
 
     return text.strip()
 
@@ -462,7 +462,7 @@ def validate_game_data():
                 print(f"⚠️  Raum '{room_id}' verweist auf nicht vorhandenen Gegenstand: '{obj}'")
                 valid = False
 
-        for richtung, weginfo in room.get("wege", {}).items():
+        for richtung, weginfo in room.get("ways", {}).items():
             zielraum = weginfo.get("raum")
             if zielraum not in rooms:
                 print(f"⚠️  Raum '{room_id}' hat einen Ausgang nach '{richtung}', aber der Zielraum '{zielraum}' existiert nicht.")
