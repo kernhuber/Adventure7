@@ -78,7 +78,36 @@ def emit_waydefs(pl,wy):
                     print('               "obstruction_check":None,')
                     print('               "description":""')
                     print("               },")
-    
+
+def emit_objdefs(pl,ob):
+    fnlist = []
+    for k,v in pl.items():
+        print("     #")
+        print(f"     # Place: {k}")
+        print("     #\n")
+        w = v["objects"]
+
+
+        if w != None:
+            for i in w:
+                if i not in ob:
+                    print(f'        "{i}":{{')
+                    print(f'               "name":"{i}",')
+                    print('               "examine":"",  # Text to me emitted when object is examined')
+                    print('               "help_text":"", # Text to be emitted when player asks for help with object')
+                    print('               "ownedby": None,  # Which Player currently owns this item? Default: None')
+                    print('               "fixed": False, # False bedeutet: Kann aufgenommen werden')
+                    print('               "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar')
+                    fname = f"{i}_apply_f"
+                    fnlist.append(fname)
+                    print(f'               "apply_f":{fname}')
+                    print("               },")
+    print()
+    for n in fnlist:
+        print(f'def {n}(gamestate, player=None, onwhat=None) -> str:')
+        print('     pass')
+        print()
+
 def init_game():
     #
     # Place definitions
@@ -353,12 +382,335 @@ def init_game():
 
     }
 
-    object_defs = {}
+    object_defs = {
+        #
+        # Place: p_warenautomat
+        #
+
+        "o_warenautomat": {
+            "name": "o_warenautomat",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_warenautomat_apply_f
+        },
+        #
+        # Place: p_ubahn
+        #
+
+        "o_muelleimer": {
+            "name": "o_muelleimer",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_muelleimer_apply_f
+        },
+        "o_salami": {
+            "name": "o_salami",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_salami_apply_f
+        },
+        "o_geheimzahl": {
+            "name": "o_geheimzahl",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_geheimzahl_apply_f
+        },
+        #
+        # Place: p_wagen
+        #
+
+        "o_tuerschliesser": {
+            "name": "o_tuerschliesser",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_tuerschliesser_apply_f
+        },
+        #
+        # Place: p_ubahn2
+        #
+
+        "o_pizzaautomat": {
+            "name": "o_pizzaautomat",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_pizzaautomat_apply_f
+        },
+        "o_geld_lire": {
+            "name": "o_geld_lire",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_geld_lire_apply_f
+        },
+        "o_pizza": {
+            "name": "o_pizza",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_pizza_apply_f
+        },
+        #
+        # Place: p_geldautomat
+        #
+
+        "o_geldautomat": {
+            "name": "o_geldautomat",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_geldautomat_apply_f
+        },
+        "o_geld_dollar": {
+            "name": "o_geld_dollar",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_geld_dollar_apply_f
+        },
+        #
+        # Place: p_schuppen
+        #
+
+        "o_schuppen": {
+            "name": "o_schuppen",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_schuppen_apply_f
+        },
+        "o_blumentopf": {
+            "name": "o_blumentopf",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_blumentopf_apply_f
+        },
+        "o_schluessel": {
+            "name": "o_schluessel",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_schluessel_apply_f
+        },
+        "o_stuhl": {
+            "name": "o_stuhl",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_stuhl_apply_f
+        },
+        "o_schrott": {
+            "name": "o_schrott",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_schrott_apply_f
+        },
+        #
+        # Place: p_dach
+        #
+
+        "o_hebel": {
+            "name": "o_hebel",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_hebel_apply_f
+        },
+        #
+        # Place: p_innen
+        #
+
+        "o_leiter": {
+            "name": "o_leiter",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_leiter_apply_f
+        },
+        "o_skelett": {
+            "name": "o_skelett",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_skelett_apply_f
+        },
+        "o_geldboerse": {
+            "name": "o_geldboerse",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_geldboerse_apply_f
+        },
+        "o_ec_karte": {
+            "name": "o_ec_karte",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_ec_karte_apply_f
+        },
+        "o_pinsel": {
+            "name": "o_pinsel",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_pinsel_apply_f
+        },
+        "o_farbeimer": {
+            "name": "o_farbeimer",
+            "examine": "",  # Text to me emitted when object is examined
+            "help_text": "",  # Text to be emitted when player asks for help with object
+            "ownedby": None,  # Which Player currently owns this item? Default: None
+            "fixed": False,  # False bedeutet: Kann aufgenommen werden
+            "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+            "apply_f": o_farbeimer_apply_f
+        },
+
+    }
 
     player_names = ["Spieler1"]
     emit_waydefs(place_defs, way_defs)
-    # emit_objdefs(place_defs)
+    emit_objdefs(place_defs, object_defs)
 
     return GameState.from_definitions(place_defs, way_defs, object_defs, player_names)
+#
+# Apply-Functions for Objects
+#
+
+def o_warenautomat_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_muelleimer_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_salami_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_geheimzahl_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_tuerschliesser_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_pizzaautomat_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_geld_lire_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_pizza_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_geldautomat_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_geld_dollar_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_schuppen_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_blumentopf_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_schluessel_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_stuhl_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_schrott_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_hebel_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_leiter_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_skelett_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_geldboerse_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_ec_karte_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_pinsel_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
+
+def o_farbeimer_apply_f(gamestate, player=None, onwhat=None) -> str:
+    pass
+
 
 init_game()
