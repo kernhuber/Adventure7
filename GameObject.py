@@ -7,10 +7,13 @@ from typing import Callable, Union, Any, Optional
 #
 class GameObject:
     def __init__(self, name, examine, help_text="", fixed=False, hidden=False):
+        from PlayerState import PlayerState
+        from GameState import GameState
+        from Place import Place
         self.name = name
         self.examine = examine      # Text to me emitted when object is examined
         self.help_text = help_text  # Text to be emitted when player asks for help with object
-        self.ownedby = None         # Which Player currently owns this item? Default: None
+        self.ownedby = PlayerState | Place | None         # Which Player or place currently owns this item? Default: None
         self.fixed = fixed          # False bedeutet: Kann aufgenommen werden
         self.hidden = hidden        # True bedeutet: Das Objekt ist nicht sichtbar
         #
@@ -43,6 +46,5 @@ class GameObject:
         #     result = obj_a.apply_f(obj_b, player, game)
         # else:
         #     result = "Du kannst das nicht auf diese Weise anwenden."
-        from PlayerState import PlayerState
-        from GameState import GameState
+
         self.apply_f: Optional[Callable[[Any, PlayerState, GameState], str]] = None
