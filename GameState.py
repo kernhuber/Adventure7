@@ -4,6 +4,8 @@ from Way import Way
 from typing import Dict, List
 from PlayerState import PlayerState
 from GameObject import GameObject
+
+
 from typing import Any
 
 #
@@ -94,23 +96,8 @@ class GameState:
 
         return objects
 
-    @classmethod
-    def old_from_definitions(cls, place_defs, way_defs, object_defs, player_names):
-        # Factory-Methode zur Initialisierung eines vollständigen GameState
-        instance = cls.__new__(cls)
 
-
-        instance.places = instance._init_places(place_defs)
-        instance.ways = instance._init_ways(way_defs, instance.places)
-        instance.objects = instance._init_objects(object_defs, instance.places)
-
-        #instance.players = instance._init_players(player_names)
-
-        instance.time = 0
-        instance.debug_mode = False
-        return instance
-
-    def from_definitions(self,place_defs, way_defs, object_defs, player_names):
+    def from_definitions(self,place_defs, way_defs, object_defs):
         self.places = self._init_places(place_defs)
         self.ways = self._init_ways(way_defs, self.places)
         self.objects = self._init_objects(object_defs, self.places)
@@ -178,7 +165,12 @@ class GameState:
 
         place_defs = {
             "p_start": {
-                "description": "Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste",
+                "description": """
+                Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. Du siehst:
+                - Einen Warenautomaten
+                - Einen Schuppen
+                - Einen Geldautomaten, vor dem ein großer Hund liegt
+                """,
                 "place_prompt": """
                     To be done
                 """,
@@ -258,22 +250,22 @@ class GameState:
 
             "w_start_warenautomat": {
                 "source": "p_start",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_warenautomat",
+                "text_direction": "zum Warenautomat",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_start_geldautomat": {
                 "source": "p_start",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_geldautomat",
+                "text_direction": "zum Geldautomaten",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_start_schuppen": {
                 "source": "p_start",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_schuppen",
+                "text_direction": "zum Schuppen",
                 "obstruction_check": None,
                 "description": ""
             },
@@ -283,29 +275,29 @@ class GameState:
 
             "w_warenautomat_start": {
                 "source": "p_warenautomat",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_start",
+                "text_direction": "zum Start, wo das kaputte Fahrrad liegt",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_warenautomat_geldautomat": {
                 "source": "p_warenautomat",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_geldautomat",
+                "text_direction": "zum Geldautomaten",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_warenautomat_schuppen": {
                 "source": "p_warenautomat",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_schuppen",
+                "text_direction": "zum Schuppen",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_warenautomat_ubahn": {
                 "source": "p_warenautomat",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_ubahn",
+                "text_direction": "herunter zur U-Bahn",
                 "obstruction_check": None,
                 "description": ""
             },
@@ -315,15 +307,15 @@ class GameState:
 
             "w_ubahn_warenautomat": {
                 "source": "p_ubahn",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_warenautomat",
+                "text_direction": "hoch zum Warenautomaten",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_ubahn_wagen": {
                 "source": "p_ubahn",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_wagen",
+                "text_direction": "in den U-Bahnwagen hinein",
                 "obstruction_check": None,
                 "description": ""
             },
@@ -333,15 +325,15 @@ class GameState:
 
             "w_wagen_ubahn": {
                 "source": "p_wagen",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_ubahn",
+                "text_direction": "auf den Bahnsteig der U-Bahn",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_wagen_ubahn2": {
                 "source": "p_wagen",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_ubahn2",
+                "text_direction": "zur zweiten Haltestelle",
                 "obstruction_check": None,
                 "description": ""
             },
@@ -351,8 +343,8 @@ class GameState:
 
             "w_ubahn2_wagen": {
                 "source": "p_ubahn2",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_wagen",
+                "text_direction": "in den U-Bahnwagen",
                 "obstruction_check": None,
                 "description": ""
             },
@@ -362,22 +354,22 @@ class GameState:
 
             "w_geldautomat_start": {
                 "source": "p_geldautomat",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_start",
+                "text_direction": "zum Start, wo das kaputte Fahrrad liegt",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_geldautomat_warenautomat": {
                 "source": "p_geldautomat",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_warenautomat",
+                "text_direction": "zum Warenautomaten",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_geldautomat_schuppen": {
                 "source": "p_geldautomat",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_schuppen",
+                "text_direction": "zum Schuppen",
                 "obstruction_check": None,
                 "description": ""
             },
@@ -387,36 +379,36 @@ class GameState:
 
             "w_schuppen_start": {
                 "source": "p_schuppen",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_start",
+                "text_direction": "zum Start",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_schuppen_warenautomat": {
                 "source": "p_schuppen",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_warenautomat",
+                "text_direction": "zum Warenautomat",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_schuppen_geldautomat": {
                 "source": "p_schuppen",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_geldautomat",
+                "text_direction": "zum Geldautomaten",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_schuppen_innen": {
                 "source": "p_schuppen",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_innen",
+                "text_direction": "in den Schuppen hinein",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_schuppen_dach": {
                 "source": "p_schuppen",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_dach",
+                "text_direction": "auf das Dach des Schuppens",
                 "obstruction_check": None,
                 "description": ""
             },
@@ -426,8 +418,8 @@ class GameState:
 
             "w_dach_schuppen": {
                 "source": "p_dach",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_schuppen",
+                "text_direction": "vom dach des Schuppens herunter",
                 "obstruction_check": None,
                 "description": ""
             },
@@ -437,8 +429,8 @@ class GameState:
 
             "w_innen_schuppen": {
                 "source": "p_innen",
-                "destination": "",
-                "text_direction": "",
+                "destination": "p_schuppen",
+                "text_direction": "aus dem Schuppen heraus",
                 "obstruction_check": None,
                 "description": ""
             },
@@ -687,7 +679,6 @@ class GameState:
 
         }
 
-        player_names = ["Spieler1"]
         #
         # Added new Stuff in place_defs? --> Uncomment the following functions in order to emit skeletons
         # for objects and their apply-Functions as well as ways.
@@ -696,7 +687,7 @@ class GameState:
         # emit_waydefs(place_defs, way_defs)
         # emit_objdefs(place_defs, object_defs)
 
-        self.from_definitions(place_defs, way_defs, object_defs, player_names)
+        self.from_definitions(place_defs, way_defs, object_defs)
     #
 # Apply-Functions for Objects
 #
