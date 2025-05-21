@@ -1,13 +1,14 @@
 from dataclasses import dataclass, field
 from typing import List
-
+from Place import Place
 
 #
 # The state of a player. Multiple players - multiple states
 #
 @dataclass
 class PlayerState:
-    location: "Room"
+    name: str
+    location: Place
     inventory: List[str] = field(default_factory=list)
     last_input: str = "Ich sehe mich erst einmal um."
 
