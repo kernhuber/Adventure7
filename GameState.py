@@ -16,13 +16,6 @@ def make_obstruction_check(locked: bool) -> Callable[['GameState'], bool]:
     return lambda state: locked
 
 class GameState:
-    def old__init__(self, room_definitions, way_definitions, object_definitions,player_names):
-        self.places: Dict[str, Place] = self._init_places(room_definitions)
-        self.ways: List[Way] = self._init_ways(way_definitions)
-        self.objects: List[GameObject] = self._init_objects(object_definitions)
-        self.players: List[PlayerState] = self._init_players(player_names)
-        self.time = 0
-        self.debug_mode = False
 
     def __init__(self):
         self.init_game()
@@ -71,9 +64,6 @@ class GameState:
             ways.append(way)
 
         return ways
-
-    def _init_players(self, names) -> List[PlayerState]:
-        return [PlayerState(location=self.places["halle"]) for name in names]
 
     def _init_objects(self, defs: dict, places: Dict[str, Place]) -> List[GameObject]:
         objects = []
@@ -124,6 +114,7 @@ class GameState:
         self.places = self._init_places(place_defs)
         self.ways = self._init_ways(way_defs, self.places)
         self.objects = self._init_objects(object_defs, self.places)
+        self.players = []
         self.time = 0
         self.debug_mode = False
 
@@ -174,6 +165,11 @@ class GameState:
             print(f'def {n}(gamestate, player=None, onwhat=None) -> str:')
             print('     pass')
             print()
+
+    def add_player(self,name):
+        start_room = self.places["p_start"]
+        self.players.append(PlayerState(name,start_room))
+
 
     def init_game(self):
         #
@@ -453,7 +449,15 @@ class GameState:
             #
             # Place: p_warenautomat
             #
-
+            "o_umschlag":{
+                "name": "o_umschlag",
+                "examine": "Ein versiegelter Briefumschlag",
+                "help_text": "Dieser Umschlag muss sein Ziel erreichen, sonst geht die Welt unter!",
+                "ownedby": "",
+                "fixed": False,
+                "hidden": True,
+                "apply_f": o_umschlag_apply_f
+            },
             "o_warenautomat": {
                 "name": "o_warenautomat",
                 "examine": "",  # Text to me emitted when object is examined
@@ -696,6 +700,8 @@ class GameState:
     #
 # Apply-Functions for Objects
 #
+def o_umschlag_apply_f(gamestate, player=None, onwhat=None) -> str:
+    return "Hiermit solltest du kein Schindluder treiben!"
 
 def o_warenautomat_apply_f(gamestate, player=None, onwhat=None) -> str:
     pass
@@ -784,5 +790,5 @@ def o_pinsel_apply_f(gamestate, player=None, onwhat=None) -> str:
 def o_farbeimer_apply_f(gamestate, player=None, onwhat=None) -> str:
     pass
 
-g = GameState()
-print(g)
+# g = GameState()
+# print(g)
