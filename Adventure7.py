@@ -52,9 +52,8 @@ class Adventure:
         #
         # Add o_umschlag to first player only
         #
-        for i in range(0, len(self.game.objects)):
-            if self.game.objects[i].name == "o_umschlag":
-               self.game.players[0].add_to_inventory(self.game.objects[i])
+
+        self.game.players[0].add_to_inventory(self.game.objects["o_umschlag"])
 
     def gameloop(self):
         """
@@ -90,20 +89,8 @@ class Adventure:
                         for i in pl.get_inventory():
                             print(f'- "{i.name}" --> {i.examine}')
                     elif user_input == "umsehen":
-                        loc = pl.location
-                        tw_print(f"**Ort: {pl.location.name}**")
-                        tw_print(f"{textwrap.dedent(pl.location.description)}")
-                        tw_print("Am Ort sind folgende Objekte zu sehen:")
-                        for i in pl.location.place_objects:
-                            if not i.hidden:
-                                print(f'- {i.name} - {i.examine}')
-                        print()
-                        tw_print("Du kannst folgende wege gehen:")
-                        loc = pl.location
-                        for w in loc.ways:
-                            tw_print(f'- {w.name} ... führt zu {w.destination.name}')
-                    elif user_input == "untersuche":
-                        tw_print("Untersuche ... noch nicht implementiert")
+                        r = self.game.verb_lookaround(pl)
+                        tw_print(r)
                     else:
                         break
                 #
@@ -114,7 +101,22 @@ class Adventure:
                 if user_input == "quit":
                     exit(0)
                 else:
-                    print(f'execution of "{user_input}" commences here ...')
+                    tokens = user_input.split()
+                    if tokens[0] == 'gehe' and len(tokens)>1:
+                        r = self.game.verb_walk(pl,tokens[1])
+                    elif tokens[0] == "untersuche" and len(tokens)>1:
+                        r = self.game.verb_examine(pl, tokens[1])
+                    elif tokens[0]  == "anwenden":
+                        if len(tokens) == 2:
+                            r = self.game.verb_apply(pl, tokens[1], None)
+                        elif len(tokens) == 3:
+                            r = self.game.verb_apply(pl,tokens[1], tokens[2])
+                        else:
+                            r = "**Ich verstehe nicht, was ich wie anwenden soll...**"
+                    else:
+                        r= "**Die Eingabe habe ich nicht verstanden.**"
+
+                    tw_print(r)
 #
 # --- Main ---
 #

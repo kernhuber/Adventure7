@@ -6,7 +6,7 @@ from typing import Callable, Union, Any, Optional
 # Objects which can appear in the game. Special objects like doors etc are derived from this object
 #
 class GameObject:
-    def __init__(self, name, examine, help_text="", fixed=False, hidden=False):
+    def __init__(self, name, examine, help_text="", fixed=False, hidden=False, apply_f=None):
         from PlayerState import PlayerState
         from GameState import GameState
         from Place import Place
@@ -26,10 +26,6 @@ class GameObject:
         # myself: key
         # obj2: door
         #
-        # Apply something to myself (for example: "enter 8513 into number pad --> "apply ("8513")
-        # myself: number pad
-        #
-        # --> consistency check, execute appropriate action on game_state
         #
         # ------- Usage: ------
         # def schluessel_apply(target, player, game) -> str:
@@ -47,4 +43,4 @@ class GameObject:
         # else:
         #     result = "Du kannst das nicht auf diese Weise anwenden."
 
-        self.apply_f: Optional[Callable[[Any, PlayerState, GameState], str]] = None
+        self.apply_f = apply_f # Optional[Callable[[PlayerState, GameObject, GameObject], str]] = None
