@@ -15,7 +15,8 @@ class Way:
     source: "Place"            # Edge(Way) originates here
     destination: "Place"              # Edge (Way) ends here
     text_direction: str     # textual short description North, West, South, .. up.. down ...
-    obstruction_check: Callable[['GameState'], bool] = lambda state: False # Checks if edge is obstructed by something
+    visible: True           # Is the way visible after all? It can of course be visible but obstructed
+    obstruction_check: Callable[['GameState'], str] = lambda state: "Free" # Checks if edge is obstructed by something
     description: str = ""   # More concise description
 
 
