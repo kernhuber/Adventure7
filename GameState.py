@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+
 from Place import Place
 from Way import Way
 from typing import Dict, List
@@ -170,7 +172,12 @@ class GameState:
 
 
     def init_game(self):
+        #
+        # Wege, die verschlossen sind
+        #
         self.schuppentuer=False
+        self.leiter = False
+        self.hebel = False
         #
         # Place definitions
         #
@@ -717,22 +724,38 @@ class GameState:
                 r = r+ "\n" + o_what.apply_f(self, pl, o_what, o_towhat)
         return r
 
+    def verb_take(selfs, pl: PlayerState, what):
+        loc = pl.location
+        # obj = loc.place_objects.get(what)
+        obj = None
+        for o in loc.place_objects:
+            if o.name == what:
+                obj = o
+                break
+        if obj == None:
+            return "Sowas gibt es hier nicht."
+        else:
+            pl.add_to_inventory(obj)
+            return f"Du hast {what} nun bei dir"
+
+
     def verb_lookaround(self, pl: PlayerState):
         loc = pl.location
         retstr = f"""**Ort: {pl.location.name}**
 {pl.location.description}
 
 Am Ort sind folgende Objekte zu sehen:"""
-
+        rs = ""
         for i in pl.location.place_objects:
             if not i.hidden:
-                retstr = retstr+f'- {i.name} - {i.examine}'
-
-        retstr = retstr+"\nDu kannst folgende wege gehen:"
+                rs = rs+f'\n- {i.name} - {i.examine}'
+        if rs == "":
+            rs="(keine)"
+        retstr = retstr+rs+"\n\nDu kannst folgende wege gehen:\n"
         loc = pl.location
         for w in loc.ways:
             if w.visible:
-                retstr = retstr + f'- {w.name} ... führt zu {w.destination.name}'
+                retstr = retstr + f'- {w.name} ... führt zu {w.destination.name}\n'
         return retstr
 
 
@@ -787,6 +810,7 @@ Am Ort sind folgende Objekte zu sehen:"""
                         if self.objects["o_schluessel"].hidden:
                             retstr = "Ein alter Blumentopf - aber warte: **unter dem Blumentopf liegt ein Schlüssel!!!**"
                             self.objects["o_schluessel"].hidden = False
+                    break
 
         return retstr
 
@@ -875,12 +899,52 @@ def o_schrott_apply_f(gamestate, player=None, onwhat=None) -> str:
     pass
 
 
-def o_hebel_apply_f(gamestate, player=None, onwhat=None) -> str:
-    pass
+def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    #
+    # Ich bin der Hebel - ich kann nicht auf "irgendwas" angewandt werden, ich kann nur selber
+    # angewandt werden.
+    #
+    if pl != None:
+        if pl.location == gs.places["p_dach"]:
+            if gs.hebel:
+                gs.hebel = False
+                gs.ways["w_warenautomat_ubahn"].visible = False
+                gs.objects["o_warenautomat"].examine = "Ein Warenautomat mit Fahrradteilen. Er enthält tatsächlich auch eine Fahrradkette! Jetzt bräuchte man Geld - und zwar italienische Lira. Dieser Automat akzeptiert nur diese!"
+                return "Es rumpelt - und der Warenautomat richtet sich wieder auf!"
+            else:
+                gs.hebel = True
+                gs.ways["w_warenautomat_ubahn"].visible = True
+                gs.objects["o_warenautomat"].examine = "Ein Warenautomat, der auf dem Rücken liegt. Da wo er stand, führt eine Treppe nach unten!"
+                return "Es rumpelt - Die siehst, wie der Warenautomat sich langsam auf den Rücken legt. Da wo er stand, ist nun eine Öffnung!"
+    else:
+        return "??? Kein Spieler ???"
 
 
-def o_leiter_apply_f(gamestate, player=None, onwhat=None) -> str:
-    pass
+def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    #
+    # Ich bin die Leiter - einzig sinnvolle Applikation: an den Schuppen anlehnen
+    #
+    if pl != None:
+        #
+        # Haben wir den SChlüssel dabei oder liegt er am aktuellen Ort? --> Anwenden
+        #
+        loc = pl.location
+        if loc != gs.places["p_schuppen"]:
+            return "Das ergibt hier keinen Sinn."
+        if pl.is_in_inventory(what) or (what in pl.location.place_objects) and (onwhat == gs.objects["o_schuppen"]):
+            gs.leiter = True
+            pl.remove_from_inventory(what)
+            loc.place_objects.append(what)
+            #
+            # Weg Sichtbar machen
+            #
+            gs.ways["w_schuppen_dach"].visible = True
+
+            return "Du kannst jetzt auf den Schuppen steigen!"
+        else:
+            return "Das geht hier nicht: "
+    else:
+        return "... kein Spieler? Wie soll das gehen?"
 
 
 def o_skelett_apply_f(gamestate, player=None, onwhat=None) -> str:
@@ -911,7 +975,16 @@ def w_schuppen_innen_f(gs: GameState):
         return "Free"
 
 def w_schuppen_dach_f(gs: GameState):
-    return "Hier kommst du nicht so ohne weiteres hoch!"
+    if gs.leiter == False:
+        return "Hier kommst du nicht so ohne weiteres hoch!"
+    else:
+        return "Free"
+
+def w_warenautomat_ubahn_f(gs: GameState):
+    if gs.hebel:
+        return "Free"
+    else:
+        return "Ist hier ein Weg? Und wenn, dann ist er versperrt!"
 
 def huhu() -> str:
     return ("--- huhu ---")

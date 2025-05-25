@@ -9,7 +9,7 @@ from typing import Callable
 # Edges within the Room-graph
 #
 
-@dataclass(frozen=True)
+@dataclass
 class Way:
     name: str
     source: "Place"            # Edge(Way) originates here

@@ -78,18 +78,27 @@ class Adventure:
         user_input="none"
         while True:
             for pl in self.game.players:
+                #
+                # (3),(4),(5) - commands which  don't count as game moves
+                #
 
                 while True:
                     # user_input = input("Was tust du jetzt? Deine Eingabe: ").strip().lower()
-                    user_input = Prompt.ask("Was tust du jetzt? Deine Eingabe: ").strip().lower()
-                    if user_input == "hilfe":
+                    user_input = ""
+                    while user_input=="":
+                        user_input = Prompt.ask("Was tust du jetzt? Deine Eingabe").strip().lower()
+                    tokens = user_input.split()
+                    if tokens[0] == "hilfe":
                         tw_print("**hilfe ist noch nicht implementiert**")
-                    elif user_input == "inventory":
+                    elif tokens[0] == "inventory":
                         tw_print("**Du trägst bei dir:**")
                         for i in pl.get_inventory():
                             print(f'- "{i.name}" --> {i.examine}')
-                    elif user_input == "umsehen":
+                    elif tokens[0] == "umsehen":
                         r = self.game.verb_lookaround(pl)
+                        tw_print(r)
+                    elif tokens[0] == "untersuche" and len(tokens)>1:
+                        r = self.game.verb_examine(pl, tokens[1])
                         tw_print(r)
                     else:
                         break
@@ -101,11 +110,12 @@ class Adventure:
                 if user_input == "quit":
                     exit(0)
                 else:
-                    tokens = user_input.split()
+
                     if tokens[0] == 'gehe' and len(tokens)>1:
                         r = self.game.verb_walk(pl,tokens[1])
-                    elif tokens[0] == "untersuche" and len(tokens)>1:
-                        r = self.game.verb_examine(pl, tokens[1])
+
+                    elif tokens[0] == "nimm" and len(tokens) == 2:
+                        r = self.game.verb_take(pl, tokens[1])
                     elif tokens[0]  == "anwenden":
                         if len(tokens) == 2:
                             r = self.game.verb_apply(pl, tokens[1], None)

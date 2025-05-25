@@ -12,6 +12,7 @@ class PlayerState:
     location: Place
     inventory: List[GameObject] = field(default_factory=list)
     last_input: str = "Ich sehe mich erst einmal um."
+    npc: bool = False  # Are we a Non-Player-Character?
 
     def add_to_inventory(self, a: GameObject):
         if a not in self.inventory:
@@ -25,6 +26,7 @@ class PlayerState:
             self.inventory.remove(a)
 
     def is_in_inventory(self, s: GameObject) -> bool:
+
         r = (s in self.inventory)
         return r
 
