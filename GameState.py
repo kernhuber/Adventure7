@@ -41,8 +41,6 @@ class GameState:
 
         return places
 
-
-
     def _init_ways(self, defs: dict, places: Dict[str, Place]) -> Dict[str, Way]:
         ways = {}
 
@@ -166,9 +164,14 @@ class GameState:
             print('     pass')
             print()
 
-    def add_player(self,name):
-        start_room = self.places["p_start"]
-        self.players.append(PlayerState(name,start_room))
+    def add_player(self,name, npc=False):
+        from NPCPlayerState import NPCPlayerState
+        if npc:
+            start_room = self.places["p_geldautomat"]
+            self.players.append(NPCPlayerState(name=name,location=start_room))
+        else:
+            start_room = self.places["p_start"]
+            self.players.append(PlayerState(name,start_room))
 
 
     def init_game(self):
@@ -312,9 +315,9 @@ class GameState:
                 "source": "p_warenautomat",
                 "destination": "p_ubahn",
                 "text_direction": "herunter zur U-Bahn",
-                "obstruction_check": None,
+                "obstruction_check": w_warenautomat_ubahn_f,
                 "visible": False,
-                "description": ""
+                "description": "Eine Treppe, die zu einer U-Bahn-Station führt!"
             },
             #
             # Place: p_ubahn
@@ -471,7 +474,7 @@ class GameState:
                 "examine": "Ein Warenautomat mit Fahrradteilen. Er enthält tatsächlich auch eine Fahrradkette! Jetzt bräuchte man Geld - und zwar italienische Lira. Dieser Automat akzeptiert nur diese!",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_warenautomat",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
+                "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f":  o_warenautomat_apply_f
 
@@ -560,7 +563,7 @@ class GameState:
                 "examine": "Ein Geldautomat. Man muss eine Karte einstecken, eine Geheimnummer eingeben, und wenn Geld auf dem Konto ist, kann man es abheben.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_geldautomat",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
+                "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_geldautomat_apply_f
             },
@@ -582,7 +585,7 @@ class GameState:
                 "examine": "Ein alter Holzschuppen, in dem womöglich interessante Dinge sind.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
+                "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_schuppen_apply_f
             },
@@ -618,7 +621,7 @@ class GameState:
                 "examine": "Eine Menge Schrott! Hier kannst Du stundelang herumsuchen - aber (Spoilerwarnung) dur wirst hier nichts besonderes finden.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
+                "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_schrott_apply_f
             },
@@ -631,7 +634,7 @@ class GameState:
                 "examine": "Ein Hebel!! Was passiert wohl, wenn du diesen betätigst?",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_dach",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
+                "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_hebel_apply_f
             },
@@ -650,29 +653,29 @@ class GameState:
             },
             "o_skelett": {
                 "name": "o_skelett",
-                "examine": "",  # Text to me emitted when object is examined
+                "examine": "Ein Skelett!! In einem Anzug!! Wie lange das wohl schon hier sitzt?",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
+                "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_skelett_apply_f
             },
             "o_geldboerse": {
                 "name": "o_geldboerse",
-                "examine": "",  # Text to me emitted when object is examined
+                "examine": "Eine alte Geldbörse aus Leder.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_geldboerse_apply_f
             },
             "o_ec_karte": {
                 "name": "o_ec_karte",
-                "examine": "",  # Text to me emitted when object is examined
+                "examine": "Eine alte EC-Karte. Ob die noch geht?",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_ec_karte_apply_f
             },
             "o_pinsel": {
@@ -705,7 +708,37 @@ class GameState:
         # emit_objdefs(place_defs, object_defs)
 
         self.from_definitions(place_defs, way_defs, object_defs)
+    #
+    # Utility Functions
+    #
+    from typing import List, Optional
 
+    #
+    # Find shortest Path between two places
+    #
+    def find_shortest_path(self, start: Place, goal: Place) -> Optional[List[Way]]:
+        from collections import deque
+        queue = deque()
+        queue.append((start, []))  # Elemente sind Tupel: (aktueller Ort, bisheriger Pfad)
+        visited = set()
+
+        while queue:
+            current_place, path_so_far = queue.popleft()
+
+            if current_place == goal:
+                return path_so_far  # Erfolgreich: Rückgabe des Pfads als Liste von Way-Objekten
+
+            if current_place.name in visited:
+                continue
+
+            visited.add(current_place.name)
+
+            for way in current_place.ways:
+                if way.visible and way.destination.name not in visited and way.obstruction_check(self)=="Free":
+                    new_path = path_so_far + [way]
+                    queue.append((way.destination, new_path))
+
+        return None  # Kein Pfad gefunden
     #
     # Verbs to be executed
     #
@@ -719,7 +752,11 @@ class GameState:
         else:
             r = f"apply {what} to {towhat} in this context"
             o_what = self.objects.get(what)
-            o_towhat = self.objects.get(towhat)
+            if towhat=="dog":
+                o_towhat = PlayerState("dog", None) # Temporary Player State
+            else:
+                o_towhat = self.objects.get(towhat)
+
             if o_what != None:
                 r = r+ "\n" + o_what.apply_f(self, pl, o_what, o_towhat)
         return r
@@ -738,6 +775,18 @@ class GameState:
             pl.add_to_inventory(obj)
             return f"Du hast {what} nun bei dir"
 
+    def verb_drop(self, pl: PlayerState, what):
+        obj = self.objects.get(what)
+        if obj == None:
+            return "Sowas gibt es in diesem Spiel nicht!"
+
+        if pl.is_in_inventory(obj):
+            pl.remove_from_inventory(obj)
+            obj.hidden = False
+            pl.location.place_objects.append(obj)
+            return f'Objekt {what} in/auf/am {pl.location.name} abgelegt'
+
+        return f'{what} ist nicht in {pl.name} inventory'
 
     def verb_lookaround(self, pl: PlayerState):
         loc = pl.location
@@ -796,22 +845,39 @@ Am Ort sind folgende Objekte zu sehen:"""
         for i in pl.inventory:
             if i.name == what:
                 obj_here = i
-                retstr = f"Du trägst {i.name} gerade bei dir. {i.examine}."
+                retstr = f"Du trägst {i.name} gerade bei dir."
                 break
         if obj_here == None:
+            retstr = ""
             for i in pl.location.place_objects:
                 if i.name == what:
                     obj_here = i
-                    retstr = f"{i.examine}"
-                    #
-                    # Sometimes examinig one thing reveals another thing
-                    #
-                    if what == "o_blumentopf":
-                        if self.objects["o_schluessel"].hidden:
-                            retstr = "Ein alter Blumentopf - aber warte: **unter dem Blumentopf liegt ein Schlüssel!!!**"
-                            self.objects["o_schluessel"].hidden = False
                     break
+        if obj_here != None:
 
+            #
+            # Sometimes examinig one thing reveals another thing
+            #
+            if what == "o_blumentopf":
+                if self.objects["o_schluessel"].hidden:
+                    retstr = retstr + "Ein alter Blumentopf - aber warte: **unter dem Blumentopf liegt ein Schlüssel!!!**"
+                    self.objects["o_blumentopf"].examine = "Unter diesem Blumentopf hast Du den Schlüssel gefunden"
+                    self.objects["o_schluessel"].hidden = False
+            elif what == "o_skelett":
+                if self.objects["o_geldboerse"].hidden:
+                    retstr = retstr + "Oh weh, der sitzt wohl schon länger hier! Ein Skelett, welches einen verschlissenen Anzug trägt. **Im Anzug findest du eine Brieftasche!**"
+                    self.objects["o_geldboerse"].hidden = False
+                    self.objects["o_skelett"].examine = "Bei diesem Knochenmann hast Du eine Geldbörse gefunden!"
+            elif what == "o_geldboerse":
+                if self.objects["o_ec_karte"].hidden:
+                    self.objects["o_ec_karte"].hidden = False
+                    self.objects["o_geldboerse"].examine = "In dieser Geldbörse hast Du eine EC-Karte gefunden"
+                    retstr = retstr + "Fein! Hier ist eine EC-Karte! Die passt bestimmt in einen Geldautomaten!"
+
+            else:
+                retstr = retstr + f"{obj_here.examine}"
+        else:
+            retstr = f'{what} - sowas gibt es hier nicht!'
         return retstr
 
 
@@ -838,64 +904,64 @@ def o_schluessel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=N
     else:
         return "... kein Spieler? Wie soll das gehen?"
 
-def o_umschlag_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_umschlag_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     return "Hiermit solltest du kein Schindluder treiben!"
 
-def o_warenautomat_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_warenautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_muelleimer_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_muelleimer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_salami_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_salami_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_geheimzahl_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_geheimzahl_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_tuerschliesser_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_tuerschliesser_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_pizzaautomat_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_pizzaautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_geld_lire_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_geld_lire_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_pizza_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_pizza_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_geldautomat_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_geldautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_geld_dollar_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_geld_dollar_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_schuppen_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_schuppen_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_blumentopf_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_blumentopf_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
 
 
-def o_stuhl_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_stuhl_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_schrott_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_schrott_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
@@ -926,12 +992,34 @@ def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
     #
     if pl != None:
         #
-        # Haben wir den SChlüssel dabei oder liegt er am aktuellen Ort? --> Anwenden
+        # Haben wir die Leiter dabei?
         #
+        if onwhat.name == "dog":
+            #
+            # Mit der Leiter gegen den Hund
+            #
+            dog = None
+            for d in gs.players:
+                if d.name=="Dog":
+                    dog=d
+                    break
+            if d==None:
+                return "Kein Hund hier!"
+            retour = gs.find_shortest_path(pl.location,gs.places["p_geldautomat"])
+            if retour == None:
+                return "Du gehst mit der Leiter auf den Hund los - aber er kann nicht an seinen Stammplatz flüchten!"
+
+            dog.growl=0
+            dog.next_location = ""
+            dog.next_location_wait = 2
+            dog.location = gs.places["p_geldautomat"]
+
+            return "Mit einer Leiter gegen einen Hund! Wie unfair! Aber immerhin der Hund rennt jammernd an seinen Stammplatz, den Geldautomaten."
+
         loc = pl.location
-        if loc != gs.places["p_schuppen"]:
-            return "Das ergibt hier keinen Sinn."
-        if pl.is_in_inventory(what) or (what in pl.location.place_objects) and (onwhat == gs.objects["o_schuppen"]):
+        if what != gs.objects["o_schuppen"]:
+            return "Die Leiter rutscht ab und fällt um. Das mit der Leiter ergibt hier sowieso keinen Sinn."
+        if pl.is_in_inventory(what) or (what in pl.location.place_objects):
             gs.leiter = True
             pl.remove_from_inventory(what)
             loc.place_objects.append(what)
@@ -947,23 +1035,23 @@ def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
         return "... kein Spieler? Wie soll das gehen?"
 
 
-def o_skelett_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_skelett_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_geldboerse_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_geldboerse_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_ec_karte_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_pinsel_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_pinsel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
 
-def o_farbeimer_apply_f(gamestate, player=None, onwhat=None) -> str:
+def o_farbeimer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 #
 # Obstruction Check Functions

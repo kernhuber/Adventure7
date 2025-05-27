@@ -47,6 +47,9 @@ dem die Rettung nicht fern scheint.
 class Adventure:
     def __init__(self, players):
         self.game = GameState()
+        #
+        # Interactive Players
+        #
         for i in players:
             self.game.add_player(i)
         #
@@ -54,6 +57,10 @@ class Adventure:
         #
 
         self.game.players[0].add_to_inventory(self.game.objects["o_umschlag"])
+        #
+        # Add our Non Player Character (the Dog)
+        #
+        self.game.add_player("Dog", npc=True)
 
     def gameloop(self):
         """
@@ -61,7 +68,7 @@ class Adventure:
         2) Loop until game end state reached
         3)    For all players p
         4)        Get user input (atomic actions to be executed by game logic)
-        5)        if user input one of "inventory", "hilfe", "umsehen", "save", "untersuche" execute and go to 4
+        5)        if user input one of "inventory", "hilfe", "umsehen", "save", execute and go to 4
         6)        execute user input,
         7 )       if applicable, generate system response
 
@@ -75,19 +82,32 @@ class Adventure:
         #
         # (2)
         #
-        user_input="none"
+        from NPCPlayerState import NPCPlayerState
+        round = 1
         while True:
+            # print(f"{'='*20}  Spielrunde {round} {'='*20}")
+            print((f" Spielrunde {round} ").center( 60, "-"))
+            round = round + 1
             for pl in self.game.players:
                 #
                 # (3),(4),(5) - commands which  don't count as game moves
                 #
 
                 while True:
-                    # user_input = input("Was tust du jetzt? Deine Eingabe: ").strip().lower()
-                    user_input = ""
-                    while user_input=="":
-                        user_input = Prompt.ask("Was tust du jetzt? Deine Eingabe").strip().lower()
+
+                    if (isinstance(pl,NPCPlayerState)):
+                        #
+                        # Non Player Character
+                        #
+                        print(f'{"-" * 60}')
+                        user_input = pl.NPC_game_move(self.game)
+                        tw_print(f"**{pl.name}**: {user_input}")
+                    else:
+                        user_input = ""
+                        while user_input=="":
+                            user_input = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe").strip().lower()
                     tokens = user_input.split()
+
                     if tokens[0] == "hilfe":
                         tw_print("**hilfe ist noch nicht implementiert**")
                     elif tokens[0] == "inventory":
@@ -97,9 +117,7 @@ class Adventure:
                     elif tokens[0] == "umsehen":
                         r = self.game.verb_lookaround(pl)
                         tw_print(r)
-                    elif tokens[0] == "untersuche" and len(tokens)>1:
-                        r = self.game.verb_examine(pl, tokens[1])
-                        tw_print(r)
+
                     else:
                         break
                 #
@@ -113,9 +131,15 @@ class Adventure:
 
                     if tokens[0] == 'gehe' and len(tokens)>1:
                         r = self.game.verb_walk(pl,tokens[1])
-
+                    elif tokens[0] == 'angreifen' and len(tokens) == 2:
+                        tw_print(f'{pl.name} tötet {tokens[1]} nach heldischem Kampf. \n**Game Over!**')
+                        exit(0)
+                    elif tokens[0] == "untersuche" and len(tokens)>1:
+                        r = self.game.verb_examine(pl, tokens[1])
                     elif tokens[0] == "nimm" and len(tokens) == 2:
                         r = self.game.verb_take(pl, tokens[1])
+                    elif tokens[0] == "ablegen" and len(tokens) == 2:
+                        r = self.game.verb_drop(pl, tokens[1])
                     elif tokens[0]  == "anwenden":
                         if len(tokens) == 2:
                             r = self.game.verb_apply(pl, tokens[1], None)
@@ -123,10 +147,13 @@ class Adventure:
                             r = self.game.verb_apply(pl,tokens[1], tokens[2])
                         else:
                             r = "**Ich verstehe nicht, was ich wie anwenden soll...**"
+                    elif tokens[0] == "nichts":
+                        r = ""
                     else:
                         r= "**Die Eingabe habe ich nicht verstanden.**"
 
-                    tw_print(r)
+                    if r != "":
+                        tw_print(r)
 #
 # --- Main ---
 #
