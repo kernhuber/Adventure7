@@ -1,4 +1,4 @@
-from Adventure6 import log_error, rooms, items
+#from Adventure6 import log_error, rooms, items
 from Door import Door
 
 

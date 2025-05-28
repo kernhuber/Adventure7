@@ -1,0 +1,53 @@
+# Bytecode-Dateien
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Test- oder temporäre Dateien
+*.log
+*.tmp
+*.bak
+*.swp
+*.DS_Store
+
+# Mac-spezifisch
+.DS_Store
+
+# PyCharm-Projektdateien
+.idea/
+
+# Virtuelle Umgebungen (z. B. venv, conda, poetry)
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+conda/
+
+# Jupyter Notebooks (falls vorhanden)
+.ipynb_checkpoints/
+
+# Python egg-info (bei Paketerstellung)
+*.egg-info/
+dist/
+build/
+
+# Von dir verwendete Tools
+# (z. B. Cache-Dateien für rich oder dein Spielstandsystem)
+*.sqlite3
+*.db
+*.sav
+*.state
+
+# __init__-Backup-Dateien oder temporär erstellte Datenbanken
+*.~*
+
+# Deine spezifische Ordnerstruktur (optional)
+# (z. B. Zwischendateien deines Spiels oder gespeicherte Sessions)
+sessions/
+autosave/
+debug/
+
+# VS Code (falls verwendet)
+.vscode/
