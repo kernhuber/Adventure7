@@ -1,8 +1,19 @@
+from pydantic_core.core_schema import none_schema
+
 from PlayerState import PlayerState
 from GameState import GameState
 from dataclasses import dataclass, field
 from collections import deque
 from typing import List, Deque, Any
+from enum import Enum, auto
+
+class DogState(Enum):
+    START = auto()
+    EATING = auto()
+    ATTACK = auto()
+    OBSERVE = auto()
+    GOHOME = auto()
+
 #
 # Our NPC Player - the Doggo
 #
@@ -10,11 +21,199 @@ from typing import List, Deque, Any
 class NPCPlayerState(PlayerState):
     from Place import Place
     growl: int = 0
+    dog_state: DogState = DogState.START
+
     next_loc : str = "" # Doggo seeks out place where player has been
     next_loc_wait : int=2   # but only if player has left for two game moves
     nogo_places: List[str] = field(default_factory=lambda: ["p_dach","p_ubahn2"]) # Dog can't go to these places.
     way_home: Deque[Place] = field(default_factory=deque) # Falls Hund nach Hause geht
-    def NPC_game_move(self, gs:GameState):
+
+    def NPC_game_move(self, gs:GameState) -> str:
+        """
+        Doggo routine
+
+        The dog behaves as follows:
+
+        0) Start
+           state = start
+
+        1) Food in his place:
+           eat food (discard food from gs.objects and place, do nothing for 3 game cycles)
+           state = "eating"
+
+        2) Someone in his place:
+           warn two game cycles, attack in third cycle
+           state = "threat to attack"
+
+        3) Someone in visible neighbor place:
+           Watch neighbor place: walk to neighbor place when place empty
+           state = observe
+
+        4) Nobody in neighbor place:
+           walk home (Geldautomat)
+
+
+
+        :param gs:
+        :return str:
+        """
+        match self.dog_state:
+            case DogState.START:
+                # Something to eat?
+                if self.check_state_eating(gs):
+                    return self.setup_state_eating(gs)
+                if self.check_state_attack(gs):
+                    return self.setup_state_attack(gs)
+                if self.check_state_observe(gs):
+                    return self.setup_state_observe(gs)
+                if self.check_state_walkhome(gs):
+                    return self.setup_state_walkhome(gs)
+
+            case DogState.ATTACK:
+                #
+                # Other Player still in my place? If not, return to START state
+                #
+                pl = None
+                for p in gs.players:
+                    if p != self and p.location == self.location:
+                        pl = p
+                        break
+                if pl == None:
+                    self.attack_counter = 2
+                    self.dog_state = DogState.START
+                    return "nichts"
+                if self.attack_counter > 0:
+                    self.attack_counter = self.attack_counter - 1
+                    l = 2*(3-self.attack_counter)
+                    return f'interaktion {pl.name} "**G{"R"*l}{"O"*l}{"A"*l}{"R"*l}{"!"*l}**"'
+                else:
+                    return f"angriff {pl.name}"
+
+            case DogState.EATING:
+                print("**Dog frisst noch!**")
+                self.eat_counter = self.eat_counter -1
+                if self.eat_counter == 0:
+                    self.dog_state = DogState.START
+                return "nichts"
+
+            case DogState.OBSERVE:
+                #
+                # Did someone enter my place --> initiate attack state
+                # else execute observe place
+                #
+                if self.check_state_attack(gs):
+                    return self.setup_state_attack(gs)
+
+                if self.check_state_observe(gs):
+                    print(f"**Dog wartet noch längstens {self.next_loc_wait} weiter**")
+                    self.next_loc_wait = self.next_loc_wait - 1
+                    return "nichts"
+                else:
+                    if not self.next_loc in self.nogo_places:
+                        rval = f"gehe {self.next_loc}"
+                        self.dog_state = DogState.START
+                        return rval
+
+            case _:
+                return "nichts" # default/unknown state
+
+
+    def check_state_observe(self, gs: GameState):
+        dsts = []
+        for w in self.location.ways:
+            dsts.append(w.name)
+        for pl in gs.players:
+            if pl.location.name in dsts:
+                return True
+        return False
+
+    def setup_state_observe(self, gs: GameState):
+        dsts = []
+        for w in self.location.ways:
+            dsts.append(w.name)
+        pl = None
+        for p in gs.players:
+            if p.location.name in dsts:
+                pl = p
+        if pl != None:
+            self.dog_state = DogState.OBSERVE
+            self.next_loc = pl
+            self.next_loc_wait = 2
+            print("**Dog beobachtet nun {pl.name}**")
+            return "nichts"
+
+    def check_state_attack(self, gs: GameState):
+        #
+        # Anybody here besides me?
+        #
+        for p in gs.players:
+            if p != self and p.location == self.location:
+                return True
+            else:
+                return False
+    def setup_state_attack(self, gs: GameState):
+        #
+        #
+        #
+        for p in gs.players:
+            if p != self and p.location == self.location:
+                self.dog_state = DogState.ATTACK
+                self.attack_counter = 2
+                return "**Grrr!**"
+        else:
+            return "nichts"
+
+    def check_state_eating(self, gs: GameState):
+        for i in self.location.place_objects:
+            if i.name in ["o_salami", "o_pizza"]:
+                return True
+            else:
+                return False
+
+    def setup_state_eating(self, gs: GameState):
+        for i in self.location.place_objects:
+            f = None
+            if i.name in ["o_salami","o_pizza"]:
+                f = i
+                break
+        if f != None:
+            self.location.place_objects.remove(f)
+            del gs.objects[f.name]
+            self.dog_state = DogState.EATING
+            print(f"**Dog frisst {f.name}**")
+            self.eat_counter = 3
+            return "nichts"
+
+    def NPC_game_move_old(self, gs:GameState) -> str:
+        """
+        Doggo routine
+
+        The dog behaves as follows:
+
+        0) Start
+           state = start
+
+        1) Food in his place:
+           eat food (discard food from gs.objects and place, do nothing for 3 game cycles)
+           state = "eating"
+
+        2) Someone in his place:
+           warn two game cycles, attack in third cycle
+           state = "threat to attack"
+
+        3) Someone in visible neighbor place:
+           Watch neighbor place: walk to neighbor place when place empty
+           state = observe
+
+        4) Nobody in neighbor place:
+           walk home (Geldautomat)
+
+
+
+        :param gs:
+        :return str:
+        """
+
         #
         # Are we on our way home? If so, walk, and that's it.
         #
