@@ -1,4 +1,4 @@
-
+from collections import deque
 
 from rich.console import Console
 from rich.markdown import Markdown
@@ -45,6 +45,9 @@ dem die Rettung nicht fern scheint.
 """
 
 class Adventure:
+    from collections import deque
+    from typing import List, Deque, Any
+
     def __init__(self, players):
         self.game = GameState()
         #
@@ -61,6 +64,33 @@ class Adventure:
         # Add our Non Player Character (the Dog)
         #
         self.game.add_player("Dog", npc=True)
+        #
+        # For testing
+        #
+        self.test_queue = deque([
+            "gehe p_schuppen",
+            "untersuche o_blumentopf",
+            "anwenden o_schluessel o_schuppen",
+            "gehe p_innen",
+            "untersuche o_skelett",
+            "untersuche o_geldboerse",
+            "nimm o_ec_karte",
+            "nimm o_leiter",
+            "gehe p_schuppen",
+            "anwenden o_leiter o_schuppen",
+            "gehe p_dach",
+            "anwenden o_hebel",
+            "gehe p_schuppen",
+            "gehe p_warenautomat",
+            "gehe p_ubahn"
+        ])
+
+    def test_game(self) -> str:
+        if self.test_queue:
+            c = self.test_queue.popleft()
+            print (f'Player: {c}')
+            return c
+        exit(0)
 
     def gameloop(self):
         """
@@ -105,7 +135,8 @@ class Adventure:
                     else:
                         user_input = ""
                         while user_input=="":
-                            user_input = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe").strip().lower()
+                            # user_input = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe").strip().lower()
+                            user_input = self.test_game()
                     tokens = user_input.split()
 
                     if tokens[0] == "hilfe":
