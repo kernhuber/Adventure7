@@ -865,7 +865,7 @@ Am Ort sind folgende Objekte zu sehen:"""
                     self.objects["o_schluessel"].hidden = False
             elif what == "o_skelett":
                 if self.objects["o_geldboerse"].hidden:
-                    retstr = retstr + "Oh weh, der sitzt wohl schon länger hier! Ein Skelett, welches einen verschlissenen Anzug trägt. **Im Anzug findest du eine Brieftasche!**"
+                    retstr = retstr + "Oh weh, der sitzt wohl schon länger hier! Ein Skelett, welches einen verschlissenen Anzug trägt. **Im Anzug findest du eine Geldboerse!**"
                     self.objects["o_geldboerse"].hidden = False
                     self.objects["o_skelett"].examine = "Bei diesem Knochenmann hast Du eine Geldbörse gefunden!"
             elif what == "o_geldboerse":
@@ -1017,7 +1017,7 @@ def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
             return "Mit einer Leiter gegen einen Hund! Wie unfair! Aber immerhin der Hund rennt jammernd an seinen Stammplatz, den Geldautomaten."
 
         loc = pl.location
-        if what != gs.objects["o_schuppen"]:
+        if onwhat != gs.objects["o_schuppen"]:
             return "Die Leiter rutscht ab und fällt um. Das mit der Leiter ergibt hier sowieso keinen Sinn."
         if pl.is_in_inventory(what) or (what in pl.location.place_objects):
             gs.leiter = True
