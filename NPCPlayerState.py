@@ -62,30 +62,39 @@ class NPCPlayerState(PlayerState):
                 # Something to eat?
                 if self.check_state_eating(gs):
                     return self.setup_state_eating(gs)
+                # Someone to attack?
                 if self.check_state_attack(gs):
                     return self.setup_state_attack(gs)
+                # someone to observe?
                 if self.check_state_observe(gs):
                     return self.setup_state_observe(gs)
-                if self.check_state_walkhome(gs):
-                    return self.setup_state_walkhome(gs)
-
+                #if self.check_state_gohome(gs):
+                #    return self.setup_state_go(gs)
+                return "nichts"
             case DogState.ATTACK:
                 #
                 # Other Player still in my place? If not, return to START state
                 #
-                pl = None
-                for p in gs.players:
-                    if p != self and p.location == self.location:
-                        pl = p
-                        break
-                if pl == None:
+
+                if not self.check_state_attack(gs):
                     self.attack_counter = 2
                     self.dog_state = DogState.START
                     return "nichts"
+                #
+                # OK - still here: who are you?
+                #
+                pl = None
+                for p in gs.players:
+                    if p!=self and p.location == self.location:
+                        pl = p
+                        break
+
                 if self.attack_counter > 0:
                     self.attack_counter = self.attack_counter - 1
                     l = 2*(3-self.attack_counter)
-                    return f'interaktion {pl.name} "**G{"R"*l}{"O"*l}{"A"*l}{"R"*l}{"!"*l}**"'
+                    rs = f'**G{"R"*l}{"O"*l}{"A"*l}{"R"*l}{"!"*l}'
+
+                    return f'interaktion {pl.name} "**{rs}**"'
                 else:
                     return f"angriff {pl.name}"
 
@@ -113,15 +122,44 @@ class NPCPlayerState(PlayerState):
                         rval = f"gehe {self.next_loc}"
                         self.dog_state = DogState.START
                         return rval
+                    else:
+                        if self.check_state_gohome(gs):
+                            print("**Dog geht jetzt zu seinem Stammplatz.**")
+                            return self.setup_state_gohome(gs)
+                        else:
+                            print("**Dog kann nicht zu seinem Stammplatz, er bleibt nun hier**")
+                            self.dog_state = DogState.START
+
+            case DogState.GOHOME:
+                nl = self.way_home.popleft()
+                if nl:
+                    return f'gehe {nl.name}'
+                else:
+                    self.dog_state = DogState.START
+                    print("**Dog ist nun wieder an seinem Stammplatz**")
+                    return "nichts"
+
 
             case _:
                 return "nichts" # default/unknown state
 
+    def check_state_gohome(self, gs: GameState):
+        if gs.find_shortest_path(self.location,gs.places["o_geldautomat"]) != None:
+            return True
+        return False
+
+    def setup_state_gohome(self, gs: GameState):
+        ret = gs.find_shortest_path(self.location, gs.places["o_geldautomat"])
+        if ret != None:
+            self.way_home = deque(ret)
+            self.dog_state = DogState.GOHOME
+        else:
+            return "nichts"
 
     def check_state_observe(self, gs: GameState):
         dsts = []
         for w in self.location.ways:
-            dsts.append(w.name)
+            dsts.append(w.destination.name)
         for pl in gs.players:
             if pl.location.name in dsts:
                 return True
@@ -130,16 +168,16 @@ class NPCPlayerState(PlayerState):
     def setup_state_observe(self, gs: GameState):
         dsts = []
         for w in self.location.ways:
-            dsts.append(w.name)
-        pl = None
+            dsts.append(w.destination.name)
+        pl = ""
         for p in gs.players:
             if p.location.name in dsts:
-                pl = p
-        if pl != None:
+                pl = p.location.name
+        if pl != "":
             self.dog_state = DogState.OBSERVE
             self.next_loc = pl
             self.next_loc_wait = 2
-            print("**Dog beobachtet nun {pl.name}**")
+            print(f"**Dog beobachtet nun {pl}**")
             return "nichts"
 
     def check_state_attack(self, gs: GameState):
