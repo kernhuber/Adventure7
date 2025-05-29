@@ -181,6 +181,7 @@ class GameState:
         self.schuppentuer=False
         self.leiter = False
         self.hebel = False
+        self.geheimzahl = 8513
         #
         # Place definitions
         #
@@ -485,10 +486,10 @@ class GameState:
 
             "o_muelleimer": {
                 "name": "o_muelleimer",
-                "examine": "",  # Text to me emitted when object is examined
+                "examine": "Ein Mülleimer.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
+                "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_muelleimer_apply_f
             },
@@ -503,11 +504,11 @@ class GameState:
             },
             "o_geheimzahl": {
                 "name": "o_geheimzahl",
-                "examine": "",  # Text to me emitted when object is examined
+                "examine": "Eine Geheimzahl...",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_geheimzahl_apply_f
             },
             #
@@ -532,7 +533,7 @@ class GameState:
                 "examine": "",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
+                "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_pizzaautomat_apply_f
             },
@@ -745,12 +746,14 @@ class GameState:
 
     def verb_apply(self, pl: PlayerState, what, towhat):
         if towhat == None:
-            r = f"apply {what} in this context"
+            # r = f"apply {what} in this context"
+            r=""
             o_what = self.objects.get(what)
             if o_what != None:
                 r = r+ "\n"+ o_what.apply_f(self, pl, o_what, None)
         else:
-            r = f"apply {what} to {towhat} in this context"
+            # r = f"apply {what} to {towhat} in this context"
+            r=""
             o_what = self.objects.get(what)
             if towhat=="dog":
                 o_towhat = PlayerState("dog", None) # Temporary Player State
@@ -873,6 +876,13 @@ Am Ort sind folgende Objekte zu sehen:"""
                     self.objects["o_ec_karte"].hidden = False
                     self.objects["o_geldboerse"].examine = "In dieser Geldbörse hast Du eine EC-Karte gefunden"
                     retstr = retstr + "Fein! Hier ist eine EC-Karte! Die passt bestimmt in einen Geldautomaten!"
+            elif what == "o_muelleimer":
+                if self.objects["o_geheimzahl"].hidden:
+                    from random import randint
+                    self.geheimzahl = randint(1,9999)
+                    self.objects["o_geheimzahl"].hidden = False
+                    self.objects["o_geheimzahl"].examine = f"Eine Geheimzahl: {self.geheimzahl:04}"
+                    retstr = retstr + f"Im Mülleimer findest Du einen Zettel mit einer Geheimzahl! Die Geheimzahl ist: {self.geheimzahl:04}"
 
             else:
                 retstr = retstr + f"{obj_here.examine}"
@@ -944,7 +954,28 @@ def o_geldautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=
 
 
 def o_geld_dollar_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    #
+    # Ich bin das Dollar-Bündel - mich kann man auf den Warenautomaten und auf den Pizza-Automaten anwenden, wenn
+    # der Raum stimmt
+    #
+    if pl.location.name == "p_warenautomat" and onwhat.name=="o_warenautomat":
+        if gs.hebel:
+            return 'Der Warenautomat liegt auf dem Rücken. Da kann man kein Geld einwerfen!'
+        else:
+            return 'Der Automat zeigt an: "Mi dispiace molto, ma in questa macchina si accettano solo lire italiane.". Er will also italienische Lira haben - aber wo bekomme ich die her?'
+
+    if pl.location.name == "p_ubahn2" and onwhat.name=="o_pizzaautomat":
+        #
+        # Wenn der Hund in einem früheren Spielschritt die Pizza gegessen hat, mache eine neue
+        #
+        if gs.objects.get("o_pizza"):
+            gs.objects["o_pizza"].visible = True
+        else:
+            gs.objects["o_pizza"] = GameObject("o_pizza","Eine schöne, frisch gemachte Pizza","",False,None)
+            gs.objects["o_pizza"].visible = True
+            gs.objects["o_pizza"].ownedby = gs.places["p_ubahn2"]
+        return 'Es dauert, und der Automat bereitet eine wunderschöne Pizza für dich zu, die Du im Ausgabefach findest. Und dann klappert es - es wird Dir Wechselgeld ausgezahlt, **und zwar in italienischen Lira!**'
+    return "Du scheinst mit den Dollars hier wnig anfangen zu können..."
 
 
 def o_schuppen_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
@@ -975,13 +1006,15 @@ def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, 
             if gs.hebel:
                 gs.hebel = False
                 gs.ways["w_warenautomat_ubahn"].visible = False
+                gs.places["p_warenautomat"].description = "Hier steht ein Warenautomat, an dem man Fahrradteile kaufen kann."
                 gs.objects["o_warenautomat"].examine = "Ein Warenautomat mit Fahrradteilen. Er enthält tatsächlich auch eine Fahrradkette! Jetzt bräuchte man Geld - und zwar italienische Lira. Dieser Automat akzeptiert nur diese!"
                 return "Es rumpelt - und der Warenautomat richtet sich wieder auf!"
             else:
                 gs.hebel = True
                 gs.ways["w_warenautomat_ubahn"].visible = True
                 gs.objects["o_warenautomat"].examine = "Ein Warenautomat, der auf dem Rücken liegt. Da wo er stand, führt eine Treppe nach unten!"
-                return "Es rumpelt - Die siehst, wie der Warenautomat sich langsam auf den Rücken legt. Da wo er stand, ist nun eine Öffnung!"
+                gs.places["p_warenautomat"].description = "Hier liegt ein Warenautomat auf dem Rücken. Da wo er wohl gestanden hat, ist eine Öffnung im Boden. Man sieht darin eine Treppe - es geht zu einer U-Bahn-Station!"
+                return "Es rumpelt - Die siehst, wie der Warenautomat sich langsam auf den Rücken legt. Da wo er stand, ist nun eine Öffnung - und darin eine Treppe zu einer U-Bahn-Station!"
     else:
         return "??? Kein Spieler ???"
 
@@ -1044,7 +1077,29 @@ def o_geldboerse_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=N
 
 
 def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    #
+    # Ich bin die EC-Karte. Mich kann man nur auf den Geldautomaten anwenden, und auch nur dann, wenn dieser
+    # am selben Platz steht
+    #
+    if pl.location.name!="p_geldautomat" and onwhat.name!="o_geldautomat":
+        return "Ich verstehe nicht, was genau du mit der Geldkarte machen willst!"
+
+    print(f"{'*'*60}")
+    print(f"*{' '*58}*")
+    s=("Bitte geben sie die Geheimzahl ein!").center(58," ")
+    print(f'*{s}*')
+    print(f"*{' ' * 58}*")
+    print(f"{'*' * 60}")
+    z = -1
+    while z<0:
+        x = input("Geheimzahl: ")
+        if x.isdigit():
+            z = int(x)
+    if gs.geheimzahl == z:
+        gs.objects["o_geld_dollar"].visible = True
+        return "**Die Zahl stimmt!** Du tippst die entsprechenden Tasten - der Automat rattert, und spuckt ein Bündel Scheine aus. Frisch gedruckte US-Dollar!"
+    else:
+        return " --- Die Zahl ist falsch. ---"
 
 
 def o_pinsel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:

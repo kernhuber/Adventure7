@@ -96,7 +96,7 @@ class NPCPlayerState(PlayerState):
 
                     return f'interaktion {pl.name} "**{rs}**"'
                 else:
-                    return f"angriff {pl.name}"
+                    return f"angreifen {pl.name}"
 
             case DogState.EATING:
                 print("**Dog frisst noch!**")
@@ -197,7 +197,7 @@ class NPCPlayerState(PlayerState):
             if p != self and p.location == self.location:
                 self.dog_state = DogState.ATTACK
                 self.attack_counter = 2
-                return "**Grrr!**"
+                return f'interaktion {p.name} "**Grrr!**"'
         else:
             return "nichts"
 

@@ -81,8 +81,30 @@ class Adventure:
             "gehe p_dach",
             "anwenden o_hebel",
             "gehe p_schuppen",
+            "anwenden o_ec_karte o_blumentopf",
+            "gehe p_geldautomat",
+            "anwenden o_ec_karte o_geldautomat",
             "gehe p_warenautomat",
-            "gehe p_ubahn"
+            "gehe p_ubahn",
+            "umsehen",
+            "untersuche o_muelleimer",
+            "untersuche o_geheimzahl",
+            "nehme o_geheimzahl",
+            "gehe p_warenautomat",
+            "gehe p_geldautomat",
+            "anwenden o_ec_karte o_geldautomat",
+            "nimm o_geld_dollar",
+            "gehe p_warenautomat",
+            "anwenden o_geld_dollar o_warenautomat",
+            "gehe p_schuppen",
+            "gehe p_dach",
+            "anwenden o_hebel",
+            "gehe p_schuppen",
+            "gehe p_warenautomat",
+            "umsehen",
+            "anwenden o_geld_dollar o_warenautomat",
+            "untersuche o_warenautomat",
+            "nichts"
         ])
 
     def test_game(self) -> str:
