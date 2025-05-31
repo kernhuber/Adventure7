@@ -497,7 +497,7 @@ class GameState:
                 "name": "o_salami",
                 "examine": "",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
+                "ownedby": "p_wagen",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_salami_apply_f

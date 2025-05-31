@@ -57,6 +57,9 @@ class NPCPlayerState(PlayerState):
         :param gs:
         :return str:
         """
+        print("+++ Dog Data:")
+        print(f"+++ dog_state = {self.dog_state}, dog is in {self.location.name}")
+
         match self.dog_state:
             case DogState.START:
                 # Something to eat?
@@ -114,8 +117,9 @@ class NPCPlayerState(PlayerState):
                     return self.setup_state_attack(gs)
 
                 if self.check_state_observe(gs):
-                    print(f"**Dog wartet noch längstens {self.next_loc_wait} weiter**")
-                    self.next_loc_wait = self.next_loc_wait - 1
+                    #print(f"**Dog wartet noch längstens {self.next_loc_wait} weiter**")
+                    #self.next_loc_wait = self.next_loc_wait - 1
+                    print(f'Dog lauert darauf, als nächstes zu {self.next_loc} zu gehen.')
                     return "nichts"
                 else:
                     if not self.next_loc in self.nogo_places:
@@ -176,7 +180,7 @@ class NPCPlayerState(PlayerState):
         if pl != "":
             self.dog_state = DogState.OBSERVE
             self.next_loc = pl
-            self.next_loc_wait = 2
+            self.next_loc_wait = 1
             print(f"**Dog beobachtet nun {pl}**")
             return "nichts"
 
@@ -196,7 +200,7 @@ class NPCPlayerState(PlayerState):
         for p in gs.players:
             if p != self and p.location == self.location:
                 self.dog_state = DogState.ATTACK
-                self.attack_counter = 2
+                self.attack_counter = 1
                 return f'interaktion {p.name} "**Grrr!**"'
         else:
             return "nichts"

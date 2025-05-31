@@ -89,14 +89,32 @@ class Adventure:
             "umsehen",
             "untersuche o_muelleimer",
             "untersuche o_geheimzahl",
-            "nehme o_geheimzahl",
+            "nimm o_geheimzahl",
             "gehe p_warenautomat",
             "gehe p_geldautomat",
             "anwenden o_ec_karte o_geldautomat",
+            "gehe p_warenautomat",
+            "gehe p_ubahn",
+            "gehe p_wagen",
+            "umsehen",
+            "nimm o_salami",
+            "gehe p_ubahn",
+            "gehe p_warenautomat",
+            "gehe p_schuppen",
+            "ablegen o_salami",
+            "umsehen",
+            "gehe p_innen",
+            "nichts",
+            "nichts",
+            "gehe p_schuppen"
+            "gehe p_geldautomat",
             "nimm o_geld_dollar",
             "gehe p_warenautomat",
             "anwenden o_geld_dollar o_warenautomat",
             "gehe p_schuppen",
+            "nichts",
+            "nichts",
+            "nichts",
             "gehe p_dach",
             "anwenden o_hebel",
             "gehe p_schuppen",
@@ -155,6 +173,7 @@ class Adventure:
                         user_input = pl.NPC_game_move(self.game)
                         tw_print(f"**{pl.name}**: {user_input}")
                     else:
+                        print(f'Di bist hier: {pl.location.name}')
                         user_input = ""
                         while user_input=="":
                             # user_input = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe").strip().lower()
