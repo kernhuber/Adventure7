@@ -78,7 +78,7 @@ class GameState:
 
     def _init_objects(self, defs: dict, places: Dict[str, Place]) -> Dict[str, GameObject]:
         objects = {}
-
+        from GameObject import GameObject
         for obj_name, obj_data in defs.items():
             obj = GameObject(
                 name=obj_data["name"],
@@ -86,7 +86,8 @@ class GameState:
                 help_text=obj_data.get("help_text", ""),
                 fixed=obj_data.get("fixed", False),
                 hidden=obj_data.get("hidden", False),
-                apply_f=obj_data.get("apply_f", None)
+                apply_f=obj_data.get("apply_f", None),
+                reveal_f = obj_data.get("reveal_f", None)
             )
             fn = obj_data.get("apply_f", None)
             obj.apply_f = fn
@@ -136,7 +137,9 @@ class GameState:
                         print("               },")
 
     def emit_objdefs(self,pl,ob):
-        fnlist = []
+        """ Helper Function: emits object definition and functions so they can be copy-pasted into source code"""
+        fnlist = [] # Apply Functions
+        rvlist = [] # Reveal Functions
         for k,v in pl.items():
             print("     #")
             print(f"     # Place: {k}")
@@ -156,13 +159,31 @@ class GameState:
                         print('               "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar')
                         fname = f"{i}_apply_f"
                         fnlist.append(fname)
-                        print(f'               "apply_f":{fname}')
+                        rvname = f"{i}_reveal_f"
+                        rvlist.append(rvname)
+                        print(f'               "apply_f":{fname} # Funktion, die aufgerufen wird, wenn das Objekt angewandt wird (verb_apply)')
+                        print(f'               "reveal_f":{fname} # Funktion, die aufgerufen wird, wenn das Objekt untersucht wird (verb_examine')
+
                         print("               },")
-        print()
+        print("""#
+        # Apply-Functions - are called by verb_apply and perform actions, in an object is applied or applied to another object
+        #
+        """)
         for n in fnlist:
-            print(f'def {n}(gamestate, player=None, onwhat=None) -> str:')
-            print('     pass')
-            print()
+            if not hasattr(self,n):
+                print(f'def {n}(gamestate, player=None, what=None, onwhat=None) -> str:')
+                print('     return ""')
+                print()
+        print("""#
+        # Reveal-Functions - are called when an object is examined and by examining it reveals something else, 
+        # for example unhides another object or a way or a place
+        #
+        """)
+        for n in rvlist:
+            if not hasattr(self,n):
+                print(f'def {n}(gamestate, player=None, what=None, onwhat=None) -> str:')
+                print('     return ""')
+                print()
 
     def add_player(self,name, npc=False):
         from NPCPlayerState import NPCPlayerState
@@ -491,7 +512,8 @@ class GameState:
                 "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_muelleimer_apply_f
+                "apply_f": o_muelleimer_apply_f,
+                "reveal_f": o_muelleimer_reveal_f
             },
             "o_salami": {
                 "name": "o_salami",
@@ -597,7 +619,8 @@ class GameState:
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_blumentopf_apply_f
+                "apply_f": o_blumentopf_apply_f,
+                "reveal_f": o_blumentopf_reveal_f
             },
             "o_schluessel": {
                 "name": "o_schluessel",
@@ -659,7 +682,8 @@ class GameState:
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_skelett_apply_f
+                "apply_f": o_skelett_apply_f,
+                "reveal_f": o_skelett_reveal_f
             },
             "o_geldboerse": {
                 "name": "o_geldboerse",
@@ -668,7 +692,8 @@ class GameState:
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_geldboerse_apply_f
+                "apply_f": o_geldboerse_apply_f,
+                "reveal_f": o_geldboerse_reveal_f
             },
             "o_ec_karte": {
                 "name": "o_ec_karte",
@@ -705,8 +730,8 @@ class GameState:
         # for objects and their apply-Functions as well as ways.
         #
 
-        # emit_waydefs(place_defs, way_defs)
-        # emit_objdefs(place_defs, object_defs)
+        #emit_waydefs(place_defs, way_defs)
+        self.emit_objdefs(place_defs, object_defs)
 
         self.from_definitions(place_defs, way_defs, object_defs)
     #
@@ -861,6 +886,7 @@ Am Ort sind folgende Objekte zu sehen:"""
             #
             # Sometimes examinig one thing reveals another thing
             #
+            """
             if what == "o_blumentopf":
                 if self.objects["o_schluessel"].hidden:
                     retstr = retstr + "Ein alter Blumentopf - aber warte: **unter dem Blumentopf liegt ein Schlüssel!!!**"
@@ -883,6 +909,9 @@ Am Ort sind folgende Objekte zu sehen:"""
                     self.objects["o_geheimzahl"].hidden = False
                     self.objects["o_geheimzahl"].examine = f"Eine Geheimzahl: {self.geheimzahl:04}"
                     retstr = retstr + f"Im Mülleimer findest Du einen Zettel mit einer Geheimzahl! Die Geheimzahl ist: {self.geheimzahl:04}"
+"""
+            if self.objects[what].reveal_f != None:
+                retstr = retstr + self.objects[what].reveal_f(self,pl,what, None)
 
             else:
                 retstr = retstr + f"{obj_here.examine}"
@@ -1108,6 +1137,47 @@ def o_pinsel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
 
 def o_farbeimer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
+
+#
+# Reveal Functions
+#
+def o_blumentopf_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
+    if gs.objects["o_schluessel"].hidden:
+        retstr = "Ein alter Blumentopf - aber warte: **unter dem Blumentopf liegt ein Schlüssel!!!**"
+        gs.objects["o_blumentopf"].examine = "Unter diesem Blumentopf hast Du den Schlüssel gefunden"
+        gs.objects["o_schluessel"].hidden = False
+        return retstr
+    else:
+        return gs.objects["o_blumentopf"].examine
+
+def o_skelett_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
+    if gs.objects["o_geldboerse"].hidden:
+        gs.objects["o_geldboerse"].hidden = False
+        gs.objects["o_skelett"].examine = "Bei diesem Knochenmann hast Du eine Geldbörse gefunden!"
+        return "Oh weh, der sitzt wohl schon länger hier! Ein Skelett, welches einen verschlissenen Anzug trägt. **Im Anzug findest du eine Geldboerse!**"
+
+    else:
+        return gs.objects["o_skelett"].examine
+
+def o_geldboerse_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
+    if gs.objects["o_ec_karte"].hidden:
+        gs.objects["o_ec_karte"].hidden = False
+        gs.objects["o_geldboerse"].examine = "In dieser Geldbörse hast Du eine EC-Karte gefunden"
+        return "Fein! Hier ist eine EC-Karte! Die passt bestimmt in einen Geldautomaten!"
+    else:
+        return gs.objects["o_geldboerse"].examine
+
+def o_muelleimer_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
+    if gs.objects["o_geheimzahl"].hidden:
+        from random import randint
+        gs.geheimzahl = randint(1, 9999)
+        gs.objects["o_geheimzahl"].hidden = False
+        gs.objects["o_geheimzahl"].examine = f"Eine Geheimzahl: {gs.geheimzahl:04}"
+        return f"Im Mülleimer findest Du einen Zettel mit einer Geheimzahl! Die Geheimzahl ist: {gs.geheimzahl:04}"
+    else:
+        return gs.objects["o_geheimzahl"].examine
+
+
 #
 # Obstruction Check Functions
 #
@@ -1131,5 +1201,6 @@ def w_warenautomat_ubahn_f(gs: GameState):
 
 def huhu() -> str:
     return ("--- huhu ---")
-# g = GameState()
-# print(g)
+g = GameState()
+
+
