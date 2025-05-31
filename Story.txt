@@ -1,3 +1,5 @@
+#Story.txt
+#---------------------------------------------------------------------------
 Eine alltägliche Situation: Du radelst mit Deinem Fahrrad als Bote
 unter sengender Sonne entlang einer schnurgraden Strasse durch eine
 ewige Wüste. Bei Dir hast Du einen Umschlag, den Du ans Ziel bringen
