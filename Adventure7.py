@@ -127,10 +127,13 @@ class Adventure:
             "gehe dach",
             "anwenden hebel",
             "gehe schuppen",
+            "gehe warenautomat",
             "gehe u-bahn",
             "gehe wagen",
             "anwenden turschliesser",
-            "gehe o_u_bahn2"
+            "gehe p_ubahn2",
+            "umsehen",
+            "anwenden o_geld_dollar o_pizzaautomat"
         ])
 
     def test_game(self) -> str:

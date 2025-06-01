@@ -1057,7 +1057,17 @@ def o_pizzaautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject
 
 
 def o_geld_lire_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    if pl.location.name == "p_warenautomat" and onwhat.name == "o_warenautomat":
+        if not pl.is_in_inventory(gs.objects["o_umschlag"]):
+            return "Es wäre alles so schön - leider fällt dir auf, dass du den wichtigen Briefumschlag irgendwo verlegt hast. Finde ihn erst!"
+        if not gs.hebel:
+            return """Du wirfst die italienischen Lira in den Warenautomat - und er akzeptiert sie ohne zu murren.
+Du erwirbst eine Fahrradkette, reparierst damit dein kaputtes Fahrrad, und radelst von dannen.
+***Du hast das Spiel gewonnen!***"""
+        else:
+            return "Der Automat liegt auf dem Rücken - da kann man gar nichts einwerfen!"
+    else:
+        return "Das geht hier nicht!"
 
 
 def o_pizza_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
@@ -1084,11 +1094,12 @@ def o_geld_dollar_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=
         # Wenn der Hund in einem früheren Spielschritt die Pizza gegessen hat, mache eine neue
         #
         if gs.objects.get("o_pizza"):
-            gs.objects["o_pizza"].visible = True
+            gs.objects["o_pizza"].hidden = False
         else:
             gs.objects["o_pizza"] = GameObject("o_pizza","Eine schöne, frisch gemachte Pizza","",False,None)
-            gs.objects["o_pizza"].visible = True
+            gs.objects["o_pizza"].hidden = False
             gs.objects["o_pizza"].ownedby = gs.places["p_ubahn2"]
+        gs.objects["o_geld_lire"].hidden = False
         return 'Es dauert, und der Automat bereitet eine wunderschöne Pizza für dich zu, die Du im Ausgabefach findest. Und dann klappert es - es wird Dir Wechselgeld ausgezahlt, **und zwar in italienischen Lira!**'
     return "Du scheinst mit den Dollars hier wnig anfangen zu können..."
 
