@@ -12,6 +12,7 @@ class Place:
     place_prompt: str
     ways: List[Way] = field(default_factory=list)
     place_objects: List[GameObject] = field(default_factory=list)
+    callnames: List[str] = field(default_factory=list)
 
 
     def get_objects(self):

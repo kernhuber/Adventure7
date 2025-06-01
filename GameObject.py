@@ -6,13 +6,14 @@ from typing import Callable, Union, Any, Optional
 # Objects which can appear in the game. Special objects like doors etc are derived from this object
 #
 class GameObject:
-    def __init__(self, name, examine, help_text="", fixed=False, hidden=False, apply_f=None, reveal_f=None):
+    def __init__(self, name, examine, help_text="", fixed=False, hidden=False, callnames=None, apply_f=None, reveal_f=None):
         from PlayerState import PlayerState
         from GameState import GameState
         from Place import Place
         self.name = name
         self.examine = examine      # Text to me emitted when object is examined
         self.help_text = help_text  # Text to be emitted when player asks for help with object
+        self.callnames = callnames  # Array with strings the object can be referred to with
         self.ownedby = PlayerState | Place | None         # Which Player or place currently owns this item? Default: None
         self.fixed = fixed          # False bedeutet: Kann aufgenommen werden
         self.hidden = hidden        # True bedeutet: Das Objekt ist nicht sichtbar
@@ -45,3 +46,16 @@ class GameObject:
 
         self.apply_f = apply_f # Optional[Callable[[PlayerState, GameObject, GameObject], str]] = None
         self.reveal_f = reveal_f
+
+    def byname(self, n:str) ->str:
+        """
+        Checks if n is a callname for the object. If so, return name 'o_...',
+        else return input.
+
+        :param n: A string to be checked
+        :return: ID/name of object
+        """
+        if n in self.callnames:
+            return self.name
+        else:
+            return n

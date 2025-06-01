@@ -69,8 +69,8 @@ class Adventure:
         #
         self.test_queue = deque([
             "gehe p_schuppen",
-            "untersuche o_blumentopf",
-            "anwenden o_schluessel o_schuppen",
+            "untersuche Blumentopf",
+            "anwenden Schlüssel Schuppen",
             "gehe p_innen",
             "untersuche o_skelett",
             "untersuche o_geldboerse",
@@ -173,7 +173,7 @@ class Adventure:
                         user_input = pl.NPC_game_move(self.game)
                         tw_print(f"**{pl.name}**: {user_input}")
                     else:
-                        print(f'Di bist hier: {pl.location.name}')
+                        print(f'Du bist hier: {pl.location.name}')
                         user_input = ""
                         while user_input=="":
                             # user_input = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe").strip().lower()
@@ -202,21 +202,22 @@ class Adventure:
                 else:
 
                     if tokens[0] == 'gehe' and len(tokens)>1:
-                        r = self.game.verb_walk(pl,tokens[1])
+                        r = self.game.verb_walk(pl,self.game.place_name_from_friendly_name(tokens[1]))
                     elif tokens[0] == 'angreifen' and len(tokens) == 2:
                         tw_print(f'{pl.name} tötet {tokens[1]} nach heldischem Kampf. \n**Game Over!**')
                         exit(0)
                     elif tokens[0] == "untersuche" and len(tokens)>1:
-                        r = self.game.verb_examine(pl, tokens[1])
+                        r = self.game.verb_examine(pl, self.game.obj_name_from_friendly_name(tokens[1]))
                     elif tokens[0] == "nimm" and len(tokens) == 2:
-                        r = self.game.verb_take(pl, tokens[1])
+                        r = self.game.verb_take(pl, self.game.obj_name_from_friendly_name(tokens[1]))
                     elif tokens[0] == "ablegen" and len(tokens) == 2:
-                        r = self.game.verb_drop(pl, tokens[1])
+                        r = self.game.verb_drop(pl, self.game.obj_name_from_friendly_name(tokens[1]))
                     elif tokens[0]  == "anwenden":
                         if len(tokens) == 2:
-                            r = self.game.verb_apply(pl, tokens[1], None)
+                            r = self.game.verb_apply(pl, self.game.obj_name_from_friendly_name(tokens[1]), None)
                         elif len(tokens) == 3:
-                            r = self.game.verb_apply(pl,tokens[1], tokens[2])
+                            r = self.game.verb_apply(pl, self.game.obj_name_from_friendly_name(tokens[1]),
+                                                     self.game.obj_name_from_friendly_name(tokens[2]))
                         else:
                             r = "**Ich verstehe nicht, was ich wie anwenden soll...**"
                     elif tokens[0] == "nichts":

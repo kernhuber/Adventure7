@@ -34,6 +34,7 @@ class GameState:
                 name=place_name,
                 description=place_data["description"],
                 place_prompt=place_data["place_prompt"],
+                callnames = place_data.get("callnames",None),
                 ways=[],  # Wird später in _init_ways gefüllt
                 place_objects=[]  # Wird später in _init_objects gefüllt
             )
@@ -86,6 +87,7 @@ class GameState:
                 help_text=obj_data.get("help_text", ""),
                 fixed=obj_data.get("fixed", False),
                 hidden=obj_data.get("hidden", False),
+                callnames=obj_data.get("callnames", None),
                 apply_f=obj_data.get("apply_f", None),
                 reveal_f = obj_data.get("reveal_f", None)
             )
@@ -214,7 +216,8 @@ class GameState:
                     To be done
                 """,
                 "ways": ["w_start_warenautomat","w_start_geldautomat", "w_start_schuppen"],
-                "objects": [""]
+                "objects": [""],
+                "callnames": ["Start"]
             },
             "p_warenautomat": {
                 "description": "Hier ist ein Warenautomat, an dem man Fahrradteile kaufen kann",
@@ -222,7 +225,8 @@ class GameState:
                 To be done
             """,
                 "ways": ["w_warenautomat_start", "w_warenautomat_geldautomat","w_warenautomat_schuppen","w_warenautomat_ubahn"],
-                "objects": ["o_warenautomat"]
+                "objects": ["o_warenautomat"],
+                "callnames": ["Warenautomat"]
             },
             "p_ubahn": {
                 "description": "Eine U-Bahn-Station",
@@ -230,7 +234,8 @@ class GameState:
             To be done
         """,
                 "ways": ["w_ubahn_warenautomat", "w_ubahn_wagen"],
-                "objects": ["o_muelleimer", "o_salami", "o_geheimzahl"]
+                "objects": ["o_muelleimer", "o_salami", "o_geheimzahl"],
+                "callnames": ["U-Bahn", "UBahn", "U-Bahnhof"]
             },
             "p_wagen": {
                 "description": "Im U-Bahn-Wagen",
@@ -238,7 +243,8 @@ class GameState:
             To be done
         """,
                 "ways": ["w_wagen_ubahn", "w_wagen_ubahn2"],
-                "objects": ["o_tuerschliesser"]
+                "objects": ["o_tuerschliesser"],
+                "callnames": ["Wagen","Bahnwagen","U-Bahnwagen"]
             },
             "p_ubahn2": {
                 "description": "Eine zweite U-Bahn-Station",
@@ -246,7 +252,8 @@ class GameState:
             To be done
         """,
                 "ways": ["w_ubahn2_wagen"],
-                "objects": ["o_pizzaautomat", "o_geld_lire", "o_pizza"]
+                "objects": ["o_pizzaautomat", "o_geld_lire", "o_pizza"],
+                "callnames": ["U-Bahn-2"]
             },
             "p_geldautomat": {
                 "description": "Hier ist ein Geldautomat, an dem man Bargeld bekommen kann",
@@ -254,7 +261,8 @@ class GameState:
             To be done
         """,
                 "ways": ["w_geldautomat_start", "w_geldautomat_warenautomat", "w_geldautomat_schuppen"],
-                "objects": ["o_geldautomat", "o_geld_dollar"]
+                "objects": ["o_geldautomat", "o_geld_dollar"],
+                "callnames": ["Geldautomat", "ATM"]
             },
             "p_schuppen": {
                 "description": "Hier ist ein alter Holzschuppen",
@@ -262,7 +270,8 @@ class GameState:
             To be done
         """,
                 "ways": ["w_schuppen_start", "w_schuppen_warenautomat", "w_schuppen_geldautomat","w_schuppen_innen","w_schuppen_dach"],
-                "objects": ["o_schuppen","o_blumentopf","o_schluessel", "o_stuhl", "o_schrott"]
+                "objects": ["o_schuppen","o_blumentopf","o_schluessel", "o_stuhl", "o_schrott"],
+                "callnames": ["Schuppen", "Holzschuppen"]
             },
             "p_dach": {
                 "description": "Das Dach des Holzschuppens",
@@ -270,7 +279,8 @@ class GameState:
             To be done
         """,
                 "ways": ["w_dach_schuppen"],
-                "objects": ["o_hebel"]
+                "objects": ["o_hebel"],
+                "callnames": ["Dach", "Schuppendach"]
             },
             "p_innen": {
                 "description": "Im inneren des Holzschuppens",
@@ -278,7 +288,8 @@ class GameState:
             To be done
         """,
                 "ways": ["w_innen_schuppen"],
-                "objects": ["o_leiter", "o_skelett", "o_geldboerse", "o_ec_karte", "o_pinsel", "o_farbeimer"]
+                "objects": ["o_leiter", "o_skelett", "o_geldboerse", "o_ec_karte", "o_pinsel", "o_farbeimer"],
+                "callnames": ["innen", "Innenraum", "drinnen"]
             },
         }
 
@@ -375,6 +386,7 @@ class GameState:
                 "destination": "p_ubahn2",
                 "text_direction": "zur zweiten Haltestelle",
                 "obstruction_check": None,
+                "visible": False,
                 "description": ""
             },
             #
@@ -386,7 +398,8 @@ class GameState:
                 "destination": "p_wagen",
                 "text_direction": "in den U-Bahnwagen",
                 "obstruction_check": None,
-                "description": ""
+                "description": "",
+                "hidden": True
             },
             #
             # Place: p_geldautomat
@@ -486,6 +499,7 @@ class GameState:
                 "name": "o_umschlag",
                 "examine": "Ein versiegelter Briefumschlag",
                 "help_text": "Dieser Umschlag muss sein Ziel erreichen, sonst geht die Welt unter!",
+                "callnames": ["Umschlag", "Briefumschlag"],
                 "ownedby": "",
                 "fixed": False,
                 "hidden": True,
@@ -495,6 +509,7 @@ class GameState:
                 "name": "o_warenautomat",
                 "examine": "Ein Warenautomat mit Fahrradteilen. Er enthält tatsächlich auch eine Fahrradkette! Jetzt bräuchte man Geld - und zwar italienische Lira. Dieser Automat akzeptiert nur diese!",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
+                "callnames": ["Warenautomat", "Automat"],
                 "ownedby": "p_warenautomat",  # Which Player currently owns this item? Default: None
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -509,6 +524,7 @@ class GameState:
                 "name": "o_muelleimer",
                 "examine": "Ein Mülleimer.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
+                "callnames": ["Mülleimer", "Muelleimer", "Abfalleimer", "Abfallbehälter", "Abfallbehaelter"],
                 "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -519,6 +535,7 @@ class GameState:
                 "name": "o_salami",
                 "examine": "",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
+                "callnames": ["Salami", "Wurst"],
                 "ownedby": "p_wagen",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -528,6 +545,7 @@ class GameState:
                 "name": "o_geheimzahl",
                 "examine": "Eine Geheimzahl...",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
+                "callnames": ["Geheimzahl", "Geheimcode", "PIN"],
                 "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -541,6 +559,7 @@ class GameState:
                 "name": "o_tuerschliesser",
                 "examine": "",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
+                "callnames": ["Türschliesser","Tuerschliesser", "Türschließer", "Tuerschließer"],
                 "ownedby": "p_wagen",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -554,6 +573,7 @@ class GameState:
                 "name": "o_pizzaautomat",
                 "examine": "",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
+                "callnames": ["Pizzaautomat", "Pizza-Automat"],
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -563,6 +583,7 @@ class GameState:
                 "name": "o_geld_lire",
                 "examine": "Italienische Lira! Eine ganze Menge davon! Die hat man schon lange nicht mehr gesehen!",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
+                "callnames": ["Lire", "Lira", "italienische Lira", "italienische Lire", "italienisches Geld"],
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -572,6 +593,7 @@ class GameState:
                 "name": "o_pizza",
                 "examine": "",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
+                "callnames": ["Pizza"],
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -586,6 +608,7 @@ class GameState:
                 "examine": "Ein Geldautomat. Man muss eine Karte einstecken, eine Geheimnummer eingeben, und wenn Geld auf dem Konto ist, kann man es abheben.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_geldautomat",  # Which Player currently owns this item? Default: None
+                "callnames": ["Geldautomat", "ATM"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_geldautomat_apply_f
@@ -594,6 +617,7 @@ class GameState:
                 "name": "o_geld_dollar",
                 "examine": "US-Dollar! Diese werden fast überall gerne genommen! Aber eben nur fast - es soll Warenautomaten geben, die sie nicht akzeptieren. Ob du wohl Glück hast?",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
+                "callnames": ["Dollar", "US-Dollar"],
                 "ownedby": "p_geldautomat",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -608,6 +632,7 @@ class GameState:
                 "examine": "Ein alter Holzschuppen, in dem womöglich interessante Dinge sind.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
+                "callnames": ["Schuppen", "Holzschuppen"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_schuppen_apply_f
@@ -617,6 +642,7 @@ class GameState:
                 "examine": "Ein alter Blumentopf.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
+                "callnames": ["Blumentopf"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_blumentopf_apply_f,
@@ -627,6 +653,7 @@ class GameState:
                 "examine": "Ein Schlüssel! Der sieht so aus, als könnte er hier noch irgendwo wichtig sein!",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
+                "callnames": ["Schlüssel", "Schluessel"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_schluessel_apply_f
@@ -636,6 +663,7 @@ class GameState:
                 "examine": "Ein rostiger, alter Gartenstuhl. Da machst du dich bestimmt dreckig, wenn du dich draufsetzt!",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
+                "callnames": ["Stuhl", "Gartenstuhl", "Hocker"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_stuhl_apply_f
@@ -645,6 +673,7 @@ class GameState:
                 "examine": "Eine Menge Schrott! Hier kannst Du stundelang herumsuchen - aber (Spoilerwarnung) dur wirst hier nichts besonderes finden.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
+                "callnames": ["Schrott", "Schrotthaufen"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_schrott_apply_f
@@ -658,6 +687,7 @@ class GameState:
                 "examine": "Ein Hebel!! Was passiert wohl, wenn du diesen betätigst?",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_dach",  # Which Player currently owns this item? Default: None
+                "callnames": ["Hebel", "Schalter"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_hebel_apply_f
@@ -671,6 +701,7 @@ class GameState:
                 "examine": "",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
+                "callnames": ["Leiter"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_leiter_apply_f
@@ -680,6 +711,7 @@ class GameState:
                 "examine": "Ein Skelett!! In einem Anzug!! Wie lange das wohl schon hier sitzt?",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
+                "callnames": ["Skelett", "Knochenmann"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_skelett_apply_f,
@@ -690,6 +722,7 @@ class GameState:
                 "examine": "Eine alte Geldbörse aus Leder.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
+                "callnames": ["Geldboerse", "Geldbörse", "Portemonaie", "Brieftasche"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_geldboerse_apply_f,
@@ -700,6 +733,7 @@ class GameState:
                 "examine": "Eine alte EC-Karte. Ob die noch geht?",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
+                "callnames": ["Geldkarte", "EC-Karte", "ECKarte", "Kreditkarte"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_ec_karte_apply_f
@@ -709,6 +743,7 @@ class GameState:
                 "examine": "",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
+                "callnames": ["Pinsel"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_pinsel_apply_f
@@ -718,6 +753,7 @@ class GameState:
                 "examine": "",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
+                "callnames": ["Farbeimer"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_farbeimer_apply_f
@@ -730,6 +766,7 @@ class GameState:
         # for objects and their apply-Functions as well as ways.
         #
 
+
         #emit_waydefs(place_defs, way_defs)
         self.emit_objdefs(place_defs, object_defs)
 
@@ -737,6 +774,32 @@ class GameState:
     #
     # Utility Functions
     #
+    def obj_name_from_friendly_name(self, n:str)->str:
+        """
+        Return the object name from a user friendly name. For example:
+        Geldautomat --> o_geldautomat
+
+        If identifier is given and not found within objects list, just return it
+
+        """
+        for v in self.objects.values():
+            if n in v.callnames:
+                return v.name
+        return n
+
+    def place_name_from_friendly_name(self, n:str)->str:
+        """
+        Return the object name from a user friendly name. For example:
+        Geldautomat --> p_geldautomat
+
+        If identifier is given and not found within objects list, just return it
+
+        """
+        for v in self.places.values():
+            if n in v.callnames:
+                return v.name
+        return n
+
     from typing import List, Optional
 
     #
