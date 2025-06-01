@@ -130,7 +130,8 @@ class Adventure:
             c = self.test_queue.popleft()
             print (f'Player: {c}')
             return c
-        exit(0)
+        else:
+            return None
 
     def gameloop(self):
         """
@@ -154,6 +155,7 @@ class Adventure:
         #
         from NPCPlayerState import NPCPlayerState
         round = 1
+        auto_mode = True
         while True:
             # print(f"{'='*20}  Spielrunde {round} {'='*20}")
             print((f" Spielrunde {round} ").center( 60, "-"))
@@ -173,11 +175,16 @@ class Adventure:
                         user_input = pl.NPC_game_move(self.game)
                         tw_print(f"**{pl.name}**: {user_input}")
                     else:
+
                         print(f'Du bist hier: {pl.location.name}')
                         user_input = ""
                         while user_input=="":
+                            if self.test_queue:
                             # user_input = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe").strip().lower()
-                            user_input = self.test_game()
+                                user_input = self.test_game().strip().lower()
+                            else:
+                                user_input = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe").strip().lower()
+
                     tokens = user_input.split()
 
                     if tokens[0] == "hilfe":
@@ -202,6 +209,7 @@ class Adventure:
                 else:
 
                     if tokens[0] == 'gehe' and len(tokens)>1:
+                        print(f" --> gehe {tokens[1]} --> {self.game.place_name_from_friendly_name(tokens[1])}")
                         r = self.game.verb_walk(pl,self.game.place_name_from_friendly_name(tokens[1]))
                     elif tokens[0] == 'angreifen' and len(tokens) == 2:
                         tw_print(f'{pl.name} tötet {tokens[1]} nach heldischem Kampf. \n**Game Over!**')
@@ -215,6 +223,7 @@ class Adventure:
                     elif tokens[0]  == "anwenden":
                         if len(tokens) == 2:
                             r = self.game.verb_apply(pl, self.game.obj_name_from_friendly_name(tokens[1]), None)
+                            # r = self.game.verb_apply(pl,tokens[1], None)
                         elif len(tokens) == 3:
                             r = self.game.verb_apply(pl, self.game.obj_name_from_friendly_name(tokens[1]),
                                                      self.game.obj_name_from_friendly_name(tokens[2]))

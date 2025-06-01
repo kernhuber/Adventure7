@@ -38,6 +38,7 @@ class GameState:
                 ways=[],  # Wird später in _init_ways gefüllt
                 place_objects=[]  # Wird später in _init_objects gefüllt
             )
+            place.callnames = [s.lower() for s in place.callnames ]
             places[place_name] = place
 
         return places
@@ -91,6 +92,7 @@ class GameState:
                 apply_f=obj_data.get("apply_f", None),
                 reveal_f = obj_data.get("reveal_f", None)
             )
+            obj.callnames = [s.lower() for s in obj.callnames]
             fn = obj_data.get("apply_f", None)
             obj.apply_f = fn
             ownedby_str = obj_data.get("ownedby", None)
@@ -115,9 +117,7 @@ class GameState:
         self.places = self._init_places(place_defs)
         self.ways = self._init_ways(way_defs, self.places)
         self.objects = self._init_objects(object_defs, self.places)
-        self.players = []
-        self.time = 0
-        self.debug_mode = False
+
 
     def emit_waydefs(self,pl,wy):
         for k,v in pl.items():
@@ -204,7 +204,11 @@ class GameState:
         self.schuppentuer=False
         self.leiter = False
         self.hebel = False
-        self.geheimzahl = 8513
+        self.geheimzahl = 18513
+        self.players = []
+        self.time = 0
+        self.debug_mode = False
+        self.ubahn_in_otherstation = False # Ist unsere U-Bahn in Station 2?
         #
         # Place definitions
         #
@@ -379,6 +383,7 @@ class GameState:
                 "destination": "p_ubahn",
                 "text_direction": "auf den Bahnsteig der U-Bahn",
                 "obstruction_check": None,
+                "visible": True,
                 "description": ""
             },
             "w_wagen_ubahn2": {
@@ -586,7 +591,7 @@ class GameState:
                 "callnames": ["Lire", "Lira", "italienische Lira", "italienische Lire", "italienisches Geld"],
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_geld_lire_apply_f
             },
             "o_pizza": {
@@ -596,7 +601,7 @@ class GameState:
                 "callnames": ["Pizza"],
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_pizza_apply_f
             },
             #
@@ -795,6 +800,7 @@ class GameState:
         If identifier is given and not found within objects list, just return it
 
         """
+        print(f"This is place_name_from_friendly_name({n})")
         for v in self.places.values():
             if n in v.callnames:
                 return v.name
@@ -1026,7 +1032,24 @@ def o_geheimzahl_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=N
 
 
 def o_tuerschliesser_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    if pl.location != gs.places["p_wagen"]:
+        return "Hier ist kein Türschließer"
+
+    if gs.ubahn_in_otherstation:
+        gs.ubahn_in_otherstation = False
+        gs.ways["w_wagen_ubahn"].visible = True
+        gs.ways["w_wagen_ubahn2"].visible = False
+        gs.ways["w_ubahn_wagen"].visible = True
+        gs.ways["w_ubahn2_wagen"].visible = False
+        return "Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und fährt zurück zum ersten Bahnsteig. Die Tür öffnet sich wieder."
+    else:
+        gs.ubahn_in_otherstation = True
+        gs.ways["w_wagen_ubahn"].visible = False
+        gs.ways["w_wagen_ubahn2"].visible = True
+        gs.ways["w_ubahn_wagen"].visible = False
+        gs.ways["w_ubahn2_wagen"].visible = True
+        return "Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und hält nach kurzer Fahrt an einem zweiten Bahnsteig. Die Tür öffnet sich wieder."
+
 
 
 def o_pizzaautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
@@ -1107,6 +1130,8 @@ def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, 
                 gs.objects["o_warenautomat"].examine = "Ein Warenautomat, der auf dem Rücken liegt. Da wo er stand, führt eine Treppe nach unten!"
                 gs.places["p_warenautomat"].description = "Hier liegt ein Warenautomat auf dem Rücken. Da wo er wohl gestanden hat, ist eine Öffnung im Boden. Man sieht darin eine Treppe - es geht zu einer U-Bahn-Station!"
                 return "Es rumpelt - Die siehst, wie der Warenautomat sich langsam auf den Rücken legt. Da wo er stand, ist nun eine Öffnung - und darin eine Treppe zu einer U-Bahn-Station!"
+        else:
+            return "Hier ist kein Hebel!"
     else:
         return "??? Kein Spieler ???"
 
