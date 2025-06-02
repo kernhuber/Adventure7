@@ -17,7 +17,7 @@ class PlayerState:
     def add_to_inventory(self, a: GameObject):
         if a not in self.inventory:
             self.inventory.append(a)
-            a.owner = self
+            a.ownedby = self
             if a in self.location.place_objects:
                 self.location.place_objects.remove(a)
 

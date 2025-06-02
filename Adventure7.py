@@ -178,6 +178,8 @@ class Adventure:
         # (2)
         #
         from NPCPlayerState import NPCPlayerState
+        from ExplosionState import ExplosionState
+
         round = 1
         auto_mode = True
         while not self.game.game_over:
@@ -198,6 +200,9 @@ class Adventure:
                         print(f'{"-" * 60}')
                         user_input = pl.NPC_game_move(self.game)
                         tw_print(f"**{pl.name}**: {user_input}")
+                    elif (isinstance(pl, ExplosionState)):
+                        print(f'{"-" * 60}')
+                        user_input = pl.explosion_input(self.game)
                     else:
 
                         print(f'Du bist hier: {pl.location.name}')

@@ -764,6 +764,16 @@ class GameState:
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": o_farbeimer_apply_f
             },
+            "o_sprengladung":{
+                "name": "o_sprengladung",
+                "examine": "Eine Sprengladung",
+                "help_text": "Damit kann man viel kaputt machen, aber sicher auch einiges aus dem Weg räumen",
+                "ownedby": "p_innen",
+                "callnames": ["Sprengladung"],
+                "fixed": False,
+                "hidden": False,
+                "apply_f": o_sprengladung_apply_f
+            }
 
         }
 
@@ -1148,6 +1158,11 @@ def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, 
     else:
         return "??? Kein Spieler ???"
 
+
+def o_sprengladung_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    from ExplosionState import ExplosionState
+    gs.players.append(ExplosionState(gs, pl.location))
+    return "Die Sprengladung ist nun scharf gemacht!"
 
 def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     #
