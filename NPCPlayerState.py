@@ -11,7 +11,7 @@ class DogState(Enum):
     START = auto()
     EATING = auto()
     ATTACK = auto()
-    OBSERVE = auto()
+    TRACE = auto()
     GOHOME = auto()
 
 #
@@ -23,7 +23,7 @@ class NPCPlayerState(PlayerState):
     growl: int = 0
     dog_state: DogState = DogState.START
 
-    next_loc : str = "" # Doggo seeks out place where player has been
+    next_loc : Deque[Place] = field(default_factory=deque) # Doggo seeks out place where player has been
     next_loc_wait : int=2   # but only if player has left for two game moves
     nogo_places: List[str] = field(default_factory=lambda: ["p_dach","p_ubahn2"]) # Dog can't go to these places.
     way_home: Deque[Place] = field(default_factory=deque) # Falls Hund nach Hause geht
@@ -69,12 +69,16 @@ class NPCPlayerState(PlayerState):
                 if self.check_state_attack(gs):
                     return self.setup_state_attack(gs)
                 # someone to observe?
-                if self.check_state_observe(gs):
-                    return self.setup_state_observe(gs)
+                if self.check_state_trace(gs):
+                    return self.setup_state_trace(gs)
                 #if self.check_state_gohome(gs):
                 #    return self.setup_state_go(gs)
                 return "nichts"
+
             case DogState.ATTACK:
+                # Something to eat?
+                if self.check_state_eating(gs):
+                    return self.setup_state_eating(gs)
                 #
                 # Other Player still in my place? If not, return to START state
                 #
@@ -108,31 +112,19 @@ class NPCPlayerState(PlayerState):
                     self.dog_state = DogState.START
                 return "nichts"
 
-            case DogState.OBSERVE:
+            case DogState.TRACE:
                 #
                 # Did someone enter my place --> initiate attack state
                 # else execute observe place
                 #
+                if self.check_state_eating(gs):
+                    return self.setup_state_eating(gs)
                 if self.check_state_attack(gs):
                     return self.setup_state_attack(gs)
 
-                if self.check_state_observe(gs):
-                    #print(f"**Dog wartet noch längstens {self.next_loc_wait} weiter**")
-                    #self.next_loc_wait = self.next_loc_wait - 1
-                    print(f'Dog lauert darauf, als nächstes zu {self.next_loc} zu gehen.')
-                    return "nichts"
-                else:
-                    if not self.next_loc in self.nogo_places:
-                        rval = f"gehe {self.next_loc}"
-                        self.dog_state = DogState.START
-                        return rval
-                    else:
-                        if self.check_state_gohome(gs):
-                            print("**Dog geht jetzt zu seinem Stammplatz.**")
-                            return self.setup_state_gohome(gs)
-                        else:
-                            print("**Dog kann nicht zu seinem Stammplatz, er bleibt nun hier**")
-                            self.dog_state = DogState.START
+                if self.check_state_trace(gs):
+                    return self.setup_state_trace(gs)
+                return "nichts"
 
             case DogState.GOHOME:
                 nl = self.way_home.popleft()
@@ -160,7 +152,10 @@ class NPCPlayerState(PlayerState):
         else:
             return "nichts"
 
-    def check_state_observe(self, gs: GameState):
+    def check_state_trace(self, gs: GameState):
+        if self.next_loc:
+            return True
+
         dsts = []
         for w in self.location.ways:
             dsts.append(w.destination.name)
@@ -169,20 +164,27 @@ class NPCPlayerState(PlayerState):
                 return True
         return False
 
-    def setup_state_observe(self, gs: GameState):
+    def setup_state_trace(self, gs: GameState):
         dsts = []
+
+        if self.next_loc:
+            self.dog_state = DogState.TRACE
+            return f"gehe {self.next_loc.popleft().name}"
+
         for w in self.location.ways:
-            dsts.append(w.destination.name)
+            dsts.append(w.destination)
         pl = ""
         for p in gs.players:
-            if p.location.name in dsts:
-                pl = p.location.name
-        if pl != "":
-            self.dog_state = DogState.OBSERVE
-            self.next_loc = pl
-            self.next_loc_wait = 1
-            print(f"**Dog beobachtet nun {pl}**")
-            return "nichts"
+            if p.location in dsts:
+                pl = p.location
+                break
+
+        if pl != None and pl.name not in self.nogo_places:
+            self.dog_state = DogState.TRACE
+            self.next_loc.append(pl)
+            print(f"**Dog beobachtet nun {pl.name}**")
+
+        return "nichts"
 
     def check_state_attack(self, gs: GameState):
         #
