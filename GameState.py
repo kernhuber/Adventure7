@@ -209,6 +209,7 @@ class GameState:
         self.time = 0
         self.debug_mode = False
         self.ubahn_in_otherstation = False # Ist unsere U-Bahn in Station 2?
+        self.game_over = False
         #
         # Place definitions
         #
@@ -550,7 +551,7 @@ class GameState:
                 "name": "o_geheimzahl",
                 "examine": "Eine Geheimzahl...",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
-                "callnames": ["Geheimzahl", "Geheimcode", "PIN"],
+                "callnames": ["Geheimzahl", "Geheimcode", "PIN", "Geheimnummer"],
                 "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -1061,6 +1062,7 @@ def o_geld_lire_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=No
         if not pl.is_in_inventory(gs.objects["o_umschlag"]):
             return "Es wäre alles so schön - leider fällt dir auf, dass du den wichtigen Briefumschlag irgendwo verlegt hast. Finde ihn erst!"
         if not gs.hebel:
+            gs.game_over = True
             return """Du wirfst die italienischen Lira in den Warenautomat - und er akzeptiert sie ohne zu murren.
 Du erwirbst eine Fahrradkette, reparierst damit dein kaputtes Fahrrad, und radelst von dannen.
 ***Du hast das Spiel gewonnen!***"""

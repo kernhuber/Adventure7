@@ -133,7 +133,20 @@ class Adventure:
             "anwenden turschliesser",
             "gehe p_ubahn2",
             "umsehen",
-            "anwenden o_geld_dollar o_pizzaautomat"
+            "anwenden o_geld_dollar o_pizzaautomat",
+            "umsehen",
+            "nimm pizza",
+            "nimm lire",
+            "gehe wagen",
+            "anwenden tuerschliesser",
+            "gehe ubahn",
+            "gehe warenautomat",
+            "anwenden lire warenautomat",
+            "gehe schuppen",
+            "gehe dach",
+            "anwenden hebel",
+            "gehe schuppen",
+            "gehe warenautomat"
         ])
 
     def test_game(self) -> str:
@@ -167,7 +180,7 @@ class Adventure:
         from NPCPlayerState import NPCPlayerState
         round = 1
         auto_mode = True
-        while True:
+        while not self.game.game_over:
             # print(f"{'='*20}  Spielrunde {round} {'='*20}")
             print((f" Spielrunde {round} ").center( 60, "-"))
             round = round + 1
@@ -195,7 +208,9 @@ class Adventure:
                                 user_input = self.test_game().strip().lower()
                             else:
                                 user_input = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe").strip().lower()
-
+                    if self.game.game_over:
+                        tw_print("***Auf Wiedersehen!***")
+                        exit(0)
                     tokens = user_input.split()
 
                     if tokens[0] == "hilfe":
@@ -247,6 +262,9 @@ class Adventure:
 
                     if r != "":
                         tw_print(r)
+                if self.game.game_over:
+                    break
+        tw_print("***Auf Wiedersehen!***")
 #
 # --- Main ---
 #
