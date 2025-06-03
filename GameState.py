@@ -202,14 +202,19 @@ class GameState:
         #
         # Wege, die verschlossen sind
         #
-        self.schuppentuer=False
-        self.leiter = False
-        self.hebel = False
-        self.geheimzahl = 18513
         self.players = []
         self.time = 0
         self.debug_mode = False
+        #
+        # Game State Variables and Flags
+        #
+        self.schuppentuer=False
+        self.leiter = False
+        self.hebel = False                 # Warenautomat --> Ubahn
+        self.geheimzahl = 18513            # Geldautomat - wobei der nur zwischen 0 und 999 akzeptiert
         self.ubahn_in_otherstation = False # Ist unsere U-Bahn in Station 2?
+        self.felsen = True                 # Ist der Felsen noch im Weg?
+        self.hauptschalter = False         # Ohne Strom geht hier gar nichts
         self.game_over = False
         #
         # Place definitions
@@ -230,7 +235,7 @@ class GameState:
                 "place_prompt": """
                 To be done
             """,
-                "ways": ["w_warenautomat_start", "w_warenautomat_geldautomat","w_warenautomat_schuppen","w_warenautomat_ubahn"],
+                "ways": ["w_warenautomat_start", "w_warenautomat_geldautomat","w_warenautomat_schuppen","w_warenautomat_ubahn","w_warenautomat_felsen"],
                 "objects": ["o_warenautomat"],
                 "callnames": ["Warenautomat"]
             },
@@ -266,7 +271,7 @@ class GameState:
                 "place_prompt": """
             To be done
         """,
-                "ways": ["w_geldautomat_start", "w_geldautomat_warenautomat", "w_geldautomat_schuppen"],
+                "ways": ["w_geldautomat_start", "w_geldautomat_warenautomat", "w_geldautomat_schuppen","w_geldautomat_felsen"],
                 "objects": ["o_geldautomat", "o_geld_dollar"],
                 "callnames": ["Geldautomat", "ATM"]
             },
@@ -275,7 +280,7 @@ class GameState:
                 "place_prompt": """
             To be done
         """,
-                "ways": ["w_schuppen_start", "w_schuppen_warenautomat", "w_schuppen_geldautomat","w_schuppen_innen","w_schuppen_dach"],
+                "ways": ["w_schuppen_start", "w_schuppen_warenautomat", "w_schuppen_geldautomat","w_schuppen_innen","w_schuppen_dach", "w_schuppen_felsen"],
                 "objects": ["o_schuppen","o_blumentopf","o_schluessel", "o_stuhl", "o_schrott"],
                 "callnames": ["Schuppen", "Holzschuppen"]
             },
@@ -297,6 +302,20 @@ class GameState:
                 "objects": ["o_leiter", "o_skelett", "o_geldboerse", "o_ec_karte", "o_pinsel", "o_farbeimer"],
                 "callnames": ["innen", "Innenraum", "drinnen"]
             },
+            "p_felsen": {
+                "description": "Vor dem Berg liegt ein großer Felsen",
+                "place_prompt": "",
+                "ways": ["w_felsen_hoehle","w_felsen_schuppen", "w_felsen_warenautomat", "w_felsen_geldautomat"],
+                "objects": ["o_felsen"],
+                "callnames": ["Felsen", "Berg", "Hügel", "Huegel", "Felsblock"]
+            },
+            "p_hoehle": {
+                "description": "In die Höhle, deren Eingang freigesprengt wurde.",
+                "place_prompt": "",
+                "ways": ["w_hoehle_felsen"],
+                "objects": [],
+                "callnames": ["Höhle", "Hoehle"]
+            }
         }
 
         way_defs = {
@@ -495,7 +514,65 @@ class GameState:
                 "obstruction_check": None,
                 "description": ""
             },
-
+            #
+            # Place: p_felsen
+            #
+            "w_felsen_schuppen": {
+                "source": "p_felsen" ,
+                "destination": "p_schuppen",
+                "text_direction": "zum Schuppen",
+                "obstruction_check": None,
+                "description": ""
+            },
+            "w_schuppen_felsen": {
+                "source": "p_schuppen",
+                "destination": "p_felsen",
+                "text_direction": "zum Felsen",
+                "obstruction_check": None,
+                "description": ""
+            },
+            "w_felsen_warenautomat": {
+                "source": "p_felsen",
+                "destination": "p_warenautomat",
+                "text_direction": "zum Warenautomat",
+                "obstruction_check": None,
+                "description": ""
+            },
+            "w_warenautomat_felsen": {
+                "source": "p_warenautomat",
+                "destination": "p_felsen",
+                "text_direction": "zum Felsen",
+                "obstruction_check": None,
+                "description": ""
+            },
+            "w_felsen_geldautomat": {
+                "source": "p_felsen",
+                "destination": "p_geldautomat",
+                "text_direction": "zum Geldautomat",
+                "obstruction_check": None,
+                "description": ""
+            },
+            "w_geldautomat_felsen": {
+                "source": "p_geldautomat",
+                "destination": "p_felsen",
+                "text_direction": "zum Felsen",
+                "obstruction_check": None,
+                "description": ""
+            },
+            "w_felsen_hoehle": {
+                "source": "p_felsen",
+                "destination": "p_hoehle",
+                "text_direction": "in die Höhle",
+                "obstruction_check": w_felsen_hoehle_f,
+                "description": ""
+            },
+            "w_hoehle_felsen": {
+                "source": "p_hoehle",
+                "destination": "p_felsen",
+                "text_direction": "aus der Höhle heraus zum Felsen",
+                "obstruction_check": None,
+                "description": ""
+            },
         }
 
         object_defs = {
@@ -775,6 +852,32 @@ class GameState:
                 "fixed": False,
                 "hidden": False,
                 "apply_f": o_sprengladung_apply_f
+            },
+            #
+            # Place: Felsen
+            #
+            "o_felsen": {
+                "name": "o_felsen",
+                "examine": "Ein großer Felsen",
+                "help_text": "Ob der Felsen hier wirklich liegen soll?",
+                "ownedby": "p_felsen",
+                "callnames": ["Felsen", "Felsblock", "Stein", "Gesteinsblock"],
+                "fixed": True,
+                "hidden": False,
+                "apply_f": o_felsen_apply_f
+            },
+            #
+            # Place: Höhle
+            #
+            "o_hauptschalter": {
+                "name": "o_hauptschalter",
+                "examine": "Ein großer Sicherungsschalter",
+                "help_text": "Dieser Schalter sieht wichtig aus!",
+                "ownedby": "p_hoehle",
+                "callnames": ["Schalter", "Hauptschalter", "Sicherung", "Sicherungsschalter", "Breaker"],
+                "fixed": True,
+                "hidden": False,
+                "apply_f": o_hauptschalter_apply_f
             }
 
         }
@@ -895,6 +998,7 @@ class GameState:
         if pl.is_in_inventory(obj):
             pl.remove_from_inventory(obj)
             obj.hidden = False
+            obj.ownedby = pl.location
             pl.location.place_objects.append(obj)
             return f'Objekt {what} in/auf/am {pl.location.name} abgelegt'
 
@@ -1168,6 +1272,16 @@ def o_sprengladung_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject
     gs.players.append(ExplosionState(gs, pl.location))
     return "Die Sprengladung ist nun scharf gemacht!"
 
+def o_felsen_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    return "Wie willst Du denn den Felsen auf IRGENDWAS anwenden? Du hast keine Superkräfte!"
+
+def o_hauptschalter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    if gs.hauptschalter:
+        return "Du hast den Schalter bereits betätigt - alles hat Strom"
+    else:
+        gs.hauptschalter = True
+        return "Du betätigst den Schalter. Irgendwo läuft ein Generator an - du hörst elektrisches Summen... Strom!"
+
 def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     #
     # Ich bin die Leiter - einzig sinnvolle Applikation: an den Schuppen anlehnen
@@ -1326,6 +1440,12 @@ def w_warenautomat_ubahn_f(gs: GameState):
         return "Free"
     else:
         return "Ist hier ein Weg? Und wenn, dann ist er versperrt!"
+
+def w_felsen_hoehle_f(gs: GameState):
+    if gs.felsen:
+        return "Da könnte ein Weg hinter dem Felsen sein - aber der Felsen liegt im Weg!"
+    else:
+        return "Free"
 
 def huhu() -> str:
     return ("--- huhu ---")

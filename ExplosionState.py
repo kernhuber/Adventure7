@@ -29,14 +29,42 @@ class ExplosionState(PlayerState):
         else:
             print(f"**** KABUMM!!! ****")
             print(f"Die Sprengladung explodiert hier: {self.location.name}")
-            print("... gottseidank nicht mehr als ein Böller. Nichts passiert.")
+
             #
             # Remove Sprengladung from anyones inventory, if listed there, then from gs object list
             #
             for i in gs.players:
                 i.remove_from_inventory(gs.objects["o_sprengladung"])
 
-            del(gs.objects["o_sprengladung"])
+
+            delobjs = []
+            for p in gs.players:
+                if p != self and p.location == self.location:
+                    print(f"Es hat auch {p.name} erwischt, der dummerweise am selben Platz war!!")
+                    print("Und auch die Objekte in seinem/ihrem Inventory (sofern vorhanden):")
+                    for o in p.inventory:
+                        print(f"* {o.name}")
+                        delobjs.append(o)
+                    gs.players.remove(p)
+            print("Folgende Objekte sind pulverisiert worden")
+            for o in self.location.place_objects:
+                print(f"* {o.name}")
+                delobjs.append(o)
+                if o.name == "o_felsen":
+                    print("  --> Aha!! Hier wird der Eingang zu einer Höhle sichtbar!")
+                    gs.places["p_felsen"].description = "Dort, wo der Felsen lag, ist nun nur noch Geröll ... und der Eingang zu einer Höhle"
+                    gs.felsen = False
+                elif o.name == "o_schuppen":
+                    gs.ways["w_schuppen_dach"].visible = False
+                    gs.ways["w_schuppen_innen"].visible = False
+                    print("  --> Der Schuppen! Mit all seinem Inhalt! Und auf das Dach kannst du nun logischerweise auch nicht mehr!")
+                else:
+                    pass
+            for o in delobjs:
+                del(gs.objects[o.name])
+                del(o)
+
+
             #
             # Finally, remove myself from player list
             #

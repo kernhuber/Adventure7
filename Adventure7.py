@@ -146,7 +146,17 @@ class Adventure:
             "gehe dach",
             "anwenden hebel",
             "gehe schuppen",
-            "gehe warenautomat"
+            "gehe warenautomat",
+            "nichts",
+            "gehe schuppen",
+            "gehe innen",
+            "nimm sprengladung",
+            "gehe schuppen",
+            "gehe felsen",
+            "anwenden sprengladung",
+            "ablegen sprengladung",
+            "nichts"
+
         ])
 
     def test_game(self) -> str:
@@ -268,6 +278,10 @@ class Adventure:
                         tw_print(r)
                 if self.game.game_over:
                     break
+
+            if not self.game.players:
+                self.game.game_over = True
+                tw_print("***Keine Spieler mehr übrig***")
         tw_print("***Auf Wiedersehen!***")
 #
 # --- Main ---
