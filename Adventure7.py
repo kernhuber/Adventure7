@@ -193,6 +193,13 @@ class Adventure:
         round = 1
         auto_mode = True
         while not self.game.game_over:
+            if not self.game.players:
+                self.game.game_over = True
+                tw_print("***Keine Spieler mehr übrig***")
+                break
+            print(f"#Players: {len(self.game.players)}")
+            for i in self.game.players:
+                print(f"* {i.name}")
             # print(f"{'='*20}  Spielrunde {round} {'='*20}")
             print((f" Spielrunde {round} ").center( 60, "-"))
             round = round + 1
@@ -279,9 +286,7 @@ class Adventure:
                 if self.game.game_over:
                     break
 
-            if not self.game.players:
-                self.game.game_over = True
-                tw_print("***Keine Spieler mehr übrig***")
+
         tw_print("***Auf Wiedersehen!***")
 #
 # --- Main ---

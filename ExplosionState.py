@@ -38,14 +38,20 @@ class ExplosionState(PlayerState):
 
 
             delobjs = []
+            delplayers = []
             for p in gs.players:
-                if p != self and p.location == self.location:
-                    print(f"Es hat auch {p.name} erwischt, der dummerweise am selben Platz war!!")
-                    print("Und auch die Objekte in seinem/ihrem Inventory (sofern vorhanden):")
-                    for o in p.inventory:
-                        print(f"* {o.name}")
-                        delobjs.append(o)
-                    gs.players.remove(p)
+                if p != self:
+                    if p.location == self.location:
+                        print(f"Es hat auch {p.name} erwischt, der dummerweise am selben Platz war!!")
+                        print("Und auch die Objekte in seinem/ihrem Inventory (sofern vorhanden):")
+                        for o in p.inventory:
+                            print(f"* {o.name}")
+                            delobjs.append(o)
+                        print(f" ... removing player {p.name}")
+                        delplayers.append(p)
+                else:
+                    delplayers.append(p)
+
             print("Folgende Objekte sind pulverisiert worden")
             for o in self.location.place_objects:
                 print(f"* {o.name}")
@@ -63,10 +69,9 @@ class ExplosionState(PlayerState):
             for o in delobjs:
                 del(gs.objects[o.name])
                 del(o)
+            for p in delplayers:
+                gs.players.remove(p)
+                del(p)
 
 
-            #
-            # Finally, remove myself from player list
-            #
-            gs.players.remove(self)
             return "nichts"
