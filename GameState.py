@@ -90,7 +90,8 @@ class GameState:
                 hidden=obj_data.get("hidden", False),
                 callnames=obj_data.get("callnames", None),
                 apply_f=obj_data.get("apply_f", None),
-                reveal_f = obj_data.get("reveal_f", None)
+                reveal_f = obj_data.get("reveal_f", None),
+                take_f = obj_data.get("take_f", None)
             )
             obj.callnames = [s.lower() for s in obj.callnames]
             fn = obj_data.get("apply_f", None)
@@ -710,7 +711,8 @@ class GameState:
                 "callnames": ["Leiter"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_leiter_apply_f
+                "apply_f": o_leiter_apply_f, # Funktion: Leiter wurd "angewandt"
+                "take_f": o_leiter_take_f # Funktion: Leiter wird aufgenommen
             },
             "o_skelett": {
                 "name": "o_skelett",
@@ -869,7 +871,7 @@ class GameState:
                 r = r+ "\n" + o_what.apply_f(self, pl, o_what, o_towhat)
         return r
 
-    def verb_take(selfs, pl: PlayerState, what):
+    def verb_take(self, pl: PlayerState, what):
         loc = pl.location
         # obj = loc.place_objects.get(what)
         obj = None
@@ -881,6 +883,8 @@ class GameState:
             return "Sowas gibt es hier nicht."
         else:
             pl.add_to_inventory(obj)
+            if obj.take_f != None:
+                print(obj.take_f(self,pl))
             return f"Du hast {what} nun bei dir"
 
     def verb_drop(self, pl: PlayerState, what):
@@ -1212,6 +1216,14 @@ def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
     else:
         return "... kein Spieler? Wie soll das gehen?"
 
+def o_leiter_take_f(gs: GameState, pl: PlayerState=None) -> str:
+    """ If Leiter is taken away, some paths may become invisible"""
+    if gs.leiter:
+        gs.leiter = False
+        return "Du kannst jetzt nicht mehr auf den Schuppen klettern"
+    else:
+        gs.leiter = False
+        return ""
 
 def o_skelett_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
