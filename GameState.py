@@ -1176,7 +1176,7 @@ def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
         #
         # Haben wir die Leiter dabei?
         #
-        if onwhat.name == "dog":
+        if onwhat != None and isinstance(onwhat,PlayerState) and onwhat.name == "dog":
             #
             # Mit der Leiter gegen den Hund
             #
