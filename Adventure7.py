@@ -208,9 +208,9 @@ class Adventure:
                         print(f'Du bist hier: {pl.location.name}')
                         user_input = ""
                         while user_input=="":
-                            #if self.test_queue:
-                            #    user_input = self.test_game().strip().lower()
-                            #else:
+                            if self.test_queue:
+                                user_input = self.test_game().strip().lower()
+                            else:
                                 user_input = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe").strip().lower()
                     if self.game.game_over:
                         tw_print("***Auf Wiedersehen!***")
