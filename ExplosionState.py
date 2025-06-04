@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from collections import deque
 from typing import List, Deque, Any
 from enum import Enum, auto
+from Utils import tw_print, dprint
 
 @dataclass
 class ExplosionState(PlayerState):
@@ -24,11 +25,11 @@ class ExplosionState(PlayerState):
 
         if self.kaboom_timer > 0:
             self.kaboom_timer = self.kaboom_timer - 1
-            print(f":::: Sprengladung explodiert {self.kaboom_timer} Spielzügen in {self.location.name}")
+            tw_print(f"***Sprengladung explodiert {self.kaboom_timer} Spielzügen in {self.location.name}***")
             return "nichts"
         else:
-            print(f"**** KABUMM!!! ****")
-            print(f"Die Sprengladung explodiert hier: {self.location.name}")
+            tw_print(f"***(((( KABUMM!!! ))))***")
+            tw_print(f"Die Sprengladung explodiert hier: {self.location.name}")
 
             #
             # Remove Sprengladung from anyones inventory, if listed there, then from gs object list
@@ -42,28 +43,28 @@ class ExplosionState(PlayerState):
             for p in gs.players:
                 if p != self:
                     if p.location == self.location:
-                        print(f"Es hat auch {p.name} erwischt, der dummerweise am selben Platz war!!")
-                        print("Und auch die Objekte in seinem/ihrem Inventory (sofern vorhanden):")
+                        tw_print(f"Es hat auch ***{p.name}*** erwischt, der dummerweise am selben Platz war!!")
+                        tw_print("Und auch die Objekte in seinem/ihrem Inventory (sofern vorhanden):")
                         for o in p.inventory:
-                            print(f"* {o.name}")
+                            tw_print(f"- {o.name}")
                             delobjs.append(o)
-                        print(f" ... removing player {p.name}")
+                        dprint(f" ... removing player {p.name}")
                         delplayers.append(p)
                 else:
                     delplayers.append(p)
 
-            print("Folgende Objekte sind pulverisiert worden")
+            tw_print("***Folgende Objekte*** sind pulverisiert worden")
             for o in self.location.place_objects:
-                print(f"* {o.name}")
+                print(f"- {o.name}")
                 delobjs.append(o)
                 if o.name == "o_felsen":
-                    print("  --> Aha!! Hier wird der Eingang zu einer Höhle sichtbar!")
+                    tw_print("##***--> Aha!! Hier wird der Eingang zu einer Höhle sichtbar!***")
                     gs.places["p_felsen"].description = "Dort, wo der Felsen lag, ist nun nur noch Geröll ... und der Eingang zu einer Höhle"
                     gs.felsen = False
                 elif o.name == "o_schuppen":
                     gs.ways["w_schuppen_dach"].visible = False
                     gs.ways["w_schuppen_innen"].visible = False
-                    print("  --> Der Schuppen! Mit all seinem Inhalt! Und auf das Dach kannst du nun logischerweise auch nicht mehr!")
+                    tw_print("  --> ***Der Schuppen! Mit all seinem Inhalt!*** Und auf das Dach kannst du nun logischerweise auch nicht mehr!")
                 else:
                     pass
             for o in delobjs:

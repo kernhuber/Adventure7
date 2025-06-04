@@ -4,6 +4,7 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.prompt import Prompt
 from GameState import GameState
+from Utils import dprint, tw_print, DEBUG
 import textwrap
 import regex as re
 
@@ -12,17 +13,6 @@ import regex as re
 # Nächste Version des Adventures, 2025-05-21
 #
 #
-
-DEBUG = False
-console = Console()
-
-def tw_print(x):
-    #print(x)
-    console.print(Markdown(x))
-
-def dprint(x):
-    if DEBUG:
-        print(x)
 
 #
 # All kind of text definitions. Texts are in MD-Format
@@ -68,9 +58,24 @@ class Adventure:
         # For testing
         #
         self.test_queue = deque([
-            "gehe p_schuppen",
+            "gehe Schuppen",
             "untersuche Blumentopf",
             "anwenden Schlüssel Schuppen",
+            "gehe p_innen",
+            "nimm sprengladung",
+            "gehe schuppen",
+            "gehe felsen",
+            "anwenden sprengladung",
+            "ablegen sprengladung",
+            "gehe schuppen",
+            "gehe innen",
+            "nichts",
+            "gehe schuppen",
+            "gehe felsen",
+            "gehe höhle",
+            "anwenden breaker",
+            "gehe felsen",
+            "gehe p_schuppen",
             "gehe p_innen",
             "untersuche o_skelett",
             "untersuche o_geldboerse",
@@ -147,14 +152,6 @@ class Adventure:
             "anwenden hebel",
             "gehe schuppen",
             "gehe warenautomat",
-            "nichts",
-            "gehe schuppen",
-            "gehe innen",
-            "nimm sprengladung",
-            "gehe schuppen",
-            "gehe felsen",
-            "anwenden sprengladung",
-            "ablegen sprengladung",
             "nichts"
 
         ])
@@ -197,11 +194,11 @@ class Adventure:
                 self.game.game_over = True
                 tw_print("***Keine Spieler mehr übrig***")
                 break
-            print(f"#Players: {len(self.game.players)}")
+            dprint(f"#Players: {len(self.game.players)}")
             for i in self.game.players:
-                print(f"* {i.name}")
+                dprint(f"* {i.name}")
             # print(f"{'='*20}  Spielrunde {round} {'='*20}")
-            print((f" Spielrunde {round} ").center( 60, "-"))
+            tw_print((f" Spielrunde {round} ").center( 60, "-"))
             round = round + 1
             for pl in self.game.players:
                 #
@@ -218,7 +215,7 @@ class Adventure:
                         user_input = pl.NPC_game_move(self.game)
                         tw_print(f"**{pl.name}**: {user_input}")
                     elif (isinstance(pl, ExplosionState)):
-                        print(f'{"-" * 60}')
+                        tw_print(f'{"-" * 60}')
                         user_input = pl.explosion_input(self.game)
                     else:
 
@@ -239,7 +236,7 @@ class Adventure:
                     elif tokens[0] == "inventory":
                         tw_print("**Du trägst bei dir:**")
                         for i in pl.get_inventory():
-                            print(f'- "{i.name}" --> {i.examine}')
+                            tw_print(f'- "{i.name}" --> {i.examine}')
                     elif tokens[0] == "umsehen":
                         r = self.game.verb_lookaround(pl)
                         tw_print(r)
@@ -256,7 +253,7 @@ class Adventure:
                 else:
 
                     if tokens[0] == 'gehe' and len(tokens)>1:
-                        print(f" --> gehe {tokens[1]} --> {self.game.place_name_from_friendly_name(tokens[1])}")
+                        dprint(f" --> gehe {tokens[1]} --> {self.game.place_name_from_friendly_name(tokens[1])}")
                         r = self.game.verb_walk(pl,self.game.place_name_from_friendly_name(tokens[1]))
                     elif tokens[0] == 'angreifen' and len(tokens) == 2:
                         tw_print(f'{pl.name} tötet {tokens[1]} nach heldischem Kampf. \n**Game Over!**')

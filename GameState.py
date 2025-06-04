@@ -7,6 +7,7 @@ from typing import Dict, List
 from PlayerState import PlayerState
 from GameObject import GameObject
 
+from Utils import tw_print, dprint
 
 from typing import Any
 
@@ -889,7 +890,7 @@ class GameState:
 
 
         #emit_waydefs(place_defs, way_defs)
-        self.emit_objdefs(place_defs, object_defs)
+        #self.emit_objdefs(place_defs, object_defs)
 
         self.from_definitions(place_defs, way_defs, object_defs)
     #
@@ -916,7 +917,7 @@ class GameState:
         If identifier is given and not found within objects list, just return it
 
         """
-        print(f"This is place_name_from_friendly_name({n})")
+        dprint(f"This is place_name_from_friendly_name({n})")
         for v in self.places.values():
             if n in v.callnames:
                 return v.name
@@ -987,7 +988,7 @@ class GameState:
         else:
             pl.add_to_inventory(obj)
             if obj.take_f != None:
-                print(obj.take_f(self,pl))
+                tw_print(obj.take_f(self,pl))
             return f"Du hast {what} nun bei dir"
 
     def verb_drop(self, pl: PlayerState, what):
@@ -1180,6 +1181,8 @@ def o_geld_lire_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=No
         if not pl.is_in_inventory(gs.objects["o_umschlag"]):
             return "Es wäre alles so schön - leider fällt dir auf, dass du den wichtigen Briefumschlag irgendwo verlegt hast. Finde ihn erst!"
         if not gs.hebel:
+            if not gs.hauptschalter:
+                return "Eigentlich sollte dies gar nicht passieren können - aber der Automat hat keinen Strom!"
             gs.game_over = True
             return """Du wirfst die italienischen Lira in den Warenautomat - und er akzeptiert sie ohne zu murren.
 Du erwirbst eine Fahrradkette, reparierst damit dein kaputtes Fahrrad, und radelst von dannen.
@@ -1203,11 +1206,15 @@ def o_geld_dollar_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=
     # Ich bin das Dollar-Bündel - mich kann man auf den Warenautomaten und auf den Pizza-Automaten anwenden, wenn
     # der Raum stimmt
     #
+
     if pl.location.name == "p_warenautomat" and onwhat.name=="o_warenautomat":
         if gs.hebel:
             return 'Der Warenautomat liegt auf dem Rücken. Da kann man kein Geld einwerfen!'
         else:
-            return 'Der Automat zeigt an: "Mi dispiace molto, ma in questa macchina si accettano solo lire italiane.". Er will also italienische Lira haben - aber wo bekomme ich die her?'
+            if not gs.hauptschalter:
+                return "Der Automat ist ausgeschaltet"
+            else:
+                return 'Der Automat zeigt an: "Mi dispiace molto, ma in questa macchina si accettano solo lire italiane.". Er will also italienische Lira haben - aber wo bekomme ich die her?'
 
     if pl.location.name == "p_ubahn2" and onwhat.name=="o_pizzaautomat":
         #
@@ -1247,6 +1254,8 @@ def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, 
     # Ich bin der Hebel - ich kann nicht auf "irgendwas" angewandt werden, ich kann nur selber
     # angewandt werden.
     #
+    if not gs.hauptschalter:
+        return "Du ruckelst am Hebel, aber nichts passiert"
     if pl != None:
         if pl.location == gs.places["p_dach"]:
             if gs.hebel:
@@ -1348,10 +1357,9 @@ def o_geldboerse_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=N
 
 
 def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    #
-    # Ich bin die EC-Karte. Mich kann man nur auf den Geldautomaten anwenden, und auch nur dann, wenn dieser
-    # am selben Platz steht
-    #
+    if not gs.hauptschalter:
+        return "Sieht so aus, als wäre der Automat ausgeschaltet"
+
     if pl.location.name!="p_geldautomat" and onwhat.name!="o_geldautomat":
         return "Ich verstehe nicht, was genau du mit der Geldkarte machen willst!"
 

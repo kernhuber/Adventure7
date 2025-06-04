@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from collections import deque
 from typing import List, Deque, Any
 from enum import Enum, auto
+from Utils import tw_print, dprint
 
 class DogState(Enum):
     START = auto()
@@ -57,8 +58,8 @@ class NPCPlayerState(PlayerState):
         :param gs:
         :return str:
         """
-        print("+++ Dog Data:")
-        print(f"+++ dog_state = {self.dog_state}, dog is in {self.location.name}")
+        dprint("+++ Dog Data:")
+        dprint(f"+++ dog_state = {self.dog_state}, dog is in {self.location.name}")
 
         match self.dog_state:
             case DogState.START:
@@ -106,7 +107,7 @@ class NPCPlayerState(PlayerState):
                     return f"angreifen {pl.name}"
 
             case DogState.EATING:
-                print("**Dog frisst noch!**")
+                tw_print("**Dog frisst noch!**")
                 self.eat_counter = self.eat_counter -1
                 if self.eat_counter == 0:
                     self.dog_state = DogState.START
@@ -132,7 +133,7 @@ class NPCPlayerState(PlayerState):
                     return f'gehe {nl.name}'
                 else:
                     self.dog_state = DogState.START
-                    print("**Dog ist nun wieder an seinem Stammplatz**")
+                    tw_print("**Dog ist nun wieder an seinem Stammplatz**")
                     return "nichts"
 
 
@@ -182,7 +183,7 @@ class NPCPlayerState(PlayerState):
         if pl != None and pl.name not in self.nogo_places:
             self.dog_state = DogState.TRACE
             self.next_loc.append(pl)
-            print(f"**Dog beobachtet nun {pl.name}**")
+            tw_print(f"**Dog beobachtet nun {pl.name}**")
 
         return "nichts"
 
@@ -224,7 +225,7 @@ class NPCPlayerState(PlayerState):
             self.location.place_objects.remove(f)
             del gs.objects[f.name]
             self.dog_state = DogState.EATING
-            print(f"**Dog frisst {f.name}**")
+            tw_print(f"**Dog frisst {f.name}**")
             self.eat_counter = 3
             return "nichts"
 
