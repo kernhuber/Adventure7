@@ -1024,6 +1024,26 @@ Am Ort sind folgende Objekte zu sehen:"""
                 retstr = retstr + f'- {w.name} ... führt zu {w.destination.name}\n'
         return retstr
 
+    def verb_help(self, pl: PlayerState):
+        rval = f"***Du bist hier: {pl.location.callnames[0]}***\n"
+        rval = rval+pl.location.description+"\n"
+        #
+        # General: Hund und Sprengladung
+        #
+        rval = rval + """
+        
+        Dir stehen folgende Kommandos zur Verfügung:
+        
+        nimm <objekt>:        Ein Objekt in Dein Ingentory aufnehmen
+        ablegen <objekt>:     Ein Objekt aus Deinem Inventory am aktuellen Ort ablegen
+        untersuche <objekt>:  Ein Objekt untersuchen
+        anwenden <o1> <o2>:   Objekt o1 auf Objekt o2 anwenden
+        anwenden <o>:         Objekt o anwenden
+        gehe <ort>:           An einen Ort gehen (Ort muss dir bei "umsehen" angezeigt werden)
+        inventory:            Dein Inventory ansehen
+        
+        """
+        return rval
 
     def verb_walk(self, pl: PlayerState, direction: str):
         #

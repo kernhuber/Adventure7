@@ -34,6 +34,27 @@ dem die Rettung nicht fern scheint.
 **Und nun?**
 """
 
+txt_final_text = """
+# An einem weit entfernten Ort
+
+Eine schwarz gekleidete Gestalt in einem Ledersessel stößt hauchend den beissenden 
+Zigarrettenrauch aus. Dann drückt sie die Zigarrette im Aschenbecher aus und fragt:
+"Ist der Bote gekommen?"
+"Ich fürchte nein", antwortet eine andere Gestalt, die am Ende des Raums im Sessel
+einer bequemen Sitzecke sitzt, und langsam an einem Glas mit goldenem Whiskey nippt.
+
+"Das war zu befürchten!"
+"Ja, und nun?"
+
+Die erste Gestalt steht auf und verschränkt ihre Hände hinter dem Rücken. Nach kurzem
+Üerlegen äußert sie: "Wie geplant. Es bleibt leider nichts anderes übrig."
+
+Die zweite Gestalt nickt stumm. Dann gehen beide zu einem Schaltpult, welches in der
+Ecke des Raumes steht. Sie stecken je einen Schlüssel in zwei Schlüssellöcher und 
+betätigen einen Schalter in der Mitte des Pultes.
+
+Dann geht die Welt unter. 
+"""
 class Adventure:
     from collections import deque
     from typing import List, Deque, Any
@@ -200,6 +221,9 @@ class Adventure:
             # print(f"{'='*20}  Spielrunde {round} {'='*20}")
             tw_print((f" Spielrunde {round} ").center( 60, "-"))
             round = round + 1
+            if round == 200:
+                tw_print(txt_final_text)
+                exit(0)
             for pl in self.game.players:
                 #
                 # (3),(4),(5) - commands which  don't count as game moves
@@ -232,7 +256,8 @@ class Adventure:
                     tokens = user_input.split()
 
                     if tokens[0] == "hilfe":
-                        tw_print("**hilfe ist noch nicht implementiert**")
+                        r = self.game.verb_help(pl)
+                        tw_print(r)
                     elif tokens[0] == "inventory":
                         tw_print("**Du trägst bei dir:**")
                         for i in pl.get_inventory():
