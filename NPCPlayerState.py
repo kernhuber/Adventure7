@@ -194,8 +194,9 @@ class NPCPlayerState(PlayerState):
         for p in gs.players:
             if p != self and p.location == self.location:
                 return True
-            else:
-                return False
+
+        return False
+
     def setup_state_attack(self, gs: GameState):
         #
         #
@@ -212,8 +213,8 @@ class NPCPlayerState(PlayerState):
         for i in self.location.place_objects:
             if i.name in ["o_salami", "o_pizza"]:
                 return True
-            else:
-                return False
+
+        return False
 
     def setup_state_eating(self, gs: GameState):
         for i in self.location.place_objects:
@@ -227,7 +228,7 @@ class NPCPlayerState(PlayerState):
             self.dog_state = DogState.EATING
             tw_print(f"**Dog frisst {f.name}**")
             self.eat_counter = 3
-            return "nichts"
+        return "nichts"
 
     def NPC_game_move_old(self, gs:GameState) -> str:
         """
