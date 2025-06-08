@@ -47,7 +47,7 @@ einer bequemen Sitzecke sitzt, und langsam an einem Glas mit goldenem Whiskey ni
 "Ja, und nun?"
 
 Die erste Gestalt steht auf und verschränkt ihre Hände hinter dem Rücken. Nach kurzem
-Üerlegen äußert sie: "Wie geplant. Es bleibt leider nichts anderes übrig."
+Überlegen äußert sie: "Wie geplant. Es bleibt leider nichts anderes übrig."
 
 Die zweite Gestalt nickt stumm. Dann gehen beide zu einem Schaltpult, welches in der
 Ecke des Raumes steht. Sie stecken je einen Schlüssel in zwei Schlüssellöcher und 
@@ -218,7 +218,7 @@ class Adventure:
             dprint(f"#Players: {len(self.game.players)}")
             for i in self.game.players:
                 dprint(f"* {i.name}")
-            # print(f"{'='*20}  Spielrunde {round} {'='*20}")
+
             tw_print((f" Spielrunde {round} ").center( 60, "-"))
             round = round + 1
             if round == 200:
@@ -249,7 +249,11 @@ class Adventure:
                             if self.test_queue:
                                 user_input = self.test_game().strip().lower()
                             else:
-                                user_input = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe").strip().lower()
+                                ui = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe")
+                                if ui != None:
+                                    user_input = ui.strip().lower()
+                                else:
+                                    user_input = ""
                     if self.game.game_over:
                         tw_print("***Auf Wiedersehen!***")
                         exit(0)
