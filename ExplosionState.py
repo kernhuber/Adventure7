@@ -12,7 +12,8 @@ class ExplosionState(PlayerState):
     """ NPC Player *Explosion* - lives for 3 rounds and eliminates things where it explodes, possibly triggering further actions"""
 
     kaboom_timer: int = 3    # Detonate in "koboom_timer" rounds
-    name: str = "explosion"
+    name: str
+
     def explosion_input(self, gs:GameState) -> str:
         from Place import Place
         owner = gs.objects["o_sprengladung"].ownedby

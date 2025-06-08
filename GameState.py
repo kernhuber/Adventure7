@@ -1298,7 +1298,9 @@ def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, 
 
 def o_sprengladung_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     from ExplosionState import ExplosionState
-    gs.players.append(ExplosionState(gs, location=pl.location))
+    xpl = ExplosionState(gs, location=pl.location)
+    xpl.name = "Explosion"
+    gs.players.append(xpl)
     return "Die Sprengladung ist nun scharf gemacht!"
 
 def o_felsen_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
