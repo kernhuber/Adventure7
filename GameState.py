@@ -224,8 +224,8 @@ class GameState:
         place_defs = {
             "p_start": {
                 "description": "Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. ",
-                "place_prompt": """
-                    To be done
+                "place_prompt": """ Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. 
+                Es liegt hier das kaputte Fahrrad, welches zu reparieren ist. Die Straße erstreckt sich in beiden Richtungen zum Horizont.
                 """,
                 "ways": ["w_start_warenautomat","w_start_geldautomat", "w_start_schuppen"],
                 "objects": [""],
@@ -233,8 +233,7 @@ class GameState:
             },
             "p_warenautomat": {
                 "description": "Hier ist ein Warenautomat, an dem man Fahrradteile kaufen kann",
-                "place_prompt": """
-                To be done
+                "place_prompt": """Schon ulkig - Hier ist mitten in der Wüste ein Warenautomat, an dem man Fahrradteile kaufen kann. 
             """,
                 "ways": ["w_warenautomat_start", "w_warenautomat_geldautomat","w_warenautomat_schuppen","w_warenautomat_ubahn","w_warenautomat_felsen"],
                 "objects": ["o_warenautomat"],
@@ -278,7 +277,7 @@ class GameState:
             },
             "p_schuppen": {
                 "description": "Hier ist ein alter Holzschuppen",
-                "place_prompt": """
+                "place_prompt": """Wir befinden uns vor einem alten Holzschuppen. Mitten in der Wüste.
             To be done
         """,
                 "ways": ["w_schuppen_start", "w_schuppen_warenautomat", "w_schuppen_geldautomat","w_schuppen_innen","w_schuppen_dach", "w_schuppen_felsen"],
@@ -958,10 +957,12 @@ class GameState:
     def compile_current_game_context(self, pl: PlayerState):
         from Way import Way
         rval = {}
-        rval["current_location"] = {pl.location.callnames[0]:pl.location.name}
-        rval["objects_here"] = { p.callnames[0]:p.name for p in pl.location.place_objects}
-        rval["places_to_go_from_here"] = {w.destination.callnames[0]:w.destination.name for w in pl.location.ways if w.visible}
-        rval["user_inventory"] = {i.callnames[0]:i.name for i in pl.get_inventory()}
+        details = {}
+        details["Ortsname"] = {pl.location.callnames[0]:pl.location.name}
+        details["Objekte hier"] = { p.callnames[0]:p.name for p in pl.location.place_objects if not p.hidden}
+        details["Wo man hingehen kann"] = {w.destination.callnames[0]:w.destination.name for w in pl.location.ways if w.visible}
+        details["Spieler-Inventory"] = {i.callnames[0]:i.name for i in pl.get_inventory()}
+        rval["Aktueller Ort"] = details
         return rval
 
     def verb_apply(self, pl: PlayerState, what, towhat):
@@ -1014,7 +1015,7 @@ class GameState:
 
         return f'{what} ist nicht in {pl.name} inventory'
 
-    def verb_lookaround(self, pl: PlayerState):
+    def verb_lookaround_traditional(self, pl: PlayerState):
         loc = pl.location
         retstr = f"""**Ort: {pl.location.name}**
 {pl.location.description}
@@ -1032,6 +1033,11 @@ Am Ort sind folgende Objekte zu sehen:"""
             if w.visible:
                 retstr = retstr + f'- {w.name} ... führt zu {w.destination.name}\n'
         return retstr
+
+    def verb_lookaround(self, pl: PlayerState):
+        from GeminiInterface import generate_scene_description
+        rval = generate_scene_description(self.compile_current_game_context(pl))
+        return rval
 
     def verb_help(self, pl: PlayerState):
         rval = f"***Du bist hier: {pl.location.callnames[0]}***\n"
