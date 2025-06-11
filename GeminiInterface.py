@@ -10,7 +10,7 @@ import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
 
 apikey = os.environ.get("GOOGLE_API_KEY",None)
 while apikey == None:
-    apikey = input("Google API Key")
+    apikey = input("Google API Key: ")
 
 genai.configure(api_key=apikey)
 
