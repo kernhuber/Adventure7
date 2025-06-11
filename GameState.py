@@ -955,6 +955,15 @@ class GameState:
     # Verbs to be executed
     #
 
+    def compile_current_game_context(self, pl: PlayerState):
+        from Way import Way
+        rval = {}
+        rval["current_location"] = {pl.location.callnames[0]:pl.location.name}
+        rval["objects_here"] = { p.callnames[0]:p.name for p in pl.location.place_objects}
+        rval["places_to_go_from_here"] = {w.destination.callnames[0]:w.destination.name for w in pl.location.ways if w.visible}
+        rval["user_inventory"] = {i.callnames[0]:i.name for i in pl.get_inventory()}
+        return rval
+
     def verb_apply(self, pl: PlayerState, what, towhat):
         if towhat == None:
             # r = f"apply {what} in this context"
