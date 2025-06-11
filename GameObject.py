@@ -48,15 +48,4 @@ class GameObject:
         self.reveal_f = reveal_f    # Optional: Funktion, die aufgerufen wird, wenn Objekt untersucht wird
         self.take_f = take_f        # Optional: Funktion, die aufgerufen wird, wenn Objekt genommen wird
 
-    def byname(self, n:str) ->str:
-        """
-        Checks if n is a callname for the object. If so, return name 'o_...',
-        else return input.
 
-        :param n: A string to be checked
-        :return: ID/name of object
-        """
-        if n in self.callnames:
-            return self.name
-        else:
-            return n
