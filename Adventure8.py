@@ -3,6 +3,8 @@ from collections import deque
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.prompt import Prompt
+
+import GeminiInterface
 from GameState import GameState
 from Utils import dprint, tw_print, DEBUG
 import textwrap
@@ -275,6 +277,19 @@ class Adventure:
                         from pprint import pprint
                         r = self.game.compile_current_game_context(pl)
                         pprint(r)
+                    elif tokens[0] == "llm":
+                        user_input = ""
+                        while user_input=="":
+                            ui = Prompt.ask(f"(llm-test) Was tust du jetzt, {pl.name}? Deine Eingabe")
+                            if ui != None:
+                                user_input = ui.strip().lower()
+                            else:
+                                user_input = ""
+                        gi = GeminiInterface.parse_user_input_to_commands(
+                            user_input,
+                            self.game.compile_current_game_context(pl)
+                        )
+                        pprint(gi)
 
                     else:
                         break
