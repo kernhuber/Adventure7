@@ -7,12 +7,13 @@ import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
 # Besser: Als Umgebungsvariable setzen (z.B. GEMINI_API_KEY)
 # genai.configure(api_key="DEIN_API_KEY_HIER_ODER_AUS_UMGEBUNGSVARIABLE")
 # Alternativ:
-try:
-    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-except KeyError:
-    print("Fehler: Umgebungsvariable GEMINI_API_KEY nicht gesetzt.")
-    print("Bitte setze sie, bevor du das Programm ausführst.")
-    exit(1)
+
+apikey = os.environ.get("GOOGLE_API_KEY",None)
+while apikey == None:
+    apikey = input("Google API Key")
+
+genai.configure(api_key=apikey)
+
 
 # Globale Model-Instanzen, die wir wiederverwenden können
 # Wir könnten verschiedene Modelle für verschiedene Aufgaben nutzen, z.B. Flash für schnelle Parser, Pro für Reasoning
@@ -47,6 +48,7 @@ def generate_scene_description(scene_elements: dict) -> str:
         return "Eine merkwürdige und unerklärliche Szene." # Fallback-Text
 
 
+
 def parse_user_input_to_commands(user_input: str, current_game_context: dict) -> list[str]:
     """
     Parst eine Benutzereingabe in eine Liste von atomaren Game-Engine-Befehlen.
@@ -65,7 +67,18 @@ def parse_user_input_to_commands(user_input: str, current_game_context: dict) ->
     Wandle die folgende Spielereingabe in eine Liste atomarer Game-Engine-Befehle um.
     Die Befehle sollen in einem JSON-Array von Strings zurückgegeben werden.
     Jeder Befehl muss das Format 'befehl_name objekt_id' oder 'befehl_name objekt_id ziel_objekt_id' haben.
-    Beispiele für Befehle: 'gehe p_schuppen', 'untersuche o_blumentopf', 'nimm o_schluessel', 'anwenden o_schluessel o_schuppen'.
+    Folgende Befehle stehen zur Verfügung:
+    
+    gehe <ort>
+    anwenden <objekt>
+    anwenden <objekt> <zielobjekt>
+    nimm <objekt>
+    ablegen <objekt>
+    untersuche <objekt>
+    umsehen
+    hilfe
+    
+    Beispiele für Befehle: 'gehe Schuppen', 'untersuche Blumentopf', 'nimm Schluessel', 'anwenden Schluessel Schuppen'.
 
     Falls die Eingabe sich auf mehr als eine Aktion bezieht, teile sie in separate atomare Befehle auf.
     Falls ein Befehl nicht verstanden wird, gib '[ "unbekannt" ]' zurück.
