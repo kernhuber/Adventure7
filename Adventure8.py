@@ -185,6 +185,8 @@ class Adventure:
         else:
             return None
 
+
+
     def gameloop(self):
         """
         1) Emit initial narrator sequence
@@ -269,6 +271,10 @@ class Adventure:
                     elif tokens[0] == "umsehen":
                         r = self.game.verb_lookaround(pl)
                         tw_print(r)
+                    elif tokens[0]  == "context":
+                        from pprint import pprint
+                        r = self.game.compile_current_game_context(pl)
+                        pprint(r)
 
                     else:
                         break
