@@ -9,7 +9,7 @@ from GameState import GameState
 from Utils import dprint, tw_print, DEBUG
 import textwrap
 import regex as re
-
+from pprint import pprint
 
 #
 # Nächste Version des Adventures, 2025-05-21
@@ -274,7 +274,7 @@ class Adventure:
                         r = self.game.verb_lookaround(pl)
                         tw_print(r)
                     elif tokens[0]  == "context":
-                        from pprint import pprint
+
                         r = self.game.compile_current_game_context(pl)
                         pprint(r)
                     elif tokens[0] == "llm":
