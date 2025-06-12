@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Callable
 from GameObject import GameObject
 from Way import Way
 
@@ -10,6 +10,7 @@ class Place:
     name: str
     description: str
     place_prompt: str
+    place_prompt_f: Callable[['GameState'], str] = None
     ways: List[Way] = field(default_factory=list)
     place_objects: List[GameObject] = field(default_factory=list)
     callnames: List[str] = field(default_factory=list)
