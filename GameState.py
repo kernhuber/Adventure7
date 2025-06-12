@@ -970,6 +970,42 @@ class GameState:
             details["Beschreibung"] = pl.location.place_prompt
         details["Objekte hier"] = { p.callnames[0]:p.name for p in pl.location.place_objects if not p.hidden}
         details["Wo man hingehen kann"] = {w.destination.callnames[0]:w.destination.name for w in pl.location.ways if w.visible}
+        #
+        # Dog somewhere near?
+        #
+        from NPCPlayerState import NPCPlayerState, DogState
+        dog_pl = None
+        dog_around = False
+        for p in self.players:
+            if isinstance(p,NPCPlayerState):
+                dog_pl = p
+        #
+        # Dog might have been killed by explosive charge, so in fact dog_pl MAY be None
+        #
+
+
+        if dog_pl is not None:
+            if dog_pl.location == pl.location:
+                r = "Hier ist ein großer Hund."
+                dog_around = True
+            else:
+
+                for w in dog_pl.location.ways:
+                    if w.destination == pl.location:
+                        r = f"Großer Hund bei/in {dog_pl.location.callnames[0]}."
+                        dog_around = True
+        if dog_around:
+            match dog_pl.dog_state:
+                case DogState.EATING:
+                    r=r+" Der Hund frisst gerade etwas."
+                case DogState.TRACE:
+                    r=r+" Der Hund hat Witterung aufgenommen und verfolgt den Spieler."
+                case DogState.ATTACK:
+                    r=r+" Der Hund ist wütend und in Angriffslaune."
+                case _:
+                    r = r+" Der Hund tut nichts weiter."
+            details["Achtung"] = r
+
         details["Spieler-Inventory"] = {i.callnames[0]:i.name for i in pl.get_inventory()}
         rval["Aktueller Ort"] = details
         return rval
