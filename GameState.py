@@ -35,6 +35,7 @@ class GameState:
                 name=place_name,
                 description=place_data["description"],
                 place_prompt=place_data["place_prompt"],
+                place_prompt_f=place_data.get("place_prompt_f",None),
                 callnames = place_data.get("callnames",None),
                 ways=[],  # Wird später in _init_ways gefüllt
                 place_objects=[]  # Wird später in _init_objects gefüllt
@@ -54,7 +55,10 @@ class GameState:
             if v == None:
                 visible = True
             else:
-                visible = v
+                visible = False
+
+
+
             source_place = places[source_name]
             dest_place = places[dest_name] if dest_name else None
 
@@ -235,6 +239,7 @@ class GameState:
                 "description": "Hier ist ein Warenautomat, an dem man Fahrradteile kaufen kann",
                 "place_prompt": """Schon ulkig - Hier ist mitten in der Wüste ein Warenautomat, an dem man Fahrradteile kaufen kann. 
             """,
+                "place_prompt_f": p_warenautomat_place_prompt_f,
                 "ways": ["w_warenautomat_start", "w_warenautomat_geldautomat","w_warenautomat_schuppen","w_warenautomat_ubahn","w_warenautomat_felsen"],
                 "objects": ["o_warenautomat"],
                 "callnames": ["Warenautomat"]
@@ -959,6 +964,10 @@ class GameState:
         rval = {}
         details = {}
         details["Ortsname"] = {pl.location.callnames[0]:pl.location.name}
+        if pl.location.place_prompt_f != None:
+            details["Beschreibung"] = pl.location.place_prompt_f(self,pl)
+        else:
+            details["Beschreibung"] = pl.location.place_prompt
         details["Objekte hier"] = { p.callnames[0]:p.name for p in pl.location.place_objects if not p.hidden}
         details["Wo man hingehen kann"] = {w.destination.callnames[0]:w.destination.name for w in pl.location.ways if w.visible}
         details["Spieler-Inventory"] = {i.callnames[0]:i.name for i in pl.get_inventory()}
@@ -1491,6 +1500,16 @@ def w_felsen_hoehle_f(gs: GameState):
         return "Da könnte ein Weg hinter dem Felsen sein - aber der Felsen liegt im Weg!"
     else:
         return "Free"
+
+#
+#
+#
+def p_warenautomat_place_prompt_f(gs: GameState, pl: PlayerState=None) -> str:
+    rv = "Ein heisser Tag mitten in der Wüste. Die Luft ist trocken und die Luft flirrt vor Hitze. "
+    if gs.hebel:
+        return rv+"Hier ist ein Warenautomat, der auf dem Rücken liegt. Wo er stand, ist nun ein Treppenabgang zu einer U-Bahn-Station"
+    else:
+        return rv+"Hier ist ein Warenautomat mit Fahrradteilen. Er enthält viele Teile. Er enthält auch eine Fahrradkette"
 
 def huhu() -> str:
     return ("--- huhu ---")
