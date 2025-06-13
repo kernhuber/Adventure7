@@ -3,7 +3,7 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.prompt import Prompt
 
-DEBUG = False
+DEBUG = True
 console = Console()
 
 def tw_print(x):
