@@ -8,6 +8,7 @@ from PlayerState import PlayerState
 from GameObject import GameObject
 
 from Utils import tw_print, dprint
+from GeminiInterface import GeminiInterface
 
 from typing import Any
 
@@ -220,7 +221,8 @@ class GameState:
         self.ubahn_in_otherstation = False # Ist unsere U-Bahn in Station 2?
         self.felsen = True                 # Ist der Felsen noch im Weg?
         self.hauptschalter = False         # Ohne Strom geht hier gar nichts
-        self.game_over = False
+        self.game_over = False             # Na hoffentlich noch nicht so schnell!
+        self.llm = GeminiInterface()       # Unser Sprachmodell
         #
         # Place definitions
         #
@@ -1080,8 +1082,8 @@ Am Ort sind folgende Objekte zu sehen:"""
         return retstr
 
     def verb_lookaround(self, pl: PlayerState):
-        from GeminiInterface import generate_scene_description
-        rval = generate_scene_description(self.compile_current_game_context(pl))
+
+        rval = self.llm.generate_scene_description(self.compile_current_game_context(pl))
         return rval
 
     def verb_help(self, pl: PlayerState):
