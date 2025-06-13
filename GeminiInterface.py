@@ -23,8 +23,10 @@ class GeminiInterface:
 # Wir könnten verschiedene Modelle für verschiedene Aufgaben nutzen, z.B. Flash für schnelle Parser, Pro für Reasoning
         self.gemini_text_model = genai.GenerativeModel('gemini-1.5-flash') # Gut für schnelle Textgenerierung/Parsing
         self.gemini_reasoning_model = genai.GenerativeModel('gemini-1.5-pro') # Gut für komplexes Reasoning des NPC
-        from Adventure8 import txt_initial_text
-        self.txt_prev_descriptions = txt_initial_text
+        self.txt_prev_descriptions = ""
+        self.tokens = 0
+        self.numcalls = 0
+        self.token_details = []
 
 
 
@@ -44,12 +46,18 @@ class GeminiInterface:
             dich auf wesentliche Elemente der Szenerie:
             
             * Ortsbeschreibungen
-            * Objektbeschreibungen
             * Wegbeschreibungen
             * Umgebungsbeschreibungen
             
-            Anhand der Zusammenfassung soll ein Erzähler in der Lage sein, die beschriebenen Dinge zu rekonstruieren und
-            selber so darüber zu erzählen, dass sie konsistent wiedererkannt werden.
+            Keinesfalls, unter keinen Umständen, sollen die Gegenstände, die der Spieler bei sich trägt, Beschreibungen von Gegenständen, 
+            oder Beschreibungen von anderen Spielern, wie etwa Hunden, in der Zusammenfassung vorkommen.
+            
+            Anhand der Zusammenfassung soll ein Erzähler in der Lage sein, die beschriebenen Objekte, Orte, Wege und Umgebungen
+            zu rekonstruieren und selber so darüber zu erzählen, dass sie konsistent wiedererkannt werden können. Halte dich an Fakten 
+            und erfinde keine neuen Orte, Objekte, Wege, Umgebungen oder Spielfiguren.
+            
+            Deine Beschreibung sollte prägnant sein und idealerweise mit einem abgeschlossenen Satz oder einem passenden Satzfragment enden, 
+            falls das Token-Limit erreicht wird. Vermeide das Abschneiden mitten im Wort oder Satz.
              
             --------------
             
@@ -60,8 +68,15 @@ class GeminiInterface:
                 dprint("Creating Summary".center(80))
                 dprint(f"{'#' * 80}")
                 dprint(self.txt_prev_descriptions)
-                response = self.gemini_text_model.generate_content(sum_prompt)
+                response = self.gemini_text_model.generate_content(sum_prompt#,
+                                                                   #generation_config = genai.types.GenerationConfig(
+                                                                   #         max_output_tokens=200  # Beispiel: Maximal 200 Tokens für Szenenbeschreibungen
+                                                                   #                                                 )
+                                                                   )
                 self.txt_prev_descriptions = response.text
+                self.tokens = self.tokens+response.usage_metadata.total_token_count
+                self.numcalls = self.numcalls+1
+                self.token_details.append(response.usage_metadata.total_token_count)
                 dprint(f"{'#' * 80}")
                 dprint(self.txt_prev_descriptions)
                 dprint(f"{'#' * 80}")
@@ -78,21 +93,32 @@ class GeminiInterface:
         wurde. Insbesondere dürfen Beschreibungen von Orten, Dingen, Wegen und Himmelsrichtungen inhaltlich nicht von einer vorherigen 
         Beschreibung abweichen, ausser, wenn es in der weiter unten gegebenen Beschreibung explizit abweicht. Dies ist aber nur der Fall,
         wenn sich im Verlauf des Spiels etwas ändert, wenn also etwa Gegenstand umkippt oder verschwindet.
+    
+        Konzentriere dich bei der Erstellung der Beschreibung auf diese Szenen-Elemente:
+        {json.dumps(scene_elements, indent=2)}
         
-        Vorherige Beschreibungen:
+        Greife auf die vorherige Beschreibungen nur zurück, um die neue Beschreibung konsistent zu früheren Beschreibungen zu halten. Verwende
+        die vorherige Beschreibung aber ausschließlich dazu und füge sonst nichts in aktuelle Beschreibung ein.
+        
+        Vorherige Beschreibung:
         
         {self.txt_prev_descriptions}
+    
+        Deine Beschreibung sollte prägnant sein und idealerweise mit einem abgeschlossenen Satz oder einem passenden Satzfragment enden, 
+        falls das Token-Limit erreicht wird. Vermeide das Abschneiden mitten im Wort oder Satz.
         
-    
-        Szenen-Elemente:
-        {json.dumps(scene_elements, indent=2)}
-    
         Szenenbeschreibung:
         """
         try:
-            response = self.gemini_text_model.generate_content(prompt)
+            response = self.gemini_text_model.generate_content(prompt#,
+                                    #generation_config = genai.types.GenerationConfig(
+                                    #    max_output_tokens=200  # Beispiel: Maximal 200 Tokens für Szenenbeschreibungen
+                                    #)
+            )
             self.txt_prev_descriptions = self.txt_prev_descriptions + "\n" + response.text + "\n"+f'{"-"*80}'+"\n"
-
+            self.tokens = self.tokens + response.usage_metadata.total_token_count
+            self.numcalls = self.numcalls + 1
+            self.token_details.append(response.usage_metadata.total_token_count)
             return response.text
         except Exception as e:
             print(f"Fehler bei der Generierung der Szenenbeschreibung: {e}")

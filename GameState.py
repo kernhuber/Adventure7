@@ -6,11 +6,11 @@ from Way import Way
 from typing import Dict, List
 from PlayerState import PlayerState
 from GameObject import GameObject
-
-from Utils import tw_print, dprint
 from GeminiInterface import GeminiInterface
+from Utils import tw_print, dprint
 
-from typing import Any
+
+
 
 #
 # Maintains the state from the game perspective. There are player states as well
@@ -230,8 +230,9 @@ class GameState:
         place_defs = {
             "p_start": {
                 "description": "Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. ",
-                "place_prompt": """ Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. 
-                Es liegt hier das kaputte Fahrrad, welches zu reparieren ist. Die Straße erstreckt sich in beiden Richtungen zum Horizont.
+                "place_prompt": """ Ein unbenannter, eigenartiger Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. 
+                Es liegt hier das kaputte Fahrrad, welches zu reparieren ist. Die Straße erstreckt sich in beiden Richtungen 
+                zum Horizont. Der Spieler kann erst wieder auf der Straße fahren, wenn sein Fahrrad repariert ist.
                 """,
                 "ways": ["w_start_warenautomat","w_start_geldautomat", "w_start_schuppen"],
                 "objects": [""],
@@ -248,8 +249,12 @@ class GameState:
             },
             "p_ubahn": {
                 "description": "Eine U-Bahn-Station",
-                "place_prompt": """
-            To be done
+                "place_prompt": """Eine angenehm kühle U-Bahn-Station. Es ist offenbar länger niemand hier gewesen, aber dennoch ist alles sauber
+                und aufgeräumt. An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für ein Reisebüro. Der Boden ist mit Marmorfliesen
+                gefliest. Neonröhren tauchen alles in angenehmes Licht. Es tut gut, sich hier unten zu erfrischen und vor der WÜstenhitze zu verstecken,
+                die an der Oberfläche herrscht. In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind. Alles sieht sauber aus, es gibt keine
+                Schmierereien oder Graffitis.
+
         """,
                 "ways": ["w_ubahn_warenautomat", "w_ubahn_wagen"],
                 "objects": ["o_muelleimer", "o_salami", "o_geheimzahl"],
@@ -257,8 +262,10 @@ class GameState:
             },
             "p_wagen": {
                 "description": "Im U-Bahn-Wagen",
-                "place_prompt": """
-            To be done
+                "place_prompt": """Im inneren des U-Bahnwagens ist es sauber. Neonlicht leuchtet über den Sitzreihen. Auch hier gibt es einige
+                Werbeplakate, die in kleinen Rahmen über den Fenstern des Wagens angebracht sind. Sie werben für den neuartigen C64 von Commodore, 
+                den großartigen ZX Spectrum von Sinclair und das neue Album "Best of 80ies". 
+            
         """,
                 "ways": ["w_wagen_ubahn", "w_wagen_ubahn2"],
                 "objects": ["o_tuerschliesser"],
@@ -266,8 +273,11 @@ class GameState:
             },
             "p_ubahn2": {
                 "description": "Eine zweite U-Bahn-Station",
-                "place_prompt": """
-            To be done
+                "place_prompt": """Eine angenehm kühle U-Bahn-Station, aber die Luft ist etwas abgestanden. Es ist offenbar länger niemand hier gewesen, 
+                aber dennoch ist alles sauber und aufgeräumt. An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für den neuen VW-Golf. 
+                Der Boden ist mit Marmorfliesen
+                gefliest. Neonröhren tauchen alles in angenehmes Licht. In der Station steht der U-Bahn-Wagen, mit dem du gerade gekommen bist, dessen Türen 
+                stehen offen. Alles sieht sauber aus, es gibt keine Schmierereien oder Graffitis.
         """,
                 "ways": ["w_ubahn2_wagen"],
                 "objects": ["o_pizzaautomat", "o_geld_lire", "o_pizza"],
@@ -275,8 +285,9 @@ class GameState:
             },
             "p_geldautomat": {
                 "description": "Hier ist ein Geldautomat, an dem man Bargeld bekommen kann",
-                "place_prompt": """
-            To be done
+                "place_prompt": """Die Sonne brennt vom Himmel. Es ist furchtbar heiss. Wie ein Fremdkörper steht hier ein
+                Geldautomat
+            
         """,
                 "ways": ["w_geldautomat_start", "w_geldautomat_warenautomat", "w_geldautomat_schuppen","w_geldautomat_felsen"],
                 "objects": ["o_geldautomat", "o_geld_dollar"],
@@ -284,7 +295,7 @@ class GameState:
             },
             "p_schuppen": {
                 "description": "Hier ist ein alter Holzschuppen",
-                "place_prompt": """Wir befinden uns vor einem alten Holzschuppen. Mitten in der Wüste.
+                "place_prompt": """Wir befinden uns vor einem alten Holzschuppen. Mitten in der Wüste. Es ist heiss und die Sonne knallt vom Himmel.
             To be done
         """,
                 "ways": ["w_schuppen_start", "w_schuppen_warenautomat", "w_schuppen_geldautomat","w_schuppen_innen","w_schuppen_dach", "w_schuppen_felsen"],
@@ -293,8 +304,9 @@ class GameState:
             },
             "p_dach": {
                 "description": "Das Dach des Holzschuppens",
-                "place_prompt": """
-            To be done
+                "place_prompt": """Wir befinden uns auf dem Dach des Holzschuppens von hier aus können wir weit blicken. Man sieht den Geldautomaten und
+                den Warenautomaten, sowie einen Hügel aus Gestein. Hier gibt es auch einen alten Hebel.
+            
         """,
                 "ways": ["w_dach_schuppen"],
                 "objects": ["o_hebel"],
@@ -302,8 +314,10 @@ class GameState:
             },
             "p_innen": {
                 "description": "Im inneren des Holzschuppens",
-                "place_prompt": """
-            To be done
+                "place_prompt": """Im inneren des Schuppens ist es genauso heiss wie ausserhalb. Die Luft riecht nach Staub, und ein weiterer,
+                unterschwelliger Verwesungsgeruch mischt sich dazu. Durch Ritzen in der Holzwand dringt gerade genug Licht in den Innenraum,
+                das man sich umsehen kann und erkennt, was sich hier befindet.
+            
         """,
                 "ways": ["w_innen_schuppen"],
                 "objects": ["o_leiter", "o_skelett", "o_geldboerse", "o_ec_karte", "o_pinsel", "o_farbeimer"],
@@ -312,6 +326,7 @@ class GameState:
             "p_felsen": {
                 "description": "Vor dem Berg liegt ein großer Felsen",
                 "place_prompt": "",
+                "place_prompt_f": p_felsen_place_prompt_f,
                 "ways": ["w_felsen_hoehle","w_felsen_schuppen", "w_felsen_warenautomat", "w_felsen_geldautomat"],
                 "objects": ["o_felsen"],
                 "callnames": ["Felsen", "Berg", "Hügel", "Huegel", "Felsblock"]
@@ -319,6 +334,7 @@ class GameState:
             "p_hoehle": {
                 "description": "In die Höhle, deren Eingang freigesprengt wurde.",
                 "place_prompt": "",
+                "place_prompt_f": p_hoehle_place_prompt_f,
                 "ways": ["w_hoehle_felsen"],
                 "objects": [],
                 "callnames": ["Höhle", "Hoehle"]
@@ -598,7 +614,7 @@ class GameState:
             },
             "o_warenautomat": {
                 "name": "o_warenautomat",
-                "examine": "Ein Warenautomat mit Fahrradteilen. Er enthält tatsächlich auch eine Fahrradkette! Jetzt bräuchte man Geld - und zwar italienische Lira. Dieser Automat akzeptiert nur diese!",  # Text to me emitted when object is examined
+                "examine": "Ein Warenautomat mit Fahrradteilen. Er enthält tatsächlich auch eine Fahrradkette! Der Automat ist gut in Schuss und wirkt neu.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "callnames": ["Warenautomat", "Automat"],
                 "ownedby": "p_warenautomat",  # Which Player currently owns this item? Default: None
@@ -613,7 +629,7 @@ class GameState:
 
             "o_muelleimer": {
                 "name": "o_muelleimer",
-                "examine": "Ein Mülleimer.",  # Text to me emitted when object is examined
+                "examine": "Ein Mülleimer, gefüllt mit Papier, Plastik und Glasmüll. Gottseidank ist nichts ekeliges drin.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "callnames": ["Mülleimer", "Muelleimer", "Abfalleimer", "Abfallbehälter", "Abfallbehaelter"],
                 "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
@@ -624,7 +640,7 @@ class GameState:
             },
             "o_salami": {
                 "name": "o_salami",
-                "examine": "",  # Text to me emitted when object is examined
+                "examine": "Eine schöne italienische Salami. Schon etwas älter, aber noch geniessbar - zumindest für Hunde",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "callnames": ["Salami", "Wurst"],
                 "ownedby": "p_wagen",  # Which Player currently owns this item? Default: None
@@ -648,7 +664,7 @@ class GameState:
 
             "o_tuerschliesser": {
                 "name": "o_tuerschliesser",
-                "examine": "",  # Text to me emitted when object is examined
+                "examine": "Ein Türschliesser - ein Kästchen mit einem Knopf. Wenn man diesen Betätigt, geht eine Tür auf oder zu.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "callnames": ["Türschliesser","Tuerschliesser", "Türschließer", "Tuerschließer"],
                 "ownedby": "p_wagen",  # Which Player currently owns this item? Default: None
@@ -662,7 +678,7 @@ class GameState:
 
             "o_pizzaautomat": {
                 "name": "o_pizzaautomat",
-                "examine": "",  # Text to me emitted when object is examined
+                "examine": "Ein Pizza-Automat, der angemalt ist wie die italienische Flagge. Auf seinen Seiten ist ein Koch also Comicfigur abgebildet. Man kann Geld einwerfen, und dann backt der Automat eine Pizza",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "callnames": ["Pizzaautomat", "Pizza-Automat"],
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
@@ -682,7 +698,7 @@ class GameState:
             },
             "o_pizza": {
                 "name": "o_pizza",
-                "examine": "",  # Text to me emitted when object is examined
+                "examine": "Eine Salami-Pizza mit viel Käse.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "callnames": ["Pizza"],
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
@@ -696,7 +712,7 @@ class GameState:
 
             "o_geldautomat": {
                 "name": "o_geldautomat",
-                "examine": "Ein Geldautomat. Man muss eine Karte einstecken, eine Geheimnummer eingeben, und wenn Geld auf dem Konto ist, kann man es abheben.",  # Text to me emitted when object is examined
+                "examine": "Ein Geldautomat, der sehr neu aussieht. Er ist klar mit 'ATM' gekennzeichnet. Man muss eine Karte einstecken, eine Geheimnummer eingeben, und wenn Geld auf dem Konto ist, kann man es abheben.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_geldautomat",  # Which Player currently owns this item? Default: None
                 "callnames": ["Geldautomat", "ATM"],
@@ -720,7 +736,8 @@ class GameState:
 
             "o_schuppen": {
                 "name": "o_schuppen",
-                "examine": "Ein alter Holzschuppen, in dem womöglich interessante Dinge sind.",  # Text to me emitted when object is examined
+                "examine": "Ein alter Holzschuppen, in dem womöglich interessante Dinge sind. "
+                           "Der Schuppen muss aufgeschlossen werden, sonst kann man ihn nicht betreten.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
                 "callnames": ["Schuppen", "Holzschuppen"],
@@ -730,7 +747,7 @@ class GameState:
             },
             "o_blumentopf": {
                 "name": "o_blumentopf",
-                "examine": "Ein alter Blumentopf.",  # Text to me emitted when object is examined
+                "examine": "Ein alter Blumentopf aus Ton.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
                 "callnames": ["Blumentopf"],
@@ -741,7 +758,7 @@ class GameState:
             },
             "o_schluessel": {
                 "name": "o_schluessel",
-                "examine": "Ein Schlüssel! Der sieht so aus, als könnte er hier noch irgendwo wichtig sein!",  # Text to me emitted when object is examined
+                "examine": "Ein Schlüssel aus Metall.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
                 "callnames": ["Schlüssel", "Schluessel"],
@@ -751,7 +768,7 @@ class GameState:
             },
             "o_stuhl": {
                 "name": "o_stuhl",
-                "examine": "Ein rostiger, alter Gartenstuhl. Da machst du dich bestimmt dreckig, wenn du dich draufsetzt!",  # Text to me emitted when object is examined
+                "examine": "Ein rostiger, alter Gartenstuhl. Da macht man dich bestimmt dreckig, wenn man sich draufsetzt!",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
                 "callnames": ["Stuhl", "Gartenstuhl", "Hocker"],
@@ -761,7 +778,7 @@ class GameState:
             },
             "o_schrott": {
                 "name": "o_schrott",
-                "examine": "Eine Menge Schrott! Hier kannst Du stundelang herumsuchen - aber (Spoilerwarnung) dur wirst hier nichts besonderes finden.",  # Text to me emitted when object is examined
+                "examine": "Eine Menge Schrott! Hier kanns man stundelang herumsuchen - aber man wird hier nichts besonderes finden.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
                 "callnames": ["Schrott", "Schrotthaufen"],
@@ -775,7 +792,7 @@ class GameState:
 
             "o_hebel": {
                 "name": "o_hebel",
-                "examine": "Ein Hebel!! Was passiert wohl, wenn du diesen betätigst?",  # Text to me emitted when object is examined
+                "examine": "Ein großer, schwarzer Hebel aus Metall.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_dach",  # Which Player currently owns this item? Default: None
                 "callnames": ["Hebel", "Schalter"],
@@ -789,7 +806,7 @@ class GameState:
 
             "o_leiter": {
                 "name": "o_leiter",
-                "examine": "",  # Text to me emitted when object is examined
+                "examine": "Eine stablie Holzleiter",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
                 "callnames": ["Leiter"],
@@ -800,7 +817,7 @@ class GameState:
             },
             "o_skelett": {
                 "name": "o_skelett",
-                "examine": "Ein Skelett!! In einem Anzug!! Wie lange das wohl schon hier sitzt?",  # Text to me emitted when object is examined
+                "examine": "Ein Skelett!! In einem Anzug!! Das ist wohl schon länger hier! Wie das wohl hierhin gekommen ist?",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
                 "callnames": ["Skelett", "Knochenmann"],
@@ -832,7 +849,7 @@ class GameState:
             },
             "o_pinsel": {
                 "name": "o_pinsel",
-                "examine": "",  # Text to me emitted when object is examined
+                "examine": "Ein alter, vertrockneter Pinsel",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
                 "callnames": ["Pinsel"],
@@ -842,7 +859,7 @@ class GameState:
             },
             "o_farbeimer": {
                 "name": "o_farbeimer",
-                "examine": "",  # Text to me emitted when object is examined
+                "examine": "Ein Eimer mit vertrockneter, rosa Farbe.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
                 "callnames": ["Farbeimer"],
@@ -852,7 +869,7 @@ class GameState:
             },
             "o_sprengladung":{
                 "name": "o_sprengladung",
-                "examine": "Eine Sprengladung",
+                "examine": "Eine Sprengladung. Hiermit muss man bestimmt vorsichtig sein. Sie hat einen Knopf, mit dem man sie aktivieren kann.",
                 "help_text": "Damit kann man viel kaputt machen, aber sicher auch einiges aus dem Weg räumen",
                 "ownedby": "p_innen",
                 "callnames": ["Sprengladung"],
@@ -970,7 +987,7 @@ class GameState:
             details["Beschreibung"] = pl.location.place_prompt_f(self,pl)
         else:
             details["Beschreibung"] = pl.location.place_prompt
-        details["Objekte hier"] = { p.callnames[0]:p.name for p in pl.location.place_objects if not p.hidden}
+        details["Objekte hier"] = { p.callnames[0]:f"{p.name} - {p.examine}" for p in pl.location.place_objects if not p.hidden}
         details["Wo man hingehen kann"] = {w.destination.callnames[0]:w.destination.name for w in pl.location.ways if w.visible}
         #
         # Dog somewhere near?
@@ -978,9 +995,11 @@ class GameState:
         from NPCPlayerState import NPCPlayerState, DogState
         dog_pl = None
         dog_around = False
+        r=""
         for p in self.players:
             if isinstance(p,NPCPlayerState):
                 dog_pl = p
+                break
         #
         # Dog might have been killed by explosive charge, so in fact dog_pl MAY be None
         #
@@ -1008,7 +1027,7 @@ class GameState:
                     r = r+" Der Hund tut nichts weiter."
             details["Achtung"] = r
 
-        details["Spieler-Inventory"] = {i.callnames[0]:i.name for i in pl.get_inventory()}
+        # details["Spieler-Inventory"] = {i.callnames[0]:i.name for i in pl.get_inventory()}
         rval["Aktueller Ort"] = details
         return rval
 
@@ -1540,17 +1559,35 @@ def w_felsen_hoehle_f(gs: GameState):
         return "Free"
 
 #
-#
+# Prompt Functions for dynamic prompts
 #
 def p_warenautomat_place_prompt_f(gs: GameState, pl: PlayerState=None) -> str:
-    rv = "Ein heisser Tag mitten in der Wüste. Die Luft ist trocken und die Luft flirrt vor Hitze. "
+    rv = "Ein heisser Tag mitten in der Wüste. Die Luft ist trocken flirrt vor Hitze. Die Sonne knallt unerbittlich vom Himmel herab"
     if gs.hebel:
         return rv+"Hier ist ein Warenautomat, der auf dem Rücken liegt. Wo er stand, ist nun ein Treppenabgang zu einer U-Bahn-Station"
     else:
         return rv+"Hier ist ein Warenautomat mit Fahrradteilen. Er enthält viele Teile. Er enthält auch eine Fahrradkette"
 
+def p_felsen_place_prompt_f(gs:GameState, pl: PlayerState)-> str:
+    rv = """Ein heisser Tag mitten in der Wüste. Die Luft ist trocken und heiss, die Sonne knallt unerbittlich vom Himmel herab. Hier
+    ist ein Hügel aus Gestein. Das gestein ist so bröckelig, dass man nicht auf den Hügel steigen kann.
+    """
+    if gs.felsen:
+        return f"{rv} Ein Trampelpfad führt zu dem Hügel und endet vor einem Felsblock."
+    else:
+        return f"{rv} Wo vorher ein Felsblock lag, ist nun der Eingang in eine Höhle."
+
+def p_hoehle_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
+    rv = """Im inneren der Höhle ist es schön kühl. Die Wände sind aus Gestein, der Boden aus gestampftem Lehm. An der Wand ein
+    großer Schalter"""
+    if gs.hauptschalter:
+        return f"{rv} Eine Glühbirne hängt von der Decke und erleuchtet die Höhle. Man kann elektrisches Summen vernehmen."
+    else:
+        return f"{rv} Eine Glühbirne hängt von der Decke, aber sie ist ausgeschaltet. Das einzige Licht kommt vom Höhleneingang"
+
+
 def huhu() -> str:
     return ("--- huhu ---")
-g = GameState()
+
 
 

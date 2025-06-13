@@ -1,15 +1,7 @@
 from collections import deque
-
-from rich.console import Console
-from rich.markdown import Markdown
 from rich.prompt import Prompt
-
-import GeminiInterface
 from GameState import GameState
-
 from Utils import dprint, tw_print, DEBUG
-import textwrap
-import regex as re
 from pprint import pprint
 
 #
@@ -63,8 +55,7 @@ Dann geht die Welt unter.
 
 
 class Adventure:
-    from collections import deque
-    from typing import List, Deque, Any
+
 
     def __init__(self, players):
         self.game = GameState()
@@ -216,7 +207,7 @@ class Adventure:
 
         :return:
         """
-        import PlayerState
+
         #
         # (1)
         #
@@ -348,7 +339,9 @@ class Adventure:
                 if self.game.game_over:
                     break
 
-
+        tw_print(f"Total tokens used in this game session: {self.game.llm.tokens}")
+        tw_print(f"Number of API-Calls: {self.game.llm.numcalls}")
+        pprint(self.game.llm.token_details)
         tw_print("***Auf Wiedersehen!***")
 #
 # --- Main ---
