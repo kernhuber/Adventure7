@@ -987,7 +987,7 @@ class GameState:
             details["Beschreibung"] = pl.location.place_prompt_f(self,pl)
         else:
             details["Beschreibung"] = pl.location.place_prompt
-        details["Objekte hier"] = { p.callnames[0]:f"{p.name} - {p.examine}" for p in pl.location.place_objects if not p.hidden}
+        details["Objekte hier"] = { p.callnames[0]:f"{p.examine}" for p in pl.location.place_objects if not p.hidden}
         details["Wo man hingehen kann"] = {w.destination.callnames[0]:w.destination.name for w in pl.location.ways if w.visible}
         #
         # Dog somewhere near?
@@ -1310,7 +1310,7 @@ def o_geld_dollar_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=
 
     if pl.location.name == "p_warenautomat" and onwhat.name=="o_warenautomat":
         if gs.hebel:
-            return 'Der Warenautomat liegt auf dem Rücken. Da kann man kein Geld einwerfen!'
+            return 'Der Warenautomat liegt auf dem Bauch. Er ist zwar völlig intakt, und nicht zerbrochen, aber da kann man kein Geld einwerfen!'
         else:
             if not gs.hauptschalter:
                 return "Der Automat ist ausgeschaltet"

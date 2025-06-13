@@ -85,29 +85,31 @@ class GeminiInterface:
 
 
         prompt = f"""
-        Generiere eine detaillierte und atmosphärische Szenenbeschreibung für ein Text-Adventure basierend auf den folgenden Elementen.
-        Der Text sollte immersiv und gut lesbar sein. Vermeide es, die Elemente als Liste aufzuzählen, sondern webe sie in eine flüssige 
-        Beschreibung ein.
+Generiere eine detaillierte und atmosphärische Szenenbeschreibung für ein Text-Adventure basierend auf den folgenden Elementen.
+Der Text sollte immersiv und gut lesbar sein. Vermeide es, die Elemente als Liste aufzuzählen, sondern webe sie in eine flüssige 
+Beschreibung ein.
         
-        Achte unbedingt darauf, dass bei der Szenenbeschreibung keine Wiedersprüche zu dem entstehen, was vorher schon beschrieben
-        wurde. Insbesondere dürfen Beschreibungen von Orten, Dingen, Wegen und Himmelsrichtungen inhaltlich nicht von einer vorherigen 
-        Beschreibung abweichen, ausser, wenn es in der weiter unten gegebenen Beschreibung explizit abweicht. Dies ist aber nur der Fall,
-        wenn sich im Verlauf des Spiels etwas ändert, wenn also etwa Gegenstand umkippt oder verschwindet.
+Achte unbedingt darauf, dass bei der Szenenbeschreibung keine Wiedersprüche zu dem entstehen, was vorher schon beschrieben
+wurde. Insbesondere dürfen Beschreibungen von Orten, Dingen, Wegen und Himmelsrichtungen inhaltlich nicht von einer vorherigen 
+Beschreibung abweichen, ausser, wenn es in der weiter unten gegebenen Beschreibung explizit abweicht. Dies ist aber nur der Fall,
+wenn sich im Verlauf des Spiels etwas ändert, wenn also etwa Gegenstand umkippt oder verschwindet.
     
-        Konzentriere dich bei der Erstellung der Beschreibung auf diese Szenen-Elemente:
-        {json.dumps(scene_elements, indent=2)}
+Konzentriere dich bei der Erstellung der Beschreibung auf diese Szenen-Elemente:
+{json.dumps(scene_elements, indent=2)}
         
-        Greife auf die vorherige Beschreibungen nur zurück, um die neue Beschreibung konsistent zu früheren Beschreibungen zu halten. Verwende
-        die vorherige Beschreibung aber ausschließlich dazu und füge sonst nichts in aktuelle Beschreibung ein.
-        
-        Vorherige Beschreibung:
-        
-        {self.txt_prev_descriptions}
-    
-        Deine Beschreibung sollte prägnant sein und idealerweise mit einem abgeschlossenen Satz oder einem passenden Satzfragment enden, 
-        falls das Token-Limit erreicht wird. Vermeide das Abschneiden mitten im Wort oder Satz.
-        
-        Szenenbeschreibung:
+Greife auf die vorherige Beschreibungen nur zurück, um die neue Beschreibung konsistent zu früheren Beschreibungen zu halten. Verwende
+die vorherige Beschreibung aber ausschließlich dazu und füge sonst nichts in aktuelle Beschreibung ein.
+
+====== Vorherige Beschreibungen: ======
+
+{self.txt_prev_descriptions}
+
+====== Ende der vorherigen Beschreibungen ======
+
+Deine Beschreibung sollte prägnant sein und idealerweise mit einem abgeschlossenen Satz oder einem passenden Satzfragment enden, 
+falls das Token-Limit erreicht wird. Vermeide das Abschneiden mitten im Wort oder Satz.
+
+Szenenbeschreibung:
         """
         try:
             response = self.gemini_text_model.generate_content(prompt#,
@@ -115,7 +117,26 @@ class GeminiInterface:
                                     #    max_output_tokens=200  # Beispiel: Maximal 200 Tokens für Szenenbeschreibungen
                                     #)
             )
-            self.txt_prev_descriptions = self.txt_prev_descriptions + "\n" + response.text + "\n"+f'{"-"*80}'+"\n"
+            #
+            # Generate a crisp description of the place and environment only
+            #
+            loc_only_prompt=f"""
+Fasse aus folgendem Text nur die Beschreibung des Ortes, der Stimmung und der Umgebung zusammen. Lasse alles andere weg,
+insbesondere Beschreibungen von Objekten, Tieren und Handlungen! Fasse dich kurz und prägnant, und fokussiere dich auf
+wichtige Details.            
+
+Text:
+{response.text}
+
+Zusammenfassung:
+            """
+            summary = self.gemini_text_model.generate_content(loc_only_prompt)
+
+            self.txt_prev_descriptions = self.txt_prev_descriptions + "\n" + f"Ort: {next(iter(scene_elements["Aktueller Ort"]["Ortsname"]))}\n{summary.text}" + "\n"+f'{"-"*80}'+"\n"
+            self.tokens = self.tokens + summary.usage_metadata.total_token_count
+            self.numcalls = self.numcalls + 1
+            self.token_details.append(summary.usage_metadata.total_token_count)
+
             self.tokens = self.tokens + response.usage_metadata.total_token_count
             self.numcalls = self.numcalls + 1
             self.token_details.append(response.usage_metadata.total_token_count)
