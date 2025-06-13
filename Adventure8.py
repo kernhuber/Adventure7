@@ -6,6 +6,7 @@ from rich.prompt import Prompt
 
 import GeminiInterface
 from GameState import GameState
+
 from Utils import dprint, tw_print, DEBUG
 import textwrap
 import regex as re
@@ -57,6 +58,10 @@ betätigen einen Schalter in der Mitte des Pultes.
 
 Dann geht die Welt unter. 
 """
+
+
+
+
 class Adventure:
     from collections import deque
     from typing import List, Deque, Any
@@ -77,17 +82,21 @@ class Adventure:
         # Add our Non Player Character (the Dog)
         #
         self.game.add_player("Dog", npc=True)
+
         #
         # For testing
         #
         self.test_queue = deque([
             "gehe Schuppen",
+            "umsehen",
             "untersuche Blumentopf",
             "anwenden Schlüssel Schuppen",
             "gehe p_innen",
+            "umsehen",
             "nimm sprengladung",
             "gehe schuppen",
             "gehe felsen",
+            "umsehen",
             "anwenden sprengladung",
             "ablegen sprengladung",
             "gehe schuppen",
@@ -95,7 +104,9 @@ class Adventure:
             "nichts",
             "gehe schuppen",
             "gehe felsen",
+            "umsehen",
             "gehe höhle",
+            "umsehen",
             "anwenden breaker",
             "gehe felsen",
             "gehe p_schuppen",
@@ -107,30 +118,33 @@ class Adventure:
             "gehe p_schuppen",
             "anwenden o_leiter o_schuppen",
             "gehe p_dach",
+            "umsehen",
             "anwenden o_hebel",
             "gehe p_schuppen",
             "anwenden o_ec_karte o_blumentopf",
             "gehe p_geldautomat",
-            "anwenden o_ec_karte o_geldautomat",
+            #"anwenden o_ec_karte o_geldautomat",
             "gehe p_warenautomat",
+            "umsehen",
             "gehe p_ubahn",
-            #"umsehen",
+            "umsehen",
             "untersuche o_muelleimer",
             "untersuche o_geheimzahl",
             "nimm o_geheimzahl",
             "gehe p_warenautomat",
             "gehe p_geldautomat",
+            "untersuche o_geheimzahl",
             "anwenden o_ec_karte o_geldautomat",
             "gehe p_warenautomat",
             "gehe p_ubahn",
             "gehe p_wagen",
-            #"umsehen",
+            "umsehen",
             "nimm o_salami",
             "gehe p_ubahn",
             "gehe p_warenautomat",
             "gehe p_schuppen",
             "ablegen o_salami",
-            #"umsehen",
+            "umsehen",
             "gehe p_innen",
             "nichts",
             "nichts",
@@ -147,7 +161,7 @@ class Adventure:
             "anwenden o_hebel",
             "gehe p_schuppen",
             "gehe p_warenautomat",
-            #"umsehen",
+            "umsehen",
             "anwenden o_geld_dollar o_warenautomat",
             "untersuche o_warenautomat",
             "nichts",
@@ -158,11 +172,12 @@ class Adventure:
             "gehe warenautomat",
             "gehe u-bahn",
             "gehe wagen",
+            "umsehen",
             "anwenden turschliesser",
             "gehe p_ubahn2",
-            #"umsehen",
+            "umsehen",
             "anwenden o_geld_dollar o_pizzaautomat",
-            #"umsehen",
+            "umsehen",
             "nimm pizza",
             "nimm lire",
             "gehe wagen",
@@ -285,7 +300,7 @@ class Adventure:
                                 user_input = ui.strip().lower()
                             else:
                                 user_input = ""
-                        gi = GeminiInterface.parse_user_input_to_commands(
+                        gi = self.llm.parse_user_input_to_commands(
                             user_input,
                             self.game.compile_current_game_context(pl)
                         )
