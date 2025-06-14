@@ -97,7 +97,8 @@ class GameState:
                 callnames=obj_data.get("callnames", None),
                 apply_f=obj_data.get("apply_f", None),
                 reveal_f = obj_data.get("reveal_f", None),
-                take_f = obj_data.get("take_f", None)
+                take_f = obj_data.get("take_f", None),
+                prompt_f = obj_data.get("prompt_f", None)
             )
             obj.callnames = [s.lower() for s in obj.callnames]
             fn = obj_data.get("apply_f", None)

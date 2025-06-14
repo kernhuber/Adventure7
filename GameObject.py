@@ -6,7 +6,7 @@ from typing import Callable, Union, Any, Optional
 # Objects which can appear in the game. Special objects like doors etc are derived from this object
 #
 class GameObject:
-    def __init__(self, name, examine, help_text="", fixed=False, hidden=False, callnames=None, apply_f=None, reveal_f=None, take_f=None):
+    def __init__(self, name, examine, help_text="", fixed=False, hidden=False, callnames=None, apply_f=None, reveal_f=None, take_f=None, prompt_f=None):
         from PlayerState import PlayerState
         from GameState import GameState
         from Place import Place
@@ -47,5 +47,5 @@ class GameObject:
         self.apply_f = apply_f      # Optional[Callable[[PlayerState, GameObject, GameObject], str]] = None
         self.reveal_f = reveal_f    # Optional: Funktion, die aufgerufen wird, wenn Objekt untersucht wird
         self.take_f = take_f        # Optional: Funktion, die aufgerufen wird, wenn Objekt genommen wird
-
+        self.prompt_f = prompt_f
 
