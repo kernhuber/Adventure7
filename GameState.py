@@ -224,6 +224,7 @@ class GameState:
         self.hauptschalter = False         # Ohne Strom geht hier gar nichts
         self.game_over = False             # Na hoffentlich noch nicht so schnell!
         self.llm = GeminiInterface()       # Unser Sprachmodell
+        self.gamelog = []                  # Wir schneiden alles für das LLM mit
         #
         # Place definitions
         #
@@ -1033,6 +1034,10 @@ class GameState:
         return rval
 
     def verb_apply(self, pl: PlayerState, what, towhat):
+        log = {}
+        log["Player_name"] = pl.name
+        log["Player_location"] = pl.location.callnames[0]
+        log["Player_input"] = f'anwenden {what} {towhat}'
         if towhat == None:
             # r = f"apply {what} in this context"
             r=""
@@ -1050,9 +1055,15 @@ class GameState:
 
             if o_what != None:
                 r = r+ "\n" + o_what.apply_f(self, pl, o_what, o_towhat)
+        log["GameEngine_Response"] = r
+        self.gamelog.append(log)
         return r
 
     def verb_take(self, pl: PlayerState, what):
+        log = {}
+        log["Player_name"] = pl.name
+        log["Player_location"] = pl.location.callnames[0]
+        log["Player_input"] = f'nimm {what} '
         loc = pl.location
         # obj = loc.place_objects.get(what)
         obj = None
@@ -1061,16 +1072,25 @@ class GameState:
                 obj = o
                 break
         if obj == None:
-            return "Sowas gibt es hier nicht."
+            r= "Sowas gibt es hier nicht."
         else:
             pl.add_to_inventory(obj)
             if obj.take_f != None:
                 tw_print(obj.take_f(self,pl))
-            return f"Du hast {what} nun bei dir"
+            r= f"Du hast {what} nun bei dir"
+        log["GameEngine_Response"]  = r
+        self.gamelog.append(log)
+        return r
 
     def verb_drop(self, pl: PlayerState, what):
+        log = {}
+        log["Player_name"] = pl.name
+        log["Player_location"] = pl.location.callnames[0]
+        log["Player_input"] = f'ablegen {what}'
         obj = self.objects.get(what)
         if obj == None:
+            log["GameEngine_Response"] = "Sowas gibt es in diesem Spiel nicht!"
+            self.gamelog.append(log)
             return "Sowas gibt es in diesem Spiel nicht!"
 
         if pl.is_in_inventory(obj):
@@ -1078,9 +1098,15 @@ class GameState:
             obj.hidden = False
             obj.ownedby = pl.location
             pl.location.place_objects.append(obj)
-            return f'Objekt {what} in/auf/am {pl.location.name} abgelegt'
+            r = f'Objekt {what} in/auf/am {pl.location.name} abgelegt'
+            log["GameEngine_Response"] = r
+            self.gamelog.append(log)
+            return r
 
-        return f'{what} ist nicht in {pl.name} inventory'
+        r= f'{what} ist nicht in {pl.name} inventory'
+        log["GameEngine_Response"] = r
+        self.gamelog.append(log)
+        return r
 
     def verb_lookaround_traditional(self, pl: PlayerState):
         loc = pl.location
@@ -1102,8 +1128,13 @@ Am Ort sind folgende Objekte zu sehen:"""
         return retstr
 
     def verb_lookaround(self, pl: PlayerState):
-
+        log = {}
+        log["Player_name"] = pl.name
+        log["Player_location"] = pl.location.callnames[0]
+        log["Player_input"] = f'umsehen'
         rval = self.llm.generate_scene_description(self.compile_current_game_context(pl))
+        log["GameEngine_Response"] = rval
+        self.gamelog.append(log)
         return rval
 
     def verb_help(self, pl: PlayerState):
@@ -1136,7 +1167,10 @@ Am Ort sind folgende Objekte zu sehen:"""
         #     (1aa) if no --> walk, return success message
         #     (1ab) else --> return failure message (Obstacle in way)
         # (2) return failure message ("There is no path here")
-
+        log = {}
+        log["Player_name"] = pl.name
+        log["Player_location"] = pl.location.callnames[0]
+        log["Player_input"] = f'gehe {direction}'
         w_found = None
         for w in pl.location.ways:
             if w.name == direction or w.destination.name == direction:
@@ -1147,18 +1181,27 @@ Am Ort sind folgende Objekte zu sehen:"""
         ob = w_found.obstruction_check(self)
 
         if ob != "Free":
+            log["GameEngine_Response"] = ob
+            self.gamelog.append(ob)
             return ob  # If there is an obstacle, function returns string different from "Free"
 
         #
         # Finally - we can go the way
         #
         pl.location = w_found.destination
-        return f"Du bist nun hier: {pl.location.name} - {pl.location.description}"
+        r = f"Du bist nun hier: {pl.location.name} - {pl.location.description}"
+        log["GameEngine_Response"] = r
+        self.gamelog.append(r)
+        return r
 
     def verb_examine(self, pl: PlayerState, what: str):
         #
         # Does an object with that name exist in the users inventory or in the current location?
         # if so, return its examine string, if not, return failure ("No such thing here")
+        log = {}
+        log["Player_name"] = pl.name
+        log["Player_location"] = pl.location.callnames[0]
+        log["Player_input"] = f'untersuche {what}'
         obj_here = None
         retstr = "So etwas gibt es hier nicht, und du hast sowas auch nicht bei dir."
         for i in pl.inventory:
@@ -1208,6 +1251,8 @@ Am Ort sind folgende Objekte zu sehen:"""
                 retstr = retstr + f"{obj_here.examine}"
         else:
             retstr = f'{what} - sowas gibt es hier nicht!'
+        log["GameEngine_Response"] = retstr
+        self.gamelog.append(retstr)
         return retstr
 
 

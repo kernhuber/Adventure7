@@ -225,6 +225,7 @@ class Adventure:
                 self.game.game_over = True
                 tw_print("***Keine Spieler mehr übrig***")
                 break
+            self.game.gamelog.append({"Game_Round":f"{round}"})
             dprint(f"#Players: {len(self.game.players)}")
             for i in self.game.players:
                 dprint(f"* {i.name}")
@@ -342,6 +343,8 @@ class Adventure:
         tw_print(f"Total tokens used in this game session: {self.game.llm.tokens}")
         tw_print(f"Number of API-Calls: {self.game.llm.numcalls}")
         pprint(self.game.llm.token_details)
+        print(f"{'*'*80}")
+        pprint(self.game.gamelog)
         tw_print("***Auf Wiedersehen!***")
 #
 # --- Main ---
