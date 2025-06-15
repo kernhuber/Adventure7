@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 
 from Place import Place
 from Way import Way
@@ -918,6 +919,16 @@ class GameState:
         #self.emit_objdefs(place_defs, object_defs)
 
         self.from_definitions(place_defs, way_defs, object_defs)
+        #
+        # json dump
+        #
+
+        # with open("objects.json", "w", encoding="utf-8") as f:
+        #     json.dumps(self.objects)
+        # with open("ways.json", "w", encoding="utf-8") as f:
+        #     json.dumps(self.ways)
+        # with open("places.json", "w", encoding="utf-8") as f:
+        #     json.dumps(self.places)
     #
     # Utility Functions
     #
