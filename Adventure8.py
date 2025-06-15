@@ -78,23 +78,23 @@ class Adventure:
         # For testing
         #
         self.test_queue = deque([
-            "gehe Schuppen",
+            "gehe p_schuppen",
             "umsehen",
             "untersuche Blumentopf",
             "anwenden Schlüssel Schuppen",
             "gehe p_innen",
             "umsehen",
             "nimm sprengladung",
-            "gehe schuppen",
+            "gehe p_schuppen",
             "gehe felsen",
             "umsehen",
             "anwenden sprengladung",
             "ablegen sprengladung",
-            "gehe schuppen",
-            "gehe innen",
+            "gehe p_schuppen",
+            "gehe p_innen",
             "nichts",
-            "gehe schuppen",
-            "gehe felsen",
+            "gehe p_schuppen",
+            "gehe p_felsen",
             "umsehen",
             "gehe höhle",
             "umsehen",
@@ -139,7 +139,7 @@ class Adventure:
             "gehe p_innen",
             "nichts",
             "nichts",
-            "gehe p_schuppen"
+            "gehe p_schuppen",
             "gehe p_geldautomat",
             "nimm o_geld_dollar",
             "gehe p_warenautomat",
@@ -234,111 +234,42 @@ class Adventure:
             round = round + 1
             if round == 200:
                 tw_print(txt_final_text)
-                exit(0)
+                self.game.game_over = True
             for pl in self.game.players:
                 #
                 # (3),(4),(5) - commands which  don't count as game moves
                 #
 
-                while True:
 
-                    if (isinstance(pl,NPCPlayerState)):
-                        #
-                        # Non Player Character
-                        #
-                        print(f'{"-" * 60}')
-                        user_input = pl.NPC_game_move(self.game)
-                        tw_print(f"**{pl.name}**: {user_input}")
-                    elif (isinstance(pl, ExplosionState)):
-                        tw_print(f'{"-" * 60}')
-                        user_input = pl.explosion_input(self.game)
-                    else:
 
-                        print(f'Du bist hier: {pl.location.name}')
-                        user_input = ""
-                        while user_input=="":
-                            if self.test_queue:
-                                user_input = self.test_game().strip().lower()
-                            else:
-                                ui = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe")
-                                if ui != None:
-                                    user_input = ui.strip().lower()
-                                else:
-                                    user_input = ""
-                    if self.game.game_over:
-                        tw_print("***Auf Wiedersehen!***")
-                        exit(0)
-                    tokens = user_input.split()
+                if (isinstance(pl,NPCPlayerState)):
+                    #
+                    # Non Player Character
+                    #
+                    print(f'{"-" * 60}')
+                    user_input = pl.NPC_game_move(self.game)
+                    tw_print(f"**{pl.name}**: {user_input}")
+                elif (isinstance(pl, ExplosionState)):
+                    tw_print(f'{"-" * 60}')
+                    user_input = pl.explosion_input(self.game)
+                else:
 
-                    if tokens[0] == "hilfe":
-                        r = self.game.verb_help(pl)
-                        tw_print(r)
-                    elif tokens[0] == "inventory":
-                        tw_print("**Du trägst bei dir:**")
-                        for i in pl.get_inventory():
-                            tw_print(f'- "{i.name}" --> {i.examine}')
-                    elif tokens[0] == "umsehen":
-                        r = self.game.verb_lookaround(pl)
-                        tw_print(r)
-                    elif tokens[0]  == "context":
-
-                        r = self.game.compile_current_game_context(pl)
-                        pprint(r)
-                    elif tokens[0] == "llm":
-                        user_input = ""
-                        while user_input=="":
-                            ui = Prompt.ask(f"(llm-test) Was tust du jetzt, {pl.name}? Deine Eingabe")
+                    print(f'Du bist hier: {pl.location.name}')
+                    user_input = ""
+                    while user_input=="":
+                        if self.test_queue:
+                            user_input = self.test_game().strip().lower()
+                        else:
+                            ui = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe")
                             if ui != None:
                                 user_input = ui.strip().lower()
                             else:
                                 user_input = ""
-                        gi = self.llm.parse_user_input_to_commands(
-                            user_input,
-                            self.game.compile_current_game_context(pl)
-                        )
-                        pprint(gi)
 
-                    else:
-                        break
-                #
-                # user_input is now different from "help" or "inventory"
-                #
-                # (6)
-                # execute user_input
-                if user_input == "quit":
-                    exit(0)
-                else:
 
-                    if tokens[0] == 'gehe' and len(tokens)>1:
-                        dprint(f" --> gehe {tokens[1]} --> {self.game.place_name_from_friendly_name(tokens[1])}")
-                        r = self.game.verb_walk(pl,self.game.place_name_from_friendly_name(tokens[1]))
-                    elif tokens[0] == 'angreifen' and len(tokens) == 2:
-                        tw_print(f'{pl.name} tötet {tokens[1]} nach heldischem Kampf. \n**Game Over!**')
-                        exit(0)
-                    elif tokens[0] == "untersuche" and len(tokens)>1:
-                        r = self.game.verb_examine(pl, self.game.obj_name_from_friendly_name(tokens[1]))
-                    elif tokens[0] == "nimm" and len(tokens) == 2:
-                        r = self.game.verb_take(pl, self.game.obj_name_from_friendly_name(tokens[1]))
-                    elif tokens[0] == "ablegen" and len(tokens) == 2:
-                        r = self.game.verb_drop(pl, self.game.obj_name_from_friendly_name(tokens[1]))
-                    elif tokens[0]  == "anwenden":
-                        if len(tokens) == 2:
-                            r = self.game.verb_apply(pl, self.game.obj_name_from_friendly_name(tokens[1]), None)
-                            # r = self.game.verb_apply(pl,tokens[1], None)
-                        elif len(tokens) == 3:
-                            r = self.game.verb_apply(pl, self.game.obj_name_from_friendly_name(tokens[1]),
-                                                     self.game.obj_name_from_friendly_name(tokens[2]))
-                        else:
-                            r = "**Ich verstehe nicht, was ich wie anwenden soll...**"
-                    elif tokens[0] == "nichts":
-                        r = ""
-                    else:
-                        r= "**Die Eingabe habe ich nicht verstanden.**"
+                    tw_print(self.game.verb_execute(pl,user_input))
 
-                    if r != "":
-                        tw_print(r)
-                if self.game.game_over:
-                    break
+
 
         tw_print(f"Total tokens used in this game session: {self.game.llm.tokens}")
         tw_print(f"Number of API-Calls: {self.game.llm.numcalls}")

@@ -229,7 +229,7 @@ class GameState:
         #
         # Place definitions
         #
-
+        import GameApplyFunctions as af
         place_defs = {
             "p_start": {
                 "description": "Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. ",
@@ -613,7 +613,7 @@ class GameState:
                 "ownedby": "",
                 "fixed": False,
                 "hidden": True,
-                "apply_f": o_umschlag_apply_f
+                "apply_f": af.o_umschlag_apply_f
             },
             "o_warenautomat": {
                 "name": "o_warenautomat",
@@ -623,7 +623,7 @@ class GameState:
                 "ownedby": "p_warenautomat",  # Which Player currently owns this item? Default: None
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f":  o_warenautomat_apply_f
+                "apply_f":  af.o_warenautomat_apply_f
 
             },
             #
@@ -638,7 +638,7 @@ class GameState:
                 "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_muelleimer_apply_f,
+                "apply_f": af.o_muelleimer_apply_f,
                 "reveal_f": o_muelleimer_reveal_f
             },
             "o_salami": {
@@ -649,7 +649,7 @@ class GameState:
                 "ownedby": "p_wagen",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_salami_apply_f
+                "apply_f": af.o_salami_apply_f
             },
             "o_geheimzahl": {
                 "name": "o_geheimzahl",
@@ -659,7 +659,7 @@ class GameState:
                 "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_geheimzahl_apply_f
+                "apply_f": af.o_geheimzahl_apply_f
             },
             #
             # Place: p_wagen
@@ -673,7 +673,7 @@ class GameState:
                 "ownedby": "p_wagen",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_tuerschliesser_apply_f
+                "apply_f": af.o_tuerschliesser_apply_f
             },
             #
             # Place: p_ubahn2
@@ -687,7 +687,7 @@ class GameState:
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_pizzaautomat_apply_f
+                "apply_f": af.o_pizzaautomat_apply_f
             },
             "o_geld_lire": {
                 "name": "o_geld_lire",
@@ -697,7 +697,7 @@ class GameState:
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_geld_lire_apply_f
+                "apply_f": af.o_geld_lire_apply_f
             },
             "o_pizza": {
                 "name": "o_pizza",
@@ -707,7 +707,7 @@ class GameState:
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_pizza_apply_f
+                "apply_f": af.o_pizza_apply_f
             },
             #
             # Place: p_geldautomat
@@ -721,7 +721,7 @@ class GameState:
                 "callnames": ["Geldautomat", "ATM"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_geldautomat_apply_f
+                "apply_f": af.o_geldautomat_apply_f
             },
             "o_geld_dollar": {
                 "name": "o_geld_dollar",
@@ -731,7 +731,7 @@ class GameState:
                 "ownedby": "p_geldautomat",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_geld_dollar_apply_f
+                "apply_f": af.o_geld_dollar_apply_f
             },
             #
             # Place: p_schuppen
@@ -746,7 +746,7 @@ class GameState:
                 "callnames": ["Schuppen", "Holzschuppen"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_schuppen_apply_f
+                "apply_f": af.o_schuppen_apply_f
             },
             "o_blumentopf": {
                 "name": "o_blumentopf",
@@ -756,7 +756,7 @@ class GameState:
                 "callnames": ["Blumentopf"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_blumentopf_apply_f,
+                "apply_f": af.o_blumentopf_apply_f,
                 "reveal_f": o_blumentopf_reveal_f
             },
             "o_schluessel": {
@@ -767,7 +767,7 @@ class GameState:
                 "callnames": ["Schlüssel", "Schluessel"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_schluessel_apply_f
+                "apply_f": af.o_schluessel_apply_f
             },
             "o_stuhl": {
                 "name": "o_stuhl",
@@ -777,7 +777,7 @@ class GameState:
                 "callnames": ["Stuhl", "Gartenstuhl", "Hocker"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_stuhl_apply_f
+                "apply_f": af.o_stuhl_apply_f
             },
             "o_schrott": {
                 "name": "o_schrott",
@@ -787,7 +787,7 @@ class GameState:
                 "callnames": ["Schrott", "Schrotthaufen"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_schrott_apply_f
+                "apply_f": af.o_schrott_apply_f
             },
             #
             # Place: p_dach
@@ -801,7 +801,7 @@ class GameState:
                 "callnames": ["Hebel", "Schalter"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_hebel_apply_f
+                "apply_f": af.o_hebel_apply_f
             },
             #
             # Place: p_innen
@@ -815,7 +815,7 @@ class GameState:
                 "callnames": ["Leiter"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_leiter_apply_f, # Funktion: Leiter wurd "angewandt"
+                "apply_f": af.o_leiter_apply_f, # Funktion: Leiter wurd "angewandt"
                 "take_f": o_leiter_take_f # Funktion: Leiter wird aufgenommen
             },
             "o_skelett": {
@@ -826,7 +826,7 @@ class GameState:
                 "callnames": ["Skelett", "Knochenmann"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_skelett_apply_f,
+                "apply_f": af.o_skelett_apply_f,
                 "reveal_f": o_skelett_reveal_f
             },
             "o_geldboerse": {
@@ -837,7 +837,7 @@ class GameState:
                 "callnames": ["Geldboerse", "Geldbörse", "Portemonaie", "Brieftasche"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_geldboerse_apply_f,
+                "apply_f": af.o_geldboerse_apply_f,
                 "reveal_f": o_geldboerse_reveal_f
             },
             "o_ec_karte": {
@@ -848,7 +848,7 @@ class GameState:
                 "callnames": ["Geldkarte", "EC-Karte", "ECKarte", "Kreditkarte"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_ec_karte_apply_f
+                "apply_f": af.o_ec_karte_apply_f
             },
             "o_pinsel": {
                 "name": "o_pinsel",
@@ -858,7 +858,7 @@ class GameState:
                 "callnames": ["Pinsel"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_pinsel_apply_f
+                "apply_f": af.o_pinsel_apply_f
             },
             "o_farbeimer": {
                 "name": "o_farbeimer",
@@ -868,7 +868,7 @@ class GameState:
                 "callnames": ["Farbeimer"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": o_farbeimer_apply_f
+                "apply_f": af.o_farbeimer_apply_f
             },
             "o_sprengladung":{
                 "name": "o_sprengladung",
@@ -878,7 +878,7 @@ class GameState:
                 "callnames": ["Sprengladung"],
                 "fixed": False,
                 "hidden": False,
-                "apply_f": o_sprengladung_apply_f
+                "apply_f": af.o_sprengladung_apply_f
             },
             #
             # Place: Felsen
@@ -891,7 +891,7 @@ class GameState:
                 "callnames": ["Felsen", "Felsblock", "Stein", "Gesteinsblock"],
                 "fixed": True,
                 "hidden": False,
-                "apply_f": o_felsen_apply_f
+                "apply_f": af.o_felsen_apply_f
             },
             #
             # Place: Höhle
@@ -904,7 +904,7 @@ class GameState:
                 "callnames": ["Schalter", "Hauptschalter", "Sicherung", "Sicherungsschalter", "Breaker"],
                 "fixed": True,
                 "hidden": False,
-                "apply_f": o_hauptschalter_apply_f
+                "apply_f": af.o_hauptschalter_apply_f
             }
 
         }
@@ -1035,30 +1035,71 @@ class GameState:
         rval["Aktueller Ort"] = details
         return rval
 
+    def verb_execute(self, pl: PlayerState, input: str) -> str:
+        tokens = input.split()
+        vtab = {
+            "anwenden":(self.verb_apply,2),
+            "nimm":(self.verb_take,1),
+            "ablegen":(self.verb_drop,1),
+            "umsehen":(self.verb_lookaround,0),
+            "untersuche": (self.verb_examine,1),
+            "hilfe":(self.verb_help,0),
+            "gehe":(self.verb_walk,1),
+            "llm": (self.verb_llm,0),
+            "angreifen": (self.verb_angreifen,1),
+            "inventory": (self.verb_inventory,0),
+            "context": (self.verb_context,0),
+            "quit": (self.verb_quit,0),
+            "nichts": (self.verb_noop,0)
+        }
+        verb,numargs = vtab.get(tokens[0],(None,None))
+        if verb != None:
+            r = ""
+            arg1 = tokens[1] if len(tokens) > 1 else None
+            arg2 = tokens[2] if len(tokens) > 2 else None
+            if numargs == 0:
+                r = verb(pl)
+            elif numargs == 1:
+                r = verb(pl,arg1)
+            elif numargs == 2:
+                r = verb(pl,arg1,arg2)
+            else:
+                raise Exception("Config Error!")
+        else:
+            r = "Unbekanntes Kommando"
+        return r
+
     def verb_apply(self, pl: PlayerState, what, towhat):
 
-        if towhat == None:
-            # r = f"apply {what} in this context"
-            r=""
-            o_what = self.objects.get(what)
-            if o_what != None:
-                r = r+ "\n"+ o_what.apply_f(self, pl, o_what, None)
-        else:
+        r="Nichts anzuwenden"
+        if what is None:
+            return r
+
+        found_what = self.obj_name_from_friendly_name(what)
+        found_towhat = self.obj_name_from_friendly_name(towhat) if towhat is not None else None
+
+        if towhat is not None:
             # r = f"apply {what} to {towhat} in this context"
             r=""
-            o_what = self.objects.get(what)
+            o_what = self.objects.get(found_what)
             if towhat=="dog":
                 o_towhat = PlayerState("dog", None) # Temporary Player State
             else:
-                o_towhat = self.objects.get(towhat)
+                o_towhat = self.objects.get(found_towhat)
 
             if o_what != None:
                 r = r+ "\n" + o_what.apply_f(self, pl, o_what, o_towhat)
+        else:
+            # r = f"apply {what} in this context"
+            r=""
+            o_what = self.objects.get(found_what)
+            if o_what != None:
+                r = r+ "\n"+ o_what.apply_f(self, pl, o_what, None)
 
         return r
 
-    def verb_take(self, pl: PlayerState, what):
-
+    def verb_take(self, pl: PlayerState, whato):
+        what = self.obj_name_from_friendly_name(whato)
         loc = pl.location
         # obj = loc.place_objects.get(what)
         obj = None
@@ -1076,7 +1117,10 @@ class GameState:
 
         return r
 
-    def verb_drop(self, pl: PlayerState, what):
+    def verb_drop(self, pl: PlayerState, whato):
+        what = self.obj_name_from_friendly_name(whato)
+        if what is None:
+            return "Sowas kenne ich nicht"
 
         obj = self.objects.get(what)
         if obj == None:
@@ -1149,8 +1193,9 @@ Am Ort sind folgende Objekte zu sehen:"""
         #     (1ab) else --> return failure message (Obstacle in way)
         # (2) return failure message ("There is no path here")
         w_found = None
+        direction_found = self.place_name_from_friendly_name(direction)
         for w in pl.location.ways:
-            if w.name == direction or w.destination.name == direction:
+            if w.name == direction_found or w.destination.name == direction_found:
                 w_found = w
                 break
         if w_found == None:
@@ -1172,16 +1217,20 @@ Am Ort sind folgende Objekte zu sehen:"""
         # Does an object with that name exist in the users inventory or in the current location?
         # if so, return its examine string, if not, return failure ("No such thing here")
         obj_here = None
+        what_found = self.obj_name_from_friendly_name(what)
         retstr = "So etwas gibt es hier nicht, und du hast sowas auch nicht bei dir."
+        if what_found is None:
+            return retstr
+
         for i in pl.inventory:
-            if i.name == what:
+            if i.name == what_found:
                 obj_here = i
                 retstr = f"Du trägst {i.name} gerade bei dir."
                 break
         if obj_here == None:
             retstr = ""
             for i in pl.location.place_objects:
-                if i.name == what:
+                if i.name == what_found:
                     obj_here = i
                     break
         if obj_here != None:
@@ -1213,248 +1262,286 @@ Am Ort sind folgende Objekte zu sehen:"""
                     self.objects["o_geheimzahl"].examine = f"Eine Geheimzahl: {self.geheimzahl:04}"
                     retstr = retstr + f"Im Mülleimer findest Du einen Zettel mit einer Geheimzahl! Die Geheimzahl ist: {self.geheimzahl:04}"
 """
-            if self.objects[what].reveal_f != None:
-                retstr = retstr + self.objects[what].reveal_f(self,pl,what, None)
+            if self.objects[what_found].reveal_f != None:
+                retstr = retstr + self.objects[what_found].reveal_f(self,pl,what_found, None)
 
             else:
                 retstr = retstr + f"{obj_here.examine}"
         else:
-            retstr = f'{what} - sowas gibt es hier nicht!'
+            retstr = f'{what_found} - sowas gibt es hier nicht!'
         return retstr
 
+    def verb_llm(self, pl:PlayerState):
+        import pprint
+        from rich.prompt import Prompt
+        user_input = ""
+        while user_input == "":
+            ui = Prompt.ask(f"(llm-test) Was tust du jetzt, {pl.name}? Deine Eingabe")
+            if ui != None:
+                user_input = ui.strip().lower()
+            else:
+                user_input = ""
+        gi = self.llm.parse_user_input_to_commands(
+            user_input,
+            self.game.compile_current_game_context(pl)
+        )
+        pprint(gi)
+        return "nichts"
 
+    def verb_angreifen(self, pl: PlayerState, whom):
+        self.game_over = True
+        return f"{pl.name} tötet {whom} in heldischem Kampf"
+
+    def verb_inventory(self, pl: PlayerState):
+        tw_print("**Du trägst bei dir:**")
+        for i in pl.get_inventory():
+            tw_print(f'- "{i.name}" --> {i.examine}')
+        return "nichts"
+
+    def verb_context(self, pl:PlayerState):
+        import pprint
+        r = self.compile_current_game_context(pl)
+        pprint(r)
+        return "nichts"
+
+    def verb_quit(self, pl: PlayerState):
+        self.game_over  = True
+        return f"Player {pl.name} has ended the game."
+
+    def verb_noop(selfself, pl: PlayerState):
+        return "Du tust nichts"
 #
 # Apply-Functions for Objects
 #
-def o_schluessel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    #
-    # Ich bin der Schlüssel - einzig sinnvolle Applikation: Schuppen
-    #
-    if pl != None:
-        #
-        # Haben wir den SChlüssel dabei oder liegt er am aktuellen Ort? --> Anwenden
-        #
-        loc = pl.location
-        if loc != gs.places["p_schuppen"]:
-            return "Das ergibt hier keinen Sinn."
-        if pl.is_in_inventory(what) or (what in pl.location.place_objects) and (onwhat == gs.objects["o_schuppen"]):
-            gs.schuppentuer = True
-            return "Klick - die Tür geht auf"
-
-        else:
-            return "Das geht hier nicht: "
-    else:
-        return "... kein Spieler? Wie soll das gehen?"
-
-def o_umschlag_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    return "Hiermit solltest du kein Schindluder treiben!"
-
-def o_warenautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_muelleimer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_salami_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_geheimzahl_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_tuerschliesser_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    if pl.location != gs.places["p_wagen"]:
-        return "Hier ist kein Türschließer"
-
-    if gs.ubahn_in_otherstation:
-        gs.ubahn_in_otherstation = False
-        gs.ways["w_wagen_ubahn"].visible = True
-        gs.ways["w_wagen_ubahn2"].visible = False
-        gs.ways["w_ubahn_wagen"].visible = True
-        gs.ways["w_ubahn2_wagen"].visible = False
-        return "Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und fährt zurück zum ersten Bahnsteig. Die Tür öffnet sich wieder."
-    else:
-        gs.ubahn_in_otherstation = True
-        gs.ways["w_wagen_ubahn"].visible = False
-        gs.ways["w_wagen_ubahn2"].visible = True
-        gs.ways["w_ubahn_wagen"].visible = False
-        gs.ways["w_ubahn2_wagen"].visible = True
-        return "Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und hält nach kurzer Fahrt an einem zweiten Bahnsteig. Die Tür öffnet sich wieder."
-
-
-
-def o_pizzaautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_geld_lire_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    if pl.location.name == "p_warenautomat" and onwhat.name == "o_warenautomat":
-        if not pl.is_in_inventory(gs.objects["o_umschlag"]):
-            return "Es wäre alles so schön - leider fällt dir auf, dass du den wichtigen Briefumschlag irgendwo verlegt hast. Finde ihn erst!"
-        if not gs.hebel:
-            if not gs.hauptschalter:
-                return "Eigentlich sollte dies gar nicht passieren können - aber der Automat hat keinen Strom!"
-            gs.game_over = True
-            return """Du wirfst die italienischen Lira in den Warenautomat - und er akzeptiert sie ohne zu murren.
-Du erwirbst eine Fahrradkette, reparierst damit dein kaputtes Fahrrad, und radelst von dannen.
-***Du hast das Spiel gewonnen!***"""
-        else:
-            return "Der Automat liegt auf dem Rücken - da kann man gar nichts einwerfen!"
-    else:
-        return "Das geht hier nicht!"
-
-
-def o_pizza_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_geldautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_geld_dollar_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    #
-    # Ich bin das Dollar-Bündel - mich kann man auf den Warenautomaten und auf den Pizza-Automaten anwenden, wenn
-    # der Raum stimmt
-    #
-
-    if pl.location.name == "p_warenautomat" and onwhat.name=="o_warenautomat":
-        if gs.hebel:
-            return 'Der Warenautomat liegt auf dem Bauch. Er ist zwar völlig intakt, und nicht zerbrochen, aber da kann man kein Geld einwerfen!'
-        else:
-            if not gs.hauptschalter:
-                return "Der Automat ist ausgeschaltet"
-            else:
-                return 'Der Automat zeigt an: "Mi dispiace molto, ma in questa macchina si accettano solo lire italiane.". Er will also italienische Lira haben - aber wo bekomme ich die her?'
-
-    if pl.location.name == "p_ubahn2" and onwhat.name=="o_pizzaautomat":
-        #
-        # Wenn der Hund in einem früheren Spielschritt die Pizza gegessen hat, mache eine neue
-        #
-        if gs.objects.get("o_pizza"):
-            gs.objects["o_pizza"].hidden = False
-        else:
-            gs.objects["o_pizza"] = GameObject("o_pizza","Eine schöne, frisch gemachte Pizza","",False,None)
-            gs.objects["o_pizza"].hidden = False
-            gs.objects["o_pizza"].ownedby = gs.places["p_ubahn2"]
-        gs.objects["o_geld_lire"].hidden = False
-        return 'Es dauert, und der Automat bereitet eine wunderschöne Pizza für dich zu, die Du im Ausgabefach findest. Und dann klappert es - es wird Dir Wechselgeld ausgezahlt, **und zwar in italienischen Lira!**'
-    return "Du scheinst mit den Dollars hier wnig anfangen zu können..."
-
-
-def o_schuppen_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_blumentopf_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-
-
-def o_stuhl_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_schrott_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    #
-    # Ich bin der Hebel - ich kann nicht auf "irgendwas" angewandt werden, ich kann nur selber
-    # angewandt werden.
-    #
-    if not gs.hauptschalter:
-        return "Du ruckelst am Hebel, aber nichts passiert"
-    if pl != None:
-        if pl.location == gs.places["p_dach"]:
-            if gs.hebel:
-                gs.hebel = False
-                gs.ways["w_warenautomat_ubahn"].visible = False
-                gs.places["p_warenautomat"].description = "Hier steht ein Warenautomat, an dem man Fahrradteile kaufen kann."
-                gs.objects["o_warenautomat"].examine = "Ein Warenautomat mit Fahrradteilen. Er enthält tatsächlich auch eine Fahrradkette! Jetzt bräuchte man Geld - und zwar italienische Lira. Dieser Automat akzeptiert nur diese!"
-                return "Es rumpelt - und der Warenautomat richtet sich wieder auf!"
-            else:
-                gs.hebel = True
-                gs.ways["w_warenautomat_ubahn"].visible = True
-                gs.objects["o_warenautomat"].examine = "Ein Warenautomat, der auf dem Rücken liegt. Da wo er stand, führt eine Treppe nach unten!"
-                gs.places["p_warenautomat"].description = "Hier liegt ein Warenautomat auf dem Rücken. Da wo er wohl gestanden hat, ist eine Öffnung im Boden. Man sieht darin eine Treppe - es geht zu einer U-Bahn-Station!"
-                return "Es rumpelt - Die siehst, wie der Warenautomat sich langsam auf den Rücken legt. Da wo er stand, ist nun eine Öffnung - und darin eine Treppe zu einer U-Bahn-Station!"
-        else:
-            return "Hier ist kein Hebel!"
-    else:
-        return "??? Kein Spieler ???"
-
-
-def o_sprengladung_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    from ExplosionState import ExplosionState
-    xpl = ExplosionState(gs, location=pl.location)
-    xpl.name = "Explosion"
-    gs.players.append(xpl)
-    return "Die Sprengladung ist nun scharf gemacht!"
-
-def o_felsen_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    return "Wie willst Du denn den Felsen auf IRGENDWAS anwenden? Du hast keine Superkräfte!"
-
-def o_hauptschalter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    if gs.hauptschalter:
-        return "Du hast den Schalter bereits betätigt - alles hat Strom"
-    else:
-        gs.hauptschalter = True
-        return "Du betätigst den Schalter. Irgendwo läuft ein Generator an - du hörst elektrisches Summen... Strom!"
-
-def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    #
-    # Ich bin die Leiter - einzig sinnvolle Applikation: an den Schuppen anlehnen
-    #
-    if pl != None:
-        #
-        # Haben wir die Leiter dabei?
-        #
-        if onwhat != None and isinstance(onwhat,PlayerState) and onwhat.name == "dog":
-            #
-            # Mit der Leiter gegen den Hund
-            #
-            dog = None
-            for d in gs.players:
-                if d.name=="Dog":
-                    dog=d
-                    break
-            if d==None:
-                return "Kein Hund hier!"
-            retour = gs.find_shortest_path(pl.location,gs.places["p_geldautomat"])
-            if retour == None:
-                return "Du gehst mit der Leiter auf den Hund los - aber er kann nicht an seinen Stammplatz flüchten!"
-
-            dog.growl=0
-            dog.next_location = ""
-            dog.next_location_wait = 2
-            dog.location = gs.places["p_geldautomat"]
-
-            return "Mit einer Leiter gegen einen Hund! Wie unfair! Aber immerhin der Hund rennt jammernd an seinen Stammplatz, den Geldautomaten."
-
-        loc = pl.location
-        if onwhat != gs.objects["o_schuppen"]:
-            return "Die Leiter rutscht ab und fällt um. Das mit der Leiter ergibt hier sowieso keinen Sinn."
-        if pl.is_in_inventory(what) or (what in pl.location.place_objects):
-            gs.leiter = True
-            pl.remove_from_inventory(what)
-            loc.place_objects.append(what)
-            #
-            # Weg Sichtbar machen
-            #
-            gs.ways["w_schuppen_dach"].visible = True
-
-            return "Du kannst jetzt auf den Schuppen steigen!"
-        else:
-            return "Das geht hier nicht: "
-    else:
-        return "... kein Spieler? Wie soll das gehen?"
-
+# def o_schluessel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     #
+#     # Ich bin der Schlüssel - einzig sinnvolle Applikation: Schuppen
+#     #
+#     if pl != None:
+#         #
+#         # Haben wir den SChlüssel dabei oder liegt er am aktuellen Ort? --> Anwenden
+#         #
+#         loc = pl.location
+#         if loc != gs.places["p_schuppen"]:
+#             return "Das ergibt hier keinen Sinn."
+#         if pl.is_in_inventory(what) or (what in pl.location.place_objects) and (onwhat == gs.objects["o_schuppen"]):
+#             gs.schuppentuer = True
+#             return "Klick - die Tür geht auf"
+#
+#         else:
+#             return "Das geht hier nicht: "
+#     else:
+#         return "... kein Spieler? Wie soll das gehen?"
+#
+# def o_umschlag_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     return "Hiermit solltest du kein Schindluder treiben!"
+#
+# def o_warenautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_muelleimer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_salami_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_geheimzahl_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_tuerschliesser_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     if pl.location != gs.places["p_wagen"]:
+#         return "Hier ist kein Türschließer"
+#
+#     if gs.ubahn_in_otherstation:
+#         gs.ubahn_in_otherstation = False
+#         gs.ways["w_wagen_ubahn"].visible = True
+#         gs.ways["w_wagen_ubahn2"].visible = False
+#         gs.ways["w_ubahn_wagen"].visible = True
+#         gs.ways["w_ubahn2_wagen"].visible = False
+#         return "Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und fährt zurück zum ersten Bahnsteig. Die Tür öffnet sich wieder."
+#     else:
+#         gs.ubahn_in_otherstation = True
+#         gs.ways["w_wagen_ubahn"].visible = False
+#         gs.ways["w_wagen_ubahn2"].visible = True
+#         gs.ways["w_ubahn_wagen"].visible = False
+#         gs.ways["w_ubahn2_wagen"].visible = True
+#         return "Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und hält nach kurzer Fahrt an einem zweiten Bahnsteig. Die Tür öffnet sich wieder."
+#
+#
+#
+# def o_pizzaautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_geld_lire_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     if pl.location.name == "p_warenautomat" and onwhat.name == "o_warenautomat":
+#         if not pl.is_in_inventory(gs.objects["o_umschlag"]):
+#             return "Es wäre alles so schön - leider fällt dir auf, dass du den wichtigen Briefumschlag irgendwo verlegt hast. Finde ihn erst!"
+#         if not gs.hebel:
+#             if not gs.hauptschalter:
+#                 return "Eigentlich sollte dies gar nicht passieren können - aber der Automat hat keinen Strom!"
+#             gs.game_over = True
+#             return """Du wirfst die italienischen Lira in den Warenautomat - und er akzeptiert sie ohne zu murren.
+# Du erwirbst eine Fahrradkette, reparierst damit dein kaputtes Fahrrad, und radelst von dannen.
+# ***Du hast das Spiel gewonnen!***"""
+#         else:
+#             return "Der Automat liegt auf dem Rücken - da kann man gar nichts einwerfen!"
+#     else:
+#         return "Das geht hier nicht!"
+#
+#
+# def o_pizza_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_geldautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_geld_dollar_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     #
+#     # Ich bin das Dollar-Bündel - mich kann man auf den Warenautomaten und auf den Pizza-Automaten anwenden, wenn
+#     # der Raum stimmt
+#     #
+#
+#     if pl.location.name == "p_warenautomat" and onwhat.name=="o_warenautomat":
+#         if gs.hebel:
+#             return 'Der Warenautomat liegt auf dem Bauch. Er ist zwar völlig intakt, und nicht zerbrochen, aber da kann man kein Geld einwerfen!'
+#         else:
+#             if not gs.hauptschalter:
+#                 return "Der Automat ist ausgeschaltet"
+#             else:
+#                 return 'Der Automat zeigt an: "Mi dispiace molto, ma in questa macchina si accettano solo lire italiane.". Er will also italienische Lira haben - aber wo bekomme ich die her?'
+#
+#     if pl.location.name == "p_ubahn2" and onwhat.name=="o_pizzaautomat":
+#         #
+#         # Wenn der Hund in einem früheren Spielschritt die Pizza gegessen hat, mache eine neue
+#         #
+#         if gs.objects.get("o_pizza"):
+#             gs.objects["o_pizza"].hidden = False
+#         else:
+#             gs.objects["o_pizza"] = GameObject("o_pizza","Eine schöne, frisch gemachte Pizza","",False,None)
+#             gs.objects["o_pizza"].hidden = False
+#             gs.objects["o_pizza"].ownedby = gs.places["p_ubahn2"]
+#         gs.objects["o_geld_lire"].hidden = False
+#         return 'Es dauert, und der Automat bereitet eine wunderschöne Pizza für dich zu, die Du im Ausgabefach findest. Und dann klappert es - es wird Dir Wechselgeld ausgezahlt, **und zwar in italienischen Lira!**'
+#     return "Du scheinst mit den Dollars hier wnig anfangen zu können..."
+#
+#
+# def o_schuppen_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_blumentopf_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+#
+#
+# def o_stuhl_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_schrott_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     #
+#     # Ich bin der Hebel - ich kann nicht auf "irgendwas" angewandt werden, ich kann nur selber
+#     # angewandt werden.
+#     #
+#     if not gs.hauptschalter:
+#         return "Du ruckelst am Hebel, aber nichts passiert"
+#     if pl != None:
+#         if pl.location == gs.places["p_dach"]:
+#             if gs.hebel:
+#                 gs.hebel = False
+#                 gs.ways["w_warenautomat_ubahn"].visible = False
+#                 gs.places["p_warenautomat"].description = "Hier steht ein Warenautomat, an dem man Fahrradteile kaufen kann."
+#                 gs.objects["o_warenautomat"].examine = "Ein Warenautomat mit Fahrradteilen. Er enthält tatsächlich auch eine Fahrradkette! Jetzt bräuchte man Geld - und zwar italienische Lira. Dieser Automat akzeptiert nur diese!"
+#                 return "Es rumpelt - und der Warenautomat richtet sich wieder auf!"
+#             else:
+#                 gs.hebel = True
+#                 gs.ways["w_warenautomat_ubahn"].visible = True
+#                 gs.objects["o_warenautomat"].examine = "Ein Warenautomat, der auf dem Rücken liegt. Da wo er stand, führt eine Treppe nach unten!"
+#                 gs.places["p_warenautomat"].description = "Hier liegt ein Warenautomat auf dem Rücken. Da wo er wohl gestanden hat, ist eine Öffnung im Boden. Man sieht darin eine Treppe - es geht zu einer U-Bahn-Station!"
+#                 return "Es rumpelt - Die siehst, wie der Warenautomat sich langsam auf den Rücken legt. Da wo er stand, ist nun eine Öffnung - und darin eine Treppe zu einer U-Bahn-Station!"
+#         else:
+#             return "Hier ist kein Hebel!"
+#     else:
+#         return "??? Kein Spieler ???"
+#
+#
+# def o_sprengladung_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     from ExplosionState import ExplosionState
+#     xpl = ExplosionState(gs, location=pl.location)
+#     xpl.name = "Explosion"
+#     gs.players.append(xpl)
+#     return "Die Sprengladung ist nun scharf gemacht!"
+#
+# def o_felsen_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     return "Wie willst Du denn den Felsen auf IRGENDWAS anwenden? Du hast keine Superkräfte!"
+#
+# def o_hauptschalter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     if gs.hauptschalter:
+#         return "Du hast den Schalter bereits betätigt - alles hat Strom"
+#     else:
+#         gs.hauptschalter = True
+#         return "Du betätigst den Schalter. Irgendwo läuft ein Generator an - du hörst elektrisches Summen... Strom!"
+#
+# def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     #
+#     # Ich bin die Leiter - einzig sinnvolle Applikation: an den Schuppen anlehnen
+#     #
+#     if pl != None:
+#         #
+#         # Haben wir die Leiter dabei?
+#         #
+#         if onwhat != None and isinstance(onwhat,PlayerState) and onwhat.name == "dog":
+#             #
+#             # Mit der Leiter gegen den Hund
+#             #
+#             dog = None
+#             for d in gs.players:
+#                 if d.name=="Dog":
+#                     dog=d
+#                     break
+#             if d==None:
+#                 return "Kein Hund hier!"
+#             retour = gs.find_shortest_path(pl.location,gs.places["p_geldautomat"])
+#             if retour == None:
+#                 return "Du gehst mit der Leiter auf den Hund los - aber er kann nicht an seinen Stammplatz flüchten!"
+#
+#             dog.growl=0
+#             dog.next_location = ""
+#             dog.next_location_wait = 2
+#             dog.location = gs.places["p_geldautomat"]
+#
+#             return "Mit einer Leiter gegen einen Hund! Wie unfair! Aber immerhin der Hund rennt jammernd an seinen Stammplatz, den Geldautomaten."
+#
+#         loc = pl.location
+#         if onwhat != gs.objects["o_schuppen"]:
+#             return "Die Leiter rutscht ab und fällt um. Das mit der Leiter ergibt hier sowieso keinen Sinn."
+#         if pl.is_in_inventory(what) or (what in pl.location.place_objects):
+#             gs.leiter = True
+#             pl.remove_from_inventory(what)
+#             loc.place_objects.append(what)
+#             #
+#             # Weg Sichtbar machen
+#             #
+#             gs.ways["w_schuppen_dach"].visible = True
+#
+#             return "Du kannst jetzt auf den Schuppen steigen!"
+#         else:
+#             return "Das geht hier nicht: "
+#     else:
+#         return "... kein Spieler? Wie soll das gehen?"
+#
 def o_leiter_take_f(gs: GameState, pl: PlayerState=None) -> str:
     """ If Leiter is taken away, some paths may become invisible"""
     if gs.leiter:
@@ -1463,47 +1550,47 @@ def o_leiter_take_f(gs: GameState, pl: PlayerState=None) -> str:
     else:
         gs.leiter = False
         return ""
-
-def o_skelett_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_geldboerse_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    if not gs.hauptschalter:
-        return "Sieht so aus, als wäre der Automat ausgeschaltet"
-
-    if pl.location.name!="p_geldautomat" and onwhat.name!="o_geldautomat":
-        return "Ich verstehe nicht, was genau du mit der Geldkarte machen willst!"
-
-    print(f"{'*'*60}")
-    print(f"*{' '*58}*")
-    s=("Bitte geben sie die Geheimzahl ein!").center(58," ")
-    print(f'*{s}*')
-    print(f"*{' ' * 58}*")
-    print(f"{'*' * 60}")
-    z = -1
-    while z<0:
-        x = input("Geheimzahl: ")
-        if x.isdigit():
-            z = int(x)
-    if gs.geheimzahl == z:
-        gs.objects["o_geld_dollar"].visible = True
-        return "**Die Zahl stimmt!** Du tippst die entsprechenden Tasten - der Automat rattert, und spuckt ein Bündel Scheine aus. Frisch gedruckte US-Dollar!"
-    else:
-        return " --- Die Zahl ist falsch. ---"
-
-
-def o_pinsel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
-
-def o_farbeimer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
-
+#
+# def o_skelett_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_geldboerse_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     if not gs.hauptschalter:
+#         return "Sieht so aus, als wäre der Automat ausgeschaltet"
+#
+#     if pl.location.name!="p_geldautomat" and onwhat.name!="o_geldautomat":
+#         return "Ich verstehe nicht, was genau du mit der Geldkarte machen willst!"
+#
+#     print(f"{'*'*60}")
+#     print(f"*{' '*58}*")
+#     s=("Bitte geben sie die Geheimzahl ein!").center(58," ")
+#     print(f'*{s}*')
+#     print(f"*{' ' * 58}*")
+#     print(f"{'*' * 60}")
+#     z = -1
+#     while z<0:
+#         x = input("Geheimzahl: ")
+#         if x.isdigit():
+#             z = int(x)
+#     if gs.geheimzahl == z:
+#         gs.objects["o_geld_dollar"].visible = True
+#         return "**Die Zahl stimmt!** Du tippst die entsprechenden Tasten - der Automat rattert, und spuckt ein Bündel Scheine aus. Frisch gedruckte US-Dollar!"
+#     else:
+#         return " --- Die Zahl ist falsch. ---"
+#
+#
+# def o_pinsel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
+#
+# def o_farbeimer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+#     pass
+#
 #
 # Reveal Functions
 #
