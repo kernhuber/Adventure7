@@ -33,6 +33,16 @@ class NPCPlayerState(PlayerState):
     nogo_places: List[str] = field(default_factory=lambda: ["p_dach","p_ubahn2"]) # Dog can't go to these places.
     way_home: Deque[Place] = field(default_factory=deque) # Falls Hund nach Hause geht
 
+    def can_dog_go(self, gs: GameState, plc:str)-> bool:
+        if plc in self.nogo_places:
+            return False
+
+        for w in self.location.ways:
+            if w.destination.name == plc:
+                if w.visible and w.obstruction_check(gs) == "Free":
+                    return True
+        return False
+
     def NPC_game_move(self, gs:GameState) -> str:
         """
         Doggo routine
@@ -101,7 +111,7 @@ class NPCPlayerState(PlayerState):
                         import random
                         l = len(self.location.ways)
                         lt = random.randrange(0,l-1)
-                        while not self.location.ways[lt].visible and not self.location.ways[lt].obstruction_check(gs)=="Free":
+                        while self.can_dog_go(gs, self.location.ways[lt].destination.name):
                             lt = random.randint(0, l-1)
                         w = self.location.ways[lt].destination.name
                         print(f"Der Hund flüchtet jaulend nach {w}")
@@ -131,7 +141,10 @@ class NPCPlayerState(PlayerState):
             case DogState.GOHOME:
                 nl = self.way_home.popleft()
                 if nl:
-                    return f'gehe {nl.name}'
+                    if self.can_dog_go(gs, nl.name):
+                        return f'gehe {nl.name}'
+                    else:
+                        return "nichts"
                 else:
                     self.dog_state = DogState.START
                     tw_print("**Dog ist nun wieder an seinem Stammplatz**")
@@ -171,7 +184,10 @@ class NPCPlayerState(PlayerState):
 
         if self.next_loc:
             self.dog_state = DogState.TRACE
-            return f"gehe {self.next_loc.popleft().name}"
+            if self.can_dog_go(gs, self.next_loc[0].name):
+                return f"gehe {self.next_loc.popleft().name}"
+            else:
+                return "nichts"
 
         for w in self.location.ways:
             dsts.append(w.destination)
@@ -181,7 +197,7 @@ class NPCPlayerState(PlayerState):
                 pl = p.location
                 break
 
-        if pl != None and pl.name not in self.nogo_places:
+        if pl != None and self.can_dog_go(gs, pl.name):
             self.dog_state = DogState.TRACE
             self.next_loc.append(pl)
             tw_print(f"**Dog beobachtet nun {pl.name}**")
@@ -193,7 +209,7 @@ class NPCPlayerState(PlayerState):
         # Anybody here besides me?
         #
         for p in gs.players:
-            if p != self and p.location == self.location:
+            if p != self and p.location == self.location and type(p) is PlayerState:
                 return True
 
         return False
