@@ -77,7 +77,7 @@ class NPCPlayerState(PlayerState):
                 #
                 pl = None
                 for p in gs.players:
-                    if p!=self and p.location == self.location:
+                    if p!=self and type(p) is PlayerState and p.location == self.location:
                         pl = p
                         break
 
@@ -203,7 +203,7 @@ class NPCPlayerState(PlayerState):
         #
         #
         for p in gs.players:
-            if p != self and p.location == self.location:
+            if p != self and type(p) is PlayerState and p.location == self.location:
                 self.dog_state = DogState.ATTACK
                 self.attack_counter = 1
                 return f'interaktion {p.name} "**Grrr!**"'
