@@ -19,8 +19,7 @@ from Utils import tw_print, dprint
 
 from typing import Callable
 
-def make_obstruction_check(locked: bool) -> Callable[['GameState'], bool]:
-    return lambda state: locked
+
 
 class GameState:
 

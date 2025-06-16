@@ -15,6 +15,10 @@ class DogState(Enum):
     TRACE = auto()
     GOHOME = auto()
 
+class DogFight(Enum):
+    WON = auto()
+    LOST = auto()
+    TIE = auto()
 #
 # Our NPC Player - the Doggo
 #
@@ -32,26 +36,6 @@ class NPCPlayerState(PlayerState):
     def NPC_game_move(self, gs:GameState) -> str:
         """
         Doggo routine
-
-        The dog behaves as follows:
-
-        0) Start
-           state = start
-
-        1) Food in his place:
-           eat food (discard food from gs.objects and place, do nothing for 3 game cycles)
-           state = "eating"
-
-        2) Someone in his place:
-           warn two game cycles, attack in third cycle
-           state = "threat to attack"
-
-        3) Someone in visible neighbor place:
-           Watch neighbor place: walk to neighbor place when place empty
-           state = observe
-
-        4) Nobody in neighbor place:
-           walk home (Geldautomat)
 
 
 
@@ -104,14 +88,31 @@ class NPCPlayerState(PlayerState):
 
                     return f'interaktion {pl.name} "**{rs}**"'
                 else:
-                    return f"angreifen {pl.name}"
+                    ds = self.fight()
+                    if ds == DogFight.WON:
+                        #
+                        # Kill player
+                        #
+                        return f"angreifen {pl.name}"
+                    elif ds == DogFight.LOST:
+                        #
+                        # Escape to a neighbor location
+                        #
+                        import random
+                        l = len(self.location.ways)
+                        lt = random.randrange(0,l-1)
+                        while not self.location.ways[lt].visible and not self.location.ways[lt].obstruction_check(gs)=="Free":
+                            lt = random.randint(0, l-1)
+                        w = self.location.ways[lt].destination.name
+                        print(f"Der Hund flüchtet jaulend nach {w}")
+                        return f"gehe {w}"
+                    else:
+                        return "nichts"
 
             case DogState.EATING:
-                tw_print("**Dog frisst noch!**")
-                self.eat_counter = self.eat_counter -1
-                if self.eat_counter == 0:
-                    self.dog_state = DogState.START
-                return "nichts"
+                s,rs = self.do_state_eating(gs)
+                self.dog_state = s
+                return rs
 
             case DogState.TRACE:
                 #
@@ -230,94 +231,51 @@ class NPCPlayerState(PlayerState):
             self.eat_counter = 3
         return "nichts"
 
-    def NPC_game_move_old(self, gs:GameState) -> str:
-        """
-        Doggo routine
+    def do_state_eating(self, gs: GameState):
+        tw_print("**Dog frisst noch!**")
+        self.eat_counter = self.eat_counter - 1
 
-        The dog behaves as follows:
-
-        0) Start
-           state = start
-
-        1) Food in his place:
-           eat food (discard food from gs.objects and place, do nothing for 3 game cycles)
-           state = "eating"
-
-        2) Someone in his place:
-           warn two game cycles, attack in third cycle
-           state = "threat to attack"
-
-        3) Someone in visible neighbor place:
-           Watch neighbor place: walk to neighbor place when place empty
-           state = observe
-
-        4) Nobody in neighbor place:
-           walk home (Geldautomat)
-
-
-
-        :param gs:
-        :return str:
-        """
-
-        #
-        # Are we on our way home? If so, walk, and that's it.
-        #
-        if self.way_home:
-            print((" Dog walks home ").center(60,"+"))
-            n = self.way_home.popleft()
-            return f'gehe {n.name}'
-
-        #
-        # Doggo gets mad when others are in same location
-        #
-
-        others = False
-        for p in gs.players:
-            if p != self:
-                if p.location == self.location:
-                    others=True
-                    if self.growl ==0:
-                        self.growl = 1
-                        return f'interagiere {p.name} "**Grrrrr!**"'
-                    elif self.growl==1:
-                        self.growl = 2
-                        return f'interagiere {p.name} "**GRROAAAARRRR!**"'
-                    else:
-                        self.growl = 0
-                        return f'angreifen {p.name}'
-        if not others:
-            self.growl = 0
-        #
-        # Now check the surrounding places: anybody there? If so, wait, until away (one round), then check out place.
-        # Walk home, if other player does not leave place for 3 rounds
-        #
-        for neigh in self.location.ways:
-            if neigh.visible and neigh.destination.name not in self.nogo_places and neigh.obstruction_check(gs) == "Free":
-                n = neigh.destination
-                for p in gs.players:
-                    if p != self and p.location == n:
-                        self.next_loc = n.name
-                        self.next_loc_wait = 1
-                        break
-
-        if self.next_loc != "":
-            if self.next_loc_wait > 0:
-                self.next_loc_wait = self.next_loc_wait - 1
-                return "nichts"
-            else:
-                #
-                # Are there other players in the spot I am curious about? If so, initiate walk home.
-                #
-                for p in gs.players:
-                    if p!= self:
-                        if p.location.name == self.next_loc:
-                            self.way_home = deque(gs.find_shortest_path(self.location, gs.places["o_geldautomat"]))
-                            rval = f'gehe {self.way_home.popleft().name}'
-                        else:
-                            rval = f'gehe {self.next_loc}'
-                            self.next_loc = ""
-
-                return rval
+        if self.eat_counter == 0:
+            rs = DogState.START
         else:
-            return "nichts"
+            rs = DogState.EATING
+        return rs,"nichts"
+
+    def fight(self) -> DogFight:
+        """
+        Minigame: does number provided by player beat number provided by dog?
+        * both numbers one from 1,2,3,4
+        * 4 beats 3, 3 beats 2, 2 beats 1, 1 beats 4
+        * All other combinations -> TIE
+        * Check if dog has won -> return WON
+        * Check if player has lost -> return LOST
+        :param p: Player input (number from 1,2,3,4)
+        :return: DogFight state (WON, LOST, TIE) from Dog's perspective
+        """
+        import random
+        d = random.randint(1,3)
+
+
+        tw_print(f"***{'#'*40}***")
+        tw_print("***Kampf mit dem Hund!***".center(40))
+        tw_print("Regeln:  3 schlägt 2, 2 schlägt 1, 1 schlägt 3 \n... alles andere: Unentschieden")
+
+        inp = ""
+        while inp not in ["1","2","3"]:
+            inp = input("Gib eine Zahl aus 1,2,3 ein: ")
+        p = int(inp.strip())
+        tw_print(f"Du hast: {p}")
+        tw_print(f"Hund hat: {d}")
+        #
+        # Modulo calc: scale 1,2,3 to 0,1,2
+        #
+        d=d-1
+        p=p-1
+        if (d+1)%3 == p:
+            tw_print("***Der Hund verliert den Kampf!***")
+            return DogFight.LOST
+        if (p+1)%3 == d:
+            tw_print("***Du verlierst den Kampf gegen den Hund!***")
+            return DogFight.WON
+        tw_print("***Unentschieden!***")
+        return DogFight.TIE

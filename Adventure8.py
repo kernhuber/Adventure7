@@ -78,6 +78,17 @@ class Adventure:
         # For testing
         #
         self.test_queue = deque([
+            "gehe geldautomat",
+            #
+            # Hundekampf provozieren
+            #
+            "nichts",
+            "nichts",
+            "nichts",
+            "nichts",
+            "nichts",
+            "nichts",
+            "nichts",
             "gehe p_schuppen",
             "umsehen",
             "untersuche Blumentopf",
