@@ -15,28 +15,55 @@ dem die Rettung nicht fern scheint. Du siehst:
 * Einen Schuppen
 
 Du Untersuchst den Automaten. Tatsächlich enthält er alle Teile, die Du
-brauchst. Leider akzeptiert der Automat nur Bargeld, und zwar alte, italienische
+brauchst. Leider ist der Automat ausgeschaltet und hat keinen Strom, und
+leider akzeptiert der er nur Bargeld, und zwar alte, italienische
 Lira. Du hast kein Bargeld dabei, und überhaupt - du hast Dein Portemonaie
 vergessen, und somit hast du auch keine Karte, mit der du Geld abheben
 könntest. Du hast nur den Umschlag.
 
-Du gehst zum Geldautomaten, aber der Hund knurrt und lässt dich nicht heran.
-Wenn du weiter darauf bestehst, wird der Hund dich töten, und das Spiel ist zu Ende.
+Du gehst zum Geldautomaten, aber auch der ist ausgeschaltet. Und ein
+Hund liegt da, knurrt und lässt dich nicht heran. Wenn du weiter hier
+bleibst, wird der Hund dich angreifen, eventuell töten, und das Spiel ist
+zu Ende.
 
 Du gehst zum Schuppen. Dieser ist verschlossen. Um den Schuppen herum liegt
 eine Menge unnützer Kram. Unter einem Blumentopf findest Du schließlich
 einen Schlüssel. Mit diesem öffnest du den Schuppen.
 
-Im Schuppen ist eine Menge unnützer Kram, darunter eine Leiter. In einer
-Ecke sitzt ein Skelett in einem Anzug.
+Im Schuppen ist eine Menge unnützer Kram, darunter eine Leiter. Du siehst
+auch eine Sprengladung. In einer Ecke sitzt ein Skelett in einem Anzug.
 
 Du untersuchst das Skelett. Es ist wohl schon sehr lange hier. In einer
 Anzugtasche findest Du ein Portemonaie mit einer EC-Karte. Diese würde
-sicher in den Geldautomaten passen, wäre da nur nicht der Hund...
+sicher in den Geldautomaten passen, wäre da nur Strom, und nicht der Hund...
 
-Mit de Leiter kletterst du auf den Schuppen. Auf dem Schuppen ist ein
-Hebel. Als du diesen betätigst, fällt der Automat mit den  Fahrradteilen
-um und gibt einen Weg unter die Erde frei.
+Du nimmst die EC-Karte, die Leiter und die Sprengladung mit Dir und gehst aus
+dem Schuppen heraus ins Freie.
+
+Mit de Leiter kletterst du auf den Schuppen. Auf dem Schuppen ist ein alter
+rostiger Hebel. Als du diesen betätigst, passiert nichts.
+
+Du gehst vom Dach wieder herunter. Ein weiteret Weg führt zu einem Gesteinshügel.
+Der Weg endet vor einem großen Felsen. Es sieht so aus, als ob der Felsen
+vor den Weg gerollt wäre und irgendwetwas versperren würde. Du legst die
+Sprengadung an den Felsen, aktivierst sie, und gehst vom Felsen weg zum Schuppen
+- die Explosion könnte gefährlich sein.
+
+Nach drei Spielrunden explodiert die Sprengladung und gibt den Weg zu einer
+Höhle frei.
+
+Du gehst vom Schuppen zum Hügel, und da wo der Fels lag, ist nun der Eingang
+zu einer Höhle. Du gehst in die Höhle und findest dort einen großen
+Sicherungsschalter. Diesen betätigst Du, und Licht geht an - du hast den
+Strom angeschaltet.
+
+Du gehst aus der Höhle via Felshügel zum Schuppen zurück, steigst mit der
+Leiter darauf, und betätigst den Hebel. Diesmal hörst Du ein Rumpeln - und
+siehst, wie der Warenautomat umkippt, und die Öffnung zu einem Weg nach
+unten freigibt.
+
+Du steigst vom Dach herab, gehst zum Warenautomaten. Und siehst den Weg
+nach unten, der durch den umgekippten Warenautomaten freigegeben wurde.
 
 Du untersucht den Weg und stellst fest, dass es sich um eine Rolltreppe
 handelt, die zu einer U-Bahn-Station führt. In einem Mülleimer findest du
@@ -45,11 +72,10 @@ wenn ja, wie bekommst du den Hund weg? Es steht tatsächlich eine wartende
 U-Bahn im Bahnhof, die Türen sind auf.
 
 Die U-Bahn ist leer, aber Du findest eine Einkaufstasche. Darin: eine
-luftdicht verpackte Salami. Wenn du diese isst, wirst du das Spiel nie
-lösen (--> Ende).
+luftdicht verpackte Salami.
 
 Du gehst mit der Salami die Rolltreppe hoch. Du gehst in Richtung des
-Geldautomaten. Der Hund wittert die Salami und folgt dir. Du gehst die Trepper
+Geldautomaten. Der Hund wittert die Salami und folgt dir. Du gehst die Treppe
 wieder hinunter und wirfst die Wurst in die U-Bahn. Der Hund folgt der Wurst,
 und beginnt, sie zu verspeisen. Zeit für Dich, die U-Bahnstation zu verlassen.
 
@@ -65,7 +91,7 @@ Lira aus, sondern US-Dollar. Der Warenautomat akzeptiert diese nicht.
 
 Du gehst zurück zum Schuppen, kletterst drauf, und öffnest den Gang zur
 U-Bahn-Station wieder. Der Hund spring knurrend aus dem Gang und schaut sich
-suchend um. Dann verschwindet er, offenbar um dich zu suchen.
+suchend um. Dann geht er zum Geldautomaten zurück.
 
 Du spurtest den Gang wieder hinunter zur U-Bahn-Station. Der Hund hat dich
 entdeckt und läuft dir zähnefletschend hinterher. Du flüchtest in die U-Bahn,
@@ -96,3 +122,6 @@ entgegen und hast das Spiel gewonnen.
 ------------------------------------
 Und damit sind wir am Ende!
 
+Anmerkungen: der Hund mag sich nicht ganz so verhalten, wie beschrieben. Das
+kann auch Auswirkungen auf den Spielverlauf haben. Er ist als einfache State-
+Machine implementiert, in späterer Version des Spiels dann KI-gesteuert.
