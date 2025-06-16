@@ -230,6 +230,7 @@ class GameState:
         # Place definitions
         #
         import GameApplyFunctions as af
+
         place_defs = {
             "p_start": {
                 "description": "Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. ",
