@@ -78,17 +78,17 @@ class Adventure:
         # For testing
         #
         self.test_queue = deque([
-            "gehe geldautomat",
+            # "gehe geldautomat",
             #
             # Hundekampf provozieren
             #
-            "nichts",
-            "nichts",
-            "nichts",
-            "nichts",
-            "nichts",
-            "nichts",
-            "nichts",
+            # "nichts",
+            # "nichts",
+            # "nichts",
+            # "nichts",
+            # "nichts",
+            # "nichts",
+            # "nichts",
             "gehe p_schuppen",
             "umsehen",
             "untersuche Blumentopf",
@@ -247,9 +247,7 @@ class Adventure:
                 tw_print(txt_final_text)
                 self.game.game_over = True
             for pl in self.game.players:
-                #
-                # (3),(4),(5) - commands which  don't count as game moves
-                #
+
 
 
 
@@ -278,7 +276,7 @@ class Adventure:
                                 user_input = ""
 
 
-                    tw_print(self.game.verb_execute(pl,user_input))
+                tw_print(self.game.verb_execute(pl,user_input))
 
 
 
