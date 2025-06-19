@@ -17,7 +17,7 @@ class MiniGames:
         * All other combinations -> TIE
         * Check if dog has won -> return WON
         * Check if player has lost -> return LOST
-        :param p: Player input (number from 1,2,3,4)
+        :param:
         :return: DogFight state (WON, LOST, TIE) from Dog's perspective
         """
         import random
@@ -62,9 +62,27 @@ class MiniGames:
 
         :return: DogFight
         """
+
         stones = []
         stack=[]
         stack_sum = 0
+        tw_print("""
+***################################        
+***###   Spiel um Dein Leben!   ###
+***################################
+
+Gegeben eine Liste von zehn Zahlen und eine Zielzahl.
+
+Die Spieler wählen immer abwechselnd eine Zahl aus der Liste und addieren sie
+iauf eine laufende Summe, die anfänglich bei 0 startet; die Zahl wird aus der 
+Liste entfernt.
+
+- Wenn ein Spieler die Zielzahl genau erreicht, hat er das Spiel gewonnen.
+- Wenn ein Spieler die Zahl überschreitet, hat er verloren.
+  --> Wenn nach dem Zug eines Spielers nur noch solche Zahlen übrig bleiben,
+      die zu einem überschreiten der Zielsumme führen würden, hat der andere
+      Spieler verloren
+        """)
         for i in range(0,10):
             stones.append(random.randint(1,10))
         z=0
@@ -76,16 +94,18 @@ class MiniGames:
         reach = 0
         while reach < max:
             reach = random.randint(1,z)
-        print("Münzwurf: wer fängt an - Spieler oder Hund?")
+        tw_print("\n\nMünzwurf: wer fängt an - Spieler oder Hund?")
         whosnext = random.choice([0,1])
         if whosnext == 0:
-            print("Dog fängt an!")
+            tw_print("***Dog fängt an!")
         else:
-            print("Spieler fängt an!")
+            tw_print("***Spieler fängt an!")
         while True:
+            tw_print(f"{'-'*40}")
             print(f"Verfügbare Zahlen: {stones}")
             print(f"Ziel: {reach}")
             print(f"Stapel: {stack_sum}")
+            print("\n\n")
             if whosnext == 0:
                 #
                 # Dog draws:
@@ -94,12 +114,12 @@ class MiniGames:
                 i = random.randrange(0,len(stones))
                 stack.append((stones[i],"Dog"))
                 stack_sum += stones[i]
-                print(f"** Dog wählt: {stones[i]}")
+                tw_print(f"***Dog wählt: {stones[i]}")
                 if stack_sum == reach:
-                    print("Dog hat den Zielwert genau getroffen und gewinnt damit!")
+                    tw_print("Dog hat den Zielwert genau getroffen und ***gewinnt*** damit!")
                     return DogFight.WON
                 if stack_sum > reach:
-                    print("Dog hat am Zielwert vorbeigeschossen und verliert das Spiel!")
+                    tw_print("Dog hat am Zielwert vorbeigeschossen und ***verliert*** das Spiel!")
                     return DogFight.LOST
                 stones.remove(stones[i])
             else:
@@ -116,10 +136,10 @@ class MiniGames:
                 stack.append((inp,"Spieler"))
                 stack_sum += inp
                 if stack_sum == reach:
-                    print("Spieler hat den Zielwert genau getroffen - Dog verliert das Spiel")
+                    tw_print("Spieler hat den Zielwert genau getroffen - ***Dog verliert*** das Spiel")
                     return DogFight.LOST
                 if stack_sum > reach:
-                    print("Spieler hat dam Zielwert vorbeigeschossen und verliert das Spiel!")
+                    tw_print("Spieler hat dam Zielwert vorbeigeschossen und verliert das Spiel. ***Dog gewinnt!***")
                     return DogFight.WON
                 stones.remove(inp)
 
@@ -139,17 +159,17 @@ class MiniGames:
             # lastone: The game is over
             #
             if lastone:
-                print(f"*** Game over - any further number out of {stones} would overstep {reach}")
+                tw_print(f"\n***Game over*** - jede weitere Wahl aus  {stones} würde {reach} überschreiten.")
                 if whosnext == 0:
-                    print("--> Dog hat gewonnen!")
+                    tw_print("***--> Dog hat gewonnen!***")
                     return DogFight.WON
                 else:
-                    print("--> DOg hat verloren!")
+                    tw_print("***--> Dog hat verloren!***")
                     return DogFight.LOST
 
             whosnext = (whosnext + 1) % 2
-            print("--------------")
+
 
 
 g = MiniGames()
-g.sum_fight()
+print(g.sum_fight())
