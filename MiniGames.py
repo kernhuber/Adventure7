@@ -130,8 +130,10 @@ class MiniGames:
             if lastone:
                 print(f"*** Game over - any further number out of {stones} would overstep {reach}")
                 if whosnext == 0:
+                    print("--> Dog hat gewonnen!")
                     return DogFight.WON
                 else:
+                    print("--> DOg hat verloren!")
                     return DogFight.LOST
 
             whosnext = (whosnext + 1) % 2
