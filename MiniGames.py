@@ -98,6 +98,9 @@ class MiniGames:
                 if stack_sum == reach:
                     print("Dog hat den Zielwert genau getroffen und gewinnt damit!")
                     return DogFight.WON
+                if stack_sum > reach:
+                    print("Dog hat am Zielwert vorbeigeschossen und verliert das Spiel!")
+                    return DogFight.LOST
                 stones.remove(stones[i])
             else:
                 #
@@ -115,6 +118,9 @@ class MiniGames:
                 if stack_sum == reach:
                     print("Spieler hat den Zielwert genau getroffen - Dog verliert das Spiel")
                     return DogFight.LOST
+                if stack_sum > reach:
+                    print("Spieler hat dam Zielwert vorbeigeschossen und verliert das Spiel!")
+                    return DogFight.WON
                 stones.remove(inp)
 
 
