@@ -68,9 +68,14 @@ class MiniGames:
         for i in range(0,10):
             stones.append(random.randint(1,10))
         z=0
+        max = 0
         for i in stones:
             z = z+i
-        reach = random.randint(1,z)
+            if i> max:
+                max = i
+        reach = 0
+        while reach < max:
+            reach = random.randint(1,z)
         print("Münzwurf: wer fängt an - Spieler oder Hund?")
         whosnext = random.choice([0,1])
         if whosnext == 0:
