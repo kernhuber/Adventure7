@@ -66,10 +66,10 @@ class MiniGames:
         stones = []
         stack=[]
         stack_sum = 0
-        tw_print("""
-***################################        
-***###   Spiel um Dein Leben!   ###
-***################################
+        print("""
+################################        
+###   Spiel um Dein Leben!   ###
+################################
 
 Gegeben eine Liste von zehn Zahlen und eine Zielzahl.
 
@@ -83,6 +83,7 @@ Liste entfernt.
       die zu einem überschreiten der Zielsumme führen würden, hat der andere
       Spieler verloren
         """)
+
         for i in range(0,10):
             stones.append(random.randint(1,10))
         z=0
@@ -97,9 +98,9 @@ Liste entfernt.
         tw_print("\n\nMünzwurf: wer fängt an - Spieler oder Hund?")
         whosnext = random.choice([0,1])
         if whosnext == 0:
-            tw_print("***Dog fängt an!")
+            tw_print("***Dog fängt an!***\n\n")
         else:
-            tw_print("***Spieler fängt an!")
+            tw_print("***Spieler fängt an!***\n\n")
         while True:
             tw_print(f"{'-'*40}")
             print(f"Verfügbare Zahlen: {stones}")
@@ -111,17 +112,31 @@ Liste entfernt.
                 # Dog draws:
                 #
 
-                i = random.randrange(0,len(stones))
-                stack.append((stones[i],"Dog"))
-                stack_sum += stones[i]
-                tw_print(f"***Dog wählt: {stones[i]}")
+                # i = random.randrange(0,len(stones))
+                # stack.append((stones[i],"Dog"))
+                # stack_sum += stones[i]
+                # tw_print(f"***Dog wählt: {stones[i]}")
+
+
+                i = 0
+                for t in stones:
+                    if t+stack_sum == reach:
+                        i=t
+                        break
+                    elif t+stack_sum < reach:
+                        if t>i:
+                            i = t
+
+                stack.append((i,"Dog"))
+                stack_sum += i
+                tw_print(f"***Dog wählt: {i}")
                 if stack_sum == reach:
                     tw_print("Dog hat den Zielwert genau getroffen und ***gewinnt*** damit!")
                     return DogFight.WON
                 if stack_sum > reach:
                     tw_print("Dog hat am Zielwert vorbeigeschossen und ***verliert*** das Spiel!")
                     return DogFight.LOST
-                stones.remove(stones[i])
+                stones.remove(i)
             else:
                 #
                 # Player draws
