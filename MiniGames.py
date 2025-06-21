@@ -263,5 +263,5 @@ Liste entfernt.
         else:
             print(f"Du bist näher dran (Abstand {dp}). Abstand des Hundes ist {dd}. Der Hund verliert!")
             return DogFight.LOST
-g = MiniGames()
-print(g.fight())
+#g = MiniGames()
+#print(g.fight())

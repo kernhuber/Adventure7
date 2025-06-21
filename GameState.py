@@ -53,10 +53,10 @@ class GameState:
             source_name = way_data["source"]
             dest_name = way_data["destination"]
             v = way_data.get("visible")
-            if v == None:
+            if v is None:
                 visible = True
             else:
-                visible = False
+                visible = v
 
 
 
@@ -626,6 +626,27 @@ class GameState:
                 "apply_f":  af.o_warenautomat_apply_f
 
             },
+            "o_fahrradkette": {
+                "name": "o_fahrradkette",
+                "examine": "Genau die Fahrradkette, die du zum Gewinnen des Spiels benötigst!",
+                "help_text": "",
+                "callnames": ["Fahrradkette", "Kette"],
+                "ownedby": "p_warenautomat",
+                "fixed": False,
+                "hidden": True,
+                "apply_f": af.o_fahrradkette_apply_f
+            },
+            "o_fahrrad": {
+                "name": "o_fahrrad",
+                "examine": "Das Fahrrad, mit dem du gekommen bist",
+                "help_text": "",
+                "callnames": ["Fahrrad", "Rad"],
+                "ownedby": "p_start",
+                "fixed": True,
+                "hidden": False,
+                "apply_f": None
+            },
+
             #
             # Place: p_ubahn
             #
@@ -1550,6 +1571,8 @@ def o_leiter_take_f(gs: GameState, pl: PlayerState=None) -> str:
     else:
         gs.leiter = False
         return ""
+def o_fahrradkette_take_f(gs: GameState, pl: PlayerState=None) -> str:
+    return "Du hast die Fahrradkette gefunden! Damit kannst Du Dein Fahrrad reparieren!"
 #
 # def o_skelett_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
 #     pass

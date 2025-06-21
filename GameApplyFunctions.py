@@ -1,4 +1,5 @@
 """ This module contains all the game verbs as well as a super simple parser and execution mechanism"""
+#import pylab as p
 
 from GameState import GameState
 from GameObject import GameObject
@@ -72,10 +73,12 @@ def o_geld_lire_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=No
         if not gs.hebel:
             if not gs.hauptschalter:
                 return "Eigentlich sollte dies gar nicht passieren können - aber der Automat hat keinen Strom!"
-            gs.game_over = True
-            return """Du wirfst die italienischen Lira in den Warenautomat - und er akzeptiert sie ohne zu murren.
-Du erwirbst eine Fahrradkette, reparierst damit dein kaputtes Fahrrad, und radelst von dannen.
-***Du hast das Spiel gewonnen!***"""
+            if gs.objects["o_fahrradkette"].hidden:
+                gs.objects["o_fahrradkette"].hidden = False
+                return """Du wirfst die italienischen Lira in den Warenautomat - und er akzeptiert sie ohne zu murren.
+Du erwirbst eine Fahrradkette, die nun im Ausgabeschacht liegt!"""
+            else:
+                return "Die Fahrradkette hast Du ja schon aus dem Automaten geholt - eine zweite ist leider nicht darin!"
         else:
             return "Der Automat liegt auf dem Rücken - da kann man gar nichts einwerfen!"
     else:
@@ -154,12 +157,30 @@ def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, 
     else:
         return "??? Kein Spieler ???"
 
+from GameState import GameState
+from PlayerState import PlayerState
 def o_sprengladung_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     from ExplosionState import ExplosionState
+
     xpl = ExplosionState(gs, location=pl.location)
     xpl.name = "Explosion"
     gs.players.append(xpl)
-    return "Die Sprengladung ist nun scharf gemacht!"
+    rval=""
+    if onwhat != None:
+        #
+        # Wenn die Sprengladung auf einen Gegenstand angewandt wird, der am selben Ort ist wie der Spieler,
+        # wird sie hier am Ort abgelegt. Sonst bleibt sie im Inventory des Spielers und sprengt ihn bald
+        # in die Luft!
+        #
+        l = []
+        for i in pl.location.place_objects:
+            l.append(i.name)
+            for j in i.callnames:
+                l.append(j)
+        if onwhat in l:
+            gs.verb_drop(pl,"o_sprengladung")
+            rval = "Du legst die Sprengladung hier ab. "
+    return rval+"Die Sprengladung ist nun scharf gemacht!"
 
 def o_felsen_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     return "Wie willst Du denn den Felsen auf IRGENDWAS anwenden? Du hast keine Superkräfte!"
@@ -255,3 +276,17 @@ def o_pinsel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
 def o_farbeimer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     pass
 
+def o_fahrradkette_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    if pl.location.name == "p_start":
+        if onwhat.name != "o_fahrrad":
+            return "Ich habe nicht verstanden, was ich mit der Fahrradkette machen soll!"
+        if gs.objects.get("o_umschlag",None) is None:
+            gs.game_over = True
+            return "Tja - Du hast zwar die Fahrradkette, aber der Briefumschlag ist irgendwann pulverisiert worden. Schade, ***Du verlierst das Spiel!***"
+        if gs.objects["o_umschlag"] in pl.inventory:
+            gs.game_over = True
+            return "Du reparierst Dein Fahrrad, und schaffst es rechtzeitig, den Briefumschlag abzugeben. Du bist ein Held, rettest die Welt, und ***gewinnst das Spiel!***"
+        else:
+            return "Das wäre schön - aber wo hast du den Briefumschlag abgelegt? Den brauchst Du..."
+    else:
+        return "Wie soll das gehen?"
