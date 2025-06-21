@@ -77,132 +77,7 @@ class Adventure:
         #
         # For testing
         #
-        self.test_queue = deque([
-            # "gehe geldautomat",
-            #
-            # Hundekampf provozieren
-            #
-            # "nichts",
-            # "nichts",
-            # "nichts",
-            # "nichts",
-            # "nichts",
-            # "nichts",
-            # "nichts",
-            "gehe p_schuppen",
-            "umsehen",
-            "untersuche Blumentopf",
-            "anwenden Schlüssel Schuppen",
-            "gehe p_innen",
-            "umsehen",
-            "nimm sprengladung",
-            "gehe p_schuppen",
-            "gehe felsen",
-            "umsehen",
-            "anwenden sprengladung",
-            "ablegen sprengladung",
-            "gehe p_schuppen",
-            "gehe p_innen",
-            "nichts",
-            "gehe p_schuppen",
-            "gehe p_felsen",
-            "umsehen",
-            "gehe höhle",
-            "umsehen",
-            "anwenden breaker",
-            "gehe felsen",
-            "gehe p_schuppen",
-            "gehe p_innen",
-            "untersuche o_skelett",
-            "untersuche o_geldboerse",
-            "nimm o_ec_karte",
-            "nimm o_leiter",
-            "gehe p_schuppen",
-            "anwenden o_leiter o_schuppen",
-            "gehe p_dach",
-            "umsehen",
-            "anwenden o_hebel",
-            "gehe p_schuppen",
-            "anwenden o_ec_karte o_blumentopf",
-            "gehe p_geldautomat",
-            #"anwenden o_ec_karte o_geldautomat",
-            "gehe p_warenautomat",
-            "umsehen",
-            "gehe p_ubahn",
-            "umsehen",
-            "untersuche o_muelleimer",
-            "untersuche o_geheimzahl",
-            "nimm o_geheimzahl",
-            "gehe p_warenautomat",
-            "gehe p_geldautomat",
-            "untersuche o_geheimzahl",
-            "anwenden o_ec_karte o_geldautomat",
-            "gehe p_warenautomat",
-            "gehe p_ubahn",
-            "gehe p_wagen",
-            "umsehen",
-            "nimm o_salami",
-            "gehe p_ubahn",
-            "gehe p_warenautomat",
-            "gehe p_schuppen",
-            "ablegen o_salami",
-            "umsehen",
-            "gehe p_innen",
-            "nichts",
-            "nichts",
-            "gehe p_schuppen",
-            "gehe p_geldautomat",
-            "nimm o_geld_dollar",
-            "gehe p_warenautomat",
-            "anwenden o_geld_dollar o_warenautomat",
-            "gehe p_schuppen",
-            "nichts",
-            "nichts",
-            "nichts",
-            "gehe p_dach",
-            "anwenden o_hebel",
-            "gehe p_schuppen",
-            "gehe p_warenautomat",
-            "umsehen",
-            "anwenden o_geld_dollar o_warenautomat",
-            "untersuche o_warenautomat",
-            "nichts",
-            "gehe schuppen",
-            "gehe dach",
-            "anwenden hebel",
-            "gehe schuppen",
-            "gehe warenautomat",
-            "gehe u-bahn",
-            "gehe wagen",
-            "umsehen",
-            "anwenden turschliesser",
-            "gehe p_ubahn2",
-            "umsehen",
-            "anwenden o_geld_dollar o_pizzaautomat",
-            "umsehen",
-            "nimm pizza",
-            "nimm lire",
-            "gehe wagen",
-            "anwenden tuerschliesser",
-            "gehe ubahn",
-            "gehe warenautomat",
-            "anwenden lire warenautomat",
-            "gehe schuppen",
-            "gehe dach",
-            "anwenden hebel",
-            "gehe schuppen",
-            "gehe warenautomat",
-            "nichts"
 
-        ])
-
-    def test_game(self) -> str:
-        if self.test_queue:
-            c = self.test_queue.popleft()
-            print (f'Player: {c}')
-            return c
-        else:
-            return None
 
 
 
@@ -251,29 +126,19 @@ class Adventure:
 
 
 
-                if (isinstance(pl,NPCPlayerState)):
+                if (type(pl) is NPCPlayerState):
                     #
                     # Non Player Character
                     #
                     print(f'{"-" * 60}')
                     user_input = pl.NPC_game_move(self.game)
                     tw_print(f"**{pl.name}**: {user_input}")
-                elif (isinstance(pl, ExplosionState)):
+                elif (type(pl) is ExplosionState):
                     tw_print(f'{"-" * 60}')
                     user_input = pl.explosion_input(self.game)
                 else:
+                    user_input = pl.Player_game_move()
 
-                    print(f'Du bist hier: {pl.location.name}')
-                    user_input = ""
-                    while user_input=="":
-                        if self.test_queue:
-                            user_input = self.test_game().strip().lower()
-                        else:
-                            ui = Prompt.ask(f"Was tust du jetzt, {pl.name}? Deine Eingabe")
-                            if ui != None:
-                                user_input = ui.strip().lower()
-                            else:
-                                user_input = ""
 
 
                 tw_print(self.game.verb_execute(pl,user_input))
