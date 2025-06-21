@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 from typing import List
 from Place import Place
-
+from collections import deque
+from SysTest import SysTest
 #
 # The state of a player. Multiple players - multiple states
 #
@@ -12,6 +13,10 @@ class PlayerState:
     location: Place
     inventory: List[GameObject] = field(default_factory=list)
     last_input: str = "Ich sehe mich erst einmal um."
+    cmd_q: deque = field(default_factory = deque)
+    systest: SysTest = field(default_factory = SysTest)
+
+
 
 
     def add_to_inventory(self, a: GameObject):
@@ -35,9 +40,32 @@ class PlayerState:
         return self.inventory
 
 
+    def Player_game_move(self):
+        """
+        This function returns user input to the game engine. Two additional features:
+        * if there are commands in the systest queue, return these instead of actual user input
+        * Commands entered by user are appended to cmd_q, the command queue, and only in a
+          subsequent step returned to the game engine. The reason is, that when using an
+          LLM to parse user input, multiple commands may be entered into the queue in one
+          step
+        :return: Command to be executed by game Engine
+        """
+        from rich.prompt import Prompt
+        print(f'Du bist hier: {self.location.name}')
+        user_input = ""
+        while user_input == "":
+            if self.systest.test_queue:
+                user_input = self.systest.test_game().strip().lower()
+            elif self.cmd_q:
+                user_input = self.cmd_q.popleft()
+            else:
+                ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe")
+                if ui != None:
+                    self.cmd_q.append(ui.strip().lower())
+                else:
+                    user_input = ""
 
 
-
-
+        return user_input
 
 
