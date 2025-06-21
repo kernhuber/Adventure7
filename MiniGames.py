@@ -9,6 +9,13 @@ from NPCPlayerState import DogFight
 
 
 class MiniGames:
+    def __init__(self):
+        self.glist = [self.circle_fight,self.sum_fight, self.odd_even_fight, self.close_fight]
+
+    def fight(self):
+        g = random.choice(self.glist)
+        return g()
+
     def circle_fight(self) -> DogFight:
         """
         Minigame: does number provided by player beat number provided by dog?
@@ -24,13 +31,14 @@ class MiniGames:
         d = random.randint(1,4)
 
 
-        tw_print(f"***{'#'*40}***")
-        tw_print("***Kampf mit dem Hund!***".center(40))
-        tw_print("Regeln:  4 schlägt 3, 3 schlägt 2, 2 schlägt 1, 1 schlägt 4 \n... alles andere: Unentschieden")
+        print("****************************")
+        print("***  Kampf mit dem Hund  ***")
+        print("****************************\n\n")
+        print("Regeln:  4 schlägt 3, 3 schlägt 2, 2 schlägt 1, 1 schlägt 4 ... sonst: Unentschieden.\n\n")
 
         inp = ""
         while inp not in ["1","2","3","4"]:
-            inp = input("Gib eine Zahl aus 1,2,3 ein: ")
+            inp = input("Gib eine Zahl aus 1,2,3,4 ein: ")
         p = int(inp.strip())
         tw_print(f"Du hast: {p}")
         tw_print(f"Hund hat: {d}")
@@ -39,10 +47,10 @@ class MiniGames:
         #
         d=d-1
         p=p-1
-        if (d+1)%3 == p:
+        if (d+1)%4 == p:
             tw_print("***Der Hund verliert den Kampf!***")
             return DogFight.LOST
-        if (p+1)%3 == d:
+        if (p+1)%4 == d:
             tw_print("***Du verlierst den Kampf gegen den Hund!***")
             return DogFight.WON
         tw_print("***Unentschieden!***")
@@ -184,7 +192,76 @@ Liste entfernt.
 
             whosnext = (whosnext + 1) % 2
 
+    def odd_even_fight(self) -> DogFight:
+        """
+        Mini-Spiel: Odd or Even – Summe entscheidet.
+        - Beide Spieler (Mensch & Hund) wählen eine Zahl zwischen 1 und 5.
+        - Ist die Summe gerade, gewinnt der Hund.
+        - Ist die Summe ungerade, gewinnt der Spieler.
+        - Sonderregel: Wenn beide dieselbe Zahl wählen, endet das Spiel unentschieden.
+        """
+        tw_print("""
+    ## 🃏 Zahlenduell – Odd or Even ##
+    - Beide wählen eine Zahl von 1 bis 5.
+    - Gerade Summe: Der Hund gewinnt.
+    - Ungerade Summe: Der Spieler gewinnt.
+    - Gleiche Zahl: Unentschieden!
+    """)
 
+        dog_choice = random.randint(1, 5)
+        player_input = None
+        while player_input not in ["1", "2", "3", "4", "5"]:
+            player_input = input("Wähle eine Zahl zwischen 1 und 5: ").strip()
+        player_choice = int(player_input)
 
+        tw_print(f"Du hast {player_choice} gewählt.")
+        tw_print(f"Der Hund hat {dog_choice} gewählt.")
+
+        if player_choice == dog_choice:
+            tw_print("***Beide haben dieselbe Zahl gewählt! Es steht unentschieden.***")
+            return DogFight.TIE
+
+        total = player_choice + dog_choice
+        if total % 2 == 0:
+            tw_print("***Die Summe ist gerade – der Hund gewinnt!***")
+            return DogFight.WON
+        else:
+            tw_print("***Die Summe ist ungerade – du gewinnst!***")
+            return DogFight.LOST
+
+    def close_fight(selfs) -> DogFight:
+        tw_print("""
+        ## 🃏 Wer ist am nächsten dran? ##
+        - Das System erstellt eine zufällige geheime Zahl zwischen 1 und 100
+        - Beide wählen eine Zahl zwischen 1 bis 100.
+        - Es gewinnt derjenige, der am nächsten an der geheimen Zahl liegt.
+        - Gleiche Zahl: Unentschieden!
+        """)
+
+        secret = random.randint(1,100)
+        dog_choice = random.randint(1,100)
+        plr_choice = -1
+        while plr_choice < 1 or plr_choice > 100:
+            try:
+                plr_choice = int(input("Bitte eine Zahl zwischen 1 und 100 (inklusive) wählen: ").strip())
+            except ValueError():
+                print("Das war gar keine Zahl!")
+                plr_choice = -1
+        print(f"Der Hund hat {dog_choice} gewählt.")
+        print(f"Das System hat {secret} gewürfelt")
+        dd = abs(secret-dog_choice)
+        dp = abs(secret-plr_choice)
+        if plr_choice == dog_choice:
+            print("Gleiche Zahl - unentschieden!")
+            return DogFight.TIE
+        elif dp == dd:
+            print("Gleicher Abstand! - unentschieden")
+            return DogFight.TIE
+        elif dp > dd:
+            print(f"Der Hund ist näher dran (Abstand {dd}). Dein Abstand ist {dp}. Der Hund gewinnt!")
+            return DogFight.WON
+        else:
+            print(f"Du bist näher dran (Abstand {dp}). Abstand des Hundes ist {dd}. Der Hund verliert!")
+            return DogFight.LOST
 g = MiniGames()
-print(g.sum_fight())
+print(g.fight())
