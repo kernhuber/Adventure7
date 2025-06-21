@@ -25,6 +25,8 @@ class DogFight(Enum):
 @dataclass
 class NPCPlayerState(PlayerState):
     from Place import Place
+    from MiniGames import MiniGames
+
     growl: int = 0
     dog_state: DogState = DogState.START
 
@@ -32,6 +34,7 @@ class NPCPlayerState(PlayerState):
     next_loc_wait : int=2   # but only if player has left for two game moves
     nogo_places: List[str] = field(default_factory=lambda: ["p_dach","p_ubahn2"]) # Dog can't go to these places.
     way_home: Deque[Place] = field(default_factory=deque) # Falls Hund nach Hause geht
+    fightgames: MiniGames = field(default_factory = MiniGames)
 
     def can_dog_go(self, gs: GameState, plc:str)-> bool:
         if plc in self.nogo_places:
@@ -98,7 +101,7 @@ class NPCPlayerState(PlayerState):
 
                     return f'interaktion {pl.name} "**{rs}**"'
                 else:
-                    ds = self.fight()
+                    ds = self.fightgames.fight()
                     if ds == DogFight.WON:
                         #
                         # Kill player
