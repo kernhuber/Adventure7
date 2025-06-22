@@ -31,11 +31,16 @@ class MiniGames:
         d = random.randint(1,4)
 
 
-        print("****************************")
-        print("***  Kampf mit dem Hund  ***")
-        print("****************************\n\n")
-        print("Regeln:  4 schlägt 3, 3 schlägt 2, 2 schlägt 1, 1 schlägt 4 ... sonst: Unentschieden.\n\n")
+        print("""
+Wer schlägt wen? Beide Spieler wählen eine Zahl aus 1,2,3 und 4. 
+Dann gelten folgende Regeln:
 
+4 schlägt 3 
+3 schlägt 2 
+2 schlägt 1 
+1 schlägt 4 
+  sonst: Unentschieden
+        """)
         inp = ""
         while inp not in ["1","2","3","4"]:
             inp = input("Gib eine Zahl aus 1,2,3,4 ein: ")
@@ -75,9 +80,7 @@ class MiniGames:
         stack=[]
         stack_sum = 0
         print("""
-################################        
-###   Spiel um Dein Leben!   ###
-################################
+
 
 Gegeben eine Liste von zehn Zahlen und eine Zielzahl.
 

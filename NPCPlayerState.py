@@ -101,6 +101,11 @@ class NPCPlayerState(PlayerState):
 
                     return f'interaktion {pl.name} "**{rs}**"'
                 else:
+                    print("""
+********************************
+*** Du kämpfst mit dem Hund! ***
+********************************
+                    """)
                     ds = self.fightgames.fight()
                     if ds == DogFight.WON:
                         #
@@ -113,12 +118,18 @@ class NPCPlayerState(PlayerState):
                         #
                         import random
                         l = len(self.location.ways)
-                        lt = random.randrange(0,l-1)
-                        while self.can_dog_go(gs, self.location.ways[lt].destination.name):
-                            lt = random.randint(0, l-1)
-                        w = self.location.ways[lt].destination.name
-                        print(f"Der Hund flüchtet jaulend nach {w}")
-                        return f"gehe {w}"
+                        w = []
+                        for l in self.location.ways:
+                            if (l.obstruction_check(gs) == "Free" and l.visible and self.can_dog_go(gs, l.name)):
+                                w.append(l.destination.name )
+
+                        if w:
+                            flight = random.choice(w)
+                            print(f"Der Hund flüchtet jaulend nach {flight}")
+                            return f"gehe {flight}"
+                        else:
+                            print("Der Hund kann von hier aus nirgendwo hin!")
+                            return "nichts"
                     else:
                         return "nichts"
 

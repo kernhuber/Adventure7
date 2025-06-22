@@ -177,7 +177,7 @@ def o_sprengladung_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject
             l.append(i.name)
             for j in i.callnames:
                 l.append(j)
-        if onwhat in l:
+        if onwhat.name in l:
             gs.verb_drop(pl,"o_sprengladung")
             rval = "Du legst die Sprengladung hier ab. "
     return rval+"Die Sprengladung ist nun scharf gemacht!"

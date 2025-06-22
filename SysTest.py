@@ -15,8 +15,8 @@ class SysTest:
             "nimm sprengladung",
             "gehe schuppen",
             "gehe warenautomat",
-            "anwenden sprengladung",
-            "ablegen sprengladung",
+            "anwenden sprengladung warenautomat",
+            #"ablegen sprengladung",
             "gehe schuppen",
             "nichts"
         ])
