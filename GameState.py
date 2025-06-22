@@ -1071,7 +1071,8 @@ class GameState:
             "inventory": (self.verb_inventory,0),
             "context": (self.verb_context,0),
             "quit": (self.verb_quit,0),
-            "nichts": (self.verb_noop,0)
+            "nichts": (self.verb_noop,0),
+            "interaktion": (self.verb_interact,2)
         }
         verb,numargs = vtab.get(tokens[0],(None,None))
         if verb != None:
@@ -1329,8 +1330,11 @@ Am Ort sind folgende Objekte zu sehen:"""
         self.game_over  = True
         return f"Player {pl.name} has ended the game."
 
-    def verb_noop(selfself, pl: PlayerState):
+    def verb_noop(self, pl: PlayerState):
         return "Du tust nichts"
+
+    def verb_interact(self, pl: PlayerState, who, what):
+        return f'{pl.name} an {who}:  "{what}"'
 #
 # Apply-Functions for Objects
 #
