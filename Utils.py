@@ -2,6 +2,7 @@
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.prompt import Prompt
+from pprint import pprint
 
 DEBUG = False
 console = Console()
@@ -13,3 +14,7 @@ def tw_print(x):
 def dprint(x):
     if DEBUG:
         print(x)
+
+def dpprint(x):
+    if DEBUG:
+        pprint(x)

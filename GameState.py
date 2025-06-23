@@ -1022,7 +1022,7 @@ class GameState:
         dog_around = False
         r=""
         for p in self.players:
-            if isinstance(p,NPCPlayerState):
+            if type(p) is NPCPlayerState:
                 dog_pl = p
                 break
         #

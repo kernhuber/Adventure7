@@ -1,7 +1,7 @@
 from collections import deque
 from rich.prompt import Prompt
 from GameState import GameState
-from Utils import dprint, tw_print, DEBUG
+from Utils import dprint, dpprint, tw_print, DEBUG
 from pprint import pprint
 
 #
@@ -16,15 +16,15 @@ from pprint import pprint
 txt_initial_text = """
 # Willkommen in der Wüste
 
-**Eine alltägliche Situation:** Du radelst mit Deinem Fahrrad als Bote
+**Eine komische Situation:** Du radelst mit Deinem Fahrrad als Bote
 unter sengender Sonne entlang einer schnurgraden Strasse durch eine
-ewige Wüste. Bei Dir hast Du einen Umschlag, den Du ans Ziel bringen
-musst. Erreicht der Umschlag das Ziel nicht, so geht die Welt unter,
-aber das ist eine andere Geschichte.
+endlose Wüste. Bei Dir hast Du einen Umschlag, den Du an ein Ziel 
+bringen musst. Erreicht der Umschlag das Ziel nicht, so geht die Welt 
+unter, aber das ist eine andere Geschichte.
 
 Plötzlich reisst Dir die Fahrradkette - das Fahrrad funktioniert ohne
 sie nicht mehr. Glücklicherweise bist Du an einem Ort gestrandet, an
-dem die Rettung nicht fern scheint. 
+dem es Rettung geben könnte. 
 
 **Und nun?**
 """
@@ -83,13 +83,7 @@ class Adventure:
 
     def gameloop(self):
         """
-        1) Emit initial narrator sequence
-        2) Loop until game end state reached
-        3)    For all players p
-        4)        Get user input (atomic actions to be executed by game logic)
-        5)        if user input one of "inventory", "hilfe", "umsehen", "save", execute and go to 4
-        6)        execute user input,
-        7 )       if applicable, generate system response
+
 
         :return:
         """
@@ -132,7 +126,7 @@ class Adventure:
                     #
                     print(f'{"-" * 60}')
                     user_input = pl.NPC_game_move(self.game)
-                    tw_print(f"**{pl.name}**: {user_input}")
+                    dprint(f"**{pl.name}**: {user_input}")
                 elif (type(pl) is ExplosionState):
                     tw_print(f'{"-" * 60}')
                     user_input = pl.explosion_input(self.game)
@@ -145,10 +139,10 @@ class Adventure:
 
 
 
-        tw_print(f"Total tokens used in this game session: {self.game.llm.tokens}")
-        tw_print(f"Number of API-Calls: {self.game.llm.numcalls}")
-        pprint(self.game.llm.token_details)
-        print(f"{'*'*80}")
+        dprint(f"Total tokens used in this game session: {self.game.llm.tokens}")
+        dprint(f"Number of API-Calls: {self.game.llm.numcalls}")
+        dpprint(self.game.llm.token_details)
+        dprint(f"{'*'*80}")
         pprint(self.game.gamelog)
         tw_print("***Auf Wiedersehen!***")
 #

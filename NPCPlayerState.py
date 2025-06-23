@@ -120,7 +120,7 @@ class NPCPlayerState(PlayerState):
                         l = len(self.location.ways)
                         w = []
                         for l in self.location.ways:
-                            if (l.obstruction_check(gs) == "Free" and l.visible and self.can_dog_go(gs, l.name)):
+                            if (l.obstruction_check(gs) == "Free" and l.visible and self.can_dog_go(gs, l.destination.name)):
                                 w.append(l.destination.name )
 
                         if w:
@@ -150,6 +150,8 @@ class NPCPlayerState(PlayerState):
 
                 if self.check_state_trace(gs):
                     return self.setup_state_trace(gs)
+                else:
+                    return self.setup_state_gohome(gs)
                 return "nichts"
 
             case DogState.GOHOME:
