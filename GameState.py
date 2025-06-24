@@ -230,6 +230,7 @@ class GameState:
         #
         import GameApplyFunctions as af
         import GameTakeFunctions as tf
+        import GameRevealFunctions as rf
 
         place_defs = {
             "p_start": {
@@ -661,7 +662,7 @@ class GameState:
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": af.o_muelleimer_apply_f,
-                "reveal_f": o_muelleimer_reveal_f
+                "reveal_f": rf.o_muelleimer_reveal_f
             },
             "o_salami": {
                 "name": "o_salami",
@@ -779,7 +780,7 @@ class GameState:
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": af.o_blumentopf_apply_f,
-                "reveal_f": o_blumentopf_reveal_f
+                "reveal_f": rf.o_blumentopf_reveal_f
             },
             "o_schluessel": {
                 "name": "o_schluessel",
@@ -849,7 +850,7 @@ class GameState:
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": af.o_skelett_apply_f,
-                "reveal_f": o_skelett_reveal_f
+                "reveal_f": rf.o_skelett_reveal_f
             },
             "o_geldboerse": {
                 "name": "o_geldboerse",
@@ -860,7 +861,7 @@ class GameState:
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": af.o_geldboerse_apply_f,
-                "reveal_f": o_geldboerse_reveal_f
+                "reveal_f": rf.o_geldboerse_reveal_f
             },
             "o_ec_karte": {
                 "name": "o_ec_karte",
@@ -1338,45 +1339,6 @@ Am Ort sind folgende Objekte zu sehen:"""
         return f'{pl.name} an {who}:  "{what}"'
 
 
-
-#
-# Reveal Functions
-#
-def o_blumentopf_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
-    if gs.objects["o_schluessel"].hidden:
-        retstr = "Ein alter Blumentopf - aber warte: **unter dem Blumentopf liegt ein Schlüssel!!!**"
-        gs.objects["o_blumentopf"].examine = "Unter diesem Blumentopf hast Du den Schlüssel gefunden"
-        gs.objects["o_schluessel"].hidden = False
-        return retstr
-    else:
-        return gs.objects["o_blumentopf"].examine
-
-def o_skelett_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
-    if gs.objects["o_geldboerse"].hidden:
-        gs.objects["o_geldboerse"].hidden = False
-        gs.objects["o_skelett"].examine = "Bei diesem Knochenmann hast Du eine Geldbörse gefunden!"
-        return "Oh weh, der sitzt wohl schon länger hier! Ein Skelett, welches einen verschlissenen Anzug trägt. **Im Anzug findest du eine Geldboerse!**"
-
-    else:
-        return gs.objects["o_skelett"].examine
-
-def o_geldboerse_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
-    if gs.objects["o_ec_karte"].hidden:
-        gs.objects["o_ec_karte"].hidden = False
-        gs.objects["o_geldboerse"].examine = "In dieser Geldbörse hast Du eine EC-Karte gefunden"
-        return "Fein! Hier ist eine EC-Karte! Die passt bestimmt in einen Geldautomaten!"
-    else:
-        return gs.objects["o_geldboerse"].examine
-
-def o_muelleimer_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
-    if gs.objects["o_geheimzahl"].hidden:
-        from random import randint
-        gs.geheimzahl = randint(1, 9999)
-        gs.objects["o_geheimzahl"].hidden = False
-        gs.objects["o_geheimzahl"].examine = f"Eine Geheimzahl: {gs.geheimzahl:04}"
-        return f"Im Mülleimer findest Du einen Zettel mit einer Geheimzahl! Die Geheimzahl ist: {gs.geheimzahl:04}"
-    else:
-        return gs.objects["o_geheimzahl"].examine
 
 
 #
