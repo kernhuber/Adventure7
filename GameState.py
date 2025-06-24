@@ -223,6 +223,9 @@ class GameState:
         self.felsen = True                 # Ist der Felsen noch im Weg?
         self.hauptschalter = False         # Ohne Strom geht hier gar nichts
         self.dach = True                   # An Ende hat jemand das Dach weggesprengt
+        self.warenautomat_intakt = True    # oder den Warenautomat
+        self.geldautomat_intakt = True     # oder den Geldautomat
+        self.schuppen_intakt = True        # oder den Schuppen
         self.game_over = False             # Na hoffentlich noch nicht so schnell!
         self.llm = GeminiInterface()       # Unser Sprachmodell
         self.gamelog = []                  # Wir schneiden alles für das LLM mit
@@ -248,8 +251,7 @@ class GameState:
             },
             "p_warenautomat": {
                 "description": "Hier ist ein Warenautomat, an dem man Fahrradteile kaufen kann",
-                "place_prompt": """Schon ulkig - Hier ist mitten in der Wüste ein Warenautomat, an dem man Fahrradteile kaufen kann. 
-            """,
+                "place_prompt": "",
                 "place_prompt_f": pp.p_warenautomat_place_prompt_f,
                 "ways": ["w_warenautomat_start", "w_warenautomat_geldautomat","w_warenautomat_schuppen","w_warenautomat_ubahn","w_warenautomat_felsen"],
                 "objects": ["o_warenautomat"],
@@ -293,10 +295,8 @@ class GameState:
             },
             "p_geldautomat": {
                 "description": "Hier ist ein Geldautomat, an dem man Bargeld bekommen kann",
-                "place_prompt": """Die Sonne brennt vom Himmel. Es ist furchtbar heiss. Wie ein Fremdkörper steht hier ein
-                Geldautomat
-            
-        """,
+                "place_prompt": "",
+                "place_prompt_f": pp.p_geldautomat_place_prompt_f,
                 "ways": ["w_geldautomat_start", "w_geldautomat_warenautomat", "w_geldautomat_schuppen","w_geldautomat_felsen"],
                 "objects": ["o_geldautomat", "o_geld_dollar"],
                 "callnames": ["Geldautomat", "ATM"]
@@ -321,11 +321,8 @@ class GameState:
             },
             "p_innen": {
                 "description": "Im inneren des Holzschuppens",
-                "place_prompt": """Im inneren des Schuppens ist es genauso heiss wie ausserhalb. Die Luft riecht nach Staub, und ein weiterer,
-                unterschwelliger Verwesungsgeruch mischt sich dazu. Durch Ritzen in der Holzwand dringt gerade genug Licht in den Innenraum,
-                das man sich umsehen kann und erkennt, was sich hier befindet.
-            
-        """,
+                "place_prompt": "",
+                "place_prompt_f": pp.p_innen_place_prompt_f,
                 "ways": ["w_innen_schuppen"],
                 "objects": ["o_leiter", "o_skelett", "o_geldboerse", "o_ec_karte", "o_pinsel", "o_farbeimer"],
                 "callnames": ["innen", "Innenraum", "drinnen"]
@@ -1164,10 +1161,10 @@ class GameState:
 
         return r
 
-    def verb_lookaround_traditional(self, pl: PlayerState):
+    def verb_lookaround(self, pl: PlayerState):
         loc = pl.location
         retstr = f"""**Ort: {pl.location.name}**
-{pl.location.description}
+{pl.location.place_prompt_f(self,pl) if pl.location.place_prompt_f else pl.location.place_prompt}
 
 Am Ort sind folgende Objekte zu sehen:"""
         rs = ""
@@ -1183,7 +1180,7 @@ Am Ort sind folgende Objekte zu sehen:"""
                 retstr = retstr + f'- {w.name} ... führt zu {w.destination.name}\n'
         return retstr
 
-    def verb_lookaround(self, pl: PlayerState):
+    def verb_lookaround_llm(self, pl: PlayerState):
 
         rval = self.llm.generate_scene_description(self.compile_current_game_context(pl))
         return rval

@@ -46,7 +46,6 @@ def p_schuppen_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
 
     return rv
 
-
 def p_innen_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
     rv = "Es ist heiss und die Sonne knallt erbarmungslos vom Himmel. Wir sind innerhalb eines alten Holzschuppens. "
     if gs.dach:
@@ -56,3 +55,71 @@ def p_innen_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
         rv = rv + "Der Schuppen hat kein Dach mehr. Das grelle Sonnenlicht erleuchtet alle Gegenstände Erbarmungslos."
 
     return rv
+
+def p_warenautomat_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
+    rv = "Es ist glühend heiss und die Sonne brennt erbarmungslos vom Himmmel."
+    if not gs.warenautomat_intakt:
+        return """
+    Zu sehen ist:
+        
+    * verschmauchter Boden
+    * Explosionsspuren
+    * einige Trümmer eines Warenautomaten
+    * Ein Eingang zu einer U-Bahn-Station, wo vorher der Warenautomat stand
+    * der Warenautomat wurde aber offensichtlich gesprengt
+"""
+
+    else:
+        rv = rv+"""
+    Zu sehen ist:
+    * Ein Warenautomat, an dem man Fahrradteile kaufen kann. 
+    * Der Warenautomat ist italienisch beschriftet
+    * Der Warenautomat ist in Ordnung und nicht defekt
+    * Der Warenautomat ist schwarz 
+    * Der Warenautomat könnte auch eine Fahrradkette enthalten
+        """
+        if gs.hauptschalter:
+            rv = rv +"    * Der Warenautomat ist eingeschaltet und scheint zu funktionieren"
+        else:
+            rv = rv+ "    * Der Warenautomat ist ausgeschaltet. Es ist unklar ob er funktioniert."
+
+    rv = rv + """!!! Sehr wichtig !!!
+
+    Wenn weiter unten bei "vorherige Beschreibungen" etwas anderes über den Ort (p_warenautomat, Warenautomat) steht, bezieht sich 
+    das auf die Vergangenheit. Verwende die Ortsbeschreibung oben für die Gegenwart."""
+
+    return rv
+
+def p_geldautomat_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
+    rv = "Es ist glühend heiss und die Sonne brennt erbarmungslos vom Himmmel."
+    if not gs.geldautomat_intakt:
+        return """
+    Zu sehen ist:
+
+    * verschmauchter Boden
+    * Explosionsspuren
+    * einige Trümmer eines Geldautomaten
+    * Papierschnipsel, die vorher mal Dollarscheine waren
+    * der Geldautomat wurde aber offensichtlich gesprengt
+"""
+
+    else:
+        rv = rv + """
+    Zu sehen ist:
+    * Ein Geldautomat, an dem man sich Geld auszahlen lassen kann 
+    * Der Geladutomat ist amerikanisch mit "ATM" beschriftet.
+    * Der Geldautomat ist in Ordnung und nicht defekt
+    * Der Geldautomat ist silber  
+        """
+        if gs.hauptschalter:
+            rv = rv + "    * Der Geldautomat ist eingeschaltet und scheint zu funktionieren"
+        else:
+            rv = rv + "    * Der Geldautomat ist ausgeschaltet. Es ist unklar ob er funktioniert."
+
+    rv = rv + """!!! Sehr wichtig !!!
+
+    Wenn weiter unten bei "vorherige Beschreibungen" etwas anderes über den Ort (p_geldautomat, Geldautomat) steht, bezieht sich 
+    das auf die Vergangenheit. Verwende die Ortsbeschreibung oben für die Gegenwart."""
+
+    return rv
+

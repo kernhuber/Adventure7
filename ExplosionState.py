@@ -54,6 +54,13 @@ class ExplosionState(PlayerState):
             if self.location.name == "p_dach":
                 gs.dach = False
                 print("--- Der Schuppen hat nun kein Dach mehr! ---")
+            elif self.location.name == "p_warenautomat":
+                gs.warenautomat_intakt = False
+            elif self.location.name == "p_geldautomat":
+                gs.geldautomat_intakt == False
+            elif self.location.name == "p_schuppen":
+                gs.schuppen_intakt = False
+
             tw_print("***Folgende Objekte*** sind pulverisiert worden")
             for o in self.location.place_objects:
                 if o.name != "o_fahrradkette":
@@ -75,24 +82,11 @@ class ExplosionState(PlayerState):
                     import random
                     nl = random.choice(["p_ubahn","p_warenautomat","p_geldautomat","p_schuppen", "p_dach", "p_felsen", "p_innen"])
                     print(f"Spoiler: {nl}")
-                    gs.places["p_warenautomat"].description = "Hier liegen Trümmer eines Warenautomaten um den Zugang zu einer U-Bahn-Station herum verteilt"
-                    gs.places["p_warenautomat"].place_prompt = """
-=========== Beschreibung des Ortes: ==================
 
-* verschmauchter Boden
-* Explosionsspuren
-* einige Trümmer eines Warenautomaten
-* Ein Eingang zu einer U-Bahn-Station, wo vorher der Warenautomat stand
-* der Warenautomat wurde aber offensichtlich gesprengt
-
-!!! Sehr wichtig !!!
-
-Wenn weiter unten bei "vorherige Beschreibungen" etwas anderes über den Ort (p_warenautomat, Warenautomat) steht, musst 
-du das ignorieren. Es darf nicht verwendet werden. Nimm nur die Beschreibung oben!
-                    """
                     gs.objects["o_fahrradkette"].hidden = False
                     gs.objects["o_fahrradkette"].ownedby = gs.places[nl]
                     gs.places[nl].place_objects.append(gs.objects["o_fahrradkette"])
+
 
                 else:
                     pass
