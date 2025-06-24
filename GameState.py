@@ -231,7 +231,7 @@ class GameState:
         import GameApplyFunctions as af
         import GameTakeFunctions as tf
         import GameRevealFunctions as rf
-
+        import GameObstructionCheckFunctions as ocf
         place_defs = {
             "p_start": {
                 "description": "Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. ",
@@ -401,7 +401,7 @@ class GameState:
                 "source": "p_warenautomat",
                 "destination": "p_ubahn",
                 "text_direction": "herunter zur U-Bahn",
-                "obstruction_check": w_warenautomat_ubahn_f,
+                "obstruction_check": ocf.w_warenautomat_ubahn_f,
                 "visible": False,
                 "description": "Eine Treppe, die zu einer U-Bahn-Station führt!"
             },
@@ -509,7 +509,7 @@ class GameState:
                 "source": "p_schuppen",
                 "destination": "p_innen",
                 "text_direction": "in den Schuppen hinein",
-                "obstruction_check": w_schuppen_innen_f,
+                "obstruction_check": ocf.w_schuppen_innen_f,
                 "description": ""
             },
             "w_schuppen_dach": {
@@ -517,7 +517,7 @@ class GameState:
                 "destination": "p_dach",
                 "visible": False,
                 "text_direction": "auf das Dach des Schuppens",
-                "obstruction_check": w_schuppen_dach_f,
+                "obstruction_check": ocf.w_schuppen_dach_f,
                 "description": ""
             },
             #
@@ -591,7 +591,7 @@ class GameState:
                 "source": "p_felsen",
                 "destination": "p_hoehle",
                 "text_direction": "in die Höhle",
-                "obstruction_check": w_felsen_hoehle_f,
+                "obstruction_check": ocf.w_felsen_hoehle_f,
                 "description": ""
             },
             "w_hoehle_felsen": {
@@ -1344,29 +1344,7 @@ Am Ort sind folgende Objekte zu sehen:"""
 #
 # Obstruction Check Functions
 #
-def w_schuppen_innen_f(gs: GameState):
-    if gs.schuppentuer == False:
-        return "Dieser Weg ist versperrt - die Tür ist abgeschlossen!"
-    else:
-        return "Free"
 
-def w_schuppen_dach_f(gs: GameState):
-    if gs.leiter == False:
-        return "Hier kommst du nicht so ohne weiteres hoch!"
-    else:
-        return "Free"
-
-def w_warenautomat_ubahn_f(gs: GameState):
-    if gs.hebel:
-        return "Free"
-    else:
-        return "Ist hier ein Weg? Und wenn, dann ist er versperrt!"
-
-def w_felsen_hoehle_f(gs: GameState):
-    if gs.felsen:
-        return "Da könnte ein Weg hinter dem Felsen sein - aber der Felsen liegt im Weg!"
-    else:
-        return "Free"
 
 #
 # Prompt Functions for dynamic prompts
