@@ -5,13 +5,13 @@ way is not obstructed, the reason for obstruction otherwise
 from GameState import GameState
 
 def w_schuppen_innen_f(gs: GameState):
-    if gs.schuppentuer == False:
+    if not gs.schuppentuer:
         return "Dieser Weg ist versperrt - die Tür ist abgeschlossen!"
     else:
         return "Free"
 
 def w_schuppen_dach_f(gs: GameState):
-    if gs.leiter == False:
+    if not gs.leiter:
         return "Hier kommst du nicht so ohne weiteres hoch!"
     else:
         return "Free"
