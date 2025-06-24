@@ -51,7 +51,9 @@ class ExplosionState(PlayerState):
                         delplayers.append(p)
                 else:
                     delplayers.append(p)
-
+            if self.location.name == "p_dach":
+                gs.dach = False
+                print("--- Der Schuppen hat nun kein Dach mehr! ---")
             tw_print("***Folgende Objekte*** sind pulverisiert worden")
             for o in self.location.place_objects:
                 if o.name != "o_fahrradkette":

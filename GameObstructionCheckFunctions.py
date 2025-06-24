@@ -10,12 +10,6 @@ def w_schuppen_innen_f(gs: GameState):
     else:
         return "Free"
 
-def w_schuppen_dach_f(gs: GameState):
-    if not gs.leiter:
-        return "Hier kommst du nicht so ohne weiteres hoch!"
-    else:
-        return "Free"
-
 def w_warenautomat_ubahn_f(gs: GameState):
     if gs.hebel:
         return "Free"
@@ -27,3 +21,12 @@ def w_felsen_hoehle_f(gs: GameState):
         return "Da könnte ein Weg hinter dem Felsen sein - aber der Felsen liegt im Weg!"
     else:
         return "Free"
+
+def w_schuppen_dach_f(gs: GameState):
+    if gs.dach:
+        if not gs.leiter:
+            return "Hier kommst du nicht so ohne weiteres hoch!"
+        else:
+            return "Free"
+    else:
+        return "Da ist gar kein Dach mehr - das hat jemand weggesprengt! "
