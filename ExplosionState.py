@@ -24,7 +24,7 @@ class ExplosionState(PlayerState):
 
         if self.kaboom_timer > 0:
             self.kaboom_timer = self.kaboom_timer - 1
-            tw_print(f"***Sprengladung explodiert {self.kaboom_timer} Spielzügen in {self.location.name}***")
+            tw_print(f"***Sprengladung explodiert in {self.kaboom_timer} Spielzügen in {self.location.name}***")
             return "nichts"
         else:
             tw_print(f"***(((( KABUMM!!! ))))***")

@@ -1166,6 +1166,7 @@ class GameState:
         retstr = f"""**Ort: {pl.location.name}**
 {pl.location.place_prompt_f(self,pl) if pl.location.place_prompt_f else pl.location.place_prompt}
 
+
 Am Ort sind folgende Objekte zu sehen:"""
         rs = ""
         for i in pl.location.place_objects:
@@ -1173,6 +1174,20 @@ Am Ort sind folgende Objekte zu sehen:"""
                 rs = rs+f'\n- {i.name} - {i.examine}'
         if rs == "":
             rs="(keine)"
+        dogfound = None
+        from NPCPlayerState import NPCPlayerState
+        for d in self.players:
+            if type(d) is NPCPlayerState:
+                dogfound = d
+        if dogfound.location == pl.location:
+            print("\nDa ist ein großer Hund bei dir!!\n")
+        can_go = []
+        for p in pl.location.ways:
+            if p.visible and p.obstruction_check(self) == "Free":
+                can_go.append(p.destination)
+        if dogfound.location in can_go:
+            print(f"\nDa ist ein großer Hund in deiner Nachbarschaft (bei/beim) {dogfound.location.callnames[0]}\n")
+
         retstr = retstr+rs+"\n\nDu kannst folgende wege gehen:\n"
         loc = pl.location
         for w in loc.ways:
@@ -1186,23 +1201,34 @@ Am Ort sind folgende Objekte zu sehen:"""
         return rval
 
     def verb_help(self, pl: PlayerState):
-        rval = f"***Du bist hier: {pl.location.callnames[0]}***\n"
-        rval = rval+pl.location.description+"\n"
-        #
-        # General: Hund und Sprengladung
-        #
-        rval = rval + """
-        
-        Dir stehen folgende Kommandos zur Verfügung:
-        
-        nimm <objekt>:        Ein Objekt in Dein Ingentory aufnehmen
-        ablegen <objekt>:     Ein Objekt aus Deinem Inventory am aktuellen Ort ablegen
-        untersuche <objekt>:  Ein Objekt untersuchen
-        anwenden <o1> <o2>:   Objekt o1 auf Objekt o2 anwenden
-        anwenden <o>:         Objekt o anwenden
-        gehe <ort>:           An einen Ort gehen (Ort muss dir bei "umsehen" angezeigt werden)
-        inventory:            Dein Inventory ansehen
-        
+        rval = """
+    Du musst Dein Fahrrad reparieren, um rechtzeitig den Umschlag, den Du 
+    hoffentlich noch bei dir hast, an sein Ziel zu bringen. Sonst geht die 
+    Welt unter. 
+    
+    Folgende Kommandos kannst du absetzen:
+    
+    hilfe  ............................ Diese Hilfe
+    umsehen ........................... Was ist am aktuellen Ort gerade los?
+    untersuche <objekt> ............... Untersuche das angegebene Objekt
+    nimm <objekt>  .................... Nimm <objekt> in dein Inventory auf              
+    ablegen <objekt>   ................ Lege <objekt> aus Deinem Inventory am 
+                                        aktuellen Ort ab
+    anwenden <objekt>  ................ Wende <objekt> am aktuellen Ort an
+    anwenden <objekt1> <objekt2> ...... Wende <objekt1> auf <objekt2> an
+    gehe <platz> ...................... Gehe zu <platz>
+    inventory ......................... Zeigt an, was du gerade bei dir hast
+    
+    Beispiele:
+    
+    anwenden schlüssel felsen
+    gehe warenautomat
+    nimm stuhl
+    ablegen geldbörse
+    
+    Achte auf den Hund! Dieser ist dir nicht wohlgesonnen! Du kannst ihn 
+    für einige Runden besänftigen, indem du ihn mit etwas fütterst!
+    
         """
         return rval
 

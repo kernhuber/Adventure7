@@ -135,7 +135,12 @@ class Adventure:
 
 
 
-                tw_print(self.game.verb_execute(pl,user_input))
+                p=self.game.verb_execute(pl,user_input)
+                from PlayerState import PlayerState
+                if type(pl) is PlayerState:
+                    tw_print(p)
+
+
 
 
 
