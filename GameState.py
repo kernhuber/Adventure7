@@ -1171,7 +1171,7 @@ Am Ort sind folgende Objekte zu sehen:"""
         rs = ""
         for i in pl.location.place_objects:
             if not i.hidden:
-                rs = rs+f'\n- {i.name} - {i.examine}'
+                rs = rs+f'\n- {i.callnames[0]} - {i.examine}'
         if rs == "":
             rs="(keine)"
         dogfound = None
@@ -1180,19 +1180,19 @@ Am Ort sind folgende Objekte zu sehen:"""
             if type(d) is NPCPlayerState:
                 dogfound = d
         if dogfound.location == pl.location:
-            print("\nDa ist ein großer Hund bei dir!!\n")
+            print("\n!!!! Da ist ein großer Hund bei dir  !!!!\n")
         can_go = []
         for p in pl.location.ways:
             if p.visible and p.obstruction_check(self) == "Free":
                 can_go.append(p.destination)
         if dogfound.location in can_go:
-            print(f"\nDa ist ein großer Hund in deiner Nachbarschaft (bei/beim) {dogfound.location.callnames[0]}\n")
+            print(f"\n!! Da ist ein großer Hund in deiner Nachbarschaft (bei/beim) {dogfound.location.callnames[0]} !!\n")
 
         retstr = retstr+rs+"\n\nDu kannst folgende wege gehen:\n"
         loc = pl.location
         for w in loc.ways:
             if w.visible:
-                retstr = retstr + f'- {w.name} ... führt zu {w.destination.name}\n'
+                retstr = retstr + f'- {w.destination.callnames[0]} ({w.destination.name})\n'
         return retstr
 
     def verb_lookaround_llm(self, pl: PlayerState):
@@ -1218,6 +1218,7 @@ Am Ort sind folgende Objekte zu sehen:"""
     anwenden <objekt1> <objekt2> ...... Wende <objekt1> auf <objekt2> an
     gehe <platz> ...................... Gehe zu <platz>
     inventory ......................... Zeigt an, was du gerade bei dir hast
+    quit .............................. Spiel beenden
     
     Beispiele:
     
@@ -1258,7 +1259,7 @@ Am Ort sind folgende Objekte zu sehen:"""
         # Finally - we can go the way
         #
         pl.location = w_found.destination
-        r = f"Du bist nun hier: {pl.location.name} - {pl.location.description}"
+        r = f"Du bist nun hier: {pl.location.callnames[0]} - ({pl.location.name})"
         return r
 
     def verb_examine(self, pl: PlayerState, what: str):
