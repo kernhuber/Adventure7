@@ -232,6 +232,8 @@ class GameState:
         import GameTakeFunctions as tf
         import GameRevealFunctions as rf
         import GameObstructionCheckFunctions as ocf
+        import PlacePrompts as pp
+
         place_defs = {
             "p_start": {
                 "description": "Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. ",
@@ -247,7 +249,7 @@ class GameState:
                 "description": "Hier ist ein Warenautomat, an dem man Fahrradteile kaufen kann",
                 "place_prompt": """Schon ulkig - Hier ist mitten in der Wüste ein Warenautomat, an dem man Fahrradteile kaufen kann. 
             """,
-                "place_prompt_f": p_warenautomat_place_prompt_f,
+                "place_prompt_f": pp.p_warenautomat_place_prompt_f,
                 "ways": ["w_warenautomat_start", "w_warenautomat_geldautomat","w_warenautomat_schuppen","w_warenautomat_ubahn","w_warenautomat_felsen"],
                 "objects": ["o_warenautomat"],
                 "callnames": ["Warenautomat"]
@@ -331,7 +333,7 @@ class GameState:
             "p_felsen": {
                 "description": "Vor dem Berg liegt ein großer Felsen",
                 "place_prompt": "",
-                "place_prompt_f": p_felsen_place_prompt_f,
+                "place_prompt_f": pp.p_felsen_place_prompt_f,
                 "ways": ["w_felsen_hoehle","w_felsen_schuppen", "w_felsen_warenautomat", "w_felsen_geldautomat"],
                 "objects": ["o_felsen"],
                 "callnames": ["Felsen", "Berg", "Hügel", "Huegel", "Felsblock"]
@@ -339,7 +341,7 @@ class GameState:
             "p_hoehle": {
                 "description": "In die Höhle, deren Eingang freigesprengt wurde.",
                 "place_prompt": "",
-                "place_prompt_f": p_hoehle_place_prompt_f,
+                "place_prompt_f": pp.p_hoehle_place_prompt_f,
                 "ways": ["w_hoehle_felsen"],
                 "objects": [],
                 "callnames": ["Höhle", "Hoehle"]
@@ -1346,36 +1348,9 @@ Am Ort sind folgende Objekte zu sehen:"""
 #
 
 
-#
-# Prompt Functions for dynamic prompts
-#
-def p_warenautomat_place_prompt_f(gs: GameState, pl: PlayerState=None) -> str:
-    rv = "Ein heisser Tag mitten in der Wüste. Die Luft ist trocken flirrt vor Hitze. Die Sonne knallt unerbittlich vom Himmel herab"
-    if gs.hebel:
-        return rv+"Hier ist ein Warenautomat, der auf dem Rücken liegt. Wo er stand, ist nun ein Treppenabgang zu einer U-Bahn-Station"
-    else:
-        return rv+"Hier ist ein Warenautomat mit Fahrradteilen. Er enthält viele Teile. Er enthält auch eine Fahrradkette"
-
-def p_felsen_place_prompt_f(gs:GameState, pl: PlayerState)-> str:
-    rv = """Ein heisser Tag mitten in der Wüste. Die Luft ist trocken und heiss, die Sonne knallt unerbittlich vom Himmel herab. Hier
-    ist ein Hügel aus Gestein. Das gestein ist so bröckelig, dass man nicht auf den Hügel steigen kann.
-    """
-    if gs.felsen:
-        return f"{rv} Ein Trampelpfad führt zu dem Hügel und endet vor einem Felsblock."
-    else:
-        return f"{rv} Wo vorher ein Felsblock lag, ist nun der Eingang in eine Höhle."
-
-def p_hoehle_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
-    rv = """Im inneren der Höhle ist es schön kühl. Die Wände sind aus Gestein, der Boden aus gestampftem Lehm. An der Wand ein
-    großer Schalter"""
-    if gs.hauptschalter:
-        return f"{rv} Eine Glühbirne hängt von der Decke und erleuchtet die Höhle. Man kann elektrisches Summen vernehmen."
-    else:
-        return f"{rv} Eine Glühbirne hängt von der Decke, aber sie ist ausgeschaltet. Das einzige Licht kommt vom Höhleneingang"
 
 
-def huhu() -> str:
-    return ("--- huhu ---")
+
 
 
 
