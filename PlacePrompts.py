@@ -29,3 +29,30 @@ def p_hoehle_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
         return f"{rv} Eine Glühbirne hängt von der Decke und erleuchtet die Höhle. Man kann elektrisches Summen vernehmen."
     else:
         return f"{rv} Eine Glühbirne hängt von der Decke, aber sie ist ausgeschaltet. Das einzige Licht kommt vom Höhleneingang"
+
+def p_schuppen_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
+    rv ="Es ist heiss und die Sonne knallt erbarmungslos vom Himmel. Hier ist ein alter Holzschuppen. "
+    if gs.dach:
+        rv=rv+"Seine Bretter sind verwittert, aber der Schuppen ist intakt. "
+
+    else:
+        rv=rv+"Die Bretter sind verwittert. Er wirkt baufällig. Er hat kein Dach mehr. "
+    if gs.schuppentuer:
+        rv = rv+"Die Schuppentür steht offen. "
+    else:
+        rv = rv+"Der Schuppen ist abgeschlossen. "
+    if gs.leiter:
+        rv = rv+"Eine Leiter lehnt am Schuppen"
+
+    return rv
+
+
+def p_innen_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
+    rv = "Es ist heiss und die Sonne knallt erbarmungslos vom Himmel. Wir sind innerhalb eines alten Holzschuppens. "
+    if gs.dach:
+        rv = rv + "Es riecht muffig und staubig, und ein wenig nach Verwesung. Grelles Sonnenlicht dringt durch Ritzen zwischen den Brettern und die offene Tür. "
+
+    else:
+        rv = rv + "Der Schuppen hat kein Dach mehr. Das grelle Sonnenlicht erleuchtet alle Gegenstände Erbarmungslos."
+
+    return rv

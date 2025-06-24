@@ -222,6 +222,7 @@ class GameState:
         self.ubahn_in_otherstation = False # Ist unsere U-Bahn in Station 2?
         self.felsen = True                 # Ist der Felsen noch im Weg?
         self.hauptschalter = False         # Ohne Strom geht hier gar nichts
+        self.dach = True                   # An Ende hat jemand das Dach weggesprengt
         self.game_over = False             # Na hoffentlich noch nicht so schnell!
         self.llm = GeminiInterface()       # Unser Sprachmodell
         self.gamelog = []                  # Wir schneiden alles für das LLM mit
@@ -302,9 +303,8 @@ class GameState:
             },
             "p_schuppen": {
                 "description": "Hier ist ein alter Holzschuppen",
-                "place_prompt": """Wir befinden uns vor einem alten Holzschuppen. Mitten in der Wüste. Es ist heiss und die Sonne knallt vom Himmel.
-            To be done
-        """,
+                "place_prompt": "",
+                "place_prompt_f": pp.p_schuppen_place_prompt_f,
                 "ways": ["w_schuppen_start", "w_schuppen_warenautomat", "w_schuppen_geldautomat","w_schuppen_innen","w_schuppen_dach", "w_schuppen_felsen"],
                 "objects": ["o_schuppen","o_blumentopf","o_schluessel", "o_stuhl", "o_schrott"],
                 "callnames": ["Schuppen", "Holzschuppen"]
