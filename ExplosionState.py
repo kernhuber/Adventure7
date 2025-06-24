@@ -56,6 +56,16 @@ class ExplosionState(PlayerState):
                 print("--- Der Schuppen hat nun kein Dach mehr! ---")
             elif self.location.name == "p_warenautomat":
                 gs.warenautomat_intakt = False
+                import random
+                nl = random.choice(
+                    ["p_ubahn", "p_warenautomat", "p_geldautomat", "p_schuppen", "p_dach", "p_felsen", "p_innen"])
+                print(f"Spoiler: die Fahrradkette ist nun hier: {nl}")
+
+                gs.objects["o_fahrradkette"].hidden = False
+                gs.objects["o_fahrradkette"].ownedby = gs.places[nl]
+                gs.places[nl].place_objects.append(gs.objects["o_fahrradkette"])
+                tw_print("  -->***Der Warenautomat! Mit all seinem Inhalt!*** Ob die Fahrradkette irgendwo zu finden ist?")
+
             elif self.location.name == "p_geldautomat":
                 gs.geldautomat_intakt == False
             elif self.location.name == "p_schuppen":
@@ -78,18 +88,13 @@ class ExplosionState(PlayerState):
                     gs.ways["w_warenautomat_ubahn"].visible = True
                     gs.ways["w_ubahn_warenautomat"].visible = True
                     gs.hebel = True
-                    tw_print("  -->***Der Warenautomat! Mit all seinem Inhalt!*** Ob die Fahrradkette irgendwo zu finden ist?")
-                    import random
-                    nl = random.choice(["p_ubahn","p_warenautomat","p_geldautomat","p_schuppen", "p_dach", "p_felsen", "p_innen"])
-                    print(f"Spoiler: {nl}")
 
-                    gs.objects["o_fahrradkette"].hidden = False
-                    gs.objects["o_fahrradkette"].ownedby = gs.places[nl]
-                    gs.places[nl].place_objects.append(gs.objects["o_fahrradkette"])
+
 
 
                 else:
                     pass
+            self.location.place_objects = []
             for o in delobjs:
                 del(gs.objects[o.name])
                 del(o)

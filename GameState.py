@@ -1322,7 +1322,7 @@ Am Ort sind folgende Objekte zu sehen:"""
         return "nichts"
 
     def verb_context(self, pl:PlayerState):
-        import pprint
+        from pprint import pprint
         r = self.compile_current_game_context(pl)
         pprint(r)
         return "nichts"
