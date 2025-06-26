@@ -1068,9 +1068,10 @@ class GameState:
             "hilfe":(self.verb_help,0),
             "gehe":(self.verb_walk,1),
             "llm": (self.verb_llm,0),
-            "angreifen": (self.verb_angreifen,1),
+            "angreifen": (self.verb_kill,1),
             "inventory": (self.verb_inventory,0),
             "context": (self.verb_context,0),
+            "dogstate": (self.verb_dogstate,0),
             "quit": (self.verb_quit,0),
             "nichts": (self.verb_noop,0),
             "interaktion": (self.verb_interact,2)
@@ -1091,6 +1092,19 @@ class GameState:
         else:
             r = "Unbekanntes Kommando"
         return r
+    def verb_dogstate(self, pl: PlayerState):
+        from NPCPlayerState import NPCPlayerState
+        from pprint import pprint
+        dgf = None
+        for p in self.players:
+            if type(p) is NPCPlayerState:
+                dgf = p
+                break
+        if not dgf:
+            return ("Kein Hund mehr im Spiel!!")
+        else:
+            pprint(dgf,depth=2)
+            return "nichts"
 
     def verb_apply(self, pl: PlayerState, what, towhat):
 
@@ -1105,8 +1119,8 @@ class GameState:
             # r = f"apply {what} to {towhat} in this context"
             r=""
             o_what = self.objects.get(found_what)
-            if towhat=="dog":
-                o_towhat = PlayerState("dog", None) # Temporary Player State
+            if towhat=="hund":
+                o_towhat = PlayerState("hund", None) # Temporary Player State
             else:
                 o_towhat = self.objects.get(found_towhat)
 
@@ -1218,6 +1232,7 @@ Am Ort sind folgende Objekte zu sehen:"""
     anwenden <objekt1> <objekt2> ...... Wende <objekt1> auf <objekt2> an
     gehe <platz> ...................... Gehe zu <platz>
     inventory ......................... Zeigt an, was du gerade bei dir hast
+    nichts ............................ Eine Spielrunde abwarten
     quit .............................. Spiel beenden
     
     Beispiele:
@@ -1338,7 +1353,7 @@ Am Ort sind folgende Objekte zu sehen:"""
         pprint(gi)
         return "nichts"
 
-    def verb_angreifen(self, pl: PlayerState, whom):
+    def verb_kill(self, pl: PlayerState, whom):
         self.game_over = True
         return f"{pl.name} tötet {whom} in heldischem Kampf"
 
@@ -1359,8 +1374,10 @@ Am Ort sind folgende Objekte zu sehen:"""
         return f"Player {pl.name} has ended the game."
 
     def verb_noop(self, pl: PlayerState):
-        return "Du tust nichts"
-
+        if type(pl) is PlayerState:
+            return "Du tust nichts"
+        else:
+            return ""
     def verb_interact(self, pl: PlayerState, who, what):
         return f'{pl.name} an {who}:  "{what}"'
 

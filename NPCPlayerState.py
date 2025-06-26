@@ -98,7 +98,6 @@ class NPCPlayerState(PlayerState):
                     self.attack_counter = self.attack_counter - 1
                     l = 2*(3-self.attack_counter)
                     rs = f'**G{"R"*l}{"O"*l}{"A"*l}{"R"*l}{"!"*l}'
-
                     return f'interaktion {pl.name} "**{rs}**"'
                 else:
                     print("""
@@ -155,15 +154,20 @@ class NPCPlayerState(PlayerState):
                 return "nichts"
 
             case DogState.GOHOME:
+                if not self.way_home:
+                    self.dog_state = DogState.START
+                    return "nichts"
+
                 nl = self.way_home.popleft()
                 if nl:
                     if self.can_dog_go(gs, nl.name):
+                        tw_print(f"Auf seinem Weg zum Geldautomaten geht der Hund hierhin: {nl.callname[0]} ({nl.name})")
                         return f'gehe {nl.name}'
                     else:
                         return "nichts"
                 else:
                     self.dog_state = DogState.START
-                    tw_print("**Dog ist nun wieder an seinem Stammplatz**")
+                    tw_print("**Der Hund ist nun wieder an seinem Stammplatz**")
                     return "nichts"
 
 
@@ -171,17 +175,17 @@ class NPCPlayerState(PlayerState):
                 return "nichts" # default/unknown state
 
     def check_state_gohome(self, gs: GameState):
-        if gs.find_shortest_path(self.location,gs.places["o_geldautomat"]) != None:
+        if self.way_home and gs.find_shortest_path(self.location,gs.places["o_geldautomat"]) != None:
             return True
         return False
 
     def setup_state_gohome(self, gs: GameState):
-        ret = gs.find_shortest_path(self.location, gs.places["o_geldautomat"])
+        ret = gs.find_shortest_path(self.location, gs.places["p_geldautomat"])
         if ret != None:
             self.way_home = deque(ret)
             self.dog_state = DogState.GOHOME
-        else:
-            return "nichts"
+
+        return "nichts"
 
     def check_state_trace(self, gs: GameState):
         if self.next_loc:

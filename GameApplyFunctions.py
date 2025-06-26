@@ -200,13 +200,13 @@ def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
         #
         # Haben wir die Leiter dabei?
         #
-        if onwhat != None and isinstance(onwhat,PlayerState) and onwhat.name == "dog":
+        if onwhat != None and isinstance(onwhat,PlayerState) and onwhat.name == "hund":
             #
             # Mit der Leiter gegen den Hund
             #
             dog = None
             for d in gs.players:
-                if d.name=="Dog":
+                if type(d) is NPCPlayerState:
                     dog=d
                     break
             if d==None:
@@ -220,7 +220,7 @@ def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
             dog.next_location_wait = 2
             dog.location = gs.places["p_geldautomat"]
 
-            return "Mit einer Leiter gegen einen Hund! Wie unfair! Aber immerhin der Hund rennt jammernd an seinen Stammplatz, den Geldautomaten."
+            return "Mit einer Leiter gegen einen Hund! Wie unfair! Aber immerhin: der Hund rennt jammernd an seinen Stammplatz, den Geldautomaten."
 
         loc = pl.location
         if onwhat != gs.objects["o_schuppen"]:

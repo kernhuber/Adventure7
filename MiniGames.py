@@ -80,12 +80,10 @@ Dann gelten folgende Regeln:
         stack=[]
         stack_sum = 0
         print("""
-
-
 Gegeben eine Liste von zehn Zahlen und eine Zielzahl.
 
 Die Spieler wählen immer abwechselnd eine Zahl aus der Liste und addieren sie
-iauf eine laufende Summe, die anfänglich bei 0 startet; die Zahl wird aus der 
+auf eine laufende Summe, die anfänglich bei 0 startet; die Zahl wird aus der 
 Liste entfernt.
 
 - Wenn ein Spieler die Zielzahl genau erreicht, hat er das Spiel gewonnen.
@@ -109,7 +107,7 @@ Liste entfernt.
         tw_print("\n\nMünzwurf: wer fängt an - Spieler oder Hund?")
         whosnext = random.choice([0,1])
         if whosnext == 0:
-            tw_print("***Dog fängt an!***\n\n")
+            tw_print("***Der Hund fängt an!***\n\n")
         else:
             tw_print("***Spieler fängt an!***\n\n")
         while True:
@@ -126,7 +124,7 @@ Liste entfernt.
                 # i = random.randrange(0,len(stones))
                 # stack.append((stones[i],"Dog"))
                 # stack_sum += stones[i]
-                # tw_print(f"***Dog wählt: {stones[i]}")
+                # tw_print(f"***Der Hund wählt: {stones[i]}")
 
 
                 i = 0
@@ -138,14 +136,14 @@ Liste entfernt.
                         if t>i:
                             i = t
 
-                stack.append((i,"Dog"))
+                stack.append((i,"Hund"))
                 stack_sum += i
-                tw_print(f"***Dog wählt: {i}")
+                tw_print(f"***Der Hund wählt: {i}")
                 if stack_sum == reach:
-                    tw_print("Dog hat den Zielwert genau getroffen und ***gewinnt*** damit!")
+                    tw_print("Der Hund hat den Zielwert genau getroffen und ***gewinnt*** damit!")
                     return DogFight.WON
                 if stack_sum > reach:
-                    tw_print("Dog hat am Zielwert vorbeigeschossen und ***verliert*** das Spiel!")
+                    tw_print("Der Hund ist am Zielwert vorbeigeschossen und ***verliert*** das Spiel!")
                     return DogFight.LOST
                 stones.remove(i)
             else:
@@ -162,10 +160,10 @@ Liste entfernt.
                 stack.append((inp,"Spieler"))
                 stack_sum += inp
                 if stack_sum == reach:
-                    tw_print("Spieler hat den Zielwert genau getroffen - ***Dog verliert*** das Spiel")
+                    tw_print("Spieler hat den Zielwert genau getroffen - ***Der Hund verliert*** das Spiel")
                     return DogFight.LOST
                 if stack_sum > reach:
-                    tw_print("Spieler hat dam Zielwert vorbeigeschossen und verliert das Spiel. ***Dog gewinnt!***")
+                    tw_print("Spieler hat dam Zielwert vorbeigeschossen und verliert das Spiel. ***der Hund gewinnt!***")
                     return DogFight.WON
                 stones.remove(inp)
 
@@ -187,10 +185,10 @@ Liste entfernt.
             if lastone:
                 tw_print(f"\n***Game over*** - jede weitere Wahl aus  {stones} würde {reach} überschreiten.")
                 if whosnext == 0:
-                    tw_print("***--> Dog hat gewonnen!***")
+                    tw_print("***--> Der Hund hat gewonnen!***")
                     return DogFight.WON
                 else:
-                    tw_print("***--> Dog hat verloren!***")
+                    tw_print("***--> Der Hund hat verloren!***")
                     return DogFight.LOST
 
             whosnext = (whosnext + 1) % 2

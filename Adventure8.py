@@ -72,7 +72,7 @@ class Adventure:
         #
         # Add our Non Player Character (the Dog)
         #
-        self.game.add_player("Dog", npc=True)
+        self.game.add_player("Hund", npc=True)
 
         #
         # For testing
@@ -109,26 +109,41 @@ class Adventure:
             dprint(f"#Players: {len(self.game.players)}")
             for i in self.game.players:
                 dprint(f"* {i.name}")
-
-            tw_print((f" Spielrunde {round} ").center( 60, "-"))
+            print("\n\n\n")
+            tw_print(f"# Spielrunde {round} ")
             round = round + 1
             if round == 200:
                 tw_print(txt_final_text)
                 self.game.game_over = True
             for pl in self.game.players:
 
+                tw_print(f'{"-" * 30}')
+                from PlayerState import PlayerState
+                #
+                # Warn if dog and players are in the same location
+                #
+                plf = None
+                dgf = None
+                for p in self.game.players:
+                    if type(p) is PlayerState:
+                        plf = p
+                    elif type(p) is NPCPlayerState:
+                        dgf = p
 
-
+                if dgf and plf and dgf.location == plf.location:
+                    tw_print(f"***Achtung!! {plf.name} und {dgf.name} sind am selben Ort! Da ist Streit vorprogrammiert!***\n\n")
 
                 if (type(pl) is NPCPlayerState):
                     #
                     # Non Player Character
                     #
-                    print(f'{"-" * 60}')
                     user_input = pl.NPC_game_move(self.game)
+                    if  not user_input:
+                        raise Exception("should not happen!")
+
                     dprint(f"**{pl.name}**: {user_input}")
                 elif (type(pl) is ExplosionState):
-                    tw_print(f'{"-" * 60}')
+
                     user_input = pl.explosion_input(self.game)
                 else:
                     user_input = pl.Player_game_move()
@@ -137,7 +152,7 @@ class Adventure:
 
                 p=self.game.verb_execute(pl,user_input)
                 from PlayerState import PlayerState
-                if type(pl) is PlayerState:
+                if type(pl) is PlayerState or type(pl) is NPCPlayerState:
                     tw_print(p)
 
 
