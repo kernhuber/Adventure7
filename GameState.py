@@ -1375,7 +1375,7 @@ Am Ort sind folgende Objekte zu sehen:"""
 
     def verb_quit(self, pl: PlayerState):
         self.game_over  = True
-        return f"Player {pl.name} has ended the game."
+        return f"{pl.name} beendet das Spiel."
 
     def verb_noop(self, pl: PlayerState):
         if type(pl) is PlayerState:
