@@ -168,6 +168,6 @@ class Adventure:
 #
 # --- Main ---
 #
-
-a = Adventure(["Chris"])
+plname = input("Wie willst du im Spiel heissen? ")
+a = Adventure([plname])
 a.gameloop()

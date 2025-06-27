@@ -220,7 +220,7 @@ class NPCPlayerState(PlayerState):
         if pl != None and self.can_dog_go(gs, pl.name):
             self.dog_state = DogState.TRACE
             self.next_loc.append(pl)
-            tw_print(f"**Dog beobachtet nun {pl.name}**")
+            tw_print(f"**Der Hund beobachtet nun {pl.name}**")
 
         return "nichts"
 
@@ -263,12 +263,12 @@ class NPCPlayerState(PlayerState):
             self.location.place_objects.remove(f)
             del gs.objects[f.name]
             self.dog_state = DogState.EATING
-            tw_print(f"**Dog frisst {f.name}**")
+            tw_print(f"**Der Hund frisst {f.name}**")
             self.eat_counter = 3
         return "nichts"
 
     def do_state_eating(self, gs: GameState):
-        tw_print("**Dog frisst noch!**")
+        tw_print("**Der Hund frisst noch!**")
         self.eat_counter = self.eat_counter - 1
 
         if self.eat_counter == 0:
