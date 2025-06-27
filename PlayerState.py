@@ -51,7 +51,7 @@ class PlayerState:
         :return: Command to be executed by game Engine
         """
         from rich.prompt import Prompt
-        print(f'Du bist hier: {self.location.callnames[0]} ({self.location.name})')
+        print(f'{self.name} ist nun hier: {self.location.callnames[0]} ({self.location.name})')
         user_input = ""
         while user_input == "":
             if self.systest.test_queue:

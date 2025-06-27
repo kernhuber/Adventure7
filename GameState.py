@@ -1114,22 +1114,26 @@ class GameState:
 
         found_what = self.obj_name_from_friendly_name(what)
         found_towhat = self.obj_name_from_friendly_name(towhat) if towhat is not None else None
+        if found_what:
+            o_what = self.objects.get(found_what)
+            if not ( o_what in pl.inventory or o_what in pl.location.place_objects):
+                return f"Ein/eine {what} gibt es hier nicht."
+        else:
+            return "Sowas kenne ich nicht"
+
+        if found_towhat:
+            o_towhat = self.objects.get(found_towhat)
+            if not (o_towhat in pl.inventory or o_towhat in pl.location.place_objects):
+                return f"Ein/eine {towhat} gibt es hier nicht."
 
         if towhat is not None:
             # r = f"apply {what} to {towhat} in this context"
             r=""
-            o_what = self.objects.get(found_what)
-            if towhat=="hund":
-                o_towhat = PlayerState("hund", None) # Temporary Player State
-            else:
-                o_towhat = self.objects.get(found_towhat)
-
             if o_what != None:
                 r = r+ "\n" + o_what.apply_f(self, pl, o_what, o_towhat)
         else:
             # r = f"apply {what} in this context"
             r=""
-            o_what = self.objects.get(found_what)
             if o_what != None:
                 r = r+ "\n"+ o_what.apply_f(self, pl, o_what, None)
 
