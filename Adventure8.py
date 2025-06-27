@@ -32,21 +32,18 @@ dem es Rettung geben könnte.
 txt_final_text = """
 # An einem weit entfernten Ort
 
-Eine schwarz gekleidete Gestalt in einem Ledersessel stößt hauchend den beissenden 
-Zigarrettenrauch aus. Dann drückt sie die Zigarrette im Aschenbecher aus und fragt:
-"Ist der Bote gekommen?"
-"Ich fürchte nein", antwortet eine andere Gestalt, die am Ende des Raums im Sessel
-einer bequemen Sitzecke sitzt, und langsam an einem Glas mit goldenem Whiskey nippt.
+Eine schwarz gekleidete Gestalt lehnt sich in einem Ledersessel zurück und stößt mit einem leisen Hauchen den beißenden Zigarettenrauch aus. Dann drückt sie die Zigarette langsam im Aschenbecher aus und fragt:
+„Ist der Bote gekommen?“
 
-"Das war zu befürchten!"
-"Ja, und nun?"
+„Ich fürchte nicht“, erwidert eine zweite Gestalt, die am anderen Ende des Raumes in einem Sessel der bequemen Sitzecke sitzt und gemächlich an einem Glas mit goldenem Whiskey nippt.
 
-Die erste Gestalt steht auf und verschränkt ihre Hände hinter dem Rücken. Nach kurzem
-Überlegen äußert sie: "Wie geplant. Es bleibt leider nichts anderes übrig."
+„Das war zu befürchten.“ – „Ja … und nun?“
 
-Die zweite Gestalt nickt stumm. Dann gehen beide zu einem Schaltpult, welches in der
-Ecke des Raumes steht. Sie stecken je einen Schlüssel in zwei Schlüssellöcher und 
-betätigen einen Schalter in der Mitte des Pultes.
+Die erste Gestalt erhebt sich und verschränkt die Hände hinter dem Rücken. Nach kurzem Überlegen sagt sie ruhig:
+„Wie geplant. Es bleibt leider keine andere Wahl.“
+
+Die zweite Gestalt nickt wortlos. Gemeinsam treten sie zu einem Schaltpult in der Ecke des Raumes.
+Jeder steckt einen Schlüssel in eines der beiden Schlüssellöcher und beide betätigen gleichzeitig den Schalter in der Mitte des Pultes.
 
 Dann geht die Welt unter. 
 """
@@ -157,7 +154,8 @@ class Adventure:
 
 
 
-
+        if not self.game.game_won:
+            tw_print(txt_final_text)
 
         dprint(f"Total tokens used in this game session: {self.game.llm.tokens}")
         dprint(f"Number of API-Calls: {self.game.llm.numcalls}")

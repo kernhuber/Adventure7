@@ -285,6 +285,7 @@ def o_fahrradkette_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject
             return "Tja - Du hast zwar die Fahrradkette, aber der Briefumschlag ist irgendwann pulverisiert worden. Schade, ***Du verlierst das Spiel!***"
         if gs.objects["o_umschlag"] in pl.inventory:
             gs.game_over = True
+            gs.game_won = True
             return "Du reparierst Dein Fahrrad, und schaffst es rechtzeitig, den Briefumschlag abzugeben. Du bist ein Held, rettest die Welt, und ***gewinnst das Spiel!***"
         else:
             return "Das wäre schön - aber wo hast du den Briefumschlag abgelegt? Den brauchst Du..."

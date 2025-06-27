@@ -227,6 +227,7 @@ class GameState:
         self.geldautomat_intakt = True     # oder den Geldautomat
         self.schuppen_intakt = True        # oder den Schuppen
         self.game_over = False             # Na hoffentlich noch nicht so schnell!
+        self.game_won = False              # Wenn true, hat der Spieler das Spiel gewonnen.
         self.llm = GeminiInterface()       # Unser Sprachmodell
         self.gamelog = []                  # Wir schneiden alles für das LLM mit
         #
