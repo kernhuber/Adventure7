@@ -1352,7 +1352,7 @@ Am Ort sind folgende Objekte zu sehen:"""
                 user_input = ""
         gi = (self.llm.parse_user_input_to_commands(
             user_input,
-            self.game.compile_current_game_context(pl)
+            self.compile_current_game_context(pl)
         ))
         pprint(gi)
         return "nichts"
