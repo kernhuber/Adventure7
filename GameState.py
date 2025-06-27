@@ -1341,7 +1341,7 @@ Am Ort sind folgende Objekte zu sehen:"""
         return retstr
 
     def verb_llm(self, pl:PlayerState):
-        import pprint
+        from pprint import pprint
         from rich.prompt import Prompt
         user_input = ""
         while user_input == "":
