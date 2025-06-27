@@ -160,9 +160,9 @@ class NPCPlayerState(PlayerState):
 
                 nl = self.way_home.popleft()
                 if nl:
-                    if self.can_dog_go(gs, nl.name):
-                        tw_print(f"Auf seinem Weg zum Geldautomaten geht der Hund hierhin: {nl.callname[0]} ({nl.name})")
-                        return f'gehe {nl.name}'
+                    if self.can_dog_go(gs, nl.destination.name):
+                        tw_print(f"Auf seinem Weg zum Geldautomaten geht der Hund hierhin: {nl.destination.callnames[0]} ({nl.destination.name})")
+                        return f'gehe {nl.destination.name}'
                     else:
                         return "nichts"
                 else:

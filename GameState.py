@@ -1193,13 +1193,13 @@ Am Ort sind folgende Objekte zu sehen:"""
         for d in self.players:
             if type(d) is NPCPlayerState:
                 dogfound = d
-        if dogfound.location == pl.location:
+        if dogfound and dogfound.location == pl.location:
             print("\n!!!! Da ist ein großer Hund bei dir  !!!!\n")
         can_go = []
         for p in pl.location.ways:
             if p.visible and p.obstruction_check(self) == "Free":
                 can_go.append(p.destination)
-        if dogfound.location in can_go:
+        if dogfound and dogfound.location in can_go:
             print(f"\n!! Da ist ein großer Hund in deiner Nachbarschaft (bei/beim) {dogfound.location.callnames[0]} !!\n")
 
         retstr = retstr+rs+"\n\nDu kannst folgende wege gehen:\n"
