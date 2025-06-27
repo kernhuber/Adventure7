@@ -27,6 +27,8 @@ sie nicht mehr. Glücklicherweise bist Du an einem Ort gestrandet, an
 dem es Rettung geben könnte. 
 
 **Und nun?**
+
+Tipp: sieh dich um oder ersuche um Hilfe!
 """
 
 txt_final_text = """

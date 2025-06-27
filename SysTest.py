@@ -7,7 +7,11 @@ from collections import deque
 
 class SysTest:
     def __init__(self):
-        self.test_queue = deque([
+        self.test_queue = deque([])
+        #
+        # For testing purposes rename any of the following to "test_queue"
+        #
+        self.test_queue_1 = deque([
             "gehe schuppen",
             "untersuche blumentopf",
             "anwenden schlüssel schuppen",
