@@ -33,16 +33,16 @@ def o_umschlag_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=Non
     return "Hiermit solltest du kein Schindluder treiben!"
 
 def o_warenautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Wie willst du bitte einen Warenautomat auf etwas anwenden? Hast du Superkräfte? Nein!"
 
 def o_muelleimer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Was soll ich mit dem Mülleimer tun?"
 
 def o_salami_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Das verstehe ich nicht - was soll ich mit der Salami tun?"
 
 def o_geheimzahl_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Ich glaube, du meinst etwas anderes - die Geheimzahl kann ich nicht anwenden!"
 
 def o_tuerschliesser_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     if pl.location != gs.places["p_wagen"]:
@@ -64,7 +64,7 @@ def o_tuerschliesser_apply_f(gs: GameState, pl: PlayerState=None, what: GameObje
         return "Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und hält nach kurzer Fahrt an einem zweiten Bahnsteig. Die Tür öffnet sich wieder."
 
 def o_pizzaautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Wie soll ich den Pizza-Automaten an sich anwenden? Ich verstehe nicht, was du meinst!"
 
 def o_geld_lire_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     if pl.location.name == "p_warenautomat" and onwhat.name == "o_warenautomat":
@@ -85,10 +85,10 @@ Du erwirbst eine Fahrradkette, die nun im Ausgabeschacht liegt!"""
         return "Das geht hier nicht!"
 
 def o_pizza_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Was soll ich genau mit der Pizza machen?"
 
 def o_geldautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Wie soll ich bitte einen Geldautomaten auf etwas anwenden?"
 
 def o_geld_dollar_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     #
@@ -120,16 +120,16 @@ def o_geld_dollar_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=
     return "Du scheinst mit den Dollars hier wnig anfangen zu können..."
 
 def o_schuppen_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Wie willst du einen Schuppen auf etwas anwenden? Das geht nicht!"
 
 def o_blumentopf_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Interessanter Ansatz ... geht aber nicht."
 
 def o_stuhl_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Du setzt dich auf den Stuhl...  oder was meinst du?"
 
 def o_schrott_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Den Schrott anwenden? Das ergibt nun wirklich keinen Sinn!"
 
 def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     #
@@ -241,10 +241,10 @@ def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
         return "... kein Spieler? Wie soll das gehen?"
 
 def o_skelett_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Igitt! Das Skelett rühre ich nicht weiter an!"
 
 def o_geldboerse_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Was genau soll ich mit der Geldbörse tun?"
 
 def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     if not gs.hauptschalter:
@@ -271,10 +271,10 @@ def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=Non
         return " --- Die Zahl ist falsch. ---"
 
 def o_pinsel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Schlapp, schlapp, schlapp ... Du hast den Pinsel angewandt."
 
 def o_farbeimer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    pass
+    return "Den Farbeimer anwenden..."
 
 def o_fahrradkette_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     if pl.location.name == "p_start":

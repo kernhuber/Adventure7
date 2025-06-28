@@ -1130,12 +1130,12 @@ class GameState:
         if towhat is not None:
             # r = f"apply {what} to {towhat} in this context"
             r=""
-            if o_what != None:
+            if o_what is not None:
                 r = r+ "\n" + o_what.apply_f(self, pl, o_what, o_towhat)
         else:
             # r = f"apply {what} in this context"
             r=""
-            if o_what != None:
+            if o_what is not None:
                 r = r+ "\n"+ o_what.apply_f(self, pl, o_what, None)
 
         return r
