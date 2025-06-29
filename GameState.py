@@ -1143,7 +1143,7 @@ class GameState:
     def verb_take(self, pl: PlayerState, whato):
         what = self.obj_name_from_friendly_name(whato)
         loc = pl.location
-        # obj = loc.place_objects.get(what)
+        # obj = loc.place_objects.get(what) - egal
         obj = None
         for o in loc.place_objects:
             if o.name == what:
