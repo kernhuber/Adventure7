@@ -1152,11 +1152,14 @@ class GameState:
         if obj == None:
             r= "Sowas gibt es hier nicht."
         else:
-            pl.add_to_inventory(obj)
-            if obj.take_f != None:
-                tw_print(obj.take_f(self,pl))
-            r= f"Du hast {what} nun bei dir"
+            if not obj.fixed:
 
+                pl.add_to_inventory(obj)
+                if obj.take_f != None:
+                    tw_print(obj.take_f(self,pl))
+                r= f"Du hast {what} nun bei dir"
+            else:
+                rs = f"Du kannst {what} nicht aufnehmen"
         return r
 
     def verb_drop(self, pl: PlayerState, whato):
