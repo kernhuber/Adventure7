@@ -1159,7 +1159,7 @@ class GameState:
                     tw_print(obj.take_f(self,pl))
                 r= f"Du hast {what} nun bei dir"
             else:
-                rs = f"Du kannst {what} nicht aufnehmen"
+                r = f"Du kannst {what} nicht aufnehmen"
         return r
 
     def verb_drop(self, pl: PlayerState, whato):
