@@ -229,27 +229,25 @@ Schuppen
         r=r+"- Es lehnt eine Leiter am Schuppen\n- Über die Leiter kann man auf das Schuppendach steigen"
     return r
 
-#             "o_blumentopf": {
-#                 "name": "o_blumentopf",
-#                 "examine": "Ein alter Blumentopf aus Ton.",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
-#                 "callnames": ["Blumentopf"],
-#                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_blumentopf_apply_f,
-#                 "reveal_f": rf.o_blumentopf_reveal_f
-#             },
-#             "o_schluessel": {
-#                 "name": "o_schluessel",
-#                 "examine": "Ein Schlüssel aus Metall.",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
-#                 "callnames": ["Schlüssel", "Schluessel"],
-#                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_schluessel_apply_f
-#             },
+
+
+def o_blumentopf_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Blumentopf
+==========
+- Ein alter Blumentopf aus Ton
+- Farbe Terracotta
+    """
+
+
+def o_blumentopf_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Schluessel
+==========
+- Ein Schlüssel aus Metal 
+- Aus rostfreiem Edelstahl
+    """
+
 #             "o_stuhl": {
 #                 "name": "o_stuhl",
 #                 "examine": "Ein rostiger, alter Gartenstuhl. Da macht man dich bestimmt dreckig, wenn man sich draufsetzt!",  # Text to me emitted when object is examined
@@ -260,6 +258,15 @@ Schuppen
 #                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
 #                 "apply_f": af.o_stuhl_apply_f
 #             },
+
+def o_stuhl_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Stuhl
+=====
+- Ein rostiger, alter Gartenstuhl 
+- Sieht nicht stabil aus
+- Man macht sich bestimmt dreckig, wenn man sich darauf setzt
+    """
 #             "o_schrott": {
 #                 "name": "o_schrott",
 #                 "examine": "Eine Menge Schrott! Hier kanns man stundelang herumsuchen - aber man wird hier nichts besonderes finden.",  # Text to me emitted when object is examined
