@@ -157,16 +157,8 @@ Lire
 - Eine Menge Lire
 - Münzen und Scheine
     """
-#             "o_pizza": {
-#                 "name": "o_pizza",
-#                 "examine": "Eine Salami-Pizza mit viel Käse.",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "callnames": ["Pizza"],
-#                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
-#                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_pizza_apply_f
-#             },
+
+
 def o_pizza_prompt_f(gs:GameState, pl:PlayerState) -> str:
     return """
 Pizza
@@ -178,24 +170,14 @@ Pizza
 #             #
 #             # Place: p_geldautomat
 #             #
-#
-#             "o_geldautomat": {
-#                 "name": "o_geldautomat",
-#                 "examine": "Ein Geldautomat, der sehr neu aussieht. Er ist klar mit 'ATM' gekennzeichnet. Man muss eine Karte einstecken, eine Geheimnummer eingeben, und wenn Geld auf dem Konto ist, kann man es abheben.",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "ownedby": "p_geldautomat",  # Which Player currently owns this item? Default: None
-#                 "callnames": ["Geldautomat", "ATM"],
-#                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_geldautomat_apply_f
-#             },
+
 
 def o_geldautomat_prompt_f(gs:GameState, pl:PlayerState) -> str:
     r = """
 Geldautomat
 ===========
 
-- Etwa zwei Meter Hoch
+- Etwa anderthalb Meter Hoch
 - Hat oben ein Schild, auf dem "Geldautomat" steht
 - Matt-Schwarze Farbe
 - Hat Bildschirm un Tastatur
@@ -218,21 +200,35 @@ Geldautomat
 #                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
 #                 "apply_f": af.o_geld_dollar_apply_f
 #             },
+def o_geld_dollar_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Lire
+====
+- Eine Menge US-Dollar
+- Große und kleine Scheine
+    """
+
 #             #
 #             # Place: p_schuppen
 #             #
-#
-#             "o_schuppen": {
-#                 "name": "o_schuppen",
-#                 "examine": "Ein alter Holzschuppen, in dem womöglich interessante Dinge sind. "
-#                            "Der Schuppen muss aufgeschlossen werden, sonst kann man ihn nicht betreten.",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
-#                 "callnames": ["Schuppen", "Holzschuppen"],
-#                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_schuppen_apply_f
-#             },
+
+
+def o_schuppen_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    r="""
+Schuppen
+========
+- Ein alter Holzschuppen
+- verwittertes äußeres
+- Sieht trotz allem stabil aus 
+"""
+    if gs.schuppentuer:
+        r=r+"- Die Schuppentür steht offen\n"
+    else:
+        r=r+"- Die Schuppentür ist mit einem Schloss verschlossen\n"
+    if gs.leiter:
+        r=r+"- Es lehnt eine Leiter am Schuppen\n- Über die Leiter kann man auf das Schuppendach steigen"
+    return r
+
 #             "o_blumentopf": {
 #                 "name": "o_blumentopf",
 #                 "examine": "Ein alter Blumentopf aus Ton.",  # Text to me emitted when object is examined
