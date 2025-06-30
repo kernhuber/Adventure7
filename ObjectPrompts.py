@@ -323,58 +323,59 @@ Leiter
 """
 
 
-#             "o_skelett": {
-#                 "name": "o_skelett",
-#                 "examine": "Ein Skelett!! In einem Anzug!! Das ist wohl schon länger hier! Wie das wohl hierhin gekommen ist?",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
-#                 "callnames": ["Skelett", "Knochenmann"],
-#                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_skelett_apply_f,
-#                 "reveal_f": rf.o_skelett_reveal_f
-#             },
-#             "o_geldboerse": {
-#                 "name": "o_geldboerse",
-#                 "examine": "Eine alte Geldbörse aus Leder.",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
-#                 "callnames": ["Geldboerse", "Geldbörse", "Portemonaie", "Brieftasche"],
-#                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_geldboerse_apply_f,
-#                 "reveal_f": rf.o_geldboerse_reveal_f
-#             },
-#             "o_ec_karte": {
-#                 "name": "o_ec_karte",
-#                 "examine": "Eine alte EC-Karte. Ob die noch geht?",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
-#                 "callnames": ["Geldkarte", "EC-Karte", "ECKarte", "Kreditkarte"],
-#                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_ec_karte_apply_f
-#             },
-#             "o_pinsel": {
-#                 "name": "o_pinsel",
-#                 "examine": "Ein alter, vertrockneter Pinsel",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
-#                 "callnames": ["Pinsel"],
-#                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_pinsel_apply_f
-#             },
-#             "o_farbeimer": {
-#                 "name": "o_farbeimer",
-#                 "examine": "Ein Eimer mit vertrockneter, rosa Farbe.",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
-#                 "callnames": ["Farbeimer"],
-#                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_farbeimer_apply_f
-#             },
+
+def o_skelett_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Skelett
+=======
+- Eine Skelett in einem Nadelstreifenanzug
+- Hat einen Hut auf, passend zum Anzug
+- Ist schon länger hier, man weiss nicht, wer es mal war, und wie es hierhergekommen ist
+- schlechter Zustand
+- ekelig (mumifizierte Fleischreste)
+- gruselig
+"""
+
+
+
+def o_geldboerse_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Geldbörse
+=========
+- Eine alte Geldbörse aus Leder
+- abgewetzt
+- war mal schwarz
+- schlechter Zustand
+- enthält kein Geld
+"""
+
+
+def o_ec_karte_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+EC-Karte
+========
+- Eine EC-Karte einer bekannten Bank
+- noch gültig
+"""
+
+
+def o_pinsel_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Pinsel
+======
+- Eine alter Rundpinsel
+- die Borsten sind mit eingetrockneter rosa Farbe verklebt
+"""
+
+
+def o_farbeimer_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Farbeimer
+=========
+- Eine alter Farbeimer
+- fast leer
+- am Boden Reste eingetrockneter rosa Farbe
+"""
 #             "o_sprengladung":{
 #                 "name": "o_sprengladung",
 #                 "examine": "Eine Sprengladung. Hiermit muss man bestimmt vorsichtig sein. Sie hat einen Knopf, mit dem man sie aktivieren kann.",
@@ -385,6 +386,18 @@ Leiter
 #                 "hidden": False,
 #                 "apply_f": af.o_sprengladung_apply_f
 #             },
+
+def o_sprengladung_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Sprengladung
+============
+- Eine Sprengladung aus Dynamitstangen und einer automatischen Zünder
+- der Zünder ist am Kopf der Dynamitstangen angebracht
+- auf dem Zünder ist ein roter Knopf
+- An der Ladung ist ein Zettel angebracht mit folgendem Text:
+  "Nach betätigen des Zünders explodiert die Ladung in drei Spielzügen!"
+  (DIESEN TEXT UNBEDINGT WÖRTLICH WIEDERGEBEN!)
+"""
 #             #
 #             # Place: Felsen
 #             #
