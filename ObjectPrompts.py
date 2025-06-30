@@ -267,16 +267,20 @@ Stuhl
 - Sieht nicht stabil aus
 - Man macht sich bestimmt dreckig, wenn man sich darauf setzt
     """
-#             "o_schrott": {
-#                 "name": "o_schrott",
-#                 "examine": "Eine Menge Schrott! Hier kanns man stundelang herumsuchen - aber man wird hier nichts besonderes finden.",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
-#                 "callnames": ["Schrott", "Schrotthaufen"],
-#                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_schrott_apply_f
-#             },
+
+
+def o_schrott_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Schrott
+=======
+- Ein großer Haufen Schrott 
+- Rostige Rohre
+- Rostge, verbogene Stangen
+- verwitterte Blechteile
+- alte Drähte
+- Plunder
+- Nichts von Wert
+    """
 #             #
 #             # Place: p_dach
 #             #
@@ -291,21 +295,34 @@ Stuhl
 #                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
 #                 "apply_f": af.o_hebel_apply_f
 #             },
+def o_hebel_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    r="""
+Hebel
+=======
+- Ein großer Hebel aus Metall
+- Etwa einen Meter hoch
+- sieht aus, wie ein Hebel, mit dem man Eisenbahnweichen stellen könnte
+- Etwas rostig, aber scheint funktional
+- Ein kleines Schild am Boden zeigt zwei mögliche Stellungen des Hebels an: "U-Bahn" und "Warenautomat" 
+    """
+    if gs.hebel:
+        r=r+'- Der Hebel steht auf Stellung "U-Bahn"\n'
+    else:
+        r=r+'- Der Hebel steht auf Stellung "Warenautomat"\n'
+    return r
 #             #
 #             # Place: p_innen
 #             #
-#
-#             "o_leiter": {
-#                 "name": "o_leiter",
-#                 "examine": "Eine stablie Holzleiter",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
-#                 "callnames": ["Leiter"],
-#                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_leiter_apply_f, # Funktion: Leiter wurd "angewandt"
-#                 "take_f": tf.o_leiter_take_f # Funktion: Leiter wird aufgenommen
-#             },
+
+def o_hebel_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Leiter
+======
+- Eine stabile Leiter aus Holz
+- bestimmt zwei Meter lang 
+"""
+
+
 #             "o_skelett": {
 #                 "name": "o_skelett",
 #                 "examine": "Ein Skelett!! In einem Anzug!! Das ist wohl schon länger hier! Wie das wohl hierhin gekommen ist?",  # Text to me emitted when object is examined
