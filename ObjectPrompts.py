@@ -30,11 +30,11 @@ Warenautomat
         "- Aus der Öffnung kommt angenehm kühle Luft"
         "- Es ist eine Treppe in der Öffnung"
     else:
-        r = r+"- steht aufrecht und stabil da"
+        r = r+"- steht aufrecht und stabil da\n"
         if gs.hauptschalter:
-            r=r+"- Ist angeschaltet und bereit, Teile gegen Geld auszugeben"
+            r=r+"- Ist angeschaltet und bereit, Teile gegen Geld auszugeben\n"
         else:
-            r=r+"- Ist ausgeschaltet und funktioniert nicht, solange kein Strom da ist"
+            r=r+"- Ist ausgeschaltet und funktioniert nicht, solange kein Strom da ist\n"
     return r
 
 
@@ -144,17 +144,19 @@ Pizza-Automat
 - Auf den Seiten ein Logo in Form einer Zeichnung imComicstil: Ein Pizzabäcker, der eine Pizza präsentiert
 - Hat einen Ausgabeschacht, in dem frisch gebackene Pizzas ausgegeben werden können
 - Hat einen Geldeinwurf, der mit "Alle Währungen akzeptiert" beschriftet ist
+- Über dem Geldeinwurf steht eine Gebrauchsanweisung. Diese muss wörtlich wiedergegeben werden: 
+  "Um Backprozess zu starten, bitte Geld einwerfen. Wechselgeld wird ausgezahlt"
+- unten am Automaten ist ein kleiner Schacht mit einer Klappe, in der Wechselgeld ausbezahlt werden kann
     """
-#             "o_geld_lire": {
-#                 "name": "o_geld_lire",
-#                 "examine": "Italienische Lira! Eine ganze Menge davon! Die hat man schon lange nicht mehr gesehen!",  # Text to me emitted when object is examined
-#                 "help_text": "",  # Text to be emitted when player asks for help with object
-#                 "callnames": ["Lire", "Lira", "italienische Lira", "italienische Lire", "italienisches Geld"],
-#                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
-#                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-#                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-#                 "apply_f": af.o_geld_lire_apply_f
-#             },
+
+
+def o_geld_lire_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Lire
+====
+- Eine Menge Lire
+- Münzen und Scheine
+    """
 #             "o_pizza": {
 #                 "name": "o_pizza",
 #                 "examine": "Eine Salami-Pizza mit viel Käse.",  # Text to me emitted when object is examined
@@ -165,6 +167,14 @@ Pizza-Automat
 #                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
 #                 "apply_f": af.o_pizza_apply_f
 #             },
+def o_pizza_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Pizza
+=====
+- Eine schöne, frische Pizza
+- Mit Schinken und Salami
+- In einem Karton
+    """
 #             #
 #             # Place: p_geldautomat
 #             #
@@ -179,6 +189,25 @@ Pizza-Automat
 #                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
 #                 "apply_f": af.o_geldautomat_apply_f
 #             },
+
+def o_geldautomat_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    r = """
+Geldautomat
+===========
+
+- Etwa zwei Meter Hoch
+- Hat oben ein Schild, auf dem "Geldautomat" steht
+- Matt-Schwarze Farbe
+- Hat Bildschirm un Tastatur
+- Hat einen Geldausgabeschacht
+    """
+    if gs.hauptschalter:
+        r=r+"""- Der Automat ist angeschaltet und funktioniert"
+- Der Bildschirm zeigt 'Bitte Karte eingeben' an"""
+    else:
+        r=r+"""- Der Automat ist ausgeschaltet, ohne Strom funktioniert er nicht"
+        "- Der Bildschirm ist dunkel"""
+    return r
 #             "o_geld_dollar": {
 #                 "name": "o_geld_dollar",
 #                 "examine": "US-Dollar! Diese werden fast überall gerne genommen! Aber eben nur fast - es soll Warenautomaten geben, die sie nicht akzeptieren. Ob du wohl Glück hast?",  # Text to me emitted when object is examined
