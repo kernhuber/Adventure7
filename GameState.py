@@ -88,17 +88,18 @@ class GameState:
         objects = {}
         from GameObject import GameObject
         for obj_name, obj_data in defs.items():
+
             obj = GameObject(
                 name=obj_data["name"],
                 examine=obj_data["examine"],
                 help_text=obj_data.get("help_text", ""),
                 fixed=obj_data.get("fixed", False),
                 hidden=obj_data.get("hidden", False),
-                callnames=obj_data.get("callnames", None),
-                apply_f=obj_data.get("apply_f", None),
-                reveal_f = obj_data.get("reveal_f", None),
-                take_f = obj_data.get("take_f", None),
-                prompt_f = obj_data.get("prompt_f", None)
+                callnames   = obj_data.get("callnames", None),
+                apply_f     = obj_data.get("apply_f", None),
+                reveal_f    = obj_data.get("reveal_f", None),
+                take_f      = obj_data.get("take_f", None),
+                prompt_f    = obj_data.get("prompt_f", None)
             )
             obj.callnames = [s.lower() for s in obj.callnames]
             fn = obj_data.get("apply_f", None)
@@ -157,7 +158,7 @@ class GameState:
             w = v["objects"]
 
 
-            if w != None:
+            if w:
                 for i in w:
                     if i not in ob:
                         print(f'        "{i}":{{')
@@ -238,6 +239,7 @@ class GameState:
         import GameRevealFunctions as rf
         import GameObstructionCheckFunctions as ocf
         import PlacePrompts as pp
+        import ObjectPrompts as op
 
         place_defs = {
             "p_start": {
@@ -633,7 +635,8 @@ Auf dem Dach des Schuppens
                 "ownedby": "",
                 "fixed": False,
                 "hidden": True,
-                "apply_f": af.o_umschlag_apply_f
+                "apply_f": af.o_umschlag_apply_f,
+                "prompt_f": op.o_umschlag_prompt_f
             },
             "o_warenautomat": {
                 "name": "o_warenautomat",
@@ -643,7 +646,8 @@ Auf dem Dach des Schuppens
                 "ownedby": "p_warenautomat",  # Which Player currently owns this item? Default: None
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f":  af.o_warenautomat_apply_f
+                "apply_f":  af.o_warenautomat_apply_f,
+                "prompt_f": op.o_warenautomat_prompt_f
 
             },
             "o_fahrradkette": {
@@ -654,7 +658,8 @@ Auf dem Dach des Schuppens
                 "ownedby": "p_warenautomat",
                 "fixed": False,
                 "hidden": True,
-                "apply_f": af.o_fahrradkette_apply_f
+                "apply_f": af.o_fahrradkette_apply_f,
+                "prompt_f": op.o_fahrradkette_prompt_f
             },
             "o_fahrrad": {
                 "name": "o_fahrrad",
@@ -664,7 +669,8 @@ Auf dem Dach des Schuppens
                 "ownedby": "p_start",
                 "fixed": True,
                 "hidden": False,
-                "apply_f": None
+                "apply_f": None,
+                "prompt_f": op.o_fahrrad_prompt_f
             },
 
             #
@@ -680,7 +686,8 @@ Auf dem Dach des Schuppens
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": af.o_muelleimer_apply_f,
-                "reveal_f": rf.o_muelleimer_reveal_f
+                "reveal_f": rf.o_muelleimer_reveal_f,
+                "prompt_f": op.o_muelleimer_prompt_f
             },
             "o_salami": {
                 "name": "o_salami",
@@ -690,7 +697,8 @@ Auf dem Dach des Schuppens
                 "ownedby": "p_wagen",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_salami_apply_f
+                "apply_f": af.o_salami_apply_f,
+                "prompt_f": op.o_salami_prompt_f
             },
             "o_geheimzahl": {
                 "name": "o_geheimzahl",
@@ -700,7 +708,8 @@ Auf dem Dach des Schuppens
                 "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_geheimzahl_apply_f
+                "apply_f": af.o_geheimzahl_apply_f,
+                "prompt_f": op.o_geheimzahl_prompt_f
             },
             #
             # Place: p_wagen
@@ -714,7 +723,8 @@ Auf dem Dach des Schuppens
                 "ownedby": "p_wagen",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_tuerschliesser_apply_f
+                "apply_f": af.o_tuerschliesser_apply_f,
+                "prompt_f": op.o_tuerschliesser_prompt_f
             },
             #
             # Place: p_ubahn2
@@ -728,7 +738,8 @@ Auf dem Dach des Schuppens
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_pizzaautomat_apply_f
+                "apply_f": af.o_pizzaautomat_apply_f,
+                "prompt_f": op.o_pizzaautomat_prompt_f
             },
             "o_geld_lire": {
                 "name": "o_geld_lire",
@@ -738,7 +749,8 @@ Auf dem Dach des Schuppens
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_geld_lire_apply_f
+                "apply_f": af.o_geld_lire_apply_f,
+                "prompt_f": op.o_geld_lire_prompt_f
             },
             "o_pizza": {
                 "name": "o_pizza",
@@ -748,7 +760,8 @@ Auf dem Dach des Schuppens
                 "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_pizza_apply_f
+                "apply_f": af.o_pizza_apply_f,
+                "prompt_f": op.o_pizza_prompt_f
             },
             #
             # Place: p_geldautomat
@@ -762,7 +775,8 @@ Auf dem Dach des Schuppens
                 "callnames": ["Geldautomat", "ATM"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_geldautomat_apply_f
+                "apply_f": af.o_geldautomat_apply_f,
+                "prompt_f": op.o_geldautomat_prompt_f
             },
             "o_geld_dollar": {
                 "name": "o_geld_dollar",
@@ -772,7 +786,8 @@ Auf dem Dach des Schuppens
                 "ownedby": "p_geldautomat",  # Which Player currently owns this item? Default: None
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_geld_dollar_apply_f
+                "apply_f": af.o_geld_dollar_apply_f,
+                "prompt_f": op.o_geld_dollar_prompt_f
             },
             #
             # Place: p_schuppen
@@ -787,7 +802,8 @@ Auf dem Dach des Schuppens
                 "callnames": ["Schuppen", "Holzschuppen"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_schuppen_apply_f
+                "apply_f": af.o_schuppen_apply_f,
+                "prompt_f": op.o_schuppen_prompt_f
             },
             "o_blumentopf": {
                 "name": "o_blumentopf",
@@ -798,7 +814,8 @@ Auf dem Dach des Schuppens
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": af.o_blumentopf_apply_f,
-                "reveal_f": rf.o_blumentopf_reveal_f
+                "reveal_f": rf.o_blumentopf_reveal_f,
+                "prompt_f": op.o_blumentopf_prompt_f
             },
             "o_schluessel": {
                 "name": "o_schluessel",
@@ -808,7 +825,8 @@ Auf dem Dach des Schuppens
                 "callnames": ["Schlüssel", "Schluessel"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_schluessel_apply_f
+                "apply_f": af.o_schluessel_apply_f,
+                "prompt_f": op.o_schluessel_prompt_f
             },
             "o_stuhl": {
                 "name": "o_stuhl",
@@ -818,7 +836,8 @@ Auf dem Dach des Schuppens
                 "callnames": ["Stuhl", "Gartenstuhl", "Hocker"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_stuhl_apply_f
+                "apply_f": af.o_stuhl_apply_f,
+                "prompt_f": op.o_stuhl_prompt_f
             },
             "o_schrott": {
                 "name": "o_schrott",
@@ -828,7 +847,8 @@ Auf dem Dach des Schuppens
                 "callnames": ["Schrott", "Schrotthaufen"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_schrott_apply_f
+                "apply_f": af.o_schrott_apply_f,
+                "prompt_f": op.o_schrott_prompt_f
             },
             #
             # Place: p_dach
@@ -842,7 +862,8 @@ Auf dem Dach des Schuppens
                 "callnames": ["Hebel", "Schalter"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_hebel_apply_f
+                "apply_f": af.o_hebel_apply_f,
+                "prompt_f": op.o_hebel_prompt_f
             },
             #
             # Place: p_innen
@@ -857,7 +878,8 @@ Auf dem Dach des Schuppens
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": af.o_leiter_apply_f, # Funktion: Leiter wurd "angewandt"
-                "take_f": tf.o_leiter_take_f # Funktion: Leiter wird aufgenommen
+                "take_f": tf.o_leiter_take_f, # Funktion: Leiter wird aufgenommen
+                "prompt_f": op.o_leiter_prompt_f
             },
             "o_skelett": {
                 "name": "o_skelett",
@@ -868,7 +890,8 @@ Auf dem Dach des Schuppens
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": af.o_skelett_apply_f,
-                "reveal_f": rf.o_skelett_reveal_f
+                "reveal_f": rf.o_skelett_reveal_f,
+                "prompt_f": op.o_skelett_prompt_f
             },
             "o_geldboerse": {
                 "name": "o_geldboerse",
@@ -879,7 +902,8 @@ Auf dem Dach des Schuppens
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": af.o_geldboerse_apply_f,
-                "reveal_f": rf.o_geldboerse_reveal_f
+                "reveal_f": rf.o_geldboerse_reveal_f,
+                "prompt_f": op.o_geldboerse_prompt_f
             },
             "o_ec_karte": {
                 "name": "o_ec_karte",
@@ -889,7 +913,8 @@ Auf dem Dach des Schuppens
                 "callnames": ["Geldkarte", "EC-Karte", "ECKarte", "Kreditkarte"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_ec_karte_apply_f
+                "apply_f": af.o_ec_karte_apply_f,
+                "prompt_f": op.o_ec_karte_prompt_f
             },
             "o_pinsel": {
                 "name": "o_pinsel",
@@ -899,7 +924,8 @@ Auf dem Dach des Schuppens
                 "callnames": ["Pinsel"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_pinsel_apply_f
+                "apply_f": af.o_pinsel_apply_f,
+                "prompt_f": op.o_pinsel_prompt_f
             },
             "o_farbeimer": {
                 "name": "o_farbeimer",
@@ -909,7 +935,8 @@ Auf dem Dach des Schuppens
                 "callnames": ["Farbeimer"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_farbeimer_apply_f
+                "apply_f": af.o_farbeimer_apply_f,
+                "prompt_f": op.o_farbeimer_prompt_f
             },
             "o_sprengladung":{
                 "name": "o_sprengladung",
@@ -919,7 +946,8 @@ Auf dem Dach des Schuppens
                 "callnames": ["Sprengladung"],
                 "fixed": False,
                 "hidden": False,
-                "apply_f": af.o_sprengladung_apply_f
+                "apply_f": af.o_sprengladung_apply_f,
+                "prompt_f": op.o_sprengladung_prompt_f
             },
             #
             # Place: Felsen
@@ -932,7 +960,8 @@ Auf dem Dach des Schuppens
                 "callnames": ["Felsen", "Felsblock", "Stein", "Gesteinsblock"],
                 "fixed": True,
                 "hidden": False,
-                "apply_f": af.o_felsen_apply_f
+                "apply_f": af.o_felsen_apply_f,
+                "prompt_f": op.o_felsen_prompt_f
             },
             #
             # Place: Höhle
@@ -945,7 +974,8 @@ Auf dem Dach des Schuppens
                 "callnames": ["Schalter", "Hauptschalter", "Sicherung", "Sicherungsschalter", "Breaker"],
                 "fixed": True,
                 "hidden": False,
-                "apply_f": af.o_hauptschalter_apply_f
+                "apply_f": af.o_hauptschalter_apply_f,
+                "prompt_f": op.o_hauptschalter_prompt_f
             }
 
         }
@@ -1023,7 +1053,7 @@ Auf dem Dach des Schuppens
     # Verbs to be executed
     #
 
-    def compile_current_game_context(self, pl: PlayerState):
+    def compile_current_game_context_for_narration(self, pl: PlayerState):
         from Way import Way
         rval = {}
         details = {}
@@ -1201,7 +1231,7 @@ Auf dem Dach des Schuppens
 
         return r
 
-    def verb_lookaround(self, pl: PlayerState):
+    def verb_lookaround_old(self, pl: PlayerState):
         loc = pl.location
         retstr = f"""**Ort: {pl.location.name}**
 {pl.location.place_prompt_f(self,pl) if pl.location.place_prompt_f else pl.location.place_prompt}
@@ -1239,6 +1269,9 @@ Am Ort sind folgende Objekte zu sehen:"""
 
         rval = self.llm.generate_scene_description(self.compile_current_game_context(pl))
         return rval
+
+    def verb_lookaround(self, pl: PlayerState):
+        return self.llm.narrate(self,pl)
 
     def verb_help(self, pl: PlayerState):
         rval = """

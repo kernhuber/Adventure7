@@ -1,8 +1,10 @@
+
 import google.generativeai as genai
 import os
 import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
 import pprint
 from Utils import dprint
+
 
 # Konfiguration der Gemini API mit deinem API-Schlüssel
 # Es wird dringend empfohlen, den API-Schlüssel nicht direkt im Code zu speichern!
@@ -29,6 +31,46 @@ class GeminiInterface:
         self.token_details = []
 
 
+    def narrate(self, gs:"GameState", pl:"PlayerState") -> str:
+
+        if pl.location.place_prompt_f:
+            pl_loc_prompt = pl.location.place_prompt_f(gs,pl)
+        else:
+            pl_loc_prompt = pl.location.place_prompt
+
+        r = f"""
+Du bist der Erzähler in einem Adventure-Spiel. Deine Aufgabe ist es, die folgenden Informationen
+zu einem Stimmungsvollen Text zusammenzufassen. Halte Dich dabei strikt an die Vorgaben und erfinde
+keine neuen Orte, Gegenstände, Akteure oder sonstige Dinge. Deine Zusammenfassung sollte 500 Zeichen
+nicht überschreiten.
+    
++---------------------+
++ Generelles Szenario +
++---------------------+
+- Wüste
+- Greller Sonnenschein
+- extrem heiss
+- Weiche von diesem Szenario nur und wirklich nur dann ab, wenn in der Ortsbeschreibung,
+  die unten folgt, etwas anderes beschrieben wird.
+
++-------------------------------------+  
++ Ort des Spielers oder der Spielerin +
++-------------------------------------+
+- {pl.name} (Spieler/Spielerin) befindet sich am Ort {pl.location.callnames[0]}
+
+Die Ortsbeschreibung:
+=====================
+
+{pl_loc_prompt}
+
++-----------------------+
++ Objekte an diesem Ort +
++-----------------------+
+
+        """
+        for obj in pl.location.place_objects:
+            r = r+obj.prompt_f(gs,pl)
+        return r
 
     def generate_scene_description(self,scene_elements: dict) -> str:
         """

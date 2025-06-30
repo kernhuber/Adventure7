@@ -242,7 +242,7 @@ Blumentopf
     """
 
 
-def o_blumentopf_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_schluessel_prompt_f(gs:GameState, pl:PlayerState) -> str:
     return """
 Schluessel
 ==========
@@ -316,7 +316,7 @@ Hebel
 #             # Place: p_innen
 #             #
 
-def o_hebel_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_leiter_prompt_f(gs:GameState, pl:PlayerState) -> str:
     return """
 Leiter
 ======
