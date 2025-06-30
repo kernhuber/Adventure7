@@ -242,9 +242,12 @@ class GameState:
         place_defs = {
             "p_start": {
                 "description": "Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. ",
-                "place_prompt": """ Ein unbenannter, eigenartiger Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. 
-                Es liegt hier das kaputte Fahrrad, welches zu reparieren ist. Die Straße erstreckt sich in beiden Richtungen 
-                zum Horizont. Der Spieler kann erst wieder auf der Straße fahren, wenn sein Fahrrad repariert ist.
+                "place_prompt": """ 
+Start
+=====
+- Ein unbenannter, eigenartiger Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. 
+- Es liegt hier das kaputte Fahrrad, welches weiter unten beschrieben wird.
+- Die Straße erstreckt sich in beiden Richtungen zum Horizont. 
                 """,
                 "ways": ["w_start_warenautomat","w_start_geldautomat", "w_start_schuppen"],
                 "objects": [""],

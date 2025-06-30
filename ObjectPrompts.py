@@ -221,6 +221,8 @@ Schuppen
 - verwittertes äußeres
 - Sieht trotz allem stabil aus 
 """
+    if not gs.dach:
+        r=r+"- DerSchuppen hat kein Dach mehr. \n- Es sieht aus, als wäre das Dach weggesprengt worden."
     if gs.schuppentuer:
         r=r+"- Die Schuppentür steht offen\n"
     else:
