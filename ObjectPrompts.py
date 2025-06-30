@@ -411,6 +411,19 @@ Sprengladung
 #                 "hidden": False,
 #                 "apply_f": af.o_felsen_apply_f
 #             },
+
+def o_felsen_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Felsen
+======
+- Eine großer Felsblock aus Granit
+- viele Tonnen schwer
+- unmöglich zu bewegen
+- sieht so aus, als sei er hier hingerollt
+- versperrt möglicherweise etwas 
+- liegt auf einem Trampelpfad genau vor dem Berg
+
+"""
 #             #
 #             # Place: Höhle
 #             #
@@ -426,3 +439,12 @@ Sprengladung
 #             }
 #
 #         }
+
+def o_hauptschalter_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Hauptschalter
+=============
+- Eine großer Sicherungsschalter
+- Farbe ist rot
+
+"""
