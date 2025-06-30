@@ -263,12 +263,16 @@ Start
             },
             "p_ubahn": {
                 "description": "Eine U-Bahn-Station",
-                "place_prompt": """Eine angenehm kühle U-Bahn-Station. Es ist offenbar länger niemand hier gewesen, aber dennoch ist alles sauber
-                und aufgeräumt. An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für ein Reisebüro. Der Boden ist mit Marmorfliesen
-                gefliest. Neonröhren tauchen alles in angenehmes Licht. Es tut gut, sich hier unten zu erfrischen und vor der WÜstenhitze zu verstecken,
-                die an der Oberfläche herrscht. In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind. Alles sieht sauber aus, es gibt keine
-                Schmierereien oder Graffitis.
-
+                "place_prompt": """
+U-Bahn Station
+==============
+- Im Gegensatz zur Oberfläche herrscht eine angenehm Kühle. Es ist wichtig, auf diesen Kontrast hinzuweisen 
+- Alles sauber und aufgeräumt
+- An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für ein Reisebüro. 
+- Keine Schmierereien oder Graffitis
+- Der Boden ist mit Marmorfliesen gefliest.
+- Neonröhren tauchen alles in angenehmes Licht. 
+- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind. 
         """,
                 "ways": ["w_ubahn_warenautomat", "w_ubahn_wagen"],
                 "objects": ["o_muelleimer", "o_salami", "o_geheimzahl"],
@@ -287,11 +291,18 @@ Start
             },
             "p_ubahn2": {
                 "description": "Eine zweite U-Bahn-Station",
-                "place_prompt": """Eine angenehm kühle U-Bahn-Station, aber die Luft ist etwas abgestanden. Es ist offenbar länger niemand hier gewesen, 
-                aber dennoch ist alles sauber und aufgeräumt. An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für den neuen VW-Golf. 
-                Der Boden ist mit Marmorfliesen
-                gefliest. Neonröhren tauchen alles in angenehmes Licht. In der Station steht der U-Bahn-Wagen, mit dem du gerade gekommen bist, dessen Türen 
-                stehen offen. Alles sieht sauber aus, es gibt keine Schmierereien oder Graffitis.
+                "place_prompt": """
+Zweite U-Bahn Station
+=====================
+- Im Gegensatz zur Oberfläche herrscht eine angenehm Kühle. Es ist wichtig, auf diesen Kontrast hinzuweisen 
+- Im Gegensatz zur ersten U-Bahn-Station ist die Luft etwas abgestanden
+- Es riecht nach mediterranen Gewürzen
+- Alles sauber und aufgeräumt
+- An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für den neuen VW-Golf, eins für den neuen Heimcomputer C64 von Commodore. 
+- Keine Schmierereien oder Graffitis
+- Der Boden ist mit Marmorfliesen gefliest.
+- Neonröhren tauchen alles in angenehmes Licht. 
+- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind.
         """,
                 "ways": ["w_ubahn2_wagen"],
                 "objects": ["o_pizzaautomat", "o_geld_lire", "o_pizza"],
@@ -315,8 +326,12 @@ Start
             },
             "p_dach": {
                 "description": "Das Dach des Holzschuppens",
-                "place_prompt": """Wir befinden uns auf dem Dach des Holzschuppens von hier aus können wir weit blicken. Man sieht den Geldautomaten und
-                den Warenautomaten, sowie einen Hügel aus Gestein. Hier gibt es auch einen alten Hebel.
+                "place_prompt": """
+Auf dem Dach des Schuppens
+==========================
+- Man kann weit blicken. 
+- Man sieht den Geldautomaten und den Warenautomaten, sowie einen Hügel aus Gestein. 
+- Hier gibt es großen Hebel, der weiter unten beschrieben wird.
             
         """,
                 "ways": ["w_dach_schuppen"],
