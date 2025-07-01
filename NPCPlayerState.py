@@ -298,9 +298,9 @@ class NPCPlayerState(PlayerState):
                 dmood = "- Der Hund frisst gerade etwas und ist abgelenkt"
         if pp:
             return f"""
-+---------------+            
-+ Achtung Hund! +
-+---------------+
++------+            
++ Hund +
++------+
 
 {pp}
 
