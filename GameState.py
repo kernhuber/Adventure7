@@ -63,16 +63,16 @@ class GameState:
             source_place = places[source_name]
             dest_place = places[dest_name] if dest_name else None
 
-            obstruction = way_data["obstruction_check"]
-            if obstruction is None:
-                obstruction = lambda state: "Free"  # Default-Funktion
+            obstruction_f = way_data["obstruction_check"]
+            if obstruction_f is None:
+                obstruction_f = lambda state: "Free"  # Default-Funktion
 
             way = Way(
                 name=way_name,
                 source=source_place,
                 destination=dest_place,
                 text_direction=way_data["text_direction"],
-                obstruction_check=obstruction,
+                obstruction_check=obstruction_f,
                 visible = visible,
                 description=way_data["description"]
             )
@@ -1271,7 +1271,8 @@ Am Ort sind folgende Objekte zu sehen:"""
         return rval
 
     def verb_lookaround(self, pl: PlayerState):
-        return self.llm.narrate(self,pl)
+        print(self.llm.narrate(self,pl))
+        return"-------------"
 
     def verb_help(self, pl: PlayerState):
         rval = """

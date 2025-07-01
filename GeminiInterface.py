@@ -32,7 +32,7 @@ class GeminiInterface:
 
 
     def narrate(self, gs:"GameState", pl:"PlayerState") -> str:
-
+        from typing import cast
         if pl.location.place_prompt_f:
             pl_loc_prompt = pl.location.place_prompt_f(gs,pl)
         else:
@@ -56,7 +56,7 @@ nicht überschreiten.
 +-------------------------------------+  
 + Ort des Spielers oder der Spielerin +
 +-------------------------------------+
-- {pl.name} (Spieler/Spielerin) befindet sich am Ort {pl.location.callnames[0]}
+- {pl.name} (Spieler/Spielerin) befindet sich am Ort "{pl.location.callnames[0]}"
 
 Die Ortsbeschreibung:
 =====================
@@ -66,10 +66,55 @@ Die Ortsbeschreibung:
 +-----------------------+
 + Objekte an diesem Ort +
 +-----------------------+
-
         """
         for obj in pl.location.place_objects:
             r = r+obj.prompt_f(gs,pl)
+        r=r+"""
++----------------------------+        
++ Wege, die hier existrieren +
++----------------------------+
+"""
+        for w in pl.location.ways:
+            r = r+f"- {w.destination.callnames[0]}"
+            f = w.obstruction_check(gs)
+            if f != "Free":
+                r=r+f" ({f})"
+            r = r+"\n"
+
+        dog = None
+        from NPCPlayerState import NPCPlayerState
+        for d in gs.players:
+            if type(d) is NPCPlayerState:
+                dog = d
+                break
+        if dog:
+            dp = None
+            if dog.location == pl.location:
+                dp=f"!!! Ein Hund befindet sich am selben Ort wie {pl.name} !!!"
+            else:
+                loc = []
+                for l in pl.location.ways:
+                    loc.append(l.destination)
+                if dog.location in loc:
+                    dp=f"!!! Ein Hund befindet sich in der Nähe von {pl.name}, und zwar am Ort {dog.location.callnames[0]} !!!"
+
+            if dp:
+                r=r+f"""
++---------------+            
++ Achtung Hund! +
++---------------+
+
+{dp}
+
+Beschreibung des Hundes
+=======================
+- Riesig (mehr als ein Meter)
+- Räudiges Fell in grau-brauner Farbe
+- verschlagener, intelligenter Blick
+- Lange Zähne
+- Hungrig - sabbert vor Hunger
+- Pfoten, die man als Pranken bezeichnen kann
+            """
         return r
 
     def generate_scene_description(self,scene_elements: dict) -> str:
