@@ -1141,6 +1141,7 @@ Auf dem Dach des Schuppens
         else:
             r = "Unbekanntes Kommando"
         return r
+
     def verb_dogstate(self, pl: PlayerState):
         from NPCPlayerState import NPCPlayerState
         from pprint import pprint
@@ -1271,8 +1272,8 @@ Am Ort sind folgende Objekte zu sehen:"""
         return rval
 
     def verb_lookaround(self, pl: PlayerState):
-        print(self.llm.narrate(self,pl))
-        return"-------------"
+        return self.llm.narrate(self,pl)
+
 
     def verb_help(self, pl: PlayerState):
         rval = """
