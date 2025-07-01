@@ -88,33 +88,7 @@ Die Ortsbeschreibung:
                 dog = d
                 break
         if dog:
-            dp = None
-            if dog.location == pl.location:
-                dp=f"!!! Ein Hund befindet sich am selben Ort wie {pl.name} !!!"
-            else:
-                loc = []
-                for l in pl.location.ways:
-                    loc.append(l.destination)
-                if dog.location in loc:
-                    dp=f"!!! Ein Hund befindet sich in der Nähe von {pl.name}, und zwar am Ort {dog.location.callnames[0]} !!!"
-
-            if dp:
-                r=r+f"""
-+---------------+            
-+ Achtung Hund! +
-+---------------+
-
-{dp}
-
-Beschreibung des Hundes
-=======================
-- Riesig (mehr als ein Meter)
-- Räudiges Fell in grau-brauner Farbe
-- verschlagener, intelligenter Blick
-- Lange Zähne
-- Hungrig - sabbert vor Hunger
-- Pfoten, die man als Pranken bezeichnen kann
-            """
+            r = r + "\n" + dog.dog_prompt(gs,pl)
         return r
 
     def generate_scene_description(self,scene_elements: dict) -> str:

@@ -277,6 +277,47 @@ class NPCPlayerState(PlayerState):
             rs = DogState.EATING
         return rs,"nichts"
 
+    def dog_prompt(self,gs: GameState,pl: PlayerState):
+
+        pp = None
+        if self.location == pl.location:
+            pp = f"!!! Ein Hund befindet sich am selben Ort wie {pl.name} !!!"
+        else:
+            loc = []
+            for l in pl.location.ways:
+                loc.append(l.destination)
+            if self.location in loc:
+                pp = f"!!! Ein Hund befindet sich in der Nähe von {pl.name}, und zwar am Ort {self.location.callnames[0]} !!!"
+        dmood = ""
+        match self.dog_state:
+            case DogState.ATTACK:
+                dmood = "- Der Hund ist sehr wütend und greift gleich an"
+            case DogState.TRACE:
+                dmood = "- Der Hund scheint dich zu beobachten"
+            case DogState.EATING:
+                dmood = "- Der Hund frisst gerade etwas und ist abgelenkt"
+        if pp:
+            return f"""
++---------------+            
++ Achtung Hund! +
++---------------+
+
+{pp}
+
+Beschreibung des Hundes
+=======================
+- Riesig (mehr als ein Meter)
+- Räudiges Fell in grau-brauner Farbe
+- verschlagener, intelligenter Blick
+- Lange Zähne
+- Hungrig - sabbert vor Hunger
+- Pfoten, die man als Pranken bezeichnen kann
+{dmood}
+"""
+        else:
+            return ""
+
+
     def fight(self) -> DogFight:
         """
         Minigame: does number provided by player beat number provided by dog?
