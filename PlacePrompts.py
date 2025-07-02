@@ -41,6 +41,14 @@ def p_schuppen_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
     rv ="""
 Schuppen
 ========
+
+Unbedingt beachten: 
+
+* Alle Objekte an diesem Ort liegen VOR dem Schuppen oder um den Schuppen herum. 
+  Wichtig: Auch wenn die Schuppentür bzw der Schuppen offen ist, liegt keins der Objekte IM Schuppen.
+  
+* Interpretiere Benutzereingaben wie "...gehe in den Schuppen" oder "...gehe hinein" so, als
+  hätte der Benutzer "gehe nach innen" eingegeben. Gemeint ist dann nämlich der Ort "innen"
 """
     if gs.schuppen_intakt:
         rv = rv+"- Hier ist Holzschuppen, der weiter unten beschrieben wird\n"

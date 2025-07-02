@@ -3,6 +3,9 @@ from typing import List
 from Place import Place
 from collections import deque
 from SysTest import SysTest
+from Utils import dpprint, dprint
+
+
 #from GameState import GameState
 #
 # The state of a player. Multiple players - multiple states
@@ -62,9 +65,13 @@ class PlayerState:
             else:
                 ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe")
                 if ui != None:
-                    cmds = gs.llm.parse_user_input_to_commands(ui,gs.compile_current_game_context(self))
-                    #self.cmd_q.append(ui.strip().lower())
-                    self.cmd_q.extend(cmds)
+                    if ui.lower().strip() == "quit" or ui=="inventory" or ui =="dogstate":
+                        self.cmd_q.append(ui.strip().lower())
+                    else:
+                        cmds = gs.llm.parse_user_input_to_commands(ui,gs.compile_current_game_context(self))
+                        dprint(f"LLM made the following atomic commands from user input:")
+                        dpprint(cmds)
+                        self.cmd_q.extend(cmds)
                 else:
                     user_input = ""
 

@@ -1066,7 +1066,7 @@ Auf dem Dach des Schuppens
         else:
             details["Beschreibung"] = pl.location.place_prompt
         details["Objekte hier"] = { p.callnames[0]:f"{p.prompt_f(self,pl)}" for p in pl.location.place_objects if not p.hidden}
-        details["Wo man hingehen kann"] = {w.destination.callnames[0]:w.destination.callnames  for w in pl.location.ways if w.visible}
+        details["Wo man hingehen kann"] = {w.destination.callnames[0]:{"Alternative Bezeichnungen für den Weg":w.destination.callnames}  for w in pl.location.ways if w.visible}
         #
         # Dog somewhere near?
         #

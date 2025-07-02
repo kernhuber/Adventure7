@@ -25,7 +25,7 @@ class GeminiInterface:
 # Wir könnten verschiedene Modelle für verschiedene Aufgaben nutzen, z.B. Flash für schnelle Parser, Pro für Reasoning
         self.gemini_text_model = genai.GenerativeModel('gemini-1.5-flash') # Gut für schnelle Textgenerierung/Parsing
         self.gemini_reasoning_model = genai.GenerativeModel('gemini-1.5-pro') # Gut für komplexes Reasoning des NPC
-        self.txt_prev_description = None
+        self.txt_prev_description = {}
         self.tokens = 0
         self.numcalls = 0
         self.token_details = []
@@ -95,7 +95,8 @@ Die Ortsbeschreibung:
                 break
         if dog:
             r = r + "\n" + dog.dog_prompt(gs,pl)
-        if self.txt_prev_description:
+        if self.txt_prev_description.get(pl.location.name,None):
+
             r = r + f"""
  +----------------------------------+           
  + Vorherige Beschreibung des Ortes +
@@ -111,7 +112,7 @@ Die Ortsbeschreibung:
  
  Vorherige Beschreibung
  ======================
- {self.txt_prev_description}            
+ {self.txt_prev_description[pl.location.name]}            
             """
         return r
 
@@ -165,7 +166,7 @@ Die Ortsbeschreibung:
             self.numcalls = self.numcalls + 1
             self.token_details.append(response.usage_metadata.total_token_count)
             r = self.clean_truncated_sentence(response.text)
-            self.txt_prev_description = r
+            self.txt_prev_description[pl.location.name] = r
             return r
         except Exception as e:
             # Wenn die LLM-Interaktion nicht funktioniert hat, gebe den Prompt zurück
@@ -317,8 +318,13 @@ Die Ortsbeschreibung:
         untersuche <objekt>
         umsehen
         hilfe
-        
+            
         Beispiele für Befehle: 'gehe Schuppen', 'untersuche Blumentopf', 'nimm Schluessel', 'anwenden Schluessel Schuppen'.
+    
+        Beachte bei der Umwandlung von User-Eingaben in Befehle an den Game Engine auch komplexere Sätze. Beispiel:
+        
+        "Schließe den Schuppen mit dem Schlüssel auf" --> anwenden schlüssel schuppen
+        "Mit dem Schlüssel schließe den Schuppen auf" --> anwenden schlüssel schuppen
     
         Falls die Eingabe sich auf mehr als eine Aktion bezieht, teile sie in separate atomare Befehle auf.
         Falls ein Befehl nicht verstanden wird, gib '[ "unbekannt" ]' zurück.
