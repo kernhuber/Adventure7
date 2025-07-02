@@ -346,7 +346,7 @@ Auf dem Dach des Schuppens
                 "place_prompt_f": pp.p_innen_place_prompt_f,
                 "ways": ["w_innen_schuppen"],
                 "objects": ["o_leiter", "o_skelett", "o_geldboerse", "o_ec_karte", "o_pinsel", "o_farbeimer"],
-                "callnames": ["innen", "Innenraum", "drinnen"]
+                "callnames": ["innen", "Innenraum", "drinnen", "nach innen", "in den schuppen"]
             },
             "p_felsen": {
                 "description": "Vor dem Berg liegt ein großer Felsen",
@@ -1053,17 +1053,20 @@ Auf dem Dach des Schuppens
     # Verbs to be executed
     #
 
-    def compile_current_game_context_for_narration(self, pl: PlayerState):
+    def compile_current_game_context(self, pl: PlayerState):
+        """
+        Compile current game context for LLM parse function
+        """
         from Way import Way
         rval = {}
         details = {}
-        details["Ortsname"] = {pl.location.callnames[0]:pl.location.name}
+        details["Ortsname"] = pl.location.callnames[0]
         if pl.location.place_prompt_f != None:
             details["Beschreibung"] = pl.location.place_prompt_f(self,pl)
         else:
             details["Beschreibung"] = pl.location.place_prompt
-        details["Objekte hier"] = { p.callnames[0]:f"{p.examine}" for p in pl.location.place_objects if not p.hidden}
-        details["Wo man hingehen kann"] = {w.destination.callnames[0]:w.destination.name for w in pl.location.ways if w.visible}
+        details["Objekte hier"] = { p.callnames[0]:f"{p.prompt_f(self,pl)}" for p in pl.location.place_objects if not p.hidden}
+        details["Wo man hingehen kann"] = {w.destination.callnames[0]:w.destination.callnames  for w in pl.location.ways if w.visible}
         #
         # Dog somewhere near?
         #
@@ -1080,27 +1083,10 @@ Auf dem Dach des Schuppens
         #
 
 
-        if dog_pl is not None:
-            if dog_pl.location == pl.location:
-                r = "Hier ist ein großer Hund."
-                dog_around = True
-            else:
-
-                for w in dog_pl.location.ways:
-                    if w.destination == pl.location:
-                        r = f"Großer Hund bei/in {dog_pl.location.callnames[0]}."
-                        dog_around = True
-        if dog_around:
-            match dog_pl.dog_state:
-                case DogState.EATING:
-                    r=r+" Der Hund frisst gerade etwas."
-                case DogState.TRACE:
-                    r=r+" Der Hund hat Witterung aufgenommen und verfolgt den Spieler."
-                case DogState.ATTACK:
-                    r=r+" Der Hund ist wütend und in Angriffslaune."
-                case _:
-                    r = r+" Der Hund tut nichts weiter."
-            details["Achtung"] = r
+        if dog_pl:
+            dp = dog_pl.dog_prompt(self,pl)
+            if dp != "":
+                details["Achtung"] = dp
 
         # details["Spieler-Inventory"] = {i.callnames[0]:i.name for i in pl.get_inventory()}
         rval["Aktueller Ort"] = details
@@ -1409,6 +1395,7 @@ Am Ort sind folgende Objekte zu sehen:"""
                 user_input = ""
         gi = (self.llm.parse_user_input_to_commands(
             user_input,
+
             self.compile_current_game_context(pl)
         ))
         pprint(gi)

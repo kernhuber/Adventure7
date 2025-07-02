@@ -3,6 +3,7 @@ from typing import List
 from Place import Place
 from collections import deque
 from SysTest import SysTest
+#from GameState import GameState
 #
 # The state of a player. Multiple players - multiple states
 #
@@ -40,7 +41,7 @@ class PlayerState:
         return self.inventory
 
 
-    def Player_game_move(self):
+    def Player_game_move(self, gs:"GameState"):
         """
         This function returns user input to the game engine. Two additional features:
         * if there are commands in the systest queue, return these instead of actual user input
@@ -51,7 +52,7 @@ class PlayerState:
         :return: Command to be executed by game Engine
         """
         from rich.prompt import Prompt
-        print(f'{self.name} ist nun hier: {self.location.callnames[0]} ({self.location.name})')
+        print(f'{self.name} ist nun hier (Ortsname): {self.location.callnames[0]} ')
         user_input = ""
         while user_input == "":
             if self.systest.test_queue:
@@ -61,7 +62,9 @@ class PlayerState:
             else:
                 ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe")
                 if ui != None:
-                    self.cmd_q.append(ui.strip().lower())
+                    cmds = gs.llm.parse_user_input_to_commands(ui,gs.compile_current_game_context(self))
+                    #self.cmd_q.append(ui.strip().lower())
+                    self.cmd_q.extend(cmds)
                 else:
                     user_input = ""
 

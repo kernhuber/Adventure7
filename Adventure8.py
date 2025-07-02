@@ -145,7 +145,7 @@ class Adventure:
 
                     user_input = pl.explosion_input(self.game)
                 else:
-                    user_input = pl.Player_game_move()
+                    user_input = pl.Player_game_move(self.game)
 
 
 
