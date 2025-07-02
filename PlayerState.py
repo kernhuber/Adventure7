@@ -65,7 +65,7 @@ class PlayerState:
             else:
                 ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe")
                 if ui != None:
-                    if ui.lower().strip() == "quit" or ui=="inventory" or ui =="dogstate":
+                    if ui == "quit" or ui=="inventory" or ui =="dogstate" or ui=="nichts":
                         self.cmd_q.append(ui.strip().lower())
                     else:
                         cmds = gs.llm.parse_user_input_to_commands(ui,gs.compile_current_game_context(self))

@@ -1270,24 +1270,18 @@ Am Ort sind folgende Objekte zu sehen:"""
     Folgende Kommandos kannst du absetzen:
     
     hilfe  ............................ Diese Hilfe
-    umsehen ........................... Was ist am aktuellen Ort gerade los?
-    untersuche <objekt> ............... Untersuche das angegebene Objekt
-    nimm <objekt>  .................... Nimm <objekt> in dein Inventory auf              
-    ablegen <objekt>   ................ Lege <objekt> aus Deinem Inventory am 
-                                        aktuellen Ort ab
-    anwenden <objekt>  ................ Wende <objekt> am aktuellen Ort an
-    anwenden <objekt1> <objekt2> ...... Wende <objekt1> auf <objekt2> an
-    gehe <platz> ...................... Gehe zu <platz>
     inventory ......................... Zeigt an, was du gerade bei dir hast
     nichts ............................ Eine Spielrunde abwarten
     quit .............................. Spiel beenden
     
+    Ansonsten gib als Freitext das ein, was du tun möchtest 
+    
     Beispiele:
     
-    anwenden schlüssel felsen
-    gehe warenautomat
-    nimm stuhl
-    ablegen geldbörse
+    "Gehe zum Schuppen und untersuche den Stuhl"
+    "Gehe dahin, wo der Hund ist"
+    "Nimm die Geheimzahl an dich"
+    
     
     Achte auf den Hund! Dieser ist dir nicht wohlgesonnen! Du kannst ihn 
     für einige Runden besänftigen, indem du ihn mit etwas fütterst!
