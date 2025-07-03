@@ -171,6 +171,8 @@ Die Ortsbeschreibung:
             return r
         except Exception as e:
             # Wenn die LLM-Interaktion nicht funktioniert hat, gebe den Prompt zurück
+            print("Exception!!")
+            pprint(e)
             return prompt
 
 
