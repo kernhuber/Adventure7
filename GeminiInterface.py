@@ -172,7 +172,7 @@ Die Ortsbeschreibung:
         except Exception as e:
             # Wenn die LLM-Interaktion nicht funktioniert hat, gebe den Prompt zurück
             print("Exception!!")
-            pprint(e)
+            pprint(e) #
             return prompt
 
 
