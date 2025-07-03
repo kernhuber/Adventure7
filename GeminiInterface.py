@@ -19,6 +19,7 @@ class GeminiInterface:
             apikey = input("Google API Key: ")
 
         genai.configure(api_key=apikey)
+        #
 
 
 # Globale Model-Instanzen, die wir wiederverwenden können
