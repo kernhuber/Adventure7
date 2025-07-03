@@ -23,7 +23,7 @@ Felsen
     if gs.felsen:
         return f"{rv}- Ein Trampelpfad führt zu dem Hügel und endet vor einem Felsblock, der weiter unten beschrieben wird.\n"
     else:
-        return f"{rv}- Spuren einer großen Explosion sind zu sehen.\- Wo vorher ein Felsblock lag, ist nun der Eingang zu einer Höhle.\n"
+        return f"{rv}- Spuren einer großen Explosion sind zu sehen.\n- Wo vorher ein Felsblock lag, ist nun der Eingang zu einer Höhle.\n"
 
 def p_hoehle_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
     rv = """

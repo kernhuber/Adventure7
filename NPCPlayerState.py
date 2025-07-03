@@ -220,7 +220,7 @@ class NPCPlayerState(PlayerState):
         if pl != None and self.can_dog_go(gs, pl.name):
             self.dog_state = DogState.TRACE
             self.next_loc.append(pl)
-            tw_print(f"**Der Hund beobachtet nun {pl.name}**")
+            tw_print(f"**Der Hund beobachtet nun den Ort {pl.callnames[0]}**")
 
         return "nichts"
 
