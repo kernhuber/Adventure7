@@ -2,7 +2,7 @@
 import google.generativeai as genai
 import os
 import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
-import pprint
+from pprint import pprint
 from Utils import dprint
 
 
