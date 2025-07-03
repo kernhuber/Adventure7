@@ -64,7 +64,7 @@ class PlayerState:
                 user_input = self.cmd_q.popleft()
             else:
                 ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe")
-                if ui != None:
+                if ui is not None:
                     if ui == "quit" or ui=="inventory" or ui =="dogstate" or ui=="nichts":
                         self.cmd_q.append(ui.strip().lower())
                     else:
