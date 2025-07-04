@@ -19,6 +19,7 @@ from Utils import tw_print, dprint
 
 from typing import Callable
 
+from WayPrompts import w_dach_schuppen_prompt_f
 
 
 class GameState:
@@ -63,9 +64,11 @@ class GameState:
             source_place = places[source_name]
             dest_place = places[dest_name] if dest_name else None
 
-            obstruction_f = way_data["obstruction_check"]
+            obstruction_f = way_data.get("obstruction_check", None)
             if obstruction_f is None:
                 obstruction_f = lambda state: "Free"  # Default-Funktion
+
+            way_prompt_f = way_data.get("way_prompt_f", None)
 
             way = Way(
                 name=way_name,
@@ -73,6 +76,7 @@ class GameState:
                 destination=dest_place,
                 text_direction=way_data["text_direction"],
                 obstruction_check=obstruction_f,
+                way_prompt_f = way_prompt_f,
                 visible = visible,
                 description=way_data["description"]
             )
@@ -240,6 +244,7 @@ class GameState:
         import GameObstructionCheckFunctions as ocf
         import PlacePrompts as pp
         import ObjectPrompts as op
+        import WayPrompts as wp
 
         place_defs = {
             "p_start": {
@@ -538,6 +543,7 @@ Auf dem Dach des Schuppens
                 "visible": False,
                 "text_direction": "auf das Dach des Schuppens",
                 "obstruction_check": ocf.w_schuppen_dach_f,
+                "way_prompt_f": wp.w_schuppen_dach_prompt_f,
                 "description": ""
             },
             #
@@ -549,6 +555,7 @@ Auf dem Dach des Schuppens
                 "destination": "p_schuppen",
                 "text_direction": "vom dach des Schuppens herunter",
                 "obstruction_check": None,
+                "way_prompt_f": wp.w_dach_schuppen_prompt_f,
                 "description": ""
             },
             #
@@ -1066,7 +1073,17 @@ Auf dem Dach des Schuppens
         else:
             details["Beschreibung"] = pl.location.place_prompt
         details["Objekte hier"] = { p.callnames[0]:f"{p.prompt_f(self,pl)}" for p in pl.location.place_objects if not p.hidden}
-        details["Wo man hingehen kann"] = {w.destination.callnames[0]:{"Alternative Bezeichnungen für den Weg":w.destination.callnames}  for w in pl.location.ways if w.visible}
+        #details["Wo man hingehen kann"] = {w.destination.callnames[0]:{"Alternative Bezeichnungen für den Weg":w.destination.callnames}  for w in pl.location.ways if w.visible}
+        wege = {}
+        for w in pl.location.ways:
+            if w.visible:
+                wd={}
+                wd["Ziel"] = w.destination.name
+                wd["Alternative Namen für das Ziel"] = w.destination.callnames
+                if w.way_prompt_f:
+                    wd["Spezielle Anweisungen für den Weg"] = w.way_prompt_f(self,pl,w)
+                wege[w.name] = wd
+        details["Wo man hingehen kann"] = wege
         #
         # Dog somewhere near?
         #

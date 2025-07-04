@@ -314,12 +314,12 @@ Jeder Befehl muss das Format 'befehl_name objekt' oder 'befehl_name objekt ziel_
 
 
 Folgende Befehle stehen zur Verfügung und so sind sie zu interpretieren:
-- 'gehe <ort_id>': Wenn der Spieler einen Ort betreten oder verlassen möchte.
-- 'anwenden <objekt_id>': Wenn der Spieler ein Objekt allein oder eine Aktion am Objekt ausführen möchte (z.B. Hebel umlegen, Zünder drücken).
-- 'anwenden <objekt1_id> <objekt2_id>': Wenn der Spieler Objekt1 auf Objekt2 anwenden möchte (z.B. Schlüssel an Tür, Salami an Hund).
-- 'nimm <objekt_id>': Wenn der Spieler ein Objekt aufnehmen möchte.
-- 'ablegen <objekt_id>': Wenn der Spieler ein Objekt ablegen möchte.
-- 'untersuche <objekt_id>': Wenn der Spieler ein Objekt oder die Umgebung näher betrachten möchte.
+- 'gehe <ort>': Wenn der Spieler einen Ort betreten oder verlassen möchte. 'gehe' darf nur genau ein Argument haben, nämlich das Ziel
+- 'anwenden <objekt>': Wenn der Spieler ein Objekt allein oder eine Aktion am Objekt ausführen möchte (z.B. Hebel umlegen, Zünder drücken).
+- 'anwenden <objekt1> <objekt2>': Wenn der Spieler Objekt1 auf Objekt2 anwenden möchte (z.B. Schlüssel an Tür, Salami an Hund).
+- 'nimm <objekt>': Wenn der Spieler ein Objekt aufnehmen möchte.
+- 'ablegen <objekt>': Wenn der Spieler ein Objekt ablegen möchte.
+- 'untersuche <objekt>': Wenn der Spieler ein Objekt oder die Umgebung näher betrachten möchte.
 - 'umsehen': Wenn der Spieler sich im aktuellen Ort umsehen möchte.
 - 'hilfe': Wenn der Spieler Hilfe benötigt.
 

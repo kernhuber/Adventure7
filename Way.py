@@ -16,7 +16,9 @@ class Way:
     destination: "Place"              # Edge (Way) ends here
     text_direction: str     # textual short description North, West, South, .. up.. down ...
     visible: True           # Is the way visible after all? It can of course be visible but obstructed
+    description: str = ""  # More concise description
     obstruction_check: Callable[['GameState'], str] = lambda state: "Free" # Checks if edge is obstructed by something
-    description: str = ""   # More concise description
+    way_prompt_f: Callable[['GameState','PlayerState','Way'], str] = lambda state: "** Wenn dieser Weg frei ist kann man ihn gehen, laufen , rennen, wandern **"
+
 
 
