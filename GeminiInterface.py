@@ -330,7 +330,17 @@ Beispiele für komplexere Interpretationen des 'anwenden'-Befehls:
 - "Stelle den Hebel um": 'anwenden hebel'
 - "Füttere den Hund mit der Salami": 'anwenden salami hund' (wenn hund der Name des Hundes ist)
 
-Falls die Eingabe sich auf mehr als eine Aktion bezieht, teile sie in separate atomare Befehle auf.
+Falls die Eingabe sich auf mehr als eine Aktion bezieht, teile sie in separate atomare Befehle auf, wobei jeder Befehl
+ein String der Form "befehl" oder "befehl objekt" oder "befehl objekt1 objekt2" ist. 
+
+Beispiel:
+korrekt: ['anwenden schluessel schuppen']
+falsch: ['anwenden', 'schluessel', 'schuppen']
+
+Beispiel für eine komplexere Eingabe:
+
+"gehe zum Schuppen und schließe ihn mit dem Schlüssel auf, dann sieh dich um" wird zu:
+['gehe schuppen', 'anwenden schluessel schuppen', 'umsehen']
 
 Falls ein Befehl nicht verstanden wird, gib '[ "unbekannt" ]' zurück.
     

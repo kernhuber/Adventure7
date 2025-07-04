@@ -322,6 +322,12 @@ Leiter
 ======
 - Eine stabile Leiter aus Holz
 - bestimmt zwei Meter lang 
+
+Verwendung der Leiter
+=====================
+- Die Leiter kann kann aufgestellt, gestellt oder angelehnt werden
+- Beispiel: 'Lehne die Leiter an den Schuppen', "stelle die Leiter an den Felsen"
+- in dem Fall liefere "anwenden Lieter Schuppen" oder "anwenden Leiter Felsen" zurück 
 """
 
 
@@ -448,5 +454,12 @@ Hauptschalter
 =============
 - Eine großer Sicherungsschalter
 - Farbe ist rot
+
+Anwendung
+=========
+- der Schalter kann geschaltet, geschlossen, gedrückt oder betätigt werden
+- der Schalter kann auch als Schalter, Hauptschalter, Sicherung, Sicherungsschalte oder Breaker bezeichnet werden
+- Beispiele: "betätige den Schakter", "drücke den Sicherungsschalter", "Schließe den Breaker"
+- Liefer in solchen Fällen "anwenden hauptschalter" zurück
 
 """

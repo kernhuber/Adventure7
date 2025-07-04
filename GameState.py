@@ -1126,7 +1126,8 @@ Auf dem Dach des Schuppens
             "dogstate": (self.verb_dogstate,0),
             "quit": (self.verb_quit,0),
             "nichts": (self.verb_noop,0),
-            "interaktion": (self.verb_interact,2)
+            "interaktion": (self.verb_interact,2),
+            "unbekannt": (self.verb_unknown,0)
         }
         verb,numargs = vtab.get(tokens[0],(None,None))
         if verb != None:
@@ -1144,6 +1145,11 @@ Auf dem Dach des Schuppens
         else:
             r = "Unbekanntes Kommando"
         return r
+    def verb_unknown(self, pl: PlayerState):
+        from pprint import pprint
+        print("LLM did not understand input correctly. Current Player atomic command queue:")
+        pprint(pl.cmd_q)
+        return "huhu"
 
     def verb_dogstate(self, pl: PlayerState):
         from NPCPlayerState import NPCPlayerState

@@ -116,7 +116,7 @@ class Adventure:
                 self.game.game_over = True
             for pl in self.game.players:
 
-                tw_print(f'{"-" * 30}')
+                # tw_print(f'{"-" * 30}')
                 from PlayerState import PlayerState
                 #
                 # Warn if dog and players are in the same location
@@ -140,19 +140,21 @@ class Adventure:
                     if  not user_input:
                         raise Exception("should not happen!")
 
-                    dprint(f"**{pl.name}**: {user_input}")
+                    tw_print(f"**Spielzug {pl.name}**: {user_input}")
+
                 elif (type(pl) is ExplosionState):
 
                     user_input = pl.explosion_input(self.game)
                 else:
                     user_input = pl.Player_game_move(self.game)
-
+                    tw_print(f"**Spielzug {pl.name}**: {user_input}")
 
 
                 p=self.game.verb_execute(pl,user_input)
                 from PlayerState import PlayerState
                 if type(pl) is PlayerState or type(pl) is NPCPlayerState:
                     tw_print(p)
+                    print(f"{'-'*30}")
 
 
 
