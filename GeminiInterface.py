@@ -308,40 +308,43 @@ Die Ortsbeschreibung:
             Gibt eine leere Liste zurück, wenn die Eingabe nicht verstanden wird.
         """
         prompt = f"""
-        Wandle die folgende Spielereingabe in eine Liste atomarer Game-Engine-Befehle um.
-        Die Befehle sollen in einem JSON-Array von Strings zurückgegeben werden.
-        Jeder Befehl muss das Format 'befehl_name objekt_id' oder 'befehl_name objekt_id ziel_objekt_id' haben.
-        Folgende Befehle stehen zur Verfügung:
-        
-        gehe <ort>
-        anwenden <objekt>
-        anwenden <objekt> <zielobjekt>
-        nimm <objekt>
-        ablegen <objekt>
-        untersuche <objekt>
-        umsehen
-        hilfe
-            
-        Beispiele für Befehle: 'gehe Schuppen', 'untersuche Blumentopf', 'nimm Schluessel', 'anwenden Schluessel Schuppen'.
+Wandle die folgende Spielereingabe in eine Liste atomarer Game-Engine-Befehle um.
+Die Befehle sollen in einem JSON-Array von Strings zurückgegeben werden.
+Jeder Befehl muss das Format 'befehl_name objekt' oder 'befehl_name objekt ziel_objekt' haben.
+
+
+Folgende Befehle stehen zur Verfügung und so sind sie zu interpretieren:
+- 'gehe <ort_id>': Wenn der Spieler einen Ort betreten oder verlassen möchte.
+- 'anwenden <objekt_id>': Wenn der Spieler ein Objekt allein oder eine Aktion am Objekt ausführen möchte (z.B. Hebel umlegen, Zünder drücken).
+- 'anwenden <objekt1_id> <objekt2_id>': Wenn der Spieler Objekt1 auf Objekt2 anwenden möchte (z.B. Schlüssel an Tür, Salami an Hund).
+- 'nimm <objekt_id>': Wenn der Spieler ein Objekt aufnehmen möchte.
+- 'ablegen <objekt_id>': Wenn der Spieler ein Objekt ablegen möchte.
+- 'untersuche <objekt_id>': Wenn der Spieler ein Objekt oder die Umgebung näher betrachten möchte.
+- 'umsehen': Wenn der Spieler sich im aktuellen Ort umsehen möchte.
+- 'hilfe': Wenn der Spieler Hilfe benötigt.
+
+Beispiele für komplexere Interpretationen des 'anwenden'-Befehls:
+- "Öffne die Tür mit dem Schlüssel" ODER "Schließe die Tür mit dem Schlüssel auf": 'anwenden o_schluessel o_tuer' (wenn o_tuer der Name der Tür ist)
+- "Wirf den Schlüssel auf die Tür": 'anwenden schluessel tuer' (auch wenn es "werfen" ist, wird es als "anwenden" interpretiert)
+- "Drücke den Knopf der Sprengladung": 'anwenden sprengladung'
+- "Stelle den Hebel um": 'anwenden hebel'
+- "Füttere den Hund mit der Salami": 'anwenden salami hund' (wenn hund der Name des Hundes ist)
+
+Falls die Eingabe sich auf mehr als eine Aktion bezieht, teile sie in separate atomare Befehle auf.
+
+Falls ein Befehl nicht verstanden wird, gib '[ "unbekannt" ]' zurück.
     
-        Beachte bei der Umwandlung von User-Eingaben in Befehle an den Game Engine auch komplexere Sätze. Beispiel:
-        
-        "Schließe den Schuppen mit dem Schlüssel auf" --> anwenden schlüssel schuppen
-        "Mit dem Schlüssel schließe den Schuppen auf" --> anwenden schlüssel schuppen
-    
-        Falls die Eingabe sich auf mehr als eine Aktion bezieht, teile sie in separate atomare Befehle auf.
-        Falls ein Befehl nicht verstanden wird, gib '[ "unbekannt" ]' zurück.
-    
-        Verfügbare Orte und Objekte (mit ihren IDs) im aktuellen Kontext:
-        {json.dumps(current_game_context, indent=2)}
-    
-        Spielereingabe: "{user_input}"
-    
-        Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
+Verfügbare Orte und Objekte (mit ihren IDs) im aktuellen Kontext:
+{json.dumps(current_game_context, indent=2)}
+
+Spielereingabe: "{user_input}"
+
+Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
         """
         try:
             response = self.gemini_text_model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
             commands = json.loads(response.text)
+
             if not isinstance(commands, list):
                 return ["unbekannt"]
             return commands

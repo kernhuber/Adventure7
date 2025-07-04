@@ -96,11 +96,11 @@ class ExplosionState(PlayerState):
                     pass
             self.location.place_objects = []
             for o in delobjs:
-                del(gs.objects[o.name])
-                del(o)
+                del gs.objects[o.name]
+
             for p in delplayers:
                 gs.players.remove(p)
-                del(p)
+
 
 
             return "nichts"
