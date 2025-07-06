@@ -110,6 +110,7 @@ class Adventure:
                 dprint(f"* {i.name}")
             print("\n\n\n")
             tw_print(f"# Spielrunde {round} ")
+            dprint(f"# Spielrunde {round} ")
             round = round + 1
             if round == 200:
                 tw_print(txt_final_text)

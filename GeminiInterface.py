@@ -3,7 +3,7 @@ import google.generativeai as genai
 import os
 import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
 from pprint import pprint
-from Utils import dprint
+from Utils import dprint, dpprint
 
 
 # Konfiguration der Gemini API mit deinem API-Schlüssel
@@ -366,7 +366,15 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                 return ["unbekannt"]
             return commands
         except Exception as e:
-            print(f"Fehler beim Parsen der Benutzereingabe: {e}")
+            dprint(f"{'*'*40}")
+            dprint(f"Fehler beim Parsen der Benutzereingabe: {e}")
+            dprint(f"User input: {user_input}")
+            dprint("Exception e:----------------")
+            dpprint(e)
+            dprint("LLM response: --------------")
+            dpprint(response.text)
+            dprint("Prompt used: ---------------")
+            dprint(prompt)
             return ["unbekannt"] # Fallback
 
     def get_npc_action(self, game_state_for_npc: dict) -> dict:
