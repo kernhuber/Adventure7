@@ -165,7 +165,7 @@ class Adventure:
         dprint(f"Number of API-Calls: {self.game.llm.numcalls}")
         dpprint(self.game.llm.token_details)
         dprint(f"{'*'*80}")
-        pprint(self.game.gamelog)
+        dpprint(self.game.gamelog)
         tw_print("***Auf Wiedersehen!***")
 #
 # --- Main ---

@@ -235,6 +235,7 @@ class GameState:
         self.game_won = False              # Wenn true, hat der Spieler das Spiel gewonnen.
         self.llm = GeminiInterface()       # Unser Sprachmodell
         self.gamelog = []                  # Wir schneiden alles für das LLM mit
+
         #
         # Place definitions
         #
@@ -696,6 +697,19 @@ Auf dem Dach des Schuppens
                 "reveal_f": rf.o_muelleimer_reveal_f,
                 "prompt_f": op.o_muelleimer_prompt_f
             },
+            "o_wasserspender": {
+                "name": "o_wasserspender",
+                "examine": "Ein Wasserspender - hier kannst du genässlich trinken.",
+                # Text to me emitted when object is examined
+                "help_text": "",  # Text to be emitted when player asks for help with object
+                "callnames": ["Wasserspender", "Quelle", "Trinkstelle", "Zapfhanh", "Trinkbrunnen", "Wasserstelle"],
+                "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
+                "fixed": True,  # False bedeutet: Kann aufgenommen werden
+                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+                "apply_f": af.o_wasserspender_apply_f,
+                # "reveal_f": rf.o_wasserspender_reveal_f,
+                "prompt_f": op.o_wasserspender_prompt_f
+            },
             "o_salami": {
                 "name": "o_salami",
                 "examine": "Eine schöne italienische Salami. Schon etwas älter, aber noch geniessbar - zumindest für Hunde",  # Text to me emitted when object is examined
@@ -1073,6 +1087,7 @@ Auf dem Dach des Schuppens
         else:
             details["Beschreibung"] = pl.location.place_prompt
         details["Objekte hier"] = { p.callnames[0]:f"{p.prompt_f(self,pl)}" for p in pl.location.place_objects if not p.hidden}
+        details["Objekte, die des Spieler bei sich trägt"] = {p.callnames[0]:"f{p.prompt_f(self,pl)}" for p in pl.inventory}
         #details["Wo man hingehen kann"] = {w.destination.callnames[0]:{"Alternative Bezeichnungen für den Weg":w.destination.callnames}  for w in pl.location.ways if w.visible}
         wege = {}
         for w in pl.location.ways:

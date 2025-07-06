@@ -17,6 +17,7 @@ class PlayerState:
     location: Place
     inventory: List[GameObject] = field(default_factory=list)
     last_input: str = "Ich sehe mich erst einmal um."
+    thirst_counter: int = 40  # Alle vierzig Spielzüge müssen wir trinken
     cmd_q: deque = field(default_factory = deque)
     systest: SysTest = field(default_factory = SysTest)
 
@@ -55,7 +56,20 @@ class PlayerState:
         :return: Command to be executed by game Engine
         """
         from rich.prompt import Prompt
+        from Utils import tw_print
         print(f'{self.name} ist nun hier (Ortsname): {self.location.callnames[0]} ')
+        self.thirst_counter -= 1
+        if self.thirst_counter == 0:
+            gs.game_over = True
+            tw_print("***Leider bist du verdurstet!***")
+            return "nichts"
+        if self.thirst_counter == 20:
+            tw_print("***Du hast Gottseidank noch keinen Durst***")
+        elif self.thirst_counter == 10:
+            tw_print("***So langsam bekommst Du Durst. Du solltest etwas zu Trinken suchen!***")
+        elif self.thirst_counter <=5:
+            tw_print(f"***Du hast jetzt richtig Durst! Es reicht nocht für {self.thirst_counter} Spielrunden, dann verdurstest Du!***")
+
         user_input = ""
         while user_input == "":
             if self.systest.test_queue:

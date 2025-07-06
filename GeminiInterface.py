@@ -333,9 +333,9 @@ Beispiele für komplexere Interpretationen des 'anwenden'-Befehls:
 - "Füttere den Hund mit der Salami": 'anwenden salami hund' (wenn hund der Name des Hundes ist)
 
 Beispiele für den 'zurückweisen"-Befehl
-- "Öffne den Warenautomaten": 'zurueckweisen "Du kannst den Warenautomat nicnt öffnen. Du bräuchtest schon Geld, um an die Waren zu gelangen."'
-- "puste den Schuppen um": 'zurueckweisen "Interessante Idee - aber du kannst den Schuppen nicht umpusten"
--" Schlurbsdiwurps kadjhaslasdk": 'zurückweisen "Sei mir nicht böse - aber das habe ich wirklich nicht verstanden"'
+- "Öffne den Warenautomaten": zurueckweisen "Du kannst den Warenautomat nicht öffnen. Du bräuchtest schon Geld, um an die Waren zu gelangen."
+- "puste den Schuppen um": zurueckweisen "Interessante Idee - aber du kannst den Schuppen nicht umpusten"
+- Schlurbsdiwurps kadjhaslasdk": zurueckweisen "Sei mir nicht böse - aber das habe ich wirklich nicht verstanden"
 
 Falls die Eingabe sich auf mehr als eine Aktion bezieht, teile sie in separate atomare Befehle auf, wobei jeder Befehl
 ein String der Form "befehl" oder "befehl objekt" oder "befehl objekt1 objekt2" ist. 

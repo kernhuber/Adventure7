@@ -325,9 +325,9 @@ Leiter
 
 Verwendung der Leiter
 =====================
-- Die Leiter kann kann aufgestellt, gestellt oder angelehnt werden
+- Man kann die Leiter aufgestellen, stellen,  lehnen, oder anlehnen werden
 - Beispiel: 'Lehne die Leiter an den Schuppen', "stelle die Leiter an den Felsen"
-- in dem Fall liefere "anwenden Lieter Schuppen" oder "anwenden Leiter Felsen" zurück 
+- in dem Fall liefere "anwenden Leiter Schuppen" oder "anwenden Leiter Felsen" zurück 
 """
 
 
@@ -462,4 +462,19 @@ Anwendung
 - Beispiele: "betätige den Schakter", "drücke den Sicherungsschalter", "Schließe den Breaker"
 - Liefer in solchen Fällen "anwenden hauptschalter" zurück
 
+"""
+
+def o_wasserspender_prompt_f(gs:GameState, pl:PlayerState) -> str:
+    return """
+Wasserspender
+=============
+- Ein schöner Wasserspender aus Metall
+- Er hat ein kleines Becken
+- Aus einem kleinen Wasserhahn in Form eines Delfins sprudelt frisches, klares Wasser
+
+Anwendung
+=========
+- Aus dem Wasserspender kann getrunken, gesoffen oder gesüffelt werden
+- Man kann an oder mit ihm seinen Durst oder sogar seinen Brand stillen oder löschen
+- Liefere in solchen Fällen "anwenden wasserspender" zurück 
 """

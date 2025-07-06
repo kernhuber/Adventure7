@@ -291,3 +291,10 @@ def o_fahrradkette_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject
             return "Das wäre schön - aber wo hast du den Briefumschlag abgelegt? Den brauchst Du..."
     else:
         return "Wie soll das gehen?"
+
+def o_wasserspender_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None)->str:
+    if pl.location.name == "o_ubahn":
+        pl.thirst_counter = 40
+        return "***Herrlich!*** Du hast Deinen Durst mit köstlichem, frischen Wasser gestillt. Das reicht wieder für 40 Spielzüge!"
+    else:
+        return "Hier ist kein Wasserspender!"
