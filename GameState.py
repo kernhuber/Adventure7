@@ -1109,6 +1109,7 @@ Auf dem Dach des Schuppens
         rval["Aktueller Ort"] = details
         return rval
 
+
     def verb_execute(self, pl: PlayerState, input: str) -> str:
         tokens = input.split()
         vtab = {
@@ -1120,13 +1121,15 @@ Auf dem Dach des Schuppens
             "hilfe":(self.verb_help,0),
             "gehe":(self.verb_walk,1),
             "llm": (self.verb_llm,0),
-            "angreifen": (self.verb_kill,1),
+            "toeten": (self.verb_kill,1),
+            "angreifen": (self.verb_attack,0),
             "inventory": (self.verb_inventory,0),
             "context": (self.verb_context,0),
             "dogstate": (self.verb_dogstate,0),
             "quit": (self.verb_quit,0),
             "nichts": (self.verb_noop,0),
             "interaktion": (self.verb_interact,2),
+            "zurueckweisen": (self.verb_reject,1),
             "unbekannt": (self.verb_unknown,0)
         }
         verb,numargs = vtab.get(tokens[0],(None,None))
@@ -1145,11 +1148,12 @@ Auf dem Dach des Schuppens
         else:
             r = "Unbekanntes Kommando"
         return r
+
     def verb_unknown(self, pl: PlayerState):
         from pprint import pprint
         print("LLM did not understand input correctly. Current Player atomic command queue:")
         pprint(pl.cmd_q)
-        return "huhu"
+        return "nichts"
 
     def verb_dogstate(self, pl: PlayerState):
         from NPCPlayerState import NPCPlayerState
@@ -1443,9 +1447,33 @@ Am Ort sind folgende Objekte zu sehen:"""
             return "Du tust nichts"
         else:
             return ""
+
     def verb_interact(self, pl: PlayerState, who, what):
         return f'{pl.name} an {who}:  "{what}"'
 
+    def verb_reject(self, pl: PlayerState, why)->str:
+        """ LLM rejects to do something because it did not understand user input and provides explanation in "why" """
+        return f'***Nachricht von der Spielleitung:*** {why}'
+
+
+    def verb_attack(self, pl: PlayerState)->str:
+        """ Player attacks dog which needs to be in the same place as Player"""
+        from NPCPlayerState import NPCPlayerState
+        dog = None
+        for d in self.players:
+            if type(d) is NPCPlayerState:
+                dog = d
+                break
+        if dog is None:
+            return "Es gibt gar keinen Hund mehr im Spiel"
+
+        if dog.location != pl.location:
+            return "Da ist gar kein Hund bei dir, den Du angreifen könntest"
+
+        else:
+            r = dog.gets_attacked(self, pl)
+            return ""
+            #return f"(Angriff auf den Hund abgeschlossen)"
 
 
 

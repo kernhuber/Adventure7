@@ -29,6 +29,7 @@ class NPCPlayerState(PlayerState):
 
     growl: int = 0
     dog_state: DogState = DogState.START
+    command_after_fight: str = None
 
     next_loc : Deque[Place] = field(default_factory=deque) # Doggo seeks out place where player has been
     next_loc_wait : int=2   # but only if player has left for two game moves
@@ -57,7 +58,13 @@ class NPCPlayerState(PlayerState):
         """
         dprint("+++ Dog Data:")
         dprint(f"+++ dog_state = {self.dog_state}, dog is in {self.location.name}")
-
+        #
+        # Player has initiated fight, fight was executed, so do does this:
+        #
+        if self.command_after_fight:
+            r = self.command_after_fight
+            self.command_after_fight = None
+            return r
         match self.dog_state:
             case DogState.START:
                 # Something to eat?
@@ -100,37 +107,7 @@ class NPCPlayerState(PlayerState):
                     rs = f'**G{"R"*l}{"O"*l}{"A"*l}{"R"*l}{"!"*l}'
                     return f'interaktion {pl.name} "**{rs}**"'
                 else:
-                    print("""
-********************************
-*** Du kämpfst mit dem Hund! ***
-********************************
-                    """)
-                    ds = self.fightgames.fight()
-                    if ds == DogFight.WON:
-                        #
-                        # Kill player
-                        #
-                        return f"angreifen {pl.name}"
-                    elif ds == DogFight.LOST:
-                        #
-                        # Escape to a neighbor location
-                        #
-                        import random
-                        l = len(self.location.ways)
-                        w = []
-                        for l in self.location.ways:
-                            if (l.obstruction_check(gs) == "Free" and l.visible and self.can_dog_go(gs, l.destination.name)):
-                                w.append(l.destination.name )
-
-                        if w:
-                            flight = random.choice(w)
-                            print(f"Der Hund flüchtet jaulend nach {flight}")
-                            return f"gehe {flight}"
-                        else:
-                            print("Der Hund kann von hier aus nirgendwo hin!")
-                            return "nichts"
-                    else:
-                        return "nichts"
+                    return self.do_attack_state(gs, pl)
 
             case DogState.EATING:
                 s,rs = self.do_state_eating(gs)
@@ -173,6 +150,48 @@ class NPCPlayerState(PlayerState):
 
             case _:
                 return "nichts" # default/unknown state
+
+    def do_attack_state(self,gs: GameState, pl: PlayerState):
+        print("""
+        ********************************
+        *** Du kämpfst mit dem Hund! ***
+        ********************************
+                            """)
+        ds = self.fightgames.fight()
+        if ds == DogFight.WON:
+            #
+            # Kill player
+            #
+            return f"toeten {pl.name}"
+        elif ds == DogFight.LOST:
+            #
+            # Escape to a neighbor location
+            #
+            import random
+            l = len(self.location.ways)
+            w = []
+            for l in self.location.ways:
+                if (l.obstruction_check(gs) == "Free" and l.visible and self.can_dog_go(gs, l.destination.name)):
+                    w.append(l.destination.name)
+
+            if w:
+                flight = random.choice(w)
+                print(f"Der Hund flüchtet jaulend nach {flight}")
+                return f"gehe {flight}"
+            else:
+                print("Der Hund kann von hier aus nirgendwo hin!")
+                return "nichts"
+        else:
+            return "nichts"
+
+    def gets_attacked(self, gs:GameState, pl:PlayerState):
+        """Dog gets attacked by Player!"""
+        self.dog_state = DogState.ATTACK
+        self.way_home = deque()
+        self.next_loc = deque()
+        r = self.do_attack_state(gs,pl)
+        self.command_after_fight = r
+        return r
 
     def check_state_gohome(self, gs: GameState):
         if self.way_home and gs.find_shortest_path(self.location,gs.places["o_geldautomat"]) != None:

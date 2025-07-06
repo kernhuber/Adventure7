@@ -321,7 +321,9 @@ Folgende Befehle stehen zur Verfügung und so sind sie zu interpretieren:
 - 'ablegen <objekt>': Wenn der Spieler ein Objekt ablegen möchte.
 - 'untersuche <objekt>': Wenn der Spieler ein Objekt oder die Umgebung näher betrachten möchte.
 - 'umsehen': Wenn der Spieler sich im aktuellen Ort umsehen möchte.
+- 'angreifen' : Wenn der Spieler den Hund angreifen möchts
 - 'hilfe': Wenn der Spieler Hilfe benötigt.
+- 'zurueckweisen <text> :Wenn Du die Spielereingabe nicht verstanden hast oder etwas in diesem Kontext nach der Spielelogik nicht ausführbar ist, dan nliefere mit diesem Befehl eine Erklärung.
 
 Beispiele für komplexere Interpretationen des 'anwenden'-Befehls:
 - "Öffne die Tür mit dem Schlüssel" ODER "Schließe die Tür mit dem Schlüssel auf": 'anwenden o_schluessel o_tuer' (wenn o_tuer der Name der Tür ist)
@@ -329,6 +331,11 @@ Beispiele für komplexere Interpretationen des 'anwenden'-Befehls:
 - "Drücke den Knopf der Sprengladung": 'anwenden sprengladung'
 - "Stelle den Hebel um": 'anwenden hebel'
 - "Füttere den Hund mit der Salami": 'anwenden salami hund' (wenn hund der Name des Hundes ist)
+
+Beispiele für den 'zurückweisen"-Befehl
+- "Öffne den Warenautomaten": 'zurueckweisen "Du kannst den Warenautomat nicnt öffnen. Du bräuchtest schon Geld, um an die Waren zu gelangen."'
+- "puste den Schuppen um": 'zurueckweisen "Interessante Idee - aber du kannst den Schuppen nicht umpusten"
+-" Schlurbsdiwurps kadjhaslasdk": 'zurückweisen "Sei mir nicht böse - aber das habe ich wirklich nicht verstanden"'
 
 Falls die Eingabe sich auf mehr als eine Aktion bezieht, teile sie in separate atomare Befehle auf, wobei jeder Befehl
 ein String der Form "befehl" oder "befehl objekt" oder "befehl objekt1 objekt2" ist. 

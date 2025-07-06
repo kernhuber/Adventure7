@@ -129,7 +129,7 @@ class Adventure:
                     elif type(p) is NPCPlayerState:
                         dgf = p
 
-                if dgf and plf and dgf.location == plf.location:
+                if dgf and plf and dgf.location == plf.location and not dgf.command_after_fight:
                     tw_print(f"***Achtung!! {plf.name} und {dgf.name} sind am selben Ort! Da ist Streit vorprogrammiert!***\n\n")
 
                 if (type(pl) is NPCPlayerState):
