@@ -33,6 +33,7 @@ class NPCPlayerState(PlayerState):
 
     next_loc : Deque[Place] = field(default_factory=deque) # Doggo seeks out place where player has been
     next_loc_wait : int=2   # but only if player has left for two game moves
+    attack_counter: int=2   # Until dog attacks
     nogo_places: List[str] = field(default_factory=lambda: ["p_dach","p_ubahn2"]) # Dog can't go to these places.
     way_home: Deque[Place] = field(default_factory=deque) # Falls Hund nach Hause geht
     fightgames: MiniGames = field(default_factory = MiniGames)
