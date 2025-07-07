@@ -1,3 +1,0 @@
-rich
-google-generativeai
-regex
