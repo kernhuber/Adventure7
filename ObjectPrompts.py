@@ -476,5 +476,6 @@ Anwendung
 =========
 - Aus dem Wasserspender kann getrunken, gesoffen oder gesüffelt werden
 - Man kann an oder mit ihm seinen Durst oder sogar seinen Brand stillen oder löschen
+- Der Wasserspender kann auch als Trinkbrunnen oder Brunnen bezeichnet werden
 - Liefere in solchen Fällen "anwenden wasserspender" zurück 
 """
