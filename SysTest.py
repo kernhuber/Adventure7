@@ -172,9 +172,10 @@ class SysTest:
         ])
 
     def test_game(self) -> str:
+        from Utils import dprint
         if self.test_queue:
             c = self.test_queue.popleft()
-            print (f'Player: {c}')
+            dprint (f'Player: {c}')
             return c
         else:
             return None

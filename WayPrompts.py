@@ -30,3 +30,19 @@ def w_dach_schuppen_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
     'steige vom Schuppen herab'
     in diesen oder Vergleichbaren Fällen liefere 'gehe schuppen" zurück
     """
+
+def w_ubahn_warenautomat_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
+    return """
+* Diesen weg kann man gehen, hinaufsteigen, herausgehen, laufen, hinauflaufen oder rauflaufen
+* Dieser Weg ist implizit eine Rolltreppe
+* Dieser weg führt zu o_warenautomat, Oberfläche, nach draussen, zurück - alles, was aus einer U-Bahn-Station an die Oberfläche führt
+* Beispiele:
+- gehe an die Oberfläche zurück
+- steige die treppe hoch
+- laufe wieder nach draussen zurück
+- steige die Rolltreppe hoch (auch wenn gar keine Treppe bei den Objekten ist)
+- gehe zum Warenautomat
+* In all diesen Beispielen, und anderen Situationen, in denen der Spieler die U-Bahn-Station über diesen Weg verlässt, liefere
+'gehe o_warenautomat' zurück
+
+"""

@@ -1,8 +1,14 @@
 from collections import deque
 from rich.prompt import Prompt
 from GameState import GameState
-from Utils import dprint, dpprint, tw_print, DEBUG
+
+import Utils
+Utils.ADV_LOGGER = Utils.dlogger()
+
+from Utils import tw_print, dprint, dpprint
 from pprint import pprint
+
+
 
 #
 # Nächste Version des Adventures, 2025-05-21
@@ -171,6 +177,8 @@ class Adventure:
 #
 # --- Main ---
 #
+
 plname = input("Wie willst du im Spiel heissen? ")
+
 a = Adventure([plname])
 a.gameloop()

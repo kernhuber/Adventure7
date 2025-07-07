@@ -64,11 +64,11 @@ class PlayerState:
             tw_print("***Leider bist du verdurstet!***")
             return "nichts"
         if self.thirst_counter == 20:
-            tw_print("#Du hast Gottseidank noch keinen wirklichen Durst. Nur ein wenig. Ein wenig Durst hast du schon.")
+            tw_print("***Du hast Gottseidank noch keinen wirklichen Durst. Nur ein wenig. Ein wenig Durst hast du schon.***")
         elif self.thirst_counter == 10:
-            tw_print("#Jetzt hast Du schon Durst. Du solltest dringend etwas zu Trinken suchen!")
+            tw_print("***Jetzt hast Du schon Durst. Du solltest dringend etwas zu Trinken suchen!***")
         elif self.thirst_counter <=5:
-            tw_print(f"#Du hast jetzt richtig Durst! Es reicht nocht für {self.thirst_counter} Spielrunden, dann verdurstest Du!")
+            tw_print(f"***Du hast jetzt richtig Durst! Es reicht nocht für {self.thirst_counter} Spielrunden, dann verdurstest Du!***")
 
         user_input = ""
         while user_input == "":
@@ -83,6 +83,7 @@ class PlayerState:
                         self.cmd_q.append(ui.strip().lower())
                     else:
                         cmds = gs.llm.parse_user_input_to_commands(ui,gs.compile_current_game_context(self))
+                        dprint("PlayerState.Player_game_move: --------------------------")
                         dprint(f"LLM made the following atomic commands from user input:")
                         dpprint(cmds)
                         self.cmd_q.extend(cmds)

@@ -361,7 +361,11 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
         try:
             response = self.gemini_text_model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
             commands = json.loads(response.text)
-
+            dprint("LLM-Info: ++++++++++++++")
+            dprint(f"User input....: {user_input}")
+            dprint(f"LLM Response..: {response}")
+            dprint("Parsed commands from LLM Response:-------")
+            dpprint(commands)
             if not isinstance(commands, list):
                 return ["unbekannt"]
             return commands
