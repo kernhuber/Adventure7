@@ -3,7 +3,7 @@ from typing import List
 from Place import Place
 from collections import deque
 from SysTest import SysTest
-from Utils import dpprint, dprint
+from Utils import dpprint, dprint, dl
 
 
 #from GameState import GameState
@@ -83,9 +83,9 @@ class PlayerState:
                         self.cmd_q.append(ui.strip().lower())
                     else:
                         cmds = gs.llm.parse_user_input_to_commands(ui,gs.compile_current_game_context(self))
-                        dprint("PlayerState.Player_game_move: --------------------------")
-                        dprint(f"LLM made the following atomic commands from user input:")
-                        dpprint(cmds)
+                        dprint(dl.PLAYERSTATE,"PlayerState.Player_game_move: --------------------------")
+                        dprint(dl.PLAYERSTATE,f"LLM made the following atomic commands from user input:")
+                        dpprint(dl.PLAYERSTATE, cmds)
                         self.cmd_q.extend(cmds)
                 else:
                     user_input = ""

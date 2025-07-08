@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from collections import deque
 from typing import List, Deque, Any
 from enum import Enum, auto
-from Utils import tw_print, dprint
+from Utils import tw_print, dprint, dl
 
 class DogState(Enum):
     START = auto()
@@ -57,8 +57,8 @@ class NPCPlayerState(PlayerState):
         :param gs:
         :return str:
         """
-        dprint("+++ Dog Data:")
-        dprint(f"+++ dog_state = {self.dog_state}, dog is in {self.location.name}")
+        dprint(dl.NPCPLAYERSTATE,"+++ Dog Data:")
+        dprint(dl.NPCPLAYERSTATE,f"+++ dog_state = {self.dog_state}, dog is in {self.location.name}")
         #
         # Player has initiated fight, fight was executed, so do does this:
         #

@@ -12,6 +12,7 @@ class dl(IntFlag):
     NPCPLAYERSTATE  = auto()
     LLM             = auto()
     LLM_PROMPT      = auto()
+    ExplosionState  = auto()
 
 DEBUG = True
 DEBUG_LEVEL = dl.LLM|dl.LLM_PROMPT|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE
@@ -50,11 +51,11 @@ def tw_print(x):
     console.print(Markdown(x))
 
 
-def dprint(x):
+def dprint(l:dl, x):
     if ADV_LOGGER:
-        ADV_LOGGER.dprint(x)
+        ADV_LOGGER.dprint(l,x)
 
 
-def dpprint(x):
+def dpprint(l:dl, x):
     if ADV_LOGGER:
-        ADV_LOGGER.dpprint(x)
+        ADV_LOGGER.dpprint(l, x)

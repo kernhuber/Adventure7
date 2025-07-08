@@ -8,7 +8,7 @@ from typing import Dict, List
 from PlayerState import PlayerState
 from GameObject import GameObject
 from GeminiInterface import GeminiInterface
-from Utils import tw_print, dprint
+from Utils import tw_print, dprint, dl
 
 
 
@@ -1036,7 +1036,7 @@ Auf dem Dach des Schuppens
         If identifier is given and not found within objects list, just return it
 
         """
-        dprint(f"This is place_name_from_friendly_name({n})")
+        dprint(dl.GAMESTATE,f"This is place_name_from_friendly_name({n})")
         for v in self.places.values():
             if n in v.callnames:
                 return v.name

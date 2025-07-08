@@ -5,7 +5,7 @@ from GameState import GameState
 import Utils
 Utils.ADV_LOGGER = Utils.dlogger()
 
-from Utils import tw_print, dprint, dpprint
+from Utils import tw_print, dprint, dpprint, dl
 from pprint import pprint
 
 
@@ -111,12 +111,12 @@ class Adventure:
                 tw_print("***Keine Spieler mehr übrig***")
                 break
             self.game.gamelog.append({"Game_Round":f"{round}"})
-            dprint(f"#Players: {len(self.game.players)}")
+            dprint(dl.GAMELOOP,f"#Players: {len(self.game.players)}")
             for i in self.game.players:
-                dprint(f"* {i.name}")
+                dprint(dl.GAMELOOP,f"* {i.name}")
             print("\n\n\n")
             tw_print(f"# Spielrunde {round} ")
-            dprint(f"# Spielrunde {round} ")
+            dprint(dl.GAMELOOP,f"# Spielrunde {round} ")
             round = round + 1
             if round == 200:
                 tw_print(txt_final_text)
@@ -168,11 +168,11 @@ class Adventure:
         if not self.game.game_won:
             tw_print(txt_final_text)
 
-        dprint(f"Total tokens used in this game session: {self.game.llm.tokens}")
-        dprint(f"Number of API-Calls: {self.game.llm.numcalls}")
-        dpprint(self.game.llm.token_details)
-        dprint(f"{'*'*80}")
-        dpprint(self.game.gamelog)
+        dprint(dl.GAMELOOP,f"Total tokens used in this game session: {self.game.llm.tokens}")
+        dprint(dl.GAMELOOP,f"Number of API-Calls: {self.game.llm.numcalls}")
+        dpprint(dl.GAMELOOP,self.game.llm.token_details)
+        dprint(dl.GAMELOOP,f"{'*'*80}")
+        dpprint(dl.GAMELOOP,self.game.gamelog)
         tw_print("***Auf Wiedersehen!***")
 #
 # --- Main ---

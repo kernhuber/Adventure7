@@ -3,7 +3,7 @@ import google.generativeai as genai
 import os
 import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
 from pprint import pprint
-from Utils import dprint, dpprint
+from Utils import dprint, dpprint, dl
 
 
 # Konfiguration der Gemini API mit deinem API-Schlüssel
@@ -210,10 +210,10 @@ Die Ortsbeschreibung:
 #             {self.txt_prev_descriptions}
 # """
 #             try:
-#                 dprint(f"{'#'*80}")
-#                 dprint("Creating Summary".center(80))
-#                 dprint(f"{'#' * 80}")
-#                 dprint(self.txt_prev_descriptions)
+#                 dprint(dl.LLM,f"{'#'*80}")
+#                 dprint(dl.LLM,"Creating Summary".center(80))
+#                 dprint(dl.LLM,f"{'#' * 80}")
+#                 dprint(dl.LLM,self.txt_prev_descriptions)
 #                 response = self.gemini_text_model.generate_content(sum_prompt#,
 #                                                                    #generation_config = genai.types.GenerationConfig(
 #                                                                    #         max_output_tokens=200  # Beispiel: Maximal 200 Tokens für Szenenbeschreibungen
@@ -223,9 +223,9 @@ Die Ortsbeschreibung:
 #                 self.tokens = self.tokens+response.usage_metadata.total_token_count
 #                 self.numcalls = self.numcalls+1
 #                 self.token_details.append(response.usage_metadata.total_token_count)
-#                 dprint(f"{'#' * 80}")
-#                 dprint(self.txt_prev_descriptions)
-#                 dprint(f"{'#' * 80}")
+#                 dprint(dl.LLM,f"{'#' * 80}")
+#                 dprint(dl.LLM,self.txt_prev_descriptions)
+#                 dprint(dl.LLM,f"{'#' * 80}")
 #             except Exception as e:
 #                 print(f"Fehler bei der Generierung der Zusammenfassung: {e}")
 #
@@ -361,24 +361,24 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
         try:
             response = self.gemini_text_model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
             commands = json.loads(response.text)
-            dprint("LLM-Info: ++++++++++++++")
-            dprint(f"User input....: {user_input}")
-            dprint(f"LLM Response..: {response}")
-            dprint("Parsed commands from LLM Response:-------")
-            dpprint(commands)
+            dprint(dl.LLM,"LLM-Info: ++++++++++++++")
+            dprint(dl.LLM,f"User input....: {user_input}")
+            dprint(dl.LLM,f"LLM Response..: {response}")
+            dprint(dl.LLM,"Parsed commands from LLM Response:-------")
+            dpprint(dl.LLM, commands)
             if not isinstance(commands, list):
                 return ["unbekannt"]
             return commands
         except Exception as e:
-            dprint(f"{'*'*40}")
-            dprint(f"Fehler beim Parsen der Benutzereingabe: {e}")
-            dprint(f"User input: {user_input}")
-            dprint("Exception e:----------------")
-            dpprint(e)
-            dprint("LLM response: --------------")
-            dpprint(response.text)
-            dprint("Prompt used: ---------------")
-            dprint(prompt)
+            dprint(dl.LLM,f"{'*'*40}")
+            dprint(dl.LLM,f"Fehler beim Parsen der Benutzereingabe: {e}")
+            dprint(dl.LLM,f"User input: {user_input}")
+            dprint(dl.LLM,"Exception e:----------------")
+            dpprint(dl.LLM,e)
+            dprint(dl.LLM,"LLM response: --------------")
+            dpprint(dl.LLM,response.text)
+            dprint(dl.LLM,"Prompt used: ---------------")
+            dprint(dl.LLM,prompt)
             return ["unbekannt"] # Fallback
 
     def get_npc_action(self, game_state_for_npc: dict) -> dict:
