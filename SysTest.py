@@ -5,13 +5,20 @@
 
 from collections import deque
 
+import Utils
+
+
 class SysTest:
     def __init__(self):
-        self.test_queue_1 = deque([])
+        from Utils import dl
+        if Utils.DEBUG_LEVEL & dl.SYSTEST:
+            self.test_queue = self.test_queue_1
+        else:
+            self.test_queue = deque(["hilfe"])
         #
         # For testing purposes rename any of the following to "test_queue"
         #
-        self.test_queue = deque([
+        self.test_queue_1 = deque([
             "gehe schuppen",
             "untersuche blumentopf",
             "anwenden schlüssel schuppen",

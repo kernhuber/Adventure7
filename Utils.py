@@ -12,7 +12,8 @@ class dl(IntFlag):
     NPCPLAYERSTATE  = auto()
     LLM             = auto()
     LLM_PROMPT      = auto()
-    ExplosionState  = auto()
+    EXPLOSIONSTATE  = auto()
+    SYSTEST         = auto()
 
 DEBUG = True
 DEBUG_LEVEL = dl.LLM|dl.LLM_PROMPT|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE
