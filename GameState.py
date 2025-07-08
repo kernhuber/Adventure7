@@ -1324,9 +1324,12 @@ Am Ort sind folgende Objekte zu sehen:"""
     "Gehe dahin, wo der Hund ist"
     "Nimm die Geheimzahl an dich"
     
-    
-    Achte auf den Hund! Dieser ist dir nicht wohlgesonnen! Du kannst ihn 
-    für einige Runden besänftigen, indem du ihn mit etwas fütterst!
+    Achtung
+    =======
+    * Achte auf den Hund! Dieser ist dir nicht wohlgesonnen! Du kannst ihn 
+      für einige Runden besänftigen, indem du ihn mit etwas fütterst!
+    * Du wirst im Laufe der Zeit Durst bekommen. Suche dir etwas, wo du
+      trinken kannst, sonst ist das Spiel zu Ende
     
         """
         return rval
