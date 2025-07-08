@@ -3,7 +3,18 @@ from rich.markdown import Markdown
 from rich.prompt import Prompt
 from pprint import pprint
 import datetime
+from enum import IntFlag, auto
+
+class dl(IntFlag):
+    GAMELOOP        = auto()
+    GAMESTATE       = auto()
+    PLAYERSTATE     = auto()
+    NPCPLAYERSTATE  = auto()
+    LLM             = auto()
+    LLM_PROMPT      = auto()
+
 DEBUG = True
+DEBUG_LEVEL = dl.LLM|dl.LLM_PROMPT|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE
 ADV_LOGGER = None
 
 class dlogger():
@@ -13,8 +24,8 @@ class dlogger():
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         self.logfile =f"debug-{timestamp}.log"
 
-    def dprint(self,x):
-        if DEBUG:
+    def dprint(self,l:dl, x):
+        if DEBUG and (l & DEBUG_LEVEL):
 
             if self.logfile:
                 with open(self.logfile, "a", encoding="utf-8") as f:
@@ -22,8 +33,8 @@ class dlogger():
             else:
                 print(x)
 
-    def dpprint(self,x):
-        if DEBUG:
+    def dpprint(self,l:dl,x):
+        if DEBUG and (l & DEBUG_LEVEL):
 
             if self.logfile:
                 with open(self.logfile, "a", encoding="utf-8") as f:
