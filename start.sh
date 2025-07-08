@@ -5,6 +5,8 @@ clear
 echo
 echo
 . ./venv/bin/activate
+. .env
+export GOOGLE_API_KEY
 
 python3 Adventure8.py
 
