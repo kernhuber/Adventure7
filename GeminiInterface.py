@@ -349,7 +349,7 @@ Beispiel für eine komplexere Eingabe:
 "gehe zum Schuppen und schließe ihn mit dem Schlüssel auf, dann sieh dich um" wird zu:
 ['gehe schuppen', 'anwenden schluessel schuppen', 'umsehen']
 
-Falls ein Befehl nicht verstanden wird, gib '[ "unbekannt" ]' zurück.
+Wenn Du eine Eingabe nicht verstehst, antworte mit 'zurückweisen <erklärung>' wie oben beschrieben.
     
 Verfügbare Orte und Objekte (mit ihren IDs) im aktuellen Kontext:
 {json.dumps(current_game_context, indent=2)}
