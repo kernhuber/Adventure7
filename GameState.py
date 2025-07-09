@@ -1126,7 +1126,11 @@ Auf dem Dach des Schuppens
 
 
     def verb_execute(self, pl: PlayerState, input: str) -> str:
-        tokens = input.split()
+        # tokens = input.split()
+        import regex as re
+        tokens = re.findall(r'"(?:\\.|[^"\\])*"|[a-zA-Z_][a-zA-Z0-9_]*', input)
+        tokens = [t[1:-1] if t.startswith('"') else t for t in tokens]
+
         vtab = {
             "anwenden":(self.verb_apply,2),
             "nimm":(self.verb_take,1),
