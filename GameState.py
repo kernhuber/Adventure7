@@ -1364,7 +1364,7 @@ Am Ort sind folgende Objekte zu sehen:"""
         # Finally - we can go the way
         #
         pl.location = w_found.destination
-        r = f"{pl.name} ist nun hier: {pl.location.callnames[0]} - ({pl.location.name})"
+        r = f"{pl.name} ist nun hier: {pl.location.callnames[0]} "
         return r
 
     def verb_examine(self, pl: PlayerState, what: str):

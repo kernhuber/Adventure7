@@ -57,6 +57,7 @@ gilt folgendes generelles Szenario
 An anderen Orten wird das Szenario in der Ortsbeschreibung beschrieben. In diesem Fall 
 verwende das dort angegebene Szenario
 
+Rede den Spieler in der ersten Person an! 
 
 +-------------------------------------+  
 + Ort des Spielers oder der Spielerin +

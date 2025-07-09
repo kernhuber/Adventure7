@@ -57,7 +57,7 @@ class PlayerState:
         """
         from rich.prompt import Prompt
         from Utils import tw_print
-        print(f'{self.name} ist nun hier (Ortsname): {self.location.callnames[0]} ')
+        dprint(dl.PLAYERSTATE,f'{self.name}, du bist aktuell hier: {self.location.callnames[0]} ')
         self.thirst_counter -= 1
         if self.thirst_counter == 0:
             gs.game_over = True

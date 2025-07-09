@@ -137,24 +137,26 @@ class Adventure:
                         dgf = p
 
                 if dgf and plf and dgf.location == plf.location and not dgf.command_after_fight:
-                    tw_print(f"***Achtung!! {plf.name} und {dgf.name} sind am selben Ort! Da ist Streit vorprogrammiert!***\n\n")
+                    tw_print(f"\n***Achtung {plf.name}!! {dgf.name} steht neben Dir! Da ist Streit vorprogrammiert!***\n\n")
 
                 if (type(pl) is NPCPlayerState):
                     #
                     # Non Player Character
                     #
+
                     user_input = pl.NPC_game_move(self.game)
                     if  not user_input:
                         raise Exception("should not happen!")
 
-                    tw_print(f"**Spielzug {pl.name}**: {user_input}")
+
+                    #tw_print(f"**Spielzug {pl.name}**: {user_input}")
 
                 elif (type(pl) is ExplosionState):
 
                     user_input = pl.explosion_input(self.game)
                 else:
                     user_input = pl.Player_game_move(self.game)
-                    tw_print(f"**Spielzug {pl.name}**: {user_input}")
+                    dprint(dl.GAMELOOP,"**Spielzug {pl.name}**: {user_input}")
 
 
                 p=self.game.verb_execute(pl,user_input)

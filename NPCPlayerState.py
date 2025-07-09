@@ -225,7 +225,9 @@ class NPCPlayerState(PlayerState):
         if self.next_loc:
             self.dog_state = DogState.TRACE
             if self.can_dog_go(gs, self.next_loc[0].name):
-                return f"gehe {self.next_loc.popleft().name}"
+                nl = self.next_loc.popleft()
+                tw_print(f"***Der Hund geht zum/zur {nl.callnames[0]}.***")
+                return f"gehe {nl.name}"
             else:
                 return "nichts"
 

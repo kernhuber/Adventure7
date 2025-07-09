@@ -14,7 +14,7 @@ class SysTest:
         if Utils.DEBUG_LEVEL & dl.SYSTEST:
             self.test_queue = self.test_queue_1
         else:
-            self.test_queue = deque(["hilfe"])
+            self.test_queue = deque([])
         #
         # For testing purposes rename any of the following to "test_queue"
         #
