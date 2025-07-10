@@ -53,7 +53,27 @@ Die erste Gestalt erhebt sich und verschränkt die Hände hinter dem Rücken. Na
 Die zweite Gestalt nickt wortlos. Gemeinsam treten sie zu einem Schaltpult in der Ecke des Raumes.
 Jeder steckt einen Schlüssel in eines der beiden Schlüssellöcher und beide betätigen gleichzeitig den Schalter in der Mitte des Pultes.
 
-Dann geht die Welt unter. 
+***Dann geht die Welt unter. ***
+"""
+
+txt_final_won_text = """
+# An einem weit entfernten Ort
+
+Eine schwarz gekleidete Gestalt lehnt sich in einem Ledersessel zurück.
+„Der Bote hat den Umschlag gebracht“, sagt sie und wedelt mit dem Umschlag.
+
+„Das sind großartige Neuigkeiten!“, erwidert eine zweite Gestalt und erhebt sich aus einer bequemen Sitzecke am anderen Ende des Raumes.
+Einen Moment lang starren beide den Umschlag an. Dann öffnet ihn die erste Gestalt und zieht einen vergilbten Notizzettel hervor.
+Auf diesem sind in krakeliger Handschrift einige Zeichen gekritzelt.
+
+Lange betrachten sie schweigend den Zettel.
+Dann entspannen sich ihre Gesichtszüge.
+
+„Damit ist die Bedrohung endgültig vorbei.“
+„Gott sei Dank“, murmelt die erste Gestalt, zerknüllt den Zettel und wirft ihn in einen Papierkorb neben der Sitzecke.
+Anschließend verlassen beide den Raum durch eine schwere, mit Leder gepolsterte Tür.
+
+***Die Welt ist gerettet!***
 """
 
 
@@ -169,6 +189,8 @@ class Adventure:
 
         if not self.game.game_won:
             tw_print(txt_final_text)
+        else:
+            tw_print(txt_final_won_text)
 
         dprint(dl.GAMELOOP,f"Total tokens used in this game session: {self.game.llm.tokens}")
         dprint(dl.GAMELOOP,f"Number of API-Calls: {self.game.llm.numcalls}")
