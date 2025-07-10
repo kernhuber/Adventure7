@@ -102,6 +102,6 @@ class ExplosionState(PlayerState):
                 gs.players.remove(p)
 
 
-            if self.location.name not in ["o_felsen", "o_warenautomat"]:
+            if self.location.name not in ["p_felsen", "p_warenautomat"]:
                 tw_print("***Die Sprengladung ist leider am falschen Ort explodiert. Du kannst das Spiel nicht mehr gewinnen. Verwende 'quit' um es zu beenden, oder sieh dich noch ein wenig um, wenn es dich interessiert.***")
             return "nichts"
