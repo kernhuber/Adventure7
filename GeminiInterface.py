@@ -333,7 +333,7 @@ Beispiele für komplexere Interpretationen des 'anwenden'-Befehls:
 - "Stelle den Hebel um": 'anwenden hebel'
 - "Füttere den Hund mit der Salami": 'anwenden salami hund' (wenn hund der Name des Hundes ist)
 
-Beispiele für den 'zurückweisen"-Befehl
+Beispiele für den zurückweisen-Befehl
 - "Öffne den Warenautomaten": zurueckweisen "Du kannst den Warenautomat nicht öffnen. Du bräuchtest schon Geld, um an die Waren zu gelangen."
 - "puste den Schuppen um": zurueckweisen "Interessante Idee - aber du kannst den Schuppen nicht umpusten"
 - Schlurbsdiwurps kadjhaslasdk": zurueckweisen "Sei mir nicht böse - aber das habe ich wirklich nicht verstanden"
