@@ -203,6 +203,87 @@ class SysTest:
             "nichts"
 
         ])
+        self.test_queue_llm = deque([
+            "gehe zum schuppen und schau dich um",
+            "untersuche den blumentopf",
+            "schließe mit dem schlüssel den Schuppen auf und gehe hinein",
+         #   "gehe innen",
+            "sieh dich um",
+            "nimm die sprengladung und verlasse den schuppen",
+         #   "gehe schuppen",
+            "gehe zum felsen",
+            "sieh dich um",
+            "aktiviere die Sprengladung und lege sie am Felsen ab",
+          #  "ablegen sprengladung",
+            "gehe zum schuppen",
+            "gehe nach innen",
+            "untersuche das skelett",
+            "untersuche die geldboerse",
+            "nimm die ec-karte und die Leiter",
+           # "nimm leiter",
+            "verlasse den schuppen",
+            "lehne die Leiter an den Schuppen",
+          # "anwenden leiter schuppen",
+            "gehe zum felsen",
+            "gehe in die höhle",
+            "umschauen",
+            "betätige den hauptschalter und verlasse die höhle",
+           # "gehe felsen",
+            "gehe zum schuppen",
+            "steige auf das dach",
+           # "gehe dach",
+            "umsehen",
+            "betätige den Hebel",
+            "springe vom schuppen und gehe zum warenautomat",
+           # "gehe warenautomat",
+            "gehe zum u-bahnhof",
+            "untersuche den mülleimer",
+            "nimm den Zettzel mit der geheimzahl",
+            "gehe wieder an die Oberfläche",
+            "nichts",
+            "nichts",
+            "gehe zur u-bahn",
+            "trinke vom Wasserspender",
+            "nichts",
+            "gehe in den wagen",
+            "nichts",
+            "nichts",
+            "verlasse den Wagen",
+            "Gehe wieder an die Oberfläche",
+            "gehe zum geldautomat",
+            "inventory",
+            "Stecke die Geldkarte in den Geldautomaten",
+            "nimm die us-dollar",
+            "gehe zum warenautomat",
+            "gehe in die ubahn",
+            "nichts",
+            "nichts",
+            "gehe wieder nach oben",
+            "nichts",
+            "nichts",
+            "gehe zur ubahn",
+            "gehe gehe in den wagen und betätige den türschließer",
+            # "anwenden türschließer",
+            "umsehen",
+            "gehe auf den bahnsteig",
+            "umsehen",
+            "untersuche den pizzaautomaten",
+            "wirf die US-Dollar in den Pizzaautomaten",
+            "nimm die lire und die pizza",
+            "gehe in den wagen und betätige den türschließer",
+            "verlasse den wagen",
+            "trinke vom wasserspender",
+            "gehe an die oberfläche",
+            "gehe zum schuppen und lege die pizza ab",
+            "steige auf den schuppen",
+            "betätige den hebel",
+            "springe vom schuppen und gehe zum warenautomaten",
+            "wirf die lire in den warenautomat",
+            "nimm die fahrradkette und gehe zum start",
+            "baue die fahrradkette in das fahrrad ein",
+
+        ])
+
         from Utils import dl
         if Utils.DEBUG_LEVEL & dl.SYSTEST:
             self.test_queue = self.test_queue_1
@@ -218,6 +299,14 @@ class SysTest:
         else:
             return None
 
-
+    def test_game_llm(self) -> str:
+        from Utils import dprint, dl
+        if self.test_queue_llm:
+            c = self.test_queue_llm.popleft()
+            dprint (dl.PLAYERSTATE, 'Player: {c}')
+            print(f"Spieler: {c}")
+            return c
+        else:
+            return None
 
 

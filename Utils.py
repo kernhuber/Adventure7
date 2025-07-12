@@ -14,9 +14,10 @@ class dl(IntFlag):
     LLM_PROMPT      = auto()
     EXPLOSIONSTATE  = auto()
     SYSTEST         = auto()
+    SYSTESTLLM      = auto()
 
 DEBUG = True
-DEBUG_LEVEL = dl.LLM|dl.LLM_PROMPT|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.SYSTEST
+DEBUG_LEVEL = dl.LLM|dl.LLM_PROMPT|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.SYSTESTLLM
 ADV_LOGGER = None
 
 class dlogger():

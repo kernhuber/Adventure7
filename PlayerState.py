@@ -78,7 +78,14 @@ class PlayerState:
             elif self.cmd_q:
                 user_input = self.cmd_q.popleft()
             else:
-                ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe")
+                from Utils import DEBUG_LEVEL
+                if DEBUG_LEVEL & dl.SYSTESTLLM:
+                    if self.systest.test_queue_llm:
+                        ui = self.systest.test_game_llm()
+                    else:
+                        ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe")
+                else:
+                    ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe")
                 if ui is not None:
                     if ui == "quit" or ui=="inventory" or ui =="dogstate" or ui=="nichts" or ui=="context":
                         self.cmd_q.append(ui.strip().lower())
