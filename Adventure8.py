@@ -176,7 +176,7 @@ class Adventure:
                     user_input = pl.explosion_input(self.game)
                 else:
                     user_input = pl.Player_game_move(self.game)
-                    dprint(dl.GAMELOOP,"**Spielzug {pl.name}**: {user_input}")
+                    dprint(dl.GAMELOOP,f"**Spielzug {pl.name}**: {user_input}")
 
 
                 p=self.game.verb_execute(pl,user_input)

@@ -202,10 +202,20 @@ Geldautomat
 #             },
 def o_geld_dollar_prompt_f(gs:GameState, pl:PlayerState) -> str:
     return """
-Lire
-====
+Dollar
+======
 - Eine Menge US-Dollar
 - Große und kleine Scheine
+- Die Dollar kann man nehmen, aufnehmen, aufklauben, einstecken, an sich nehmen. 
+- Die Dollar kann man auch in etwas hineinstecken oder mit ihnen bezahlen oder kaufen. 
+- sie können auch als US-Geld oder US-Dollar bezeichnet werden
+
+Beispiele:
+
+Nimm die Dollar aus dem Geldautomaten --> 'nimm o_geld_dollar'
+Nimm die scheine aus dem Geldautomaten --> 'nimm o_geld_dollar'
+Stecke die Dollar in den Pizza-Automaten --> 'anwenden o_geld_dollar o_pizzaautomat'
+Kaufe mit den US-Dollar eine Pizza am Automaten --> 'anwenden o_geld_dollar o_pizzaautomat'
     """
 
 #             #

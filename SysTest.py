@@ -10,11 +10,7 @@ import Utils
 
 class SysTest:
     def __init__(self):
-        from Utils import dl
-        if Utils.DEBUG_LEVEL & dl.SYSTEST:
-            self.test_queue = self.test_queue_1
-        else:
-            self.test_queue = deque([])
+
         #
         # For testing purposes rename any of the following to "test_queue"
         #
@@ -31,6 +27,9 @@ class SysTest:
             "ablegen sprengladung",
             "gehe schuppen",
             "gehe innen",
+            "untersuche skelett",
+            "untersuche geldboerse",
+            "nimm ec-karte",
             "nimm leiter",
             "gehe schuppen",
             "anwenden leiter schuppen",
@@ -43,7 +42,34 @@ class SysTest:
             "anwenden hebel",
             "gehe schuppen",
             "gehe warenautomat",
-            "gehe ubahn"
+            "gehe ubahn",
+            "untersuche muelleimer",
+            "nimm geheimzahl",
+            "gehe warenautomat",
+            "nichts",
+            "nichts",
+            "gehe ubahn",
+            "anwenden wasserspender",
+            "nichts",
+            "gehe wagen",
+            "nichts",
+            "nichts",
+            "gehe ubahn",
+            "gehe warenautomat",
+            "gehe geldautomat",
+            "inventory",
+            "anwenden ec-karte geldautomat",
+            "nimm us-dollar",
+            "gehe warenautomat",
+            "gehe ubahn",
+            "nichts",
+            "nichts",
+            "gehe warenautomat",
+            "nichts",
+            "nichts",
+            "gehe ubahn",
+            "gehe wagen",
+            "anwenden türschließer"
         ])
 
         self.test_queue_cheese = deque([
@@ -177,6 +203,11 @@ class SysTest:
             "nichts"
 
         ])
+        from Utils import dl
+        if Utils.DEBUG_LEVEL & dl.SYSTEST:
+            self.test_queue = self.test_queue_1
+        else:
+            self.test_queue = deque([])
 
     def test_game(self) -> str:
         from Utils import dprint, dl

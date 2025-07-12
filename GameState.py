@@ -284,7 +284,7 @@ U-Bahn Station
         """,
                 "ways": ["w_ubahn_warenautomat", "w_ubahn_wagen"],
                 "objects": ["o_muelleimer", "o_salami", "o_geheimzahl"],
-                "callnames": ["U-Bahn", "UBahn", "U-Bahnhof"]
+                "callnames": ["U-Bahn", "UBahn", "U-Bahnhof", "Bahnsteig", "Bahnhof"]
             },
             "p_wagen": {
                 "description": "Im U-Bahn-Wagen",
@@ -311,6 +311,8 @@ Zweite U-Bahn Station
 - Der Boden ist mit Marmorfliesen gefliest.
 - Neonröhren tauchen alles in angenehmes Licht. 
 - In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind.
+- Wichtig: du darfst den Hund in der Beschreibung ausschließlich nur erwähnen, wenn er im Wagen (p_wagen) oder hier am Ort ist. In allen 
+  anderen Fällen kann man den Hund von hier nicht sehen.
         """,
                 "ways": ["w_ubahn2_wagen"],
                 "objects": ["o_pizzaautomat", "o_geld_lire", "o_pizza"],
@@ -440,6 +442,7 @@ Auf dem Dach des Schuppens
                 "destination": "p_warenautomat",
                 "text_direction": "hoch zum Warenautomaten",
                 "obstruction_check": None,
+                "way_prompt_f": wp.w_ubahn_warenautomat_prompt_f,
                 "description": ""
             },
             "w_ubahn_wagen": {
@@ -479,7 +482,8 @@ Auf dem Dach des Schuppens
                 "text_direction": "in den U-Bahnwagen",
                 "obstruction_check": None,
                 "description": "",
-                "hidden": True
+                "visible": False,
+                "description": "",
             },
             #
             # Place: p_geldautomat
@@ -1128,7 +1132,40 @@ Auf dem Dach des Schuppens
     def verb_execute(self, pl: PlayerState, input: str) -> str:
         # tokens = input.split()
         import regex as re
-        tokens = re.findall(r'"(?:\\.|[^"\\])*"|[a-zA-Z_][a-zA-Z0-9_]*', input)
+        # Regulärer Ausdruck zur Tokenisierung von Eingaben:
+        # Er erkennt zwei Arten von Token:
+        #
+        # 1. Strings in doppelten Anführungszeichen, z. B. "Das ist ein Text"
+        #    - erlaubt auch Escape-Sequenzen wie \" oder \n
+        #    - Aufbau:
+        #        "(             # öffnendes Anführungszeichen
+        #         (?:           # Start einer non-capturing group
+        #            \\.        # ein Escape-Zeichen (Backslash + beliebiges Zeichen)
+        #            |          # oder
+        #            [^"\\]     # ein beliebiges Zeichen außer " oder \
+        #         )*            # beliebig oft
+        #        )"             # schließendes Anführungszeichen
+        #
+        # 2. Bezeichner (Identifiers), z. B. hallo, Größe_12, übermorgen
+        #    - Erlaubt Unicode-Buchstaben inkl. Umlaute und Akzente
+        #    - Aufbau:
+        #        [\p{L}_]       # Ein Unicode-Buchstabe oder Unterstrich am Anfang
+        #        [\p{L}\p{N}_]* # Danach beliebig viele Buchstaben, Ziffern oder Unterstriche
+        #
+        # Das ganze Pattern verwendet die Unicode-Zeichenklassen von `regex`:
+        #    \p{L} = Letter (Unicode-Buchstabe)
+        #    \p{N} = Number (Unicode-Ziffer)
+        #
+        # Finaler Regex:
+        #    r'"(?:\\.|[^"\\])*"|[\p{L}_][\p{L}\p{N}_]*'
+        #
+        # Hinweis:
+        # - Kein Whitespace-Matching oder Sonderzeichen wie +, =, etc. werden erkannt – sie bleiben unberücksichtigt.
+        # - Damit eignet sich der Ausdruck gut für einfache Spracheingaben oder das Parsen einfacher Skriptzeilen.
+        tokens = re.findall(r'"(?:\\.|[^"\\])*"|[\p{L}_][\p{L}\p{N}_-]*[\p{L}\p{N}_]', input)
+        #
+        # Jetzt noch Anführungszeichen entfernen falls nötig
+        #
         tokens = [t[1:-1] if t.startswith('"') else t for t in tokens]
 
         vtab = {
@@ -1149,6 +1186,7 @@ Auf dem Dach des Schuppens
             "nichts": (self.verb_noop,0),
             "interaktion": (self.verb_interact,2),
             "zurueckweisen": (self.verb_reject,1),
+            "zurückweisen": (self.verb_reject, 1),
             "unbekannt": (self.verb_unknown,0)
         }
         verb,numargs = vtab.get(tokens[0],(None,None))
@@ -1355,6 +1393,8 @@ Am Ort sind folgende Objekte zu sehen:"""
                 break
         if w_found == None:
             return "Dieser Weg existiert hier nicht!"
+        if not w_found.visible:
+            return "Diesen Weg sehe ich hier nicht!"
         ob = w_found.obstruction_check(self)
 
         if ob != "Free":

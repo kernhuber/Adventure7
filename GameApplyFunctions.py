@@ -117,7 +117,7 @@ def o_geld_dollar_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=
             gs.objects["o_pizza"].ownedby = gs.places["p_ubahn2"]
         gs.objects["o_geld_lire"].hidden = False
         return 'Es dauert, und der Automat bereitet eine wunderschöne Pizza für dich zu, die Du im Ausgabefach findest. Und dann klappert es - es wird Dir Wechselgeld ausgezahlt, **und zwar in italienischen Lira!**'
-    return "Du scheinst mit den Dollars hier wnig anfangen zu können..."
+    return "Du scheinst mit den Dollars hier wenig anfangen zu können..."
 
 def o_schuppen_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     return "Wie willst du einen Schuppen auf etwas anwenden? Das geht nicht!"
@@ -265,7 +265,7 @@ def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=Non
         if x.isdigit():
             z = int(x)
     if gs.geheimzahl == z:
-        gs.objects["o_geld_dollar"].visible = True
+        gs.objects["o_geld_dollar"].hidden = False
         return "**Die Zahl stimmt!** Du tippst die entsprechenden Tasten - der Automat rattert, und spuckt ein Bündel Scheine aus. Frisch gedruckte US-Dollar!"
     else:
         return " --- Die Zahl ist falsch. ---"

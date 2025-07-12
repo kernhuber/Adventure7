@@ -74,12 +74,13 @@ class PlayerState:
         while user_input == "":
             if self.systest.test_queue:
                 user_input = self.systest.test_game().strip().lower()
+                print(user_input)
             elif self.cmd_q:
                 user_input = self.cmd_q.popleft()
             else:
                 ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe")
                 if ui is not None:
-                    if ui == "quit" or ui=="inventory" or ui =="dogstate" or ui=="nichts":
+                    if ui == "quit" or ui=="inventory" or ui =="dogstate" or ui=="nichts" or ui=="context":
                         self.cmd_q.append(ui.strip().lower())
                     else:
                         cmds = gs.llm.parse_user_input_to_commands(ui,gs.compile_current_game_context(self))

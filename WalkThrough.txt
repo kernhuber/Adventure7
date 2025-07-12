@@ -1,0 +1,1035 @@
+"/Users/chris/Documents/Work/Einführung in die KI/Tech/venv-ai/bin/python3" /Users/chris/Documents/Work/Einführung in die KI/Tech/Python/Adventure/Adventure8.py 
+Wie willst du im Spiel heissen? Chris
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                           Willkommen in der Wüste                            ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Eine komische Situation: Du radelst mit Deinem Fahrrad als Bote unter sengender 
+Sonne entlang einer schnurgraden Strasse durch eine endlose Wüste. Bei Dir hast 
+Du einen Umschlag, den Du an ein Ziel bringen musst. Erreicht der Umschlag das  
+Ziel nicht, so geht die Welt unter, aber das ist eine andere Geschichte.        
+
+Plötzlich reisst Dir die Fahrradkette - das Fahrrad funktioniert ohne sie nicht 
+mehr. Glücklicherweise bist Du an einem Ort gestrandet, an dem es Rettung geben 
+könnte.                                                                         
+
+Und nun?                                                                        
+
+Tipp: sieh dich um oder ersuche um Hilfe!                                       
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                 Spielrunde 1                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe schuppen
+Chris ist nun hier: schuppen                                                    
+------------------------------
+Der Hund beobachtet nun den Ort schuppen                                        
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                 Spielrunde 2                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+untersuche blumentopf
+Ein alter Blumentopf - aber warte: unter dem Blumentopf liegt ein Schlüssel!!!  
+------------------------------
+Der Hund geht zum/zur schuppen.                                                 
+Hund ist nun hier: schuppen                                                     
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                 Spielrunde 3                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+anwenden schlüssel schuppen
+Klick - die Tür geht auf                                                        
+------------------------------
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+Hund an Chris:  "Grrr!"                                                         
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                 Spielrunde 4                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+gehe innen
+Chris ist nun hier: innen                                                       
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                 Spielrunde 5                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+nimm sprengladung
+Du hast o_sprengladung nun bei dir                                              
+------------------------------
+Der Hund beobachtet nun den Ort innen                                           
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                 Spielrunde 6                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe schuppen
+Chris ist nun hier: schuppen                                                    
+------------------------------
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+Hund an Chris:  "Grrr!"                                                         
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                 Spielrunde 7                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+gehe felsen
+Chris ist nun hier: felsen                                                      
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                 Spielrunde 8                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+anwenden sprengladung
+Die Sprengladung ist nun scharf gemacht!                                        
+------------------------------
+Der Hund geht zum/zur innen.                                                    
+Hund ist nun hier: innen                                                        
+------------------------------
+Sprengladung explodiert in 2 Spielzügen in p_felsen                             
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                 Spielrunde 9                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+ablegen sprengladung
+Objekt o_sprengladung in/auf/am p_felsen abgelegt                               
+------------------------------
+------------------------------
+Sprengladung explodiert in 1 Spielzügen in p_felsen                             
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 10                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe schuppen
+Chris ist nun hier: schuppen                                                    
+------------------------------
+Auf seinem Weg zum Geldautomaten geht der Hund hierhin: schuppen (p_schuppen)   
+Hund ist nun hier: schuppen                                                     
+------------------------------
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+Sprengladung explodiert in 0 Spielzügen in p_felsen                             
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 11                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+gehe innen
+Chris ist nun hier: innen                                                       
+------------------------------
+Auf seinem Weg zum Geldautomaten geht der Hund hierhin: geldautomat             
+(p_geldautomat)                                                                 
+Hund ist nun hier: geldautomat                                                  
+------------------------------
+(((( KABUMM!!! ))))                                                             
+Die Sprengladung explodiert hier: p_felsen                                      
+Folgende Objekte sind pulverisiert worden                                       
+- o_felsen
+##--> Aha!! Hier wird der Eingang zu einer Höhle sichtbar!                      
+- o_sprengladung
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 12                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+untersuche skelett
+Oh weh, der sitzt wohl schon länger hier! Ein Skelett, welches einen            
+verschlissenen Anzug trägt. Im Anzug findest du eine Geldboerse!                
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 13                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+untersuche geldboerse
+Fein! Hier ist eine EC-Karte! Die passt bestimmt in einen Geldautomaten!        
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 14                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+nimm ec-karte
+Du hast o_ec_karte nun bei dir                                                  
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 15                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+nimm leiter
+Du hast o_leiter nun bei dir                                                    
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 16                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe schuppen
+Chris ist nun hier: schuppen                                                    
+------------------------------
+Der Hund beobachtet nun den Ort schuppen                                        
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 17                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+anwenden leiter schuppen
+Du kannst jetzt auf den Schuppen steigen!                                       
+------------------------------
+Der Hund geht zum/zur schuppen.                                                 
+Hund ist nun hier: schuppen                                                     
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 18                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+gehe felsen
+Chris ist nun hier: felsen                                                      
+------------------------------
+Der Hund beobachtet nun den Ort felsen                                          
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 19                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe höhle
+Chris ist nun hier: höhle                                                       
+------------------------------
+Der Hund geht zum/zur felsen.                                                   
+Hund ist nun hier: felsen                                                       
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 20                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Du hast Gottseidank noch keinen wirklichen Durst. Nur ein wenig. Ein wenig Durst
+hast du schon.                                                                  
+anwenden hauptschalter
+Du betätigst den Schalter. Irgendwo läuft ein Generator an - du hörst           
+elektrisches Summen... Strom!                                                   
+------------------------------
+Der Hund beobachtet nun den Ort höhle                                           
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 21                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe felsen
+Chris ist nun hier: felsen                                                      
+------------------------------
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+Hund an Chris:  "Grrr!"                                                         
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 22                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+gehe schuppen
+Chris ist nun hier: schuppen                                                    
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 23                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe dach
+Chris ist nun hier: dach                                                        
+------------------------------
+Der Hund geht zum/zur höhle.                                                    
+Hund ist nun hier: höhle                                                        
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 24                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+anwenden hebel
+Es rumpelt - Die siehst, wie der Warenautomat sich langsam auf den Rücken legt. 
+Da wo er stand, ist nun eine Öffnung - und darin eine Treppe zu einer           
+U-Bahn-Station!                                                                 
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 25                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe schuppen
+Chris ist nun hier: schuppen                                                    
+------------------------------
+Auf seinem Weg zum Geldautomaten geht der Hund hierhin: felsen (p_felsen)       
+Hund ist nun hier: felsen                                                       
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 26                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe warenautomat
+Chris ist nun hier: warenautomat                                                
+------------------------------
+Auf seinem Weg zum Geldautomaten geht der Hund hierhin: geldautomat             
+(p_geldautomat)                                                                 
+Hund ist nun hier: geldautomat                                                  
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 27                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe ubahn
+Chris ist nun hier: u-bahn                                                      
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 28                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+untersuche muelleimer
+Im Mülleimer findest Du einen Zettel mit einer Geheimzahl! Die Geheimzahl ist:  
+3430                                                                            
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 29                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+nimm geheimzahl
+Du hast o_geheimzahl nun bei dir                                                
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 30                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Jetzt hast Du schon Durst. Du solltest dringend etwas zu Trinken suchen!        
+gehe warenautomat
+Chris ist nun hier: warenautomat                                                
+------------------------------
+Der Hund beobachtet nun den Ort warenautomat                                    
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 31                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+nichts
+Du tust nichts                                                                  
+------------------------------
+Der Hund geht zum/zur warenautomat.                                             
+Hund ist nun hier: warenautomat                                                 
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 32                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+nichts
+Du tust nichts                                                                  
+------------------------------
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+Hund an Chris:  "Grrr!"                                                         
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 33                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+gehe ubahn
+Chris ist nun hier: u-bahn                                                      
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 34                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+anwenden wasserspender
+Herrlich! Du hast Deinen Durst mit köstlichem, frischen Wasser gestillt. Das    
+reicht wieder für 40 Spielzüge!                                                 
+------------------------------
+Der Hund beobachtet nun den Ort u-bahn                                          
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 35                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+nichts
+Du tust nichts                                                                  
+------------------------------
+Der Hund geht zum/zur u-bahn.                                                   
+Hund ist nun hier: u-bahn                                                       
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 36                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+gehe wagen
+Chris ist nun hier: wagen                                                       
+------------------------------
+Der Hund beobachtet nun den Ort wagen                                           
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 37                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+nichts
+Du tust nichts                                                                  
+------------------------------
+Der Hund geht zum/zur wagen.                                                    
+Hund ist nun hier: wagen                                                        
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 38                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+nichts
+Du tust nichts                                                                  
+------------------------------
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+Der Hund frisst o_salami                                                        
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 39                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+gehe ubahn
+Chris ist nun hier: u-bahn                                                      
+------------------------------
+Der Hund frisst noch!                                                           
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 40                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe warenautomat
+Chris ist nun hier: warenautomat                                                
+------------------------------
+Der Hund frisst noch!                                                           
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 41                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe geldautomat
+Chris ist nun hier: geldautomat                                                 
+------------------------------
+Der Hund frisst noch!                                                           
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 42                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+inventory
+Du trägst bei dir:                                                              
+
+ • "o_umschlag" --> Ein versiegelter Briefumschlag                              
+
+ • "o_ec_karte" --> Eine alte EC-Karte. Ob die noch geht?                       
+
+ • "o_geheimzahl" --> Eine Geheimzahl: 3430                                     
+nichts                                                                          
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 43                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+anwenden ec-karte geldautomat
+************************************************************
+*                                                          *
+*           Bitte geben sie die Geheimzahl ein!            *
+*                                                          *
+************************************************************
+Geheimzahl: 3430
+Die Zahl stimmt! Du tippst die entsprechenden Tasten - der Automat rattert, und 
+spuckt ein Bündel Scheine aus. Frisch gedruckte US-Dollar!                      
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 44                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+nimm us-dollar
+Du hast o_geld_dollar nun bei dir                                               
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 45                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe warenautomat
+Chris ist nun hier: warenautomat                                                
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 46                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe ubahn
+Chris ist nun hier: u-bahn                                                      
+------------------------------
+Der Hund beobachtet nun den Ort u-bahn                                          
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 47                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+nichts
+Du tust nichts                                                                  
+------------------------------
+Der Hund geht zum/zur u-bahn.                                                   
+Hund ist nun hier: u-bahn                                                       
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 48                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+nichts
+Du tust nichts                                                                  
+------------------------------
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+Hund an Chris:  "Grrr!"                                                         
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 49                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+gehe warenautomat
+Chris ist nun hier: warenautomat                                                
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 50                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+nichts
+Du tust nichts                                                                  
+------------------------------
+Der Hund beobachtet nun den Ort warenautomat                                    
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 51                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+nichts
+Du tust nichts                                                                  
+------------------------------
+Der Hund geht zum/zur warenautomat.                                             
+Hund ist nun hier: warenautomat                                                 
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 52                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+gehe ubahn
+Chris ist nun hier: u-bahn                                                      
+------------------------------
+Der Hund beobachtet nun den Ort u-bahn                                          
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 53                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+gehe wagen
+Chris ist nun hier: wagen                                                       
+------------------------------
+Der Hund geht zum/zur u-bahn.                                                   
+Hund ist nun hier: u-bahn                                                       
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 54                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Du hast Gottseidank noch keinen wirklichen Durst. Nur ein wenig. Ein wenig Durst
+hast du schon.                                                                  
+anwenden türschließer
+Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und hält nach kurzer   
+Fahrt an einem zweiten Bahnsteig. Die Tür öffnet sich wieder.                   
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 55                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: gehe auf den bahnsteig
+Chris ist nun hier: u-bahn-2                                                    
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 56                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: umsehen
+Du stehst in der zweiten U-Bahn-Station.  Nach der sengenden Hitze draußen,     
+empfängt dich eine angenehme Kühle. Die Luft ist zwar etwas abgestanden, doch   
+der Duft mediterraner Gewürze liegt in der Luft. Alles ist sauber und           
+ordentlich;  Marmorfliesen glänzen unter dem sanften Neonlicht. Werbeplakate für
+Limonade, einen VW Golf und einen Commodore C64 zieren die Wände – keine Spur   
+von Schmierereien. Ein U-Bahn-Waggon steht mit offenen Türen bereit.  Vor dir   
+steht ein Pizza-Automat, zwei Meter hoch, in den Farben Italiens bemalt und mit 
+dem Schriftzug "Frische Pizza".  Ein Comic-Pizzabäcker lächelt von den Seiten.  
+Über dem Geldeinwurf steht: "Um Backprozess zu starten, bitte Geld einwerfen.   
+Wechselgeld wird ausgezahlt".  Du kannst in den Waggon steigen.                 
+------------------------------
+Auf seinem Weg zum Geldautomaten geht der Hund hierhin: warenautomat            
+(p_warenautomat)                                                                
+Hund ist nun hier: warenautomat                                                 
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 57                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: untersuche den pizzaautomaten
+Ein Pizza-Automat, der angemalt ist wie die italienische Flagge. Auf seinen     
+Seiten ist ein Koch also Comicfigur abgebildet. Man kann Geld einwerfen, und    
+dann backt der Automat eine Pizza                                               
+------------------------------
+Auf seinem Weg zum Geldautomaten geht der Hund hierhin: geldautomat             
+(p_geldautomat)                                                                 
+Hund ist nun hier: geldautomat                                                  
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 58                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: wirf die US-Dollar in den Pizzaautomaten
+Es dauert, und der Automat bereitet eine wunderschöne Pizza für dich zu, die Du 
+im Ausgabefach findest. Und dann klappert es - es wird Dir Wechselgeld          
+ausgezahlt, und zwar in italienischen Lira!                                     
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 59                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: nimm die lire und die pizza
+Du hast o_geld_lire nun bei dir                                                 
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 60                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Du hast o_pizza nun bei dir                                                     
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 61                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: gehe in den wagen und betätige den türschließer
+Chris ist nun hier: wagen                                                       
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 62                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und fährt zurück zum   
+ersten Bahnsteig. Die Tür öffnet sich wieder.                                   
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 63                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: betätige den türschließer
+Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und hält nach kurzer   
+Fahrt an einem zweiten Bahnsteig. Die Tür öffnet sich wieder.                   
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 64                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Jetzt hast Du schon Durst. Du solltest dringend etwas zu Trinken suchen!        
+Was tust du jetzt, Chris? Deine Eingabe: betätige den türschließer
+Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und fährt zurück zum   
+ersten Bahnsteig. Die Tür öffnet sich wieder.                                   
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 65                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: verlasse den wagen
+Chris ist nun hier: u-bahn                                                      
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 66                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: trinke vom wasserspender
+Herrlich! Du hast Deinen Durst mit köstlichem, frischen Wasser gestillt. Das    
+reicht wieder für 40 Spielzüge!                                                 
+------------------------------
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 67                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: gehe an die oberfläche
+Chris ist nun hier: warenautomat                                                
+------------------------------
+Der Hund beobachtet nun den Ort warenautomat                                    
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 68                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: gehe zum schuppen und lege die pizza ab
+Chris ist nun hier: schuppen                                                    
+------------------------------
+Der Hund geht zum/zur warenautomat.                                             
+Hund ist nun hier: warenautomat                                                 
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 69                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Objekt o_pizza in/auf/am p_schuppen abgelegt                                    
+------------------------------
+Der Hund beobachtet nun den Ort schuppen                                        
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 70                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: steige auf den schuppen
+Chris ist nun hier: dach                                                        
+------------------------------
+Der Hund geht zum/zur schuppen.                                                 
+Hund ist nun hier: schuppen                                                     
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 71                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: betätige den hebel
+Es rumpelt - und der Warenautomat richtet sich wieder auf!                      
+------------------------------
+Der Hund frisst o_pizza                                                         
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 72                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: springe vom schuppen und gehe zum warenautomaten
+Chris ist nun hier: schuppen                                                    
+------------------------------
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+Der Hund frisst noch!                                                           
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 73                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Achtung Chris!! Hund steht neben Dir! Da ist Streit vorprogrammiert!            
+Chris ist nun hier: warenautomat                                                
+------------------------------
+Der Hund frisst noch!                                                           
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 74                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: wirf die lire in den warenautomat
+Du wirfst die italienischen Lira in den Warenautomat - und er akzeptiert sie    
+ohne zu murren. Du erwirbst eine Fahrradkette, die nun im Ausgabeschacht liegt! 
+------------------------------
+Der Hund frisst noch!                                                           
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 75                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: nimm die fahrradkette und gehe zum start
+Du hast o_fahrradkette nun bei dir                                              
+------------------------------
+Der Hund beobachtet nun den Ort warenautomat                                    
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 76                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Chris ist nun hier: start                                                       
+------------------------------
+Der Hund geht zum/zur warenautomat.                                             
+Hund ist nun hier: warenautomat                                                 
+------------------------------
+
+
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                Spielrunde 77                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+Was tust du jetzt, Chris? Deine Eingabe: baue die fahrradkette in das fahrrad ein
+Du reparierst Dein Fahrrad, und schaffst es rechtzeitig, den Briefumschlag      
+abzugeben. Du bist ein Held, rettest die Welt, und gewinnst das Spiel!          
+------------------------------
+Der Hund beobachtet nun den Ort start                                           
+------------------------------
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                         An einem weit entfernten Ort                         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Eine schwarz gekleidete Gestalt lehnt sich in einem Ledersessel zurück. „Der    
+Bote hat den Umschlag gebracht“, sagt sie und wedelt mit dem Umschlag.          
+
+„Das sind großartige Neuigkeiten!“, erwidert eine zweite Gestalt und erhebt sich
+aus einer bequemen Sitzecke am anderen Ende des Raumes. Einen Moment lang       
+starren beide den Umschlag an. Dann öffnet ihn die erste Gestalt und zieht einen
+vergilbten Notizzettel hervor. Auf diesem sind in krakeliger Handschrift einige 
+Zeichen gekritzelt.                                                             
+
+Lange betrachten sie schweigend den Zettel. Dann entspannen sich ihre           
+Gesichtszüge.                                                                   
+
+„Damit ist die Bedrohung endgültig vorbei.“ „Gott sei Dank“, murmelt die erste  
+Gestalt, zerknüllt den Zettel und wirft ihn in einen Papierkorb neben der       
+Sitzecke. Anschließend verlassen beide den Raum durch eine schwere, mit Leder   
+gepolsterte Tür.                                                                
+
+Die Welt ist gerettet!                                                          
+Auf Wiedersehen!                                                                
+
+Process finished with exit code 0
