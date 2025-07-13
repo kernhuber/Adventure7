@@ -6,15 +6,15 @@ import datetime
 from enum import IntFlag, auto
 
 class dl(IntFlag):
-    GAMELOOP        = auto()
-    GAMESTATE       = auto()
-    PLAYERSTATE     = auto()
-    NPCPLAYERSTATE  = auto()
-    LLM             = auto()
-    LLM_PROMPT      = auto()
-    EXPLOSIONSTATE  = auto()
-    SYSTEST         = auto()
-    SYSTESTLLM      = auto()
+    GAMELOOP        = auto()  # Messages from the game loop
+    GAMESTATE       = auto() # Game State (engine)
+    PLAYERSTATE     = auto() # Player debug messages
+    NPCPLAYERSTATE  = auto() # Dog NPC
+    LLM             = auto() # Gemini-Interface
+    LLM_PROMPT      = auto() # Prompting
+    EXPLOSIONSTATE  = auto() # test messages from the explosion NPC
+    SYSTEST         = auto() # test game engine with atomic messages
+    SYSTESTLLM      = auto() # test game with actual sentences
 
 DEBUG = True
 DEBUG_LEVEL = dl.LLM|dl.LLM_PROMPT|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE
