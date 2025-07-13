@@ -1162,11 +1162,11 @@ Auf dem Dach des Schuppens
         # Hinweis:
         # - Kein Whitespace-Matching oder Sonderzeichen wie +, =, etc. werden erkannt – sie bleiben unberücksichtigt.
         # - Damit eignet sich der Ausdruck gut für einfache Spracheingaben oder das Parsen einfacher Skriptzeilen.
-        tokens = re.findall(r'"(?:\\.|[^"\\])*"|[\p{L}_][\p{L}\p{N}_-]*[\p{L}\p{N}_]', input)
+        tokens = re.findall(r'#[^#]*#|[\p{L}_][\p{L}\p{N}_-]*[\p{L}\p{N}_]', input)
         #
         # Jetzt noch Anführungszeichen entfernen falls nötig
         #
-        tokens = [t[1:-1] if t.startswith('"') else t for t in tokens]
+        tokens = [t[1:-1] if t.startswith('#') else t for t in tokens]
 
         vtab = {
             "anwenden":(self.verb_apply,2),

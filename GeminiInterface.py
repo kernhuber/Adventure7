@@ -324,8 +324,8 @@ Folgende Befehle stehen zur Verfügung und so sind sie zu interpretieren:
 - 'umsehen': Wenn der Spieler sich im aktuellen Ort umsehen möchte.
 - 'angreifen' : Wenn der Spieler den Hund angreifen möchts
 - 'hilfe': Wenn der Spieler Hilfe benötigt.
-- 'zurueckweisen <text> : Wenn Du die Spielereingabe nicht verstanden hast oder etwas in diesem Kontext nach der Spielelogik nicht ausführbar ist, 
-                          dann liefere mit diesem Befehl eine Erklärung. 
+- 'zurueckweisen #<text># : Wenn Du die Spielereingabe nicht verstanden hast oder etwas in diesem Kontext nach der Spielelogik nicht ausführbar ist, 
+                            dann liefere mit diesem Befehl eine Erklärung. 
 
 Beispiele für komplexere Interpretationen des 'anwenden'-Befehls:
 - "Öffne die Tür mit dem Schlüssel" ODER "Schließe die Tür mit dem Schlüssel auf": 'anwenden o_schluessel o_tuer' (wenn o_tuer der Name der Tür ist)
@@ -335,21 +335,20 @@ Beispiele für komplexere Interpretationen des 'anwenden'-Befehls:
 - "Füttere den Hund mit der Salami": 'anwenden salami hund' (wenn hund der Name des Hundes ist)
 
 Anwendung des zurückweisen-Befehls:
-- Das Argument von zurückweisen ist in Anführungszeichen (") zu setzen.
-- Das Kommando selbst DARF NICHT in Anführungszeichen (") gesetzt werden
-RICHTIG: 'zurückweisen "Erklärungstext"'
+- Das Argument von zurückweisen ist durch Hashtags (#) zu umschließen.
+RICHTIG: 'zurückweisen #Erklärungstext#'
 FALSCH: "zurückweisen "Erklärungstext""
 - Das Kommando muss für den json-Parser verständlich sein
 
 Beispiele für den zurückweisen-Befehl:
-- "Öffne den Warenautomaten": 'zurueckweisen "Du kannst den Warenautomat nicht öffnen. Du bräuchtest schon Geld, um an die Waren zu gelangen."'
-- "puste den Schuppen um": 'zurueckweisen "Interessante Idee - aber du kannst den Schuppen nicht umpusten"'
-- "Schlurbsdiwurps kadjhaslasdk": 'zurueckweisen "Sei mir nicht böse - aber das habe ich wirklich nicht verstanden"'
+- "Öffne den Warenautomaten": 'zurueckweisen #Du kannst den Warenautomat nicht öffnen. Du bräuchtest schon Geld, um an die Waren zu gelangen.#'
+- "puste den Schuppen um": 'zurueckweisen #Interessante Idee - aber du kannst den Schuppen nicht umpusten#'
+- "Schlurbsdiwurps kadjhaslasdk": 'zurueckweisen #Sei mir nicht böse - aber das habe ich wirklich nicht verstanden#'
 
 Wenn die Eingabe humorvoll erscheint, kannst du auch humorvoll antworten.
 
 Falls die Eingabe sich auf mehr als eine Aktion bezieht, teile sie in separate atomare Befehle auf, wobei jeder Befehl
-ein String der Form "befehl" oder "befehl objekt" oder "befehl objekt1 objekt2" ist. 
+ein String der Form "befehl" oder "befehl objekt" oder "befehl objekt1 objekt2" oder "zurückweisen #text# "ist. 
 
 Beispiel:
 korrekt: ['anwenden schluessel schuppen']
@@ -360,7 +359,7 @@ Beispiel für eine komplexere Eingabe:
 "gehe zum Schuppen und schließe ihn mit dem Schlüssel auf, dann sieh dich um" wird zu:
 ['gehe schuppen', 'anwenden schluessel schuppen', 'umsehen']
 
-Wenn Du eine Eingabe nicht verstehst, antworte mit 'zurückweisen <erklärung>' wie oben beschrieben.
+Wenn Du eine Eingabe nicht verstehst, antworte mit 'zurückweisen #erklärung#' wie oben beschrieben.
     
 Verfügbare Orte und Objekte (mit ihren IDs) im aktuellen Kontext:
 {json.dumps(current_game_context, indent=2)}
