@@ -1191,17 +1191,21 @@ Auf dem Dach des Schuppens
         rval["Aktueller Ort"] = details
         return rval
 
-    def verb_execute_llm(self, pl: PlayerState, command_dict: dict) -> str:
+    def verb_execute_json(self, pl: PlayerState, command_dict: dict) -> str:
         """ Instead of a string (see verb_execute) cmd is a dictionary as was returned by the LLM as structured
             return to LLM user input"""
         if "function_call" not in command_dict:
             return "Interner Fehler: Ungültiges Befehlsformat."
 
         dpprint(dl.GAMESTATE,command_dict)
-        exit(0)
+
         func_call = command_dict["function_call"]
         func_name = func_call["name"]
         args = func_call.get("args", {})
+        #
+        # Python magic
+        #
+
         vtab = {
             "anwenden":(self.verb_apply,2),
             "nimm":(self.verb_take,1),
@@ -1224,6 +1228,8 @@ Auf dem Dach des Schuppens
             "unbekannt": (self.verb_unknown,0)
         }
         verb,numargs = vtab.get(func_name,(None,None))
+        r=verb(pl,**args)
+        return r
 
 
     def verb_execute(self, pl: PlayerState, input: str) -> str:
@@ -1323,7 +1329,7 @@ Auf dem Dach des Schuppens
             pprint(dgf,depth=2)
             return "nichts"
 
-    def verb_apply(self, pl: PlayerState, what, towhat):
+    def verb_apply(self, pl: PlayerState, what, towhat=None):
 
         r="Nichts anzuwenden"
         if what is None:
@@ -1439,7 +1445,8 @@ Am Ort sind folgende Objekte zu sehen:"""
         return rval
 
     def verb_lookaround(self, pl: PlayerState):
-        return self.llm.narrate(self,pl)
+        r=self.llm.narrate(self,pl)
+        return r
 
 
     def verb_help(self, pl: PlayerState):
@@ -1615,7 +1622,7 @@ Am Ort sind folgende Objekte zu sehen:"""
         return f'***Nachricht von der Spielleitung:*** {why}'
 
 
-    def verb_attack(self, pl: PlayerState)->str:
+    def verb_attack(self, pl: PlayerState, whom="")->str:
         """ Player attacks dog which needs to be in the same place as Player"""
         from NPCPlayerState import NPCPlayerState
         dog = None

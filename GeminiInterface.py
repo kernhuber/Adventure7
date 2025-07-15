@@ -501,13 +501,13 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                 parameters={ # Hier ein Python Dictionary
                     "type": "object", # <--- KLEINGESCHRIEBEN
                     "properties": {
-                        "ziel_ort": {
+                        "direction": {
                             "type": "string", # <--- KLEINGESCHRIEBEN
                             "description": "Die eindeutige ID des Zielorts (z.B. 'p_schuppen').",
                             "enum": available_place_ids
                         }
                     },
-                    "required": ["ziel_ort"]
+                    "required": ["direction"]
                 }
             )
         t_anwenden = FunctionDeclaration(
@@ -516,18 +516,18 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                     parameters={
                         "type": "object",
                         "properties": {
-                            "objekt": {
+                            "what": {
                                 "type": "string",
                                 "description": "Die eindeutige ID des Objekts, das angewendet wird (z.B. 'o_schluessel').",
                                 "enum": available_object_ids  # <-- Dynamisch gefüllt
                             },
-                            "ziel_objekt": {
+                            "towhat": {
                                 "type": "STRING",
                                 "description": "Die eindeutige ID des Zielobjekts (optional, z.B. 'o_schuppen').",
                                 "enum": available_object_ids + available_target_player_ids  # <-- Dynamisch gefüllt
                             }
                         },
-                        "required": ["objekt"]
+                        "required": ["what"]
                     }
         )
 
@@ -537,13 +537,13 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                     parameters={
                         "type": "object",
                         "properties": {
-                            "objekt": {
+                            "whato": {
                                 "type": "string",
                                 "description": "Die eindeutige ID des Objekts, das aufgenommen wird (z.B. 'o_salami').",
                                 "enum": available_object_ids  # <-- Dynamisch gefüllt
                             }
                         },
-                        "required": ["objekt"]
+                        "required": ["whato"]
                     }
                 )
         t_ablegen = FunctionDeclaration(
@@ -552,13 +552,13 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                 parameters={
                     "type": "object",
                     "properties": {
-                        "objekt": {
+                        "whato": {
                             "type": "string",
                             "description": "Die eindeutige ID des Objekts, das abgelegt wird (z.B. 'o_umschlag').",
                             "enum": available_object_ids  # <-- Dynamisch gefüllt
                         }
                     },
-                    "required": ["objekt"]
+                    "required": ["whato"]
                 }
             )
         t_untersuche = FunctionDeclaration(
@@ -567,13 +567,13 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                     parameters={
                         "type": "object",
                         "properties": {
-                            "objekt": {
+                            "what": {
                                 "type": "string",
                                 "description": "Die eindeutige ID des Objekts, das untersucht wird (z.B. 'o_blumentopf').",
                                 "enum": available_object_ids  # <-- Dynamisch gefüllt
                             }
                         },
-                        "required": ["objekt"]
+                        "required": ["what"]
                     }
             )
             # ... (Rest der Tools, umsehen, hilfe, etc., die keine Enums brauchen) ...
@@ -583,13 +583,13 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                     parameters={
                         "type": "object",
                         "properties": {
-                            "ziel": {
+                            "whom": {
                                 "type": "string",
                                 "description": "Die ID des Ziels, das angegriffen wird (z.B. 'hund').",
                                 "enum": available_target_player_ids  # <-- Dynamisch gefüllt
                             }
                         },
-                        "required": ["ziel"]
+                        "required": ["whom"]
                     }
                 )
         t_zurueckweisen = FunctionDeclaration(
@@ -598,12 +598,12 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                     parameters={
                         "type": "object",
                         "properties": {
-                            "erklaerung": {
+                            "why": {
                                 "type": "string",
                                 "description": "Eine kurze, prägnante Erklärung, warum die Eingabe nicht interpretiert oder ausgeführt werden kann. Darf humorvoll sein."
                             }
                         },
-                        "required": ["erklaerung"]
+                        "required": ["why"]
                     }
                 )
         t_umsehen = FunctionDeclaration(

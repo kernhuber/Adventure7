@@ -17,7 +17,7 @@ class dl(IntFlag):
     SYSTESTLLM      = auto() # test game with actual sentences
 
 DEBUG = True
-DEBUG_LEVEL = dl.LLM|dl.LLM_PROMPT|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE
+DEBUG_LEVEL = dl.LLM|dl.LLM_PROMPT|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.SYSTESTLLM
 ADV_LOGGER = None
 
 class dlogger():
