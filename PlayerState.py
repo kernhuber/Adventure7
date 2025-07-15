@@ -70,12 +70,12 @@ class PlayerState:
         elif self.thirst_counter <=5:
             tw_print(f"***Du hast jetzt richtig Durst! Es reicht nocht für {self.thirst_counter} Spielrunden, dann verdurstest Du!***")
 
-        user_input = ""
-        while user_input == "":
-            if self.systest.test_queue:
-                user_input = self.systest.test_game().strip().lower()
-                print(user_input)
-            elif self.cmd_q:
+        user_input = {}
+        while not user_input:
+            #if self.systest.test_queue:
+            #    user_input = self.systest.test_game().strip().lower()
+            #    print(user_input)
+            if self.cmd_q:
                 user_input = self.cmd_q.popleft()
             else:
                 from Utils import DEBUG_LEVEL
@@ -90,13 +90,13 @@ class PlayerState:
                     if ui == "quit" or ui=="inventory" or ui =="dogstate" or ui=="nichts" or ui=="context":
                         self.cmd_q.append(ui.strip().lower())
                     else:
-                        cmds = gs.llm.parse_user_input_to_commands(ui,gs.compile_current_game_context(self))
+                        cmds = gs.llm.parse_user_input_to_commands(ui,gs.compile_current_game_context_for_llm_tools (self))
                         dprint(dl.PLAYERSTATE,"PlayerState.Player_game_move: --------------------------")
                         dprint(dl.PLAYERSTATE,f"LLM made the following atomic commands from user input:")
                         dpprint(dl.PLAYERSTATE, cmds)
                         self.cmd_q.extend(cmds)
                 else:
-                    user_input = ""
+                    user_input = {}
 
 
         return user_input

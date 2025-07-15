@@ -294,7 +294,7 @@ Die Ortsbeschreibung:
 
 
 
-    def parse_user_input_to_commands(self,user_input: str, current_game_context: dict) -> list[str]:
+    def parse_user_input_to_commands_old(self,user_input: str, current_game_context: dict) -> list[str]:
         """
         Parst eine Benutzereingabe in eine Liste von atomaren Game-Engine-Befehlen.
 
@@ -390,6 +390,404 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
             dprint(dl.LLM,"Prompt used: ---------------")
             dprint(dl.LLM,prompt)
             return ["unbekannt"] # Fallback
+
+        # Der Parameter scene_elements sollte umbenannt werden, da er jetzt mehr als nur Szenen-Elemente enthält
+
+    import json
+    from typing import List, Dict, Any
+
+    def validate_gemini_tools_schema(self,tools_list: List[Dict[str, Any]]) -> List[str]:
+        """
+        Prüft eine Gemini-Tools-Liste auf häufige JSON-Schema-Fehler,
+        insbesondere bei Typdeklarationen ('type' sollte ein String sein).
+
+        Args:
+            tools_list: Die Liste der Tool-Definitionen (Dictionaries).
+
+        Returns:
+            Eine Liste von Fehlermeldungen. Ist die Liste leer, ist das Schema gültig.
+        """
+        errors = []
+
+        # Gültige JSON-Schema-Basistypen
+        valid_schema_types = ["object", "string", "number", "integer", "boolean", "array", "null"]
+
+        if not isinstance(tools_list, list):
+            errors.append("Gesamte 'tools'-Definition muss eine Liste sein.")
+            return errors
+
+        for i, tool_def in enumerate(tools_list):
+            tool_name = tool_def.get("name", f"Unbekanntes Tool bei Index {i}")
+
+            if not isinstance(tool_def, dict):
+                errors.append(f"Tool '{tool_name}': Definition muss ein Dictionary sein.")
+                continue
+
+            if "name" not in tool_def or not isinstance(tool_def["name"], str):
+                errors.append(f"Tool bei Index {i}: 'name' fehlt oder ist kein String.")
+
+            if "description" not in tool_def or not isinstance(tool_def["description"], str):
+                errors.append(f"Tool '{tool_name}': 'description' fehlt oder ist kein String.")
+
+            if "parameters" in tool_def:
+                params_def = tool_def["parameters"]
+                if not isinstance(params_def, dict):
+                    errors.append(f"Tool '{tool_name}': 'parameters' muss ein Dictionary sein.")
+                    continue
+
+                # Prüfen des Top-Level 'type' in 'parameters'
+                if "type" not in params_def or not isinstance(params_def["type"], str) or params_def[
+                    "type"] != "object":
+                    errors.append(f"Tool '{tool_name}': 'parameters.type' muss der String 'object' sein.")
+
+                if "properties" in params_def:
+                    properties_def = params_def["properties"]
+                    if not isinstance(properties_def, dict):
+                        errors.append(f"Tool '{tool_name}': 'parameters.properties' muss ein Dictionary sein.")
+                        continue
+
+                    for param_name, param_schema in properties_def.items():
+                        if not isinstance(param_schema, dict):
+                            errors.append(
+                                f"Tool '{tool_name}', Parameter '{param_name}': Schema muss ein Dictionary sein.")
+                            continue
+
+                        # Prüfen des 'type' für jeden einzelnen Parameter
+                        if "type" not in param_schema or not isinstance(param_schema["type"], str) or param_schema[
+                            "type"] not in valid_schema_types:
+                            errors.append(
+                                f"Tool '{tool_name}', Parameter '{param_name}': 'type' muss ein gültiger JSON-Schema-Typ-String sein (z.B. 'string', 'object'). Aktueller Wert: '{param_schema.get('type')}' ({type(param_schema.get('type'))}).")
+
+                        if "description" in param_schema and not isinstance(param_schema["description"], str):
+                            errors.append(
+                                f"Tool '{tool_name}', Parameter '{param_name}': 'description' muss ein String sein.")
+
+                        if "enum" in param_schema:
+                            if not isinstance(param_schema["enum"], list):
+                                errors.append(
+                                    f"Tool '{tool_name}', Parameter '{param_name}': 'enum' muss eine Liste sein.")
+                            else:
+                                if not all(isinstance(item, str) for item in param_schema["enum"]):
+                                    errors.append(
+                                        f"Tool '{tool_name}', Parameter '{param_name}': Alle Elemente in 'enum' müssen Strings sein.")
+
+                if "required" in params_def:
+                    required_params = params_def["required"]
+                    if not isinstance(required_params, list):
+                        errors.append(f"Tool '{tool_name}': 'parameters.required' muss eine Liste sein.")
+                    else:
+                        if not all(isinstance(item, str) for item in required_params):
+                            errors.append(
+                                f"Tool '{tool_name}', Parameter '{param_name}': Alle Elemente in 'required' müssen Strings sein.")
+
+        return errors
+
+    def parse_user_input_to_commands(self, user_input: str, game_context_for_tools: dict) -> list[dict]:
+        # Name angepasst
+
+        # Extrahiere die Listen für die 'enum's aus dem context_data
+        available_object_ids = game_context_for_tools.get("available_object_ids", [])
+        available_place_ids = game_context_for_tools.get("available_place_ids", [])
+        available_target_player_ids = game_context_for_tools.get("available_target_player_ids", [])
+
+
+
+
+        from google.generativeai.types import FunctionDeclaration
+
+        t_gehen = FunctionDeclaration(
+                name="gehe",
+                description="Bewege den Spieler an einen anderen Ort.",
+                parameters={ # Hier ein Python Dictionary
+                    "type": "object", # <--- KLEINGESCHRIEBEN
+                    "properties": {
+                        "ziel_ort": {
+                            "type": "string", # <--- KLEINGESCHRIEBEN
+                            "description": "Die eindeutige ID des Zielorts (z.B. 'p_schuppen').",
+                            "enum": available_place_ids
+                        }
+                    },
+                    "required": ["ziel_ort"]
+                }
+            )
+        t_anwenden = FunctionDeclaration(
+                    name="anwenden",
+                    description="Führe eine Aktion mit einem Objekt aus, optional auf ein Zielobjekt bezogen.",
+                    parameters={
+                        "type": "object",
+                        "properties": {
+                            "objekt": {
+                                "type": "string",
+                                "description": "Die eindeutige ID des Objekts, das angewendet wird (z.B. 'o_schluessel').",
+                                "enum": available_object_ids  # <-- Dynamisch gefüllt
+                            },
+                            "ziel_objekt": {
+                                "type": "STRING",
+                                "description": "Die eindeutige ID des Zielobjekts (optional, z.B. 'o_schuppen').",
+                                "enum": available_object_ids + available_target_player_ids  # <-- Dynamisch gefüllt
+                            }
+                        },
+                        "required": ["objekt"]
+                    }
+        )
+
+        t_nimm = FunctionDeclaration(
+                    name="nimm",
+                    description="Nimm ein Objekt in das Spielerinventar auf.",
+                    parameters={
+                        "type": "object",
+                        "properties": {
+                            "objekt": {
+                                "type": "string",
+                                "description": "Die eindeutige ID des Objekts, das aufgenommen wird (z.B. 'o_salami').",
+                                "enum": available_object_ids  # <-- Dynamisch gefüllt
+                            }
+                        },
+                        "required": ["objekt"]
+                    }
+                )
+        t_ablegen = FunctionDeclaration(
+                name="ablegen",
+                description="Lege ein Objekt aus dem Inventar des Spielers am aktuellen Ort ab.",
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "objekt": {
+                            "type": "string",
+                            "description": "Die eindeutige ID des Objekts, das abgelegt wird (z.B. 'o_umschlag').",
+                            "enum": available_object_ids  # <-- Dynamisch gefüllt
+                        }
+                    },
+                    "required": ["objekt"]
+                }
+            )
+        t_untersuche = FunctionDeclaration(
+                    name="untersuche",
+                    description="Untersuche ein Objekt oder die Umgebung näher.",
+                    parameters={
+                        "type": "object",
+                        "properties": {
+                            "objekt": {
+                                "type": "string",
+                                "description": "Die eindeutige ID des Objekts, das untersucht wird (z.B. 'o_blumentopf').",
+                                "enum": available_object_ids  # <-- Dynamisch gefüllt
+                            }
+                        },
+                        "required": ["objekt"]
+                    }
+            )
+            # ... (Rest der Tools, umsehen, hilfe, etc., die keine Enums brauchen) ...
+        t_angreifen = FunctionDeclaration(
+                    name = "angreifen",
+                    description="Der Spieler möchte den Hund angreifen.",
+                    parameters={
+                        "type": "object",
+                        "properties": {
+                            "ziel": {
+                                "type": "string",
+                                "description": "Die ID des Ziels, das angegriffen wird (z.B. 'hund').",
+                                "enum": available_target_player_ids  # <-- Dynamisch gefüllt
+                            }
+                        },
+                        "required": ["ziel"]
+                    }
+                )
+        t_zurueckweisen = FunctionDeclaration(
+                    name="zurueckweisen",
+                    description="Gib diesen Befehl aus, wenn die Spielereingabe nicht verstanden wurde oder nach der Spielelogik nicht ausführbar ist. Liefere eine verständliche Erklärung.",
+                    parameters={
+                        "type": "object",
+                        "properties": {
+                            "erklaerung": {
+                                "type": "string",
+                                "description": "Eine kurze, prägnante Erklärung, warum die Eingabe nicht interpretiert oder ausgeführt werden kann. Darf humorvoll sein."
+                            }
+                        },
+                        "required": ["erklaerung"]
+                    }
+                )
+        t_umsehen = FunctionDeclaration(
+                    name="umsehen",
+                    description="Der Spieler möchte sich im aktuellen Ort umsehen und eine Beschreibung erhalten.",
+                    parameters={
+                        "type": "object",
+                        "properties": {}  # Keine Argumente
+                        }
+                    )
+        t_hilfe = FunctionDeclaration(
+                    name="hilfe",
+                    description="Der Spieler möchte eine Liste der verfügbaren Befehle und Hinweise erhalten.",
+                    parameters={
+                        "type": "object",
+                        "properties": {}  # Keine Argumente
+                    }
+            )
+        t_nichts = FunctionDeclaration(
+                    name="nichts",
+                    description="Der Spieler möchte nichts tun oder eine Runde abwarten.",
+                    parameters={
+                        "type": "object",
+                        "properties": {}  # Keine Argumente
+                    }
+            )
+        t_quit = FunctionDeclaration(
+                    name="quit",
+                    description="Der Spieler möchte das Spiel beenden.",
+                    parameters={
+                        "type": "OBJECT",
+                        "properties": {}  # Keine Argumente
+                    }
+            )
+
+        tools = [t_gehen, t_nimm, t_anwenden, t_ablegen, t_umsehen, t_angreifen, t_untersuche, t_zurueckweisen, t_nichts, t_quit, t_hilfe]
+        # r = self.validate_gemini_tools_schema(tools)
+        # dpprint(dl.LLM_PROMPT, r)
+        # Der Prompt-String selbst braucht jetzt nicht mehr die Listen der IDs und Callnames,
+        # da diese explizit im `tools`-Schema sind. Stattdessen kann er mehr auf die
+        # semantische Bedeutung der Objekte eingehen.
+
+        # Du kannst den 'narration_details' Block aus game_context_for_tools nutzen, um dem LLM
+        # Kontext zu geben, der über die reinen Enum-Werte hinausgeht.
+        narration_context_for_llm = game_context_for_tools.get("narration_details", {})
+        test_prompt_str = f"""
+        Wandle die Spielereingabe eines hypothetischen text-Adventures in Aufrufe an eine Game-Engine
+        Gemäß der Tools um. Generiere ausschließlich nur das gültige JSON, nichts weiter
+        
+        *** Spielereingabe: {user_input} ***
+        """
+        prompt_str = f"""
+        Wandle die folgende Spielereingabe in eine Liste atomarer Game-Engine-Befehle um.
+        Generiere **direkt die passenden Funktionsaufrufe in einem JSON-Array**.
+        Falls eine Eingabe sich auf mehr als eine Aktion bezieht, generiere mehrere Funktionsaufrufe im Array.
+
+        **Verwende ausschließlich die internen Objekt- und Ort-IDs, die in den Tool-Definitionen als 'enum'-Werte verfügbar sind.**
+        Wenn ein Objekt/Ort in der Spieleranfrage mit einem 'freundlichen Namen' genannt wird, übersetze diesen in die korrekte ID.
+        Wenn eine ID in den 'enum'-Listen nicht vorkommt, ist das Objekt/der Ort im aktuellen Kontext nicht verfügbar.
+        In diesem Fall oder wenn die Aktion unsinnig ist, verwende den 'zurueckweisen'-Befehl.
+
+        **Aktueller Ort und wichtige Objekte/Charaktere (für kontextuelles Verständnis, NICHT für ID-Mapping):**
+        {json.dumps(narration_context_for_llm, indent=2)}
+
+Beispiel für eine komplexe Eingabe, die zu mehreren Funktionsaufrufen führt:
+    "gehe zum Schuppen und schließe ihn mit dem Schlüssel auf, dann sieh dich um" wird zu:
+    ```json
+    [
+      {{"function_call": {{"name": "gehe", "args": {{"ziel_ort": "p_schuppen"}}}}}},
+      {{"function_call": {{"name": "anwenden", "args": {{"objekt": "o_schluessel", "ziel_objekt": "o_schuppen"}}}}}},
+      {{"function_call": {{"name": "umsehen"}}}}
+    ]
+    ```
+
+    Beispiele für die Interpretation von 'anwenden':
+    "Öffne die Tür mit dem Schlüssel" ODER "Schließe die Tür mit dem Schlüssel auf" wird zu:
+    ```json
+    {{"function_call": {{"name": "anwenden", "args": {{"objekt": "o_schluessel", "ziel_objekt": "o_schuppen"}}}}}}
+    ```
+    "Wirf den Schlüssel auf die Tür" wird zu:
+    ```json
+    {{"function_call": {{"name": "anwenden", "args": {{"objekt": "o_schluessel", "ziel_objekt": "o_tuer"}}}}}}
+    ```
+    "Drücke den Knopf der Sprengladung" wird zu:
+    ```json
+    {{"function_call": {{"name": "anwenden", "args": {{"objekt": "o_sprengladung"}}}}}}
+    ```
+    "Stelle den Hebel um" wird zu:
+    ```json
+    {{"function_call": {{"name": "anwenden", "args": {{"objekt": "o_hebel"}}}}}}
+    ```
+    "Füttere den Hund mit der Salami" wird zu:
+    ```json
+    {{"function_call": {{"name": "anwenden", "args": {{"objekt": "o_salami", "ziel_objekt": "hund"}}}}}}
+    ```
+
+    Beispiele für 'zurueckweisen'-Befehle:
+    "Öffne den Warenautomaten" wird zu:
+    ```json
+    {{"function_call": {{"name": "zurueckweisen", "args": {{"erklaerung": "Du kannst den Warenautomat nicht öffnen. Du bräuchtest schon Geld, um an die Waren zu gelangen."}}}}}}
+    ```
+    "puste den Schuppen um" wird zu:
+    ```json
+    {{"function_call": {{"name": "zurueckweisen", "args": {{"erklaerung": "Interessante Idee - aber du kannst den Schuppen nicht umpusten."}}}}}}
+    ```
+    "Schlurbsdiwurps kadjhaslasdk" wird zu:
+    ```json
+    {{"function_call": {{"name": "zurueckweisen", "args": {{"erklaerung": "Sei mir nicht böse - aber das habe ich wirklich nicht verstanden."}}}}}}
+    ```
+        **Spielereingabe: "{user_input}"**
+
+        Generiere nur das JSON-Array der Funktionsaufrufe.
+        """
+
+        try:
+            import google.generativeai as genai
+            from google.generativeai.types import GenerationConfig, Tool  # Füge Tool hinzu!
+            from google.generativeai.client import get_default_retriever_client
+
+            my_generation_config = genai.types.GenerationConfig(
+                    max_output_tokens=150,
+                    response_mime_type="application/json"  # Hier fordern wir JSON an
+                )
+            my_tool_config = {"function_calling_config": {"mode":"AUTO"}}
+
+            response = self.gemini_text_model.generate_content(
+                contents=prompt_str,
+                tools=tools,
+                tool_config=my_tool_config,
+                generation_config= my_generation_config
+            )
+
+
+            dprint(dl.LLM, "LLM-Info: ++++++++++++++")
+            dprint(dl.LLM, f"User input....: {user_input}")
+            dprint(dl.LLM,
+                   f"LLM Raw Response: {response.text}")  # response.text kann auch leer sein, wenn nur tool_calls
+
+
+
+            # Durchlaufe die generierten Kandidaten (normalerweise nur einer)
+            if response.text:
+                r = json.loads(response.text)
+                dprint(dl.LLM, "Parsed structured commands for engine:-------")
+                dpprint(dl.LLM, r)
+
+                # Token-Nutzung aktualisieren
+                self.tokens += response.usage_metadata.total_token_count
+                self.numcalls += 1
+                self.token_details.append(response.usage_metadata.total_token_count)
+                return r
+            else:
+                dprint(dl.LLM, "WARNING: No candidates generated by LLM.")
+                return [{
+                    "function_call": {
+                        "name": "zurueckweisen",
+                        "args": {"erklaerung": "LLM konnte keinen Befehl generieren."}
+                    }
+                }]
+
+
+
+
+
+
+        except Exception as e:
+            # Hier fangen wir jegliche JSONDecodeError oder andere Exceptions ab
+            dprint(dl.LLM, f"********** Fehler beim Parsen der Benutzereingabe: {e} **********")
+            dprint(dl.LLM, f"User input: {user_input}")
+            # Versuche, die rohe Antwort des LLM zu loggen, auch wenn sie ungültiges JSON war
+            if 'response' in locals() and hasattr(response, 'text'):
+                dprint(dl.LLM, f"LLM Raw Response (possibly malformed): {response.text}")
+            if 'response' in locals():
+                dprint(dl.LLM, "response:")
+                dpprint(dl.LLM,response)
+            else:
+                dprint(dl.LLM,"LLM did not send a response")
+            dprint(dl.LLM, f"Prompt used: {prompt_str}")
+            dprint(dl.LLM, "tools array:")
+            dpprint(dl.LLM,tools)
+
+            # Bei einem Fehler geben wir einen 'zurueckweisen'-Befehl als Dictionary zurück
+            return {"function_call": {"name": "zurueckweisen", "args": {
+                "erklaerung": "Ein unerwarteter interner Fehler ist aufgetreten. Bitte versuche es anders."}}}
 
     def get_npc_action(self, game_state_for_npc: dict) -> dict:
         """

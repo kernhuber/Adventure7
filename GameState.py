@@ -8,10 +8,7 @@ from typing import Dict, List
 from PlayerState import PlayerState
 from GameObject import GameObject
 from GeminiInterface import GeminiInterface
-from Utils import tw_print, dprint, dl
-
-
-
+from Utils import tw_print, dprint, dl, dpprint
 
 #
 # Maintains the state from the game perspective. There are player states as well
@@ -1077,6 +1074,72 @@ Auf dem Dach des Schuppens
     #
     # Verbs to be executed
     #
+    def compile_current_game_context_for_llm_tools(self, pl: 'PlayerState') -> dict:  # Name angepasst
+        context_data = {}
+
+        # 1. Informationen für die Narration (Bleiben als detaillierte Beschreibungen)
+        narration_details = {}
+        narration_details["Ortsname"] = pl.location.callnames[0]
+        narration_details["Beschreibung"] = pl.location.place_prompt_f(self,
+                                                                       pl) if pl.location.place_prompt_f else pl.location.place_prompt
+
+        # Objekte hier
+        narration_details["Objekte hier"] = []
+        all_object_ids_in_context = []  # Diese Liste sammeln wir für die 'enum's
+        for obj in pl.location.place_objects:
+            if not obj.hidden:
+                # Nutze prompt_f, um die objektspezifische Beschreibung für die Narration zu bekommen
+                obj_description_text = obj.prompt_f(self, pl) if obj.prompt_f else obj.examine
+                narration_details["Objekte hier"].append({obj.callnames[0]: obj_description_text})
+                all_object_ids_in_context.append(obj.name)  # Fügen die interne ID hinzu
+
+        # Objekte im Inventar des Spielers
+        narration_details["Objekte, die der Spieler bei sich trägt"] = []
+        for obj in pl.inventory:
+            obj_description_text = obj.prompt_f(self, pl) if obj.prompt_f else obj.examine
+            narration_details["Objekte, die der Spieler bei sich trägt"].append(
+                {obj.callnames[0]: obj_description_text})
+            all_object_ids_in_context.append(obj.name)  # Fügen die interne ID hinzu
+
+        # Wege
+        narration_details["Wo man hingehen kann"] = []
+        all_place_ids_for_navigation = []  # Diese Liste sammeln wir für die 'enum's
+        for w in pl.location.ways:
+            if w.visible:
+                wd = {}
+                wd["Ziel"] = w.destination.name
+                wd["Alternative Namen für das Ziel"] = w.destination.callnames
+                if w.way_prompt_f:
+                    wd["Spezielle Anweisungen für den Weg"] = w.way_prompt_f(self, pl, w)
+                narration_details["Wo man hingehen kann"].append(wd)
+                all_place_ids_for_navigation.append(w.destination.name)  # Fügen die Ziel-ID hinzu
+
+        # Hund (NPC)
+        from NPCPlayerState import NPCPlayerState
+        dog_pl = next((p for p in self.players if isinstance(p, NPCPlayerState)), None)
+        if dog_pl:
+            dog_description = dog_pl.dog_prompt(self, pl)
+            if dog_description:
+                narration_details["Achtung"] = dog_description
+                all_object_ids_in_context.append(
+                    dog_pl.name)  # Fügen auch den Hund als "Objekt" hinzu, das man anwenden kann (z.B. Salami an Hund)
+
+        context_data["narration_details"] = narration_details  # Dies ist der Block für den Narrator-Prompt
+
+        # 2. Spezifische Listen für LLM Tools (enum-Werte)
+        context_data["available_object_ids"] = list(
+            set(all_object_ids_in_context))  # Set für Einzigartigkeit, dann zurück zu Liste
+        context_data["available_place_ids"] = list(set(all_place_ids_for_navigation))
+
+        # Die IDs aller Spieler, die ein Ziel sein könnten (primär der Spieler selbst und NPCs)
+        context_data["available_target_player_ids"] = [p.name for p in self.players if
+                                                       isinstance(p, PlayerState) or isinstance(p, NPCPlayerState)]
+
+        # Aktueller Ort und Inventar (für den Parsing-Prompt, falls spezifische Aktionen damit verbunden sind)
+        context_data["player_location_id"] = pl.location.name
+        context_data["player_inventory_ids"] = [item.name for item in pl.inventory]
+
+        return context_data
 
     def compile_current_game_context(self, pl: PlayerState):
         """
@@ -1127,6 +1190,40 @@ Auf dem Dach des Schuppens
         # details["Spieler-Inventory"] = {i.callnames[0]:i.name for i in pl.get_inventory()}
         rval["Aktueller Ort"] = details
         return rval
+
+    def verb_execute_llm(self, pl: PlayerState, command_dict: dict) -> str:
+        """ Instead of a string (see verb_execute) cmd is a dictionary as was returned by the LLM as structured
+            return to LLM user input"""
+        if "function_call" not in command_dict:
+            return "Interner Fehler: Ungültiges Befehlsformat."
+
+        dpprint(dl.GAMESTATE,command_dict)
+        exit(0)
+        func_call = command_dict["function_call"]
+        func_name = func_call["name"]
+        args = func_call.get("args", {})
+        vtab = {
+            "anwenden":(self.verb_apply,2),
+            "nimm":(self.verb_take,1),
+            "ablegen":(self.verb_drop,1),
+            "umsehen":(self.verb_lookaround,0),
+            "untersuche": (self.verb_examine,1),
+            "hilfe":(self.verb_help,0),
+            "gehe":(self.verb_walk,1),
+            "llm": (self.verb_llm,0),
+            "toeten": (self.verb_kill,1),
+            "angreifen": (self.verb_attack,0),
+            "inventory": (self.verb_inventory,0),
+            "context": (self.verb_context,0),
+            "dogstate": (self.verb_dogstate,0),
+            "quit": (self.verb_quit,0),
+            "nichts": (self.verb_noop,0),
+            "interaktion": (self.verb_interact,2),
+            "zurueckweisen": (self.verb_reject,1),
+            "zurückweisen": (self.verb_reject, 1),
+            "unbekannt": (self.verb_unknown,0)
+        }
+        verb,numargs = vtab.get(func_name,(None,None))
 
 
     def verb_execute(self, pl: PlayerState, input: str) -> str:

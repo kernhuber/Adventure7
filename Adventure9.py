@@ -175,15 +175,20 @@ class Adventure:
 
                     user_input = pl.explosion_input(self.game)
                 else:
-                    user_input = pl.Player_game_move(self.game)
-                    dprint(dl.GAMELOOP,f"**Spielzug {pl.name}**: {user_input}")
+                    user_input_json = pl.Player_game_move(self.game)
+                    dprint(dl.GAMELOOP,f"**Spielzug {pl.name}**: {user_input_json}")
 
+                print("--- Game Move ---")
+                if type(pl) is not PlayerState:
+                    p=self.game.verb_execute(pl,user_input)
+                else:
+                    pprint(user_input_json)
 
-                p=self.game.verb_execute(pl,user_input)
-                from PlayerState import PlayerState
-                if type(pl) is PlayerState or type(pl) is NPCPlayerState:
-                    tw_print(p)
-                    print(f"{'-'*30}")
+                # p=self.game.verb_execute_llm(pl,user_input)
+                #from PlayerState import PlayerState
+                #if type(pl) is PlayerState or type(pl) is NPCPlayerState:
+                #    tw_print(p)
+                #    print(f"{'-'*30}")
 
 
 
