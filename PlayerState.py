@@ -88,7 +88,8 @@ class PlayerState:
                     ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe")
                 if ui is not None:
                     if ui == "quit" or ui=="inventory" or ui =="dogstate" or ui=="nichts" or ui=="context":
-                        self.cmd_q.append(ui.strip().lower())
+                        # self.cmd_q.append(ui.strip().lower())
+                        self.cmd_q.append({'function_call': {'name': ui, 'args': {}}})
                     else:
                         cmds = gs.llm.parse_user_input_to_commands(ui,gs.compile_current_game_context_for_llm_tools (self))
                         dprint(dl.PLAYERSTATE,"PlayerState.Player_game_move: --------------------------")

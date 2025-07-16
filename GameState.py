@@ -569,6 +569,7 @@ Auf dem Dach des Schuppens
                 "destination": "p_schuppen",
                 "text_direction": "aus dem Schuppen heraus",
                 "obstruction_check": None,
+                "way_prompt_f": wp.w_innen_schuppen_prompt_f,
                 "description": ""
             },
             #
@@ -1083,7 +1084,8 @@ Auf dem Dach des Schuppens
         narration_details["Beschreibung"] = pl.location.place_prompt_f(self,
                                                                        pl) if pl.location.place_prompt_f else pl.location.place_prompt
 
-        # Objekte hier
+        # Objekte hier und in den Nachbarfeldern
+        # Nachbarfelder nötig für Sätze wie "gehe zum Schuppen und untersuche den Blumentopf"
         narration_details["Objekte hier"] = []
         all_object_ids_in_context = []  # Diese Liste sammeln wir für die 'enum's
         for obj in pl.location.place_objects:
@@ -1092,6 +1094,15 @@ Auf dem Dach des Schuppens
                 obj_description_text = obj.prompt_f(self, pl) if obj.prompt_f else obj.examine
                 narration_details["Objekte hier"].append({obj.callnames[0]: obj_description_text})
                 all_object_ids_in_context.append(obj.name)  # Fügen die interne ID hinzu
+        narration_details["Objekte in benachbarten Feldern"] = []
+        all_object_ids_in_neighborhood = []
+        for neigh in pl.location.ways:
+            for obj in neigh.destination.place_objects:
+                if not obj.hidden:
+                    # Nutze prompt_f, um die objektspezifische Beschreibung für die Narration zu bekommen
+                    obj_description_text = obj.prompt_f(self, pl) if obj.prompt_f else obj.examine
+                    narration_details["Objekte in benachbarten Feldern"].append({obj.callnames[0]: obj_description_text})
+                    all_object_ids_in_neighborhood.append(obj.name)  # Fügen die interne ID hinzu
 
         # Objekte im Inventar des Spielers
         narration_details["Objekte, die der Spieler bei sich trägt"] = []
@@ -1101,10 +1112,22 @@ Auf dem Dach des Schuppens
                 {obj.callnames[0]: obj_description_text})
             all_object_ids_in_context.append(obj.name)  # Fügen die interne ID hinzu
 
-        # Wege
+        # Wege von diesem Feld und von den Nachbarfeldern
+        # Nachbarfelder sind nötig für Sätze wie
+        # "Springe vom Schuppen und gehe zum Warenautomat"
         narration_details["Wo man hingehen kann"] = []
         all_place_ids_for_navigation = []  # Diese Liste sammeln wir für die 'enum's
+        allw = pl.location.ways
+        dstn = [dn.destination.name for dn in pl.location.ways] # Names of ways we can go to (avoid circles)
+        dstn.append(pl.location.name)               # also own name
         for w in pl.location.ways:
+            d = w.destination
+            for v in d.ways:
+                if v.destination.name not in dstn:
+                    allw.append(v)
+                    dstn.append(v.destination.name)
+
+        for w in allw:
             if w.visible:
                 wd = {}
                 wd["Ziel"] = w.destination.name
@@ -1129,6 +1152,7 @@ Auf dem Dach des Schuppens
         # 2. Spezifische Listen für LLM Tools (enum-Werte)
         context_data["available_object_ids"] = list(
             set(all_object_ids_in_context))  # Set für Einzigartigkeit, dann zurück zu Liste
+        context_data["available_object_ids_in_neighborhood"] = list(set(all_object_ids_in_neighborhood))
         context_data["available_place_ids"] = list(set(all_place_ids_for_navigation))
 
         # Die IDs aller Spieler, die ein Ziel sein könnten (primär der Spieler selbst und NPCs)

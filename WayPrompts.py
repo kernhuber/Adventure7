@@ -31,6 +31,16 @@ def w_dach_schuppen_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
     in diesen oder Vergleichbaren Fällen liefere 'gehe schuppen" zurück
     """
 
+def w_innen_schuppen_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
+    return """
+    *** Verben für diesen Weg: gehen, verlassen.
+    Beispiele:
+    'gehe nach außen'
+    'verlasse den Schuppen"
+    'gehe aus dem Schuppen'
+    in diesen oder Vergleichbaren Fällen liefere 'gehe p_schuppen" zurück
+    """
+
 def w_ubahn_warenautomat_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
     return """
 * Diesen weg kann man gehen, hinaufsteigen, herausgehen, laufen, hinauflaufen oder rauflaufen

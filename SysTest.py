@@ -14,63 +14,7 @@ class SysTest:
         #
         # For testing purposes rename any of the following to "test_queue"
         #
-        self.test_queue_1 = deque([
-            "gehe schuppen",
-            "untersuche blumentopf",
-            "anwenden schlüssel schuppen",
-            "gehe innen",
-            "nimm sprengladung",
-            "gehe schuppen",
-            "gehe felsen",
-            #"umsehen",
-            "anwenden sprengladung",
-            "ablegen sprengladung",
-            "gehe schuppen",
-            "gehe innen",
-            "untersuche skelett",
-            "untersuche geldboerse",
-            "nimm ec-karte",
-            "nimm leiter",
-            "gehe schuppen",
-            "anwenden leiter schuppen",
-            "gehe felsen",
-            "gehe höhle",
-            "anwenden hauptschalter",
-            "gehe felsen",
-            "gehe schuppen",
-            "gehe dach",
-            "anwenden hebel",
-            "gehe schuppen",
-            "gehe warenautomat",
-            "gehe ubahn",
-            "untersuche muelleimer",
-            "nimm geheimzahl",
-            "gehe warenautomat",
-            "nichts",
-            "nichts",
-            "gehe ubahn",
-            "anwenden wasserspender",
-            "nichts",
-            "gehe wagen",
-            "nichts",
-            "nichts",
-            "gehe ubahn",
-            "gehe warenautomat",
-            "gehe geldautomat",
-            "inventory",
-            "anwenden ec-karte geldautomat",
-            "nimm us-dollar",
-            "gehe warenautomat",
-            "gehe ubahn",
-            "nichts",
-            "nichts",
-            "gehe warenautomat",
-            "nichts",
-            "nichts",
-            "gehe ubahn",
-            "gehe wagen",
-            "anwenden türschließer"
-        ])
+
 
         self.test_queue_cheese = deque([
             "gehe schuppen",
@@ -117,7 +61,8 @@ class SysTest:
            # "gehe dach",
             "umsehen",
             "betätige den Hebel",
-            "springe vom schuppen und gehe zum warenautomat",
+            "springe vom schuppen",
+            "gehe zum warenautomat",
            # "gehe warenautomat",
             "gehe zum u-bahnhof",
             "trinke vom wasserspender",
@@ -169,20 +114,9 @@ class SysTest:
 
         ])
 
-        from Utils import dl
-        if Utils.DEBUG_LEVEL & dl.SYSTEST:
-            self.test_queue = self.test_queue_1
-        else:
-            self.test_queue = deque([])
 
-    def test_game(self) -> str:
-        from Utils import dprint, dl
-        if self.test_queue:
-            c = self.test_queue.popleft()
-            dprint (dl.PLAYERSTATE, 'Player: {c}')
-            return c
-        else:
-            return None
+
+
 
     def test_game_llm(self) -> str:
         from Utils import dprint, dl

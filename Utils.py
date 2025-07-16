@@ -42,7 +42,7 @@ class dlogger():
             if self.logfile:
                 with open(self.logfile, "a", encoding="utf-8") as f:
                     from pprint import pformat
-                    f.write(pformat(x) + "\n")
+                    f.write(pformat(x,indent=5) + "\n")
             else:
                 pprint(x)
 

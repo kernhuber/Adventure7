@@ -487,6 +487,7 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
 
         # Extrahiere die Listen für die 'enum's aus dem context_data
         available_object_ids = game_context_for_tools.get("available_object_ids", [])
+        available_object_ids_in_neighborhood = game_context_for_tools.get("available_object_ids_in_neighborhood", [])
         available_place_ids = game_context_for_tools.get("available_place_ids", [])
         available_target_player_ids = game_context_for_tools.get("available_target_player_ids", [])
 
@@ -519,12 +520,12 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                             "what": {
                                 "type": "string",
                                 "description": "Die eindeutige ID des Objekts, das angewendet wird (z.B. 'o_schluessel').",
-                                "enum": available_object_ids  # <-- Dynamisch gefüllt
+                                "enum": available_object_ids + available_object_ids_in_neighborhood # <-- Dynamisch gefüllt
                             },
                             "towhat": {
                                 "type": "STRING",
                                 "description": "Die eindeutige ID des Zielobjekts (optional, z.B. 'o_schuppen').",
-                                "enum": available_object_ids + available_target_player_ids  # <-- Dynamisch gefüllt
+                                "enum": available_object_ids + available_object_ids_in_neighborhood + available_target_player_ids  # <-- Dynamisch gefüllt
                             }
                         },
                         "required": ["what"]
@@ -540,7 +541,7 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                             "whato": {
                                 "type": "string",
                                 "description": "Die eindeutige ID des Objekts, das aufgenommen wird (z.B. 'o_salami').",
-                                "enum": available_object_ids  # <-- Dynamisch gefüllt
+                                "enum": available_object_ids + available_object_ids_in_neighborhood # <-- Dynamisch gefüllt
                             }
                         },
                         "required": ["whato"]
@@ -570,7 +571,7 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                             "what": {
                                 "type": "string",
                                 "description": "Die eindeutige ID des Objekts, das untersucht wird (z.B. 'o_blumentopf').",
-                                "enum": available_object_ids  # <-- Dynamisch gefüllt
+                                "enum": available_object_ids + available_object_ids_in_neighborhood # <-- Dynamisch gefüllt
                             }
                         },
                         "required": ["what"]
@@ -738,6 +739,10 @@ Beispiel für eine komplexe Eingabe, die zu mehreren Funktionsaufrufen führt:
 
 
             dprint(dl.LLM, "LLM-Info: ++++++++++++++")
+            dprint(dl.LLM_PROMPT,prompt_str)
+            dprint(dl.LLM_PROMPT,"+++++++ END OF PROMPT +++++++")
+            dpprint(dl.LLM_PROMPT,tools)
+            dprint(dl.LLM_PROMPT,"++++++++ END OF TOOLS Section ++++++++")
             dprint(dl.LLM, f"User input....: {user_input}")
             dprint(dl.LLM,
                    f"LLM Raw Response: {response.text}")  # response.text kann auch leer sein, wenn nur tool_calls
