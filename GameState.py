@@ -22,6 +22,9 @@ from WayPrompts import w_dach_schuppen_prompt_f
 class GameState:
 
     def __init__(self):
+        self.objects = None
+        self.ways = None
+        self.places = None
         self.init_game()
     #
     #  Initialization functions
@@ -1094,15 +1097,15 @@ Auf dem Dach des Schuppens
                 obj_description_text = obj.prompt_f(self, pl) if obj.prompt_f else obj.examine
                 narration_details["Objekte hier"].append({obj.callnames[0]: obj_description_text})
                 all_object_ids_in_context.append(obj.name)  # Fügen die interne ID hinzu
-        narration_details["Objekte in benachbarten Feldern"] = []
-        all_object_ids_in_neighborhood = []
-        for neigh in pl.location.ways:
-            for obj in neigh.destination.place_objects:
-                if not obj.hidden:
-                    # Nutze prompt_f, um die objektspezifische Beschreibung für die Narration zu bekommen
-                    obj_description_text = obj.prompt_f(self, pl) if obj.prompt_f else obj.examine
-                    narration_details["Objekte in benachbarten Feldern"].append({obj.callnames[0]: obj_description_text})
-                    all_object_ids_in_neighborhood.append(obj.name)  # Fügen die interne ID hinzu
+        # narration_details["Objekte in benachbarten Feldern"] = []
+        # all_object_ids_in_neighborhood = []
+        # for neigh in pl.location.ways:
+        #     for obj in neigh.destination.place_objects:
+        #         if not obj.hidden:
+        #             # Nutze prompt_f, um die objektspezifische Beschreibung für die Narration zu bekommen
+        #             obj_description_text = obj.prompt_f(self, pl) if obj.prompt_f else obj.examine
+        #             narration_details["Objekte in benachbarten Feldern"].append({obj.callnames[0]: obj_description_text})
+        #             all_object_ids_in_neighborhood.append(obj.name)  # Fügen die interne ID hinzu
 
         # Objekte im Inventar des Spielers
         narration_details["Objekte, die der Spieler bei sich trägt"] = []
@@ -1117,17 +1120,17 @@ Auf dem Dach des Schuppens
         # "Springe vom Schuppen und gehe zum Warenautomat"
         narration_details["Wo man hingehen kann"] = []
         all_place_ids_for_navigation = []  # Diese Liste sammeln wir für die 'enum's
-        allw = pl.location.ways
-        dstn = [dn.destination.name for dn in pl.location.ways] # Names of ways we can go to (avoid circles)
-        dstn.append(pl.location.name)               # also own name
-        for w in pl.location.ways:
-            d = w.destination
-            for v in d.ways:
-                if v.destination.name not in dstn:
-                    allw.append(v)
-                    dstn.append(v.destination.name)
+        allw = pl.location.ways.copy()
+        # dstn = [dn.destination.name for dn in pl.location.ways] # Names of ways we can go to (avoid circles)
+        # dstn.append(pl.location.name)               # also own name
+        # for w in pl.location.ways:
+        #     d = w.destination
+        #     for v in d.ways:
+        #         if v.destination.name not in dstn:
+        #             allw.append(v)
+        #             dstn.append(v.destination.name)
 
-        for w in allw:
+        for w in pl.location.ways:
             if w.visible:
                 wd = {}
                 wd["Ziel"] = w.destination.name
@@ -1152,7 +1155,7 @@ Auf dem Dach des Schuppens
         # 2. Spezifische Listen für LLM Tools (enum-Werte)
         context_data["available_object_ids"] = list(
             set(all_object_ids_in_context))  # Set für Einzigartigkeit, dann zurück zu Liste
-        context_data["available_object_ids_in_neighborhood"] = list(set(all_object_ids_in_neighborhood))
+        #context_data["available_object_ids_in_neighborhood"] = list(set(all_object_ids_in_neighborhood))
         context_data["available_place_ids"] = list(set(all_place_ids_for_navigation))
 
         # Die IDs aller Spieler, die ein Ziel sein könnten (primär der Spieler selbst und NPCs)
@@ -1515,12 +1518,10 @@ Am Ort sind folgende Objekte zu sehen:"""
         # (2) return failure message ("There is no path here")
         w_found = None
         direction_found = self.place_name_from_friendly_name(direction)
-        for w in pl.location.ways:
-            if w.name == direction_found or w.destination.name == direction_found:
-                w_found = w
-                break
-        if w_found == None:
-            return "Dieser Weg existiert hier nicht!"
+        w_found = next((w for w in pl.location.ways if w.destination.name==direction_found), None)
+
+        if w_found is None:
+            return f"Es existiert kein Weg zum Ort {direction}"
         if not w_found.visible:
             return "Diesen Weg sehe ich hier nicht!"
         ob = w_found.obstruction_check(self)

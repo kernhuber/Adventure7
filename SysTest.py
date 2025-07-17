@@ -30,7 +30,8 @@ class SysTest:
             "nichts"
         ])
         self.test_queue_llm = deque([
-            "gehe zum schuppen und schau dich um",
+            "gehe zum schuppen",
+            "schau dich um",
             "untersuche den blumentopf",
             "schließe mit dem schlüssel den Schuppen auf und gehe hinein",
          #   "gehe innen",

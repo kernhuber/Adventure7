@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 from Place import Place
 from collections import deque
 from SysTest import SysTest
@@ -16,7 +16,10 @@ class PlayerState:
     name: str
     location: Place
     inventory: List[GameObject] = field(default_factory=list)
-    last_input: str = "Ich sehe mich erst einmal um."
+    # last_input: str = "Ich sehe mich erst einmal um."
+    # Neuer String für den Rest der LLM-Eingabe:
+    pending_llm_input: Optional[str] = None  # Setzt sich auf None zurück, wenn verarbeitet
+
     thirst_counter: int = 40  # Alle vierzig Spielzüge müssen wir trinken
     cmd_q: deque = field(default_factory = deque)
     systest: SysTest = field(default_factory = SysTest)
@@ -85,7 +88,13 @@ class PlayerState:
                     else:
                         ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe")
                 else:
-                    ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe")
+                    if not self.pending_llm_input:
+                        ui=""
+                        while ui=="":
+                            ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe").strip()
+                    else:
+                        ui = self.pending_llm_input
+                        self.pending_llm_input = None
                 if ui is not None:
                     if ui == "quit" or ui=="inventory" or ui =="dogstate" or ui=="nichts" or ui=="context":
                         # self.cmd_q.append(ui.strip().lower())
@@ -95,6 +104,18 @@ class PlayerState:
                         dprint(dl.PLAYERSTATE,"PlayerState.Player_game_move: --------------------------")
                         dprint(dl.PLAYERSTATE,f"LLM made the following atomic commands from user input:")
                         dpprint(dl.PLAYERSTATE, cmds)
+                        #
+                        # Intercept "rest-command":
+                        # "rest" should never be the only return; if the LLM did not understand an input it should
+                        # use "zurueckweisen"
+                        # There should only be one "rest" command at the very end of the list of returned commands
+                        #
+                        if len(cmds) > 1:
+                            if(cmds[-1]["function_call"]["name"]) == "rest":
+                                dprint(dl.PLAYERSTATE,"Intercepting 'rest' tool call")
+                                self.pending_llm_input = cmds[-1]["function_call"]["args"]["remaining_input"]
+                                del(cmds[-1])
+
                         self.cmd_q.extend(cmds)
                 else:
                     user_input = {}
