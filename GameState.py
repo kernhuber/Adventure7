@@ -632,6 +632,7 @@ Auf dem Dach des Schuppens
                 "destination": "p_felsen",
                 "text_direction": "aus der Höhle heraus zum Felsen",
                 "obstruction_check": None,
+                "way_prompt_f": wp.w_hoehle_felsen_prompt_f,
                 "description": ""
             },
         }

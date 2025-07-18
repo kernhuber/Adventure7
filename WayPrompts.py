@@ -57,3 +57,15 @@ def w_ubahn_warenautomat_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> st
 'gehe p_warenautomat' zurück
 
 """
+
+def w_hoehle_felsen_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
+    return """
+* Diesen Weg kann man gehen, laufen. Man kann mit ihm die Höhle verlassen und aus der Höhle rausgehen.
+* Dieser Weg wird implizit gegangen, wenn jemand die Höhle verlässt oder nach draussen geht
+* Beispiele:
+- Verlasse die Höhle
+- Gehe aus der Höhle raus
+- Gehe raus
+- Gehe nach draussen
+* Liefere in diesen und ähnlichen Fällen 'gehe p_felsen' zurück
+    """

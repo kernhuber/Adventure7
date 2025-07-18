@@ -679,20 +679,34 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
         **Wenn Du eine Eingabe mit mehreren logischen Teilschritten erhältst:**
         1.  Identifiziere die **ersten direkt ausführbaren** Befehle basierend auf dem aktuellen Kontext (verfügbare Orte, sichtbare und greifbare Objekte).
         2.  Generiere die Tool-Call für diese ersten Schritte.
-        3.  Wenn weitere Schritte in der ursprünglichen Eingabe vorhanden sind, die **erst nach Ausführung des ersten Schritts sinnvoll oder möglich werden könnten** (z.B. weil sie ein Objekt betreffen, das erst dann sichtbar oder zugänglich wird, oder eine Folgeaktion darstellen), dann fasse diese verbleibenden Schritte als neuen String für den `rest`-Tool-Call zusammen.
+        3.  Wenn weitere Schritte in der ursprünglichen Eingabe vorhanden sind, die **erst nach Ausführung des ersten Schritts sinnvoll oder möglich werden könnten** (z.B. weil sie ein Objekt betreffen, das erst dann sichtbar oder zugänglich wird, oder eine Folgeaktion darstellen), dann fasse diese verbleibenden Schritte als neuen String für den `rest`-Tool-Call zusammen. 
 
         **Wichtig:** Verwende `rest` auch dann, wenn der zweite Schritt im *aktuellen* Zustand des Ortes nicht ausführbar ist, aber potenziell nach der ersten Aktion möglich werden könnte. Wenn der zweite Teil der Eingabe jedoch offensichtlich und dauerhaft *nicht im aktuellen Kontext* oder *nachvollziehbar nach der ersten Aktion* möglich ist, oder einen ungültigen Befehl enthält, dann verwende `zurueckweisen` für diese gesamte zweite Anweisung (aber nicht für den ersten Teil, wenn er gültig ist).
+        **WIchtig:** 'rest' mit einem Leeren String ("") ist überflüssig und muss nicht zurückgeliefert werden.
         **Aktueller Ort und wichtige Objekte/Charaktere (für kontextuelles Verständnis, NICHT für ID-Mapping):**
+        
         {json.dumps(narration_context_for_llm, indent=2)}
 
-        *Beispiele für `rest` aktualisiert:*
+        *Beispiele für `rest`*
 
 "gehe zum Schuppen und schließe ihn mit dem Schlüssel auf, dann sieh dich um"
--> Hier: `gehe p_schuppen` und `rest "schließe den Schuppen mit dem Schlüssel auf und sieh dich um"`
+-> 
+            ```json
+            [
+              {{"function_call": {{"name": "gehe", "args": {{"direction": "p_schuppen"}}}}}},
+              {{"function_call": {{"name": "rest", "args": {{"remaining_input": "Schließe den Schuppen mit dem Schlüssel auf und sieh dich um"}}}}}},
+            ]
+            ```
 *(Grund: Der Schlüssel zum Öffnen des Schuppens ist erst im Schuppen sichtbar/nutzbar, oder die Aktion 'schließe mit schlüssel auf' ist eine Folgeaktion nach dem Betreten.)*
 
 "untersuche das skelett und nimm die geldbörse"
--> Hier: `untersuche o_skelett` und `rest "nimm die geldbörse"`
+
+            ```json
+            [
+              {{"function_call": {{"name": "untersuche", "args": {{"what": "p_schuppen"}}}}}},
+              {{"function_call": {{"name": "rest", "args": {{"remaining_input": "Schließe den Schuppen mit dem Schlüssel auf und sieh dich um"}}}}}},
+            ]
+            ```
 *(Grund: Die Geldbörse wird erst nach der Untersuchung des Skeletts enthüllt/sichtbar, daher ist "nimm" erst danach sinnvoll.)*
 
 **Entscheidungsregel:** Wenn die zweite Aktion direkt vom ersten Ort aus ausführbar wäre, aber ein anderes Objekt oder einen anderen Zustand erfordert, der durch den ersten Befehl geändert wird (z.B. ein Objekt wird sichtbar, ein Ort wird zugänglich), dann `rest`. Wenn die zweite Aktion unabhängig vom ersten Schritt keinen Sinn ergibt oder ungültig ist, dann `zurueckweisen` (für den zweiten Teil).
@@ -708,7 +722,7 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
         "springe vom Dach und laufe zum Geldautomaten"
             ```json
             [
-              {{"function_call": {{"name": "gehe", "args": {{"ziel_ort": "p_schuppen"}}}}}},
+              {{"function_call": {{"name": "gehe", "args": {{"ziel_ort": "o_skelett"}}}}}},
               {{"function_call": {{"name": "rest", "args": {{"remaining_input": "laufe zum Geldautomaten"}}}}}},
             ]
             ```
@@ -722,35 +736,38 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
         Beispiele für die Interpretation von 'anwenden':
             "Öffne die Tür mit dem Schlüssel" ODER "Schließe die Tür mit dem Schlüssel auf" wird zu:
             ```json
-            {{"function_call": {{"name": "anwenden", "args": {{"objekt": "o_schluessel", "ziel_objekt": "o_schuppen"}}}}}}
+            {{"function_call": {{"name": "anwenden", "args": {{"what": "o_schluessel", "towhat": "o_schuppen"}}}}}}
             ```
             "Zünde die Sprengladung auf dem Felsen" wird zu:
             ```json
-            {{"function_call": {{"name": "anwenden", "args": {{"objekt": "o_sprengladung", "ziel_objekt": "o_felsen"}}}}}}
+            {{"function_call": {{"name": "anwenden", "args": {{"what": "o_sprengladung", "towhat": "o_felsen"}}}}}}
             ```
             "Drücke den Knopf der Sprengladung" wird zu:
             ```json
-            {{"function_call": {{"name": "anwenden", "args": {{"objekt": "o_sprengladung"}}}}}}
+            {{"function_call": {{"name": "anwenden", "args": {{"what": "o_sprengladung"}}}}}}
             ```
             "Stelle den Hebel um" wird zu:
             ```json
-            {{"function_call": {{"name": "anwenden", "args": {{"objekt": "o_hebel"}}}}}}
+            {{"function_call": {{"name": "anwenden", "args": {{"what": "o_hebel"}}}}}}
             ```
     
         
         Beispiele für 'zurueckweisen'-Befehle:
             "Öffne den Warenautomaten" wird zu:
             ```json
-            {{"function_call": {{"name": "zurueckweisen", "args": {{"erklaerung": "Du kannst den Warenautomat nicht öffnen. Du bräuchtest schon Geld, um an die Waren zu gelangen."}}}}}}
+            {{"function_call": {{"name": "zurueckweisen", "args": {{"why": "Du kannst den Warenautomat nicht öffnen. Du bräuchtest schon Geld, um an die Waren zu gelangen."}}}}}}
             ```
             "puste den Schuppen um" wird zu:
             ```json
-            {{"function_call": {{"name": "zurueckweisen", "args": {{"erklaerung": "Interessante Idee - aber du kannst den Schuppen nicht umpusten."}}}}}}
+            {{"function_call": {{"name": "zurueckweisen", "args": {{"why": "Interessante Idee - aber du kannst den Schuppen nicht umpusten."}}}}}}
             ```
             "Schlurbsdiwurps kadjhaslasdk" wird zu:
             ```json
-            {{"function_call": {{"name": "zurueckweisen", "args": {{"erklaerung": "Sei mir nicht böse - aber das habe ich wirklich nicht verstanden.(tlhIngan Hol Dajatlhʼaʼ?)"}}}}}}
+            {{"function_call": {{"name": "zurueckweisen", "args": {{"why": "Sei mir nicht böse - aber das habe ich wirklich nicht verstanden.(tlhIngan Hol Dajatlhʼaʼ?)"}}}}}}
             ```
+            
+
+            
             **Spielereingabe: "{user_input}"**
 
             Generiere nur das JSON-Array der Funktionsaufrufe.
@@ -802,7 +819,7 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                 return [{
                     "function_call": {
                         "name": "zurueckweisen",
-                        "args": {"erklaerung": "LLM konnte keinen Befehl generieren."}
+                        "args": {"why": "LLM konnte keinen Befehl generieren."}
                     }
                 }]
 
@@ -828,8 +845,8 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
             dpprint(dl.LLM,tools)
 
             # Bei einem Fehler geben wir einen 'zurueckweisen'-Befehl als Dictionary zurück
-            return {"function_call": {"name": "zurueckweisen", "args": {
-                "erklaerung": "Ein unerwarteter interner Fehler ist aufgetreten. Bitte versuche es anders."}}}
+            return [{"function_call": {"name": "zurueckweisen", "args": {
+                "why": "Ein unerwarteter interner Fehler ist aufgetreten. Bitte versuche es anders."}}}]
 
     def get_npc_action(self, game_state_for_npc: dict) -> dict:
         """
