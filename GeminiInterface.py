@@ -4,7 +4,7 @@ import os
 import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
 from pprint import pprint
 from Utils import dprint, dpprint, dl
-
+from google.api_core import retry
 
 # Konfiguration der Gemini API mit deinem API-Schlüssel
 # Es wird dringend empfohlen, den API-Schlüssel nicht direkt im Code zu speichern!
@@ -20,7 +20,12 @@ class GeminiInterface:
 
         genai.configure(api_key=apikey)
         #
-
+        # Retry-Mechanismus
+        #
+        is_retriable = lambda e: (isinstance(e, genai.errors.APIError) and e.code in {429, 503})
+        genai.GenerativeModel.generate_content = retry.Retry(
+            predicate=is_retriable
+        )(genai.GenerativeModel.generate_content)
 
 # Globale Model-Instanzen, die wir wiederverwenden können
 # Wir könnten verschiedene Modelle für verschiedene Aufgaben nutzen, z.B. Flash für schnelle Parser, Pro für Reasoning
