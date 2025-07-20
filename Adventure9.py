@@ -178,7 +178,7 @@ class Adventure:
                     no_game_move = True
                     while no_game_move:
                         user_input_json = pl.Player_game_move(self.game)
-                        if user_input_json["function_call"]["name"] in ["hilfe","umsehen","dogstate","context","untersuche"]:
+                        if user_input_json["function_call"]["name"] in ["hilfe","umsehen","dogstate","context"]:
                             dprint(dl.GAMELOOP,f"###Executing non playround command {user_input_json["function_call"]["name"]}")
                             tw_print(self.game.verb_execute_json(pl, user_input_json))
                         else:
