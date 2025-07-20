@@ -74,10 +74,12 @@ class PlayerState:
             tw_print(f"***Du hast jetzt richtig Durst! Es reicht nocht für {self.thirst_counter} Spielrunden, dann verdurstest Du!***")
 
         user_input = {}
+        ui = None
         while not user_input:
             #if self.systest.test_queue:
             #    user_input = self.systest.test_game().strip().lower()
             #    print(user_input)
+
             if self.cmd_q:
                 user_input = self.cmd_q.popleft()
             else:
@@ -90,6 +92,10 @@ class PlayerState:
                             ui=""
                             while ui=="":
                                 ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe").strip()
+                    else:
+                        ui = ""
+                        while ui == "":
+                            ui = Prompt.ask(f"Was tust du jetzt, {self.name}? Deine Eingabe").strip()
                 else:
                     ui = self.pending_llm_input
                     self.pending_llm_input = None
