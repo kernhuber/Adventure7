@@ -1,6 +1,7 @@
 from collections import deque
 from rich.prompt import Prompt
 from GameState import GameState
+from EnhancedUI import EnhancedUI
 
 import Utils
 Utils.ADV_LOGGER = Utils.dlogger()
@@ -83,6 +84,9 @@ class Adventure:
 
 
     def __init__(self, players):
+        self.game = GameState()
+        self.ui = EnhancedUI()
+        # Rest der Initialisierung.
         self.game = GameState()
         #
         # Interactive Players
@@ -181,6 +185,7 @@ class Adventure:
                         if user_input_json["function_call"]["name"] in ["hilfe","umsehen","dogstate","context"]:
                             dprint(dl.GAMELOOP,f"###Executing non playround command {user_input_json["function_call"]["name"]}")
                             tw_print(self.game.verb_execute_json(pl, user_input_json))
+                            print()
                         else:
                             no_game_move = False
 
@@ -211,6 +216,47 @@ class Adventure:
         dprint(dl.GAMELOOP,f"{'*'*80}")
         dpprint(dl.GAMELOOP,self.game.gamelog)
         tw_print("***Auf Wiedersehen!***")
+
+    def gameloop(self):
+        """Verbesserte Gameloop mit erweiterter UI"""
+        from NPCPlayerState import NPCPlayerState, DogState
+        from ExplosionState import ExplosionState
+        from PlayerState import PlayerState
+
+        self.ui.display_typing_effect(txt_initial_text)
+
+        round = 1
+        last_action = ""
+
+        while not self.game.game_over:
+            # Zeige Haupt-UI
+            current_player = self.game.players[0]  # Hauptspieler
+            self.ui.display_game_screen(current_player, self.game, last_action)
+
+            # Spieler-Eingabe und Ausführung
+            for pl in self.game.players:
+                if type(pl) is PlayerState:
+                    user_input_json = pl.Player_game_move(self.game)
+                    if user_input_json["function_call"]["name"] == "hilfe":
+                        self.ui.display_help()
+                        continue
+
+                    result = self.game.verb_execute_json(pl, user_input_json)
+                    last_action = result
+
+                # NPC-Aktionen...
+                elif type(pl) is NPCPlayerState:
+                    if pl.dog_state == DogState.ATTACK:
+                        self.ui.display_combat_ui(current_player, pl)
+                    # Rest der NPC-Logik...
+
+            round += 1
+
+        # Spiel-Ende mit Effekt
+        if self.game.game_won:
+            self.ui.display_typing_effect(txt_final_won_text, 0.05)
+        else:
+            self.ui.display_typing_effect(txt_final_text, 0.05)
 #
 # --- Main ---
 #
