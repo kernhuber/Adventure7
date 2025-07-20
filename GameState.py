@@ -1253,7 +1253,8 @@ Auf dem Dach des Schuppens
             "interaktion": (self.verb_interact,2),
             "zurueckweisen": (self.verb_reject,1),
             "zurückweisen": (self.verb_reject, 1),
-            "unbekannt": (self.verb_unknown,0)
+            "unbekannt": (self.verb_unknown,0),
+            "json_write": (self.verb_json_write,0)
         }
         verb,numargs = vtab.get(func_name,(None,None))
         r=verb(pl,**args)
@@ -1666,6 +1667,17 @@ Am Ort sind folgende Objekte zu sehen:"""
             r = dog.gets_attacked(self, pl)
             return ""
             #return f"(Angriff auf den Hund abgeschlossen)"
+
+    def verb_json_write(self,pl:PlayerState) -> str:
+        """
+        Write structures as JSON
+        :param pl:
+        :return:
+        """
+        from json import dump
+        # Writing to a JSON file with skipkeys=True
+        with open("output.json", "w") as outfile:
+            json.dump(self.places, outfile, skipkeys=True)
 
 
 
