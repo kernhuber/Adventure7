@@ -1319,7 +1319,8 @@ Auf dem Dach des Schuppens
             "interaktion": (self.verb_interact,2),
             "zurueckweisen": (self.verb_reject,1),
             "zurückweisen": (self.verb_reject, 1),
-            "unbekannt": (self.verb_unknown,0)
+            "unbekannt": (self.verb_unknown,0),
+            "toggle_layout": (self.verb_layout,0)
         }
         verb,numargs = vtab.get(tokens[0],(None,None))
         if verb != None:
@@ -1680,7 +1681,11 @@ Am Ort sind folgende Objekte zu sehen:"""
             json.dump(self.places, outfile, skipkeys=True)
 
 
-
+    # Zusätzlich: Neuer Befehl für Layout-Wechsel
+    def verb_layout(gs, pl: PlayerState) -> str:
+        """Wechsle Layout-Modus"""
+        # Diese Funktion würde in GameState hinzugefügt
+        return "layout_toggle"  # Spezieller Return-Code
 #
 # Obstruction Check Functions
 #

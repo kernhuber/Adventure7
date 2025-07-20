@@ -218,45 +218,66 @@ class Adventure:
         tw_print("***Auf Wiedersehen!***")
 
     def gameloop(self):
-        """Verbesserte Gameloop mit erweiterter UI"""
-        from NPCPlayerState import NPCPlayerState, DogState
-        from ExplosionState import ExplosionState
+        """Gameloop mit verbesserter UI"""
         from PlayerState import PlayerState
-
-        self.ui.display_typing_effect(txt_initial_text)
+        from NPCPlayerState import NPCPlayerState
+        self.ui.display_long_text(txt_initial_text, "Spielbeginn")
 
         round = 1
-        last_action = ""
 
         while not self.game.game_over:
-            # Zeige Haupt-UI
-            current_player = self.game.players[0]  # Hauptspieler
-            self.ui.display_game_screen(current_player, self.game, last_action)
+            current_player = self.game.players[0]
 
-            # Spieler-Eingabe und Ausführung
+            # Sammle alle Aktionen dieser Runde
+            round_actions = []
+
             for pl in self.game.players:
                 if type(pl) is PlayerState:
+                    # Zeige UI vor Eingabe
+                    self.ui.display_game_screen_v2(current_player, self.game)
+
                     user_input_json = pl.Player_game_move(self.game)
+
+                    # Spezielle Befehle
                     if user_input_json["function_call"]["name"] == "hilfe":
                         self.ui.display_help()
                         continue
+                    elif user_input_json["function_call"]["name"] == "toggle_layout":
+                        result = self.ui.toggle_layout_mode()
+                        self.ui.add_action_to_history(result, "system")
+                        continue
 
+                    # Normale Befehle ausführen
                     result = self.game.verb_execute_json(pl, user_input_json)
-                    last_action = result
 
-                # NPC-Aktionen...
+                    # Zur Historie hinzufügen
+                    command_name = user_input_json["function_call"]["name"]
+                    self.ui.add_action_to_history(f"Du: {command_name}", "input")
+                    self.ui.add_action_to_history(result, "output")
+
+                    round_actions.append(f"Du: {command_name}")
+                    round_actions.append(result)
+
                 elif type(pl) is NPCPlayerState:
-                    if pl.dog_state == DogState.ATTACK:
-                        self.ui.display_combat_ui(current_player, pl)
-                    # Rest der NPC-Logik...
+                    # NPC-Aktionen
+                    npc_action = pl.NPC_game_move(self.game)
+                    if npc_action and npc_action != "nichts":
+                        npc_result = self.game.verb_execute(pl, npc_action)
+                        self.ui.add_action_to_history(f"{pl.name}: {npc_action}", "npc")
+                        if npc_result:
+                            self.ui.add_action_to_history(npc_result, "npc_result")
+                        round_actions.extend([f"{pl.name}: {npc_action}", npc_result])
+
+            # Finale Anzeige der Runde
+            self.ui.display_game_screen_v2(current_player, self.game, round_actions)
 
             round += 1
 
-        # Spiel-Ende mit Effekt
-        if self.game.game_won:
-            self.ui.display_typing_effect(txt_final_won_text, 0.05)
-        else:
-            self.ui.display_typing_effect(txt_final_text, 0.05)
+        # Spiel-Ende
+        end_text = txt_final_won_text if self.game.game_won else txt_final_text
+        self.ui.display_long_text(end_text, "Spielende")
+
+
 #
 # --- Main ---
 #
