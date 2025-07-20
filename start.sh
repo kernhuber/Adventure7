@@ -1,6 +1,6 @@
 #!/bin/bash
 git pull
-git checkout Adventure8-LLM
+git checkout Adventure9-Zombie
 test -e ./venv || ( python3 -m venv ./venv; . .venv/bin/activate; pip install -r requirements.txt )
 clear
 echo
