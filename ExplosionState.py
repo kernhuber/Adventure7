@@ -42,13 +42,16 @@ class ExplosionState(PlayerState):
         else:
             self.location = None
 
+        # KORRIGIERTE TIMER-LOGIK
+        self.kaboom_timer -= 1  # Timer runtersetzen
+
         if self.kaboom_timer > 0:
-            self.kaboom_timer = self.kaboom_timer - 1
+            # Noch Zeit bis zur Explosion
             timer_msg = f"***Sprengladung explodiert in {self.kaboom_timer} Spielzügen in {self.location.name}***"
             log_explosion(timer_msg)
             return timer_msg  # Gib Timer-Nachricht für Web-UI zurück
         else:
-            # 💥 EXPLOSION! 💥
+            # 💥 EXPLOSION! 💥 (Timer ist jetzt 0 oder weniger)
             log_explosion("***(((( KABUMM!!! ))))***")
             log_explosion(f"Die Sprengladung explodiert hier: {self.location.name}")
 
