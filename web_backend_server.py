@@ -591,26 +591,21 @@ class WebAdventureServer:
                             npc_actions.append(f"**{npc.name}:** {npc_result}")
 
                 elif EXPLOSION_AVAILABLE and isinstance(npc, ExplosionState):
-                    # Explosion-NPC
+                    # Explosion-NPC - VEREINFACHT
                     dprint(dl.WEBGUI, f"💥 Verarbeite Explosion: Timer={npc.kaboom_timer}")
 
-                    # ExplosionState verwendet explosion_input() statt NPC_game_move()
-                    explosion_input = npc.explosion_input(game)
+                    # ExplosionState.explosion_input() macht ALLES und gibt Nachrichten zurück
+                    explosion_messages = npc.explosion_input(game)
 
-                    if explosion_input and explosion_input != "nichts":
-                        # Explosion hat etwas getan - führe es aus
-                        explosion_result = game.verb_execute(npc, explosion_input)
-                        if explosion_result and explosion_result.strip():
-                            npc_actions.append(f"**💥 EXPLOSION:** {explosion_result}")
+                    # Verwende die Nachrichten direkt (keine verb_execute nötig!)
+                    if explosion_messages and explosion_messages != "nichts":
+                        npc_actions.append(f"**💥 EXPLOSION:** {explosion_messages}")
 
                     # Prüfe ob die Explosion abgelaufen ist (kaboom_timer = 0 nach explosion_input)
                     if npc.kaboom_timer <= 0:
                         dprint(dl.WEBGUI, "💥 Explosion ist abgelaufen - entferne ExplosionState")
                         players_to_remove.append(npc)
-                    else:
-                        # Timer-Nachricht für noch aktive Explosionen
-                        timer_msg = f"***Sprengladung explodiert in {npc.kaboom_timer} Spielzügen in {npc.location.name if npc.location else 'unbekanntem Ort'}***"
-                        npc_actions.append(f"**💣 Timer:** {timer_msg}")
+                    # Keine separate Timer-Nachricht mehr nötig - kommt von explosion_input()
 
             # Entferne abgelaufene Explosionen
             for player in players_to_remove:
