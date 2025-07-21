@@ -18,8 +18,8 @@ from Utils import tw_print, dprint, dpprint, dl
 try:
     import websockets
 except ImportError:
-    dprint(dl.WEBGUI,"❌ 'websockets' Package ist nicht installiert!")
-    dprint(dl.WEBGUI,"Installiere es mit: pip install websockets")
+    dprint(dl.WEBGUI, "❌ 'websockets' Package ist nicht installiert!")
+    dprint(dl.WEBGUI, "Installiere es mit: pip install websockets")
     exit(1)
 
 # Prüfe ob Game-Module verfügbar sind
@@ -28,10 +28,10 @@ try:
     from PlayerState import PlayerState
 
     GAME_MODULES_AVAILABLE = True
-    dprint(dl.WEBGUI,"✅ Game-Module erfolgreich importiert")
+    dprint(dl.WEBGUI, "✅ Game-Module erfolgreich importiert")
 except ImportError as e:
-    dprint(dl.WEBGUI,f"⚠️  Game-Module nicht verfügbar: {e}")
-    dprint(dl.WEBGUI,"⚠️  Verwende Demo-Modus")
+    dprint(dl.WEBGUI, f"⚠️  Game-Module nicht verfügbar: {e}")
+    dprint(dl.WEBGUI, "⚠️  Verwende Demo-Modus")
     GAME_MODULES_AVAILABLE = False
 
 
@@ -55,17 +55,17 @@ class WebAdventureServer:
             try:
                 handler = SimpleHTTPRequestHandler
                 httpd = HTTPServer((self.host, self.http_port), handler)
-                dprint(dl.WEBGUI,f"📄 HTTP Server bereit auf http://{self.host}:{self.http_port}")
+                dprint(dl.WEBGUI, f"📄 HTTP Server bereit auf http://{self.host}:{self.http_port}")
                 httpd.serve_forever()
             except OSError as e:
                 if e.errno == 48:  # Address already in use
-                    dprint(dl.WEBGUI,f"⚠️  Port {self.http_port} ist bereits belegt. Verwende anderen Port.")
+                    dprint(dl.WEBGUI, f"⚠️  Port {self.http_port} ist bereits belegt. Verwende anderen Port.")
                     self.http_port += 1
                     self.start_http_server()
                 else:
-                    dprint(dl.WEBGUI,f"❌ HTTP Server Fehler: {e}")
+                    dprint(dl.WEBGUI, f"❌ HTTP Server Fehler: {e}")
             except Exception as e:
-                dprint(dl.WEBGUI,f"❌ Unerwarteter HTTP Server Fehler: {e}")
+                dprint(dl.WEBGUI, f"❌ Unerwarteter HTTP Server Fehler: {e}")
 
         http_thread = threading.Thread(target=run_http_server, daemon=True)
         http_thread.start()
@@ -76,14 +76,14 @@ class WebAdventureServer:
         self.connected_clients.add(websocket)
         session_id = str(id(websocket))
 
-        dprint(dl.WEBGUI,f"🔌 Neuer Client verbunden: {session_id}")
+        dprint(dl.WEBGUI, f"🔌 Neuer Client verbunden: {session_id}")
 
         if GAME_MODULES_AVAILABLE:
             # Versuche echtes GameState zu verwenden
             try:
-                dprint(dl.WEBGUI,f"🎮 Versuche echtes GameState zu erstellen...")
+                dprint(dl.WEBGUI, f"🎮 Versuche echtes GameState zu erstellen...")
                 game = GameState()
-                dprint(dl.WEBGUI,f"✅ GameState erstellt")
+                dprint(dl.WEBGUI, f"✅ GameState erstellt")
 
                 # Spieler erstellen
                 player = PlayerState("WebPlayer", game.places["p_start"])
@@ -92,22 +92,22 @@ class WebAdventureServer:
                 # Umschlag hinzufügen
                 if "o_umschlag" in game.objects:
                     player.add_to_inventory(game.objects["o_umschlag"])
-                    dprint(dl.WEBGUI,f"✅ Umschlag hinzugefügt")
+                    dprint(dl.WEBGUI, f"✅ Umschlag hinzugefügt")
 
-                dprint(dl.WEBGUI,f"✅ Spieler erstellt: {player.name} in {player.location.name}")
+                dprint(dl.WEBGUI, f"✅ Spieler erstellt: {player.name} in {player.location.name}")
 
                 # Versuche Hund hinzuzufügen
                 try:
                     from NPCPlayerState import NPCPlayerState
                     dog = NPCPlayerState(name="Hund", location=game.places["p_geldautomat"])
                     game.players.append(dog)
-                    dprint(dl.WEBGUI,f"✅ Hund hinzugefügt: {dog.name} in {dog.location.name}")
-                    dprint(dl.WEBGUI,f"🎮 Spieler insgesamt: {len(game.players)}")
+                    dprint(dl.WEBGUI, f"✅ Hund hinzugefügt: {dog.name} in {dog.location.name}")
+                    dprint(dl.WEBGUI, f"🎮 Spieler insgesamt: {len(game.players)}")
                 except Exception as e:
-                    dprint(dl.WEBGUI,f"⚠️  Hund konnte nicht hinzugefügt werden: {e}")
+                    dprint(dl.WEBGUI, f"⚠️  Hund konnte nicht hinzugefügt werden: {e}")
 
-                # Konvertiere zu serialisierbarem Format
-                game_state = self.serialize_real_game_state(game)
+                # Konvertiere zu serialisierbarem Format - MIT initialer Narration
+                game_state = self.serialize_real_game_state(game, update_narration=True, session_id=session_id)
 
                 # Session mit Command-Queue und Pending-Input erstellen
                 self.game_sessions[session_id] = {
@@ -118,9 +118,14 @@ class WebAdventureServer:
                     "pending_llm_input": None  # Pending input wie in PlayerState
                 }
 
+                # Initialisiere Scene-Cache für diese Session
+                if not hasattr(self, '_session_scene_cache'):
+                    self._session_scene_cache = {}
+                self._session_scene_cache[session_id] = game_state.get("scene_description", "")
+
             except Exception as e:
-                dprint(dl.WEBGUI,f"❌ Fehler beim echten GameState: {e}")
-                dprint(dl.WEBGUI,f"⚠️  Verwende Demo-Modus als Fallback")
+                dprint(dl.WEBGUI, f"❌ Fehler beim echten GameState: {e}")
+                dprint(dl.WEBGUI, f"⚠️  Verwende Demo-Modus als Fallback")
                 game_state = self.create_demo_game_state()
                 self.game_sessions[session_id] = {
                     "type": "demo",
@@ -130,7 +135,7 @@ class WebAdventureServer:
                 }
         else:
             # Demo-Modus
-            dprint(dl.WEBGUI,f"📱 Erstelle Demo-GameState...")
+            dprint(dl.WEBGUI, f"📱 Erstelle Demo-GameState...")
             game_state = self.create_demo_game_state()
             self.game_sessions[session_id] = {
                 "type": "demo",
@@ -141,7 +146,7 @@ class WebAdventureServer:
 
         # Sende initialen Zustand
         await self.send_game_state(websocket, self.game_sessions[session_id]["state"])
-        dprint(dl.WEBGUI,f"✅ Client {session_id} initialisiert ({self.game_sessions[session_id]['type']} Modus)")
+        dprint(dl.WEBGUI, f"✅ Client {session_id} initialisiert ({self.game_sessions[session_id]['type']} Modus)")
 
     def create_demo_game_state(self):
         """Erstelle Demo-GameState ohne echte Game-Module"""
@@ -155,6 +160,10 @@ class WebAdventureServer:
                 "thirst": 40,
                 "inventory": ["Briefumschlag"]
             },
+            "dog": {
+                "location": "Geldautomat",
+                "state": "Der Hund tut nichts... (Demo)"
+            },
             "environment": {
                 "objects": ["Kaputtes Fahrrad"],
                 "ways": ["Zum Schuppen", "Zum Warenautomat", "Zum Geldautomat"],
@@ -165,12 +174,16 @@ class WebAdventureServer:
             das Fahrrad zu reparieren und deinen wichtigen Briefumschlag rechtzeitig abzuliefern."""
         }
 
-    def serialize_real_game_state(self, game):
+    def serialize_real_game_state(self, game, update_narration=False, session_id=None):
         """Konvertiere echtes GameState zu JSON-Format"""
+        from NPCPlayerState import NPCPlayerState
         try:
             player = game.players[0] if game.players else None
             if not player:
                 return self.create_demo_game_state()
+
+            # Finde Hund (kann None sein falls Hund eliminiert wurde)
+            dog = next((d for d in game.players if type(d) is NPCPlayerState), None)
 
             # Sichere Zugriffe
             current_location = getattr(player, 'location', None)
@@ -210,15 +223,49 @@ class WebAdventureServer:
             except:
                 pass
 
-            # Szenenbeschreibung
+            # Szenenbeschreibung - NUR wenn explizit angefordert
             scene_description = "Du befindest dich an einem mysteriösen Ort."
-            try:
-                if hasattr(game, 'llm') and game.llm and hasattr(game.llm, 'narrate'):
-                    scene_description = game.llm.narrate(game, player)
-                elif hasattr(current_location, 'description'):
-                    scene_description = current_location.description
-            except:
-                pass
+            if update_narration:
+                try:
+                    if hasattr(game, 'llm') and game.llm and hasattr(game.llm, 'narrate'):
+                        dprint(dl.WEBGUI, f"🎭 Generiere neue Szenenbeschreibung für {current_location.name}")
+                        scene_description = game.llm.narrate(game, player)
+                    elif hasattr(current_location, 'description'):
+                        scene_description = current_location.description
+                except Exception as e:
+                    dprint(dl.WEBGUI, f"⚠️  Narration-Fehler: {e}")
+                    scene_description = "Du befindest dich an einem geheimnisvollen Ort."
+
+                # Cache die neue Beschreibung in der Session
+                if session_id and hasattr(self, '_session_scene_cache'):
+                    self._session_scene_cache[session_id] = scene_description
+            else:
+                # Verwende gecachte Beschreibung, falls vorhanden
+                if session_id and hasattr(self, '_session_scene_cache') and session_id in self._session_scene_cache:
+                    scene_description = self._session_scene_cache[session_id]
+                    dprint(dl.WEBGUI, f"♻️  Verwende gecachte Szenenbeschreibung für Session {session_id}")
+                else:
+                    # Fallback: einfache Beschreibung ohne LLM
+                    try:
+                        if hasattr(current_location, 'description'):
+                            scene_description = current_location.description
+                    except:
+                        pass
+
+            # Hund-Informationen
+            dog_info = {
+                "location": "Unbekannt",
+                "state": "Kein Hund im Spiel"
+            }
+            if dog:
+                try:
+                    dog_location = getattr(dog.location, 'callnames', ['Unbekannt'])
+                    dog_info = {
+                        "location": dog_location[0] if dog_location else 'Unbekannt',
+                        "state": getattr(dog, 'dog_state_message', 'Der Hund tut nichts')
+                    }
+                except:
+                    pass
 
             return {
                 "round": getattr(game, 'time', 1),
@@ -231,6 +278,7 @@ class WebAdventureServer:
                     "inventory": [getattr(item, 'callnames', ['Unbekanntes Item'])[0]
                                   for item in getattr(player, 'inventory', [])]
                 },
+                "dog": dog_info,
                 "environment": {
                     "objects": visible_objects,
                     "ways": available_ways,
@@ -240,7 +288,7 @@ class WebAdventureServer:
             }
 
         except Exception as e:
-            dprint(dl.WEBGUI,f"❌ Fehler beim Serialisieren: {e}")
+            dprint(dl.WEBGUI, f"❌ Fehler beim Serialisieren: {e}")
             return self.create_demo_game_state()
 
     async def unregister_client(self, websocket):
@@ -249,7 +297,13 @@ class WebAdventureServer:
         session_id = str(id(websocket))
         if session_id in self.game_sessions:
             del self.game_sessions[session_id]
-        dprint(dl.WEBGUI,f"👋 Client {session_id} getrennt")
+
+        # Bereinige auch Scene-Cache für diese Session
+        if hasattr(self, '_session_scene_cache') and session_id in self._session_scene_cache:
+            del self._session_scene_cache[session_id]
+            dprint(dl.WEBGUI, f"🧹 Scene-Cache für Session {session_id} bereinigt")
+
+        dprint(dl.WEBGUI, f"👋 Client {session_id} getrennt")
 
     async def send_game_state(self, websocket, game_state):
         """Sende Game-State an Client"""
@@ -259,9 +313,9 @@ class WebAdventureServer:
                 "data": game_state
             }
             await websocket.send(json.dumps(message))
-            dprint(dl.WEBGUI,f"📤 Game-State gesendet")
+            dprint(dl.WEBGUI, f"📤 Game-State gesendet")
         except Exception as e:
-            dprint(dl.WEBGUI,f"❌ Fehler beim Senden: {e}")
+            dprint(dl.WEBGUI, f"❌ Fehler beim Senden: {e}")
 
     async def handle_command(self, websocket, command_data):
         """Verarbeite Spieler-Kommando - Exakte Nachbildung von Player_game_move Logik"""
@@ -276,7 +330,7 @@ class WebAdventureServer:
         session = self.game_sessions[session_id]
         raw_command = command_data.get('command', '').strip()
 
-        dprint(dl.WEBGUI,f"📥 Kommando empfangen: '{raw_command}' (Modus: {session['type']})")
+        dprint(dl.WEBGUI, f"📥 Kommando empfangen: '{raw_command}' (Modus: {session['type']})")
 
         # Bestimme welches Command zu verarbeiten ist - EXAKT wie Player_game_move
         command_to_execute = None
@@ -285,7 +339,7 @@ class WebAdventureServer:
         if session["cmd_q"]:
             # Es gibt bereits Commands in der Queue - nimm das nächste
             command_to_execute = session["cmd_q"].popleft()
-            dprint(dl.WEBGUI,f"🔄 Führe Command aus Queue aus: {command_to_execute['function_call']['name']}")
+            dprint(dl.WEBGUI, f"🔄 Führe Command aus Queue aus: {command_to_execute['function_call']['name']}")
         else:
             # Schritt 2: Keine Commands in Queue - hole User Input
             user_input = None
@@ -294,14 +348,14 @@ class WebAdventureServer:
             if session["pending_llm_input"]:
                 user_input = session["pending_llm_input"]
                 session["pending_llm_input"] = None
-                dprint(dl.WEBGUI,f"🔄 Verwende pending input: '{user_input}'")
+                dprint(dl.WEBGUI, f"🔄 Verwende pending input: '{user_input}'")
             elif raw_command:
                 # Verwende frisches Command vom User
                 user_input = raw_command
-                dprint(dl.WEBGUI,f"🆕 Verwende frisches Command: '{user_input}'")
+                dprint(dl.WEBGUI, f"🆕 Verwende frisches Command: '{user_input}'")
 
             if not user_input:
-                dprint(dl.WEBGUI,"⚠️  Kein Input verfügbar")
+                dprint(dl.WEBGUI, "⚠️  Kein Input verfügbar")
                 return
 
             # Schritt 3: Verarbeite User Input
@@ -320,8 +374,8 @@ class WebAdventureServer:
                             context = game.compile_current_game_context_for_llm_tools(player)
                             parsed_commands = game.llm.parse_user_input_to_commands(user_input, context)
 
-                            print(
-                                f"🤖 LLM parsed {len(parsed_commands)} commands: {[cmd['function_call']['name'] for cmd in parsed_commands]}")
+                            dprint(dl.WEBGUI,
+                                   f"🤖 LLM parsed {len(parsed_commands)} commands: {[cmd['function_call']['name'] for cmd in parsed_commands]}")
 
                             # Intercepte "rest-command" - GENAU wie in Player_game_move
                             if len(parsed_commands) > 1:
@@ -329,16 +383,17 @@ class WebAdventureServer:
                                     session["pending_llm_input"] = parsed_commands[-1]["function_call"]["args"][
                                         "remaining_input"]
                                     del (parsed_commands[-1])
-                                    dprint(dl.WEBGUI,f"🔄 Rest-Command intercepted! Pending: '{session['pending_llm_input']}'")
+                                    dprint(dl.WEBGUI,
+                                           f"🔄 Rest-Command intercepted! Pending: '{session['pending_llm_input']}'")
 
                             # Füge Commands zur Queue hinzu
                             session["cmd_q"].extend(parsed_commands)
                         else:
-                            dprint(dl.WEBGUI,"⚠️  LLM nicht verfügbar, verwende fallback")
+                            dprint(dl.WEBGUI, "⚠️  LLM nicht verfügbar, verwende fallback")
                             session["cmd_q"].append(
                                 {'function_call': {'name': 'zurueckweisen', 'args': {'why': 'LLM nicht verfügbar'}}})
                     except Exception as e:
-                        dprint(dl.WEBGUI,f"❌ Fehler beim LLM-Parsing: {e}")
+                        dprint(dl.WEBGUI, f"❌ Fehler beim LLM-Parsing: {e}")
                         session["cmd_q"].append(
                             {'function_call': {'name': 'zurueckweisen', 'args': {'why': f'LLM-Fehler: {str(e)}'}}})
                 else:
@@ -350,12 +405,12 @@ class WebAdventureServer:
             if session["cmd_q"]:
                 command_to_execute = session["cmd_q"].popleft()
             else:
-                dprint(dl.WEBGUI,"⚠️  Keine Commands verfügbar nach Verarbeitung")
+                dprint(dl.WEBGUI, "⚠️  Keine Commands verfügbar nach Verarbeitung")
                 return
 
         # Schritt 5: Führe das Command aus
-        dprint(dl.WEBGUI,f"▶️  Führe aus: {command_to_execute['function_call']['name']}")
-        result = await self.execute_single_command(session, command_to_execute)
+        dprint(dl.WEBGUI, f"▶️  Führe aus: {command_to_execute['function_call']['name']}")
+        result = await self.execute_single_command(session, command_to_execute, session_id)
 
         # Schritt 6: Sende Antwort
         response = {
@@ -372,12 +427,12 @@ class WebAdventureServer:
         }
 
         await websocket.send(json.dumps(response))
-        print(
-            f"✅ Command '{command_to_execute['function_call']['name']}' ausgeführt. Queue: {len(session['cmd_q'])}, Pending: {session['pending_llm_input'] is not None}")
+        dprint(dl.WEBGUI,
+               f"✅ Command '{command_to_execute['function_call']['name']}' ausgeführt. Queue: {len(session['cmd_q'])}, Pending: {session['pending_llm_input'] is not None}")
 
         # Schritt 7: Wenn noch Commands in Queue oder Pending Input vorhanden, sofort weiter verarbeiten
         if session["cmd_q"] or session["pending_llm_input"]:
-            dprint(dl.WEBGUI,f"🔄 Weitere Commands verfügbar - continue processing...")
+            dprint(dl.WEBGUI, f"🔄 Weitere Commands verfügbar - continue processing...")
             # Simuliere weiteres Command ohne User-Input
             await self.handle_command(websocket, {"command": ""})  # Empty command triggers queue processing
 
@@ -385,9 +440,23 @@ class WebAdventureServer:
         """Erstelle einfaches Command ohne LLM"""
         return {'function_call': {'name': 'zurueckweisen', 'args': {'why': f'Einfache Verarbeitung: {user_input}'}}}
 
-    async def execute_single_command(self, session, command_dict):
+    async def execute_single_command(self, session, command_dict, session_id):
         """Führe ein einzelnes Command aus"""
         try:
+            # Bestimme ob Narration aktualisiert werden soll
+            func_name = command_dict.get('function_call', {}).get('name', '')
+            queue_empty = len(session["cmd_q"]) == 0
+            is_look_around = func_name == "umsehen"
+
+            # Narration nur bei vollständig abgearbeiteten Sätzen oder explizitem Umsehen
+            update_narration = queue_empty or is_look_around
+
+            if update_narration:
+                dprint(dl.WEBGUI, f"🎭 Aktualisiere Narration (Queue leer: {queue_empty}, Umsehen: {is_look_around})")
+            else:
+                dprint(dl.WEBGUI,
+                       f"♻️  Verwende gecachte Narration (Queue: {len(session['cmd_q'])}, Command: {func_name})")
+
             if session["type"] == "real" and GAME_MODULES_AVAILABLE:
                 game = session["game"]
                 player = game.players[0] if game.players else None
@@ -417,14 +486,16 @@ class WebAdventureServer:
                     if hasattr(game, 'time'):
                         game.time += 1
 
-                    # Update game state
-                    session["state"] = self.serialize_real_game_state(game)
+                    # Update game state - MIT Narration nur bei Bedarf
+                    session["state"] = self.serialize_real_game_state(game, update_narration=update_narration,
+                                                                      session_id=session_id)
 
                     # NPC-Züge ausführen
                     try:
-                        await self.process_npc_turns(game, None)  # websocket=None, da wir nur den state updaten
+                        await self.process_npc_turns(game, None,
+                                                     session_id)  # websocket=None, da wir nur den state updaten
                     except Exception as e:
-                        dprint(dl.WEBGUI,f"⚠️  NPC-Fehler: {e}")
+                        dprint(dl.WEBGUI, f"⚠️  NPC-Fehler: {e}")
 
                     return result
                 else:
@@ -459,7 +530,7 @@ class WebAdventureServer:
                 return result
 
         except Exception as e:
-            dprint(dl.WEBGUI,f"❌ Fehler beim Ausführen von Command: {e}")
+            dprint(dl.WEBGUI, f"❌ Fehler beim Ausführen von Command: {e}")
             return f"Fehler: {str(e)}"
 
     def process_simple_command_execution(self, command_dict):
@@ -495,7 +566,7 @@ class WebAdventureServer:
         else:
             return f"Demo-Kommando '{func_name}' ausgeführt"
 
-    async def process_npc_turns(self, game, websocket):
+    async def process_npc_turns(self, game, websocket, session_id=None):
         """Führe NPC-Züge aus - inklusive ExplosionState"""
         try:
             from NPCPlayerState import NPCPlayerState
@@ -505,7 +576,7 @@ class WebAdventureServer:
                 EXPLOSION_AVAILABLE = True
             except ImportError:
                 EXPLOSION_AVAILABLE = False
-                dprint(dl.WEBGUI,"⚠️  ExplosionState nicht verfügbar")
+                dprint(dl.WEBGUI, "⚠️  ExplosionState nicht verfügbar")
 
             npc_actions = []
             players_to_remove = []  # Für Spieler die durch Explosion eliminiert werden
@@ -521,7 +592,7 @@ class WebAdventureServer:
 
                 elif EXPLOSION_AVAILABLE and isinstance(npc, ExplosionState):
                     # Explosion-NPC
-                    dprint(dl.WEBGUI,f"💥 Verarbeite Explosion: Timer={npc.kaboom_timer}")
+                    dprint(dl.WEBGUI, f"💥 Verarbeite Explosion: Timer={npc.kaboom_timer}")
 
                     # ExplosionState verwendet explosion_input() statt NPC_game_move()
                     explosion_input = npc.explosion_input(game)
@@ -534,7 +605,7 @@ class WebAdventureServer:
 
                     # Prüfe ob die Explosion abgelaufen ist (kaboom_timer = 0 nach explosion_input)
                     if npc.kaboom_timer <= 0:
-                        dprint(dl.WEBGUI,"💥 Explosion ist abgelaufen - entferne ExplosionState")
+                        dprint(dl.WEBGUI, "💥 Explosion ist abgelaufen - entferne ExplosionState")
                         players_to_remove.append(npc)
                     else:
                         # Timer-Nachricht für noch aktive Explosionen
@@ -545,19 +616,24 @@ class WebAdventureServer:
             for player in players_to_remove:
                 if player in game.players:
                     game.players.remove(player)
-                    dprint(dl.WEBGUI,f"🗑️  {player.name} aus Spielerliste entfernt")
+                    dprint(dl.WEBGUI, f"🗑️  {player.name} aus Spielerliste entfernt")
+
+            # Update game state nach NPC-Aktionen - OHNE Narration (da schon gemacht)
+            if session_id and hasattr(self, 'game_sessions') and session_id in self.game_sessions:
+                session = self.game_sessions[session_id]
+                session["state"] = self.serialize_real_game_state(game, update_narration=False, session_id=session_id)
 
             # Sende NPC-Aktionen an Client
             if npc_actions and websocket:
                 npc_message = {
                     "type": "npc_actions",
                     "actions": npc_actions,
-                    "game_state": self.serialize_real_game_state(game)
+                    "game_state": self.serialize_real_game_state(game, update_narration=False, session_id=session_id)
                 }
                 await websocket.send(json.dumps(npc_message))
 
         except Exception as e:
-            dprint(dl.WEBGUI,f"⚠️  NPC-Fehler (inklusive Explosion): {e}")
+            dprint(dl.WEBGUI, f"⚠️  NPC-Fehler (inklusive Explosion): {e}")
             import traceback
             traceback.print_exc()
 
@@ -611,23 +687,23 @@ class WebAdventureServer:
                     elif message_type == 'ping':
                         await websocket.send(json.dumps({"type": "pong"}))
                     else:
-                        dprint(dl.WEBGUI,f"⚠️ Unbekannter Message-Type: {message_type}")
+                        dprint(dl.WEBGUI, f"⚠️ Unbekannter Message-Type: {message_type}")
 
                 except json.JSONDecodeError as e:
-                    dprint(dl.WEBGUI,f"❌ JSON-Fehler: {e}")
+                    dprint(dl.WEBGUI, f"❌ JSON-Fehler: {e}")
                 except Exception as e:
-                    dprint(dl.WEBGUI,f"❌ Fehler beim Verarbeiten: {e}")
+                    dprint(dl.WEBGUI, f"❌ Fehler beim Verarbeiten: {e}")
 
         except websockets.exceptions.ConnectionClosed:
-            dprint(dl.WEBGUI,"🔌 Client-Verbindung normal geschlossen")
+            dprint(dl.WEBGUI, "🔌 Client-Verbindung normal geschlossen")
         except Exception as e:
-            dprint(dl.WEBGUI,f"❌ Unerwarteter Fehler: {e}")
+            dprint(dl.WEBGUI, f"❌ Unerwarteter Fehler: {e}")
         finally:
             await self.unregister_client(websocket)
 
     async def start_websocket_server(self):
         """Starte WebSocket-Server"""
-        dprint(dl.WEBGUI,f"🔌 WebSocket Server startet auf ws://{self.host}:{self.websocket_port}")
+        dprint(dl.WEBGUI, f"🔌 WebSocket Server startet auf ws://{self.host}:{self.websocket_port}")
 
         server = await websockets.serve(
             self.handle_client,
@@ -635,26 +711,26 @@ class WebAdventureServer:
             self.websocket_port
         )
 
-        dprint(dl.WEBGUI,f"✅ WebSocket Server bereit auf ws://{self.host}:{self.websocket_port}")
+        dprint(dl.WEBGUI, f"✅ WebSocket Server bereit auf ws://{self.host}:{self.websocket_port}")
         await server.wait_closed()
 
     def start_server(self):
         """Starte Server"""
-        dprint(dl.WEBGUI,f"🌐 Browser wird geöffnet auf: http://{self.host}:{self.http_port}/adventure_web.html")
-        dprint(dl.WEBGUI,f"💡 Game-Module verfügbar: {'✅ Ja' if GAME_MODULES_AVAILABLE else '❌ Nein (Demo-Modus)'}")
-        dprint(dl.WEBGUI,f"{'=' * 60}")
+        dprint(dl.WEBGUI, f"🌐 Browser wird geöffnet auf: http://{self.host}:{self.http_port}/adventure_web.html")
+        dprint(dl.WEBGUI, f"💡 Game-Module verfügbar: {'✅ Ja' if GAME_MODULES_AVAILABLE else '❌ Nein (Demo-Modus)'}")
+        dprint(dl.WEBGUI, f"{'=' * 60}")
 
         time.sleep(1)
 
         try:
             webbrowser.open(f"http://{self.host}:{self.http_port}/adventure_web.html")
         except Exception as e:
-            dprint(dl.WEBGUI,f"⚠️ Konnte Browser nicht öffnen: {e}")
+            dprint(dl.WEBGUI, f"⚠️ Konnte Browser nicht öffnen: {e}")
 
         try:
             asyncio.run(self.start_websocket_server())
         except KeyboardInterrupt:
-            dprint(dl.WEBGUI,f"\n👋 Server beendet")
+            dprint(dl.WEBGUI, f"\n👋 Server beendet")
 
 
 def create_working_html():
@@ -698,6 +774,14 @@ def create_working_html():
             <div id="inventory">Lade...</div>
         </div>
 
+        <div id="dogstate" class="panel">
+            <h2>🐕 Hund </h2>
+            <div id="dog-info">
+                <div id="dog-location"> Ort: Lade... </div>
+                <div id="dog-state"> Tut gerade: Lade ...</div>
+            </div>
+        </div>
+
         <div id="environment" class="panel">
             <h2>🗺️ Umgebung</h2>
             <h3>📦 Objekte:</h3>
@@ -726,6 +810,7 @@ def create_working_html():
             round: 1,
             player: { name: "WebPlayer", location: "Start", thirst: 40, inventory: [] },
             environment: { objects: [], ways: [], blockedWays: [] },
+            dog: {location: "Geldautomat", state:"Hund tut nichts..."},
             lastAction: { command: "Noch keine", result: "Warte auf Verbindung..." }
         };
 
@@ -894,6 +979,13 @@ def create_working_html():
                 if (commandText) commandText.textContent = gameState.lastAction?.command || 'Noch keine';
                 if (resultText) resultText.innerHTML = (gameState.lastAction?.result || 'Warte...').replace(/\\n/g, '<br>');
 
+                const dog_loc = document.getElementById('dog-location')
+                const dog_state = document.getElementById('dog-state')
+
+                if (dog_loc) dog_loc.textContent = "Der Hund ist momentan hier: "+ (gameState.dog?.location || 'Unbekannt');
+                if (dog_state) dog_state.textContent =  (gameState.dog?.state || 'Der Hund döst vor sich hin');
+
+
             } catch (error) {
                 console.error('❌ UI-Fehler:', error);
             }
@@ -932,20 +1024,20 @@ def create_working_html():
     with open("adventure_web.html", "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    dprint(dl.WEBGUI,"✅ Funktionierende HTML-Datei erstellt!")
+    dprint(dl.WEBGUI, "✅ Funktionierende HTML-Datei erstellt!")
 
 
 def run_working_adventure():
     """Starte funktionierenden Web-Server"""
-    dprint(dl.WEBGUI,"🏜️ Starte FUNKTIONIERENDEN Wüsten-Adventure Web-Server...")
+    dprint(dl.WEBGUI, "🏜️ Starte FUNKTIONIERENDEN Wüsten-Adventure Web-Server...")
 
     try:
         server = WebAdventureServer()
         server.start_server()
     except KeyboardInterrupt:
-        dprint(dl.WEBGUI,"\n👋 Server beendet")
+        dprint(dl.WEBGUI, "\n👋 Server beendet")
     except Exception as e:
-        dprint(dl.WEBGUI,f"❌ Fehler: {e}")
+        dprint(dl.WEBGUI, f"❌ Fehler: {e}")
 
 
 if __name__ == "__main__":

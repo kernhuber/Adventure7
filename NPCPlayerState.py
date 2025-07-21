@@ -29,6 +29,7 @@ class NPCPlayerState(PlayerState):
 
     growl: int = 0
     dog_state: DogState = DogState.START
+    dog_state_message: str = "Der Hund tut nichts"
     command_after_fight: str = None
 
     next_loc : Deque[Place] = field(default_factory=deque) # Doggo seeks out place where player has been
@@ -36,6 +37,7 @@ class NPCPlayerState(PlayerState):
     attack_counter: int=2   # Until dog attacks
     nogo_places: List[str] = field(default_factory=lambda: ["p_dach","p_ubahn2"]) # Dog can't go to these places.
     way_home: Deque[Place] = field(default_factory=deque) # Falls Hund nach Hause geht
+
     fightgames: MiniGames = field(default_factory = MiniGames)
 
     def can_dog_go(self, gs: GameState, plc:str)-> bool:
@@ -79,6 +81,7 @@ class NPCPlayerState(PlayerState):
                     return self.setup_state_trace(gs)
                 #if self.check_state_gohome(gs):
                 #    return self.setup_state_go(gs)
+                self.dog_state_message = "Der Hund tut nichts."
                 return "nichts"
 
             case DogState.ATTACK:
@@ -92,6 +95,7 @@ class NPCPlayerState(PlayerState):
                 if not self.check_state_attack(gs):
                     self.attack_counter = 2
                     self.dog_state = DogState.START
+                    self.dog_state_message = "Der Hund tut nichts."
                     return "nichts"
                 #
                 # OK - still here: who are you?
@@ -106,6 +110,7 @@ class NPCPlayerState(PlayerState):
                     self.attack_counter = self.attack_counter - 1
                     l = 2*(3-self.attack_counter)
                     rs = f'**G{"R"*l}{"O"*l}{"A"*l}{"R"*l}{"!"*l}'
+                    self.dog_state_message = f"{rs} - Der Hund ist sauer und greift gleich an!"
                     return f'interaktion {pl.name} "**{rs}**"'
                 else:
                     return self.do_attack_state(gs, pl)
@@ -129,27 +134,33 @@ class NPCPlayerState(PlayerState):
                     return self.setup_state_trace(gs)
                 else:
                     return self.setup_state_gohome(gs)
+                self.dog_state_message = "Der Hund tut nichts."
                 return "nichts"
 
             case DogState.GOHOME:
                 if not self.way_home:
                     self.dog_state = DogState.START
+                    self.dog_state_message = "Der Hund tut nichts."
                     return "nichts"
 
                 nl = self.way_home.popleft()
                 if nl:
                     if self.can_dog_go(gs, nl.destination.name):
                         tw_print(f"Auf seinem Weg zum Geldautomaten geht der Hund hierhin: {nl.destination.callnames[0]} ({nl.destination.name})")
+                        self.dog_state_message = f"Der Hund geht jetzt hierhin: {nl.destination.callnames[0]}"
                         return f'gehe {nl.destination.name}'
                     else:
+                        self.dog_state_message = "Der Hund tut nichts."
                         return "nichts"
                 else:
                     self.dog_state = DogState.START
                     tw_print("**Der Hund ist nun wieder an seinem Stammplatz**")
+                    self.dog_state_message = "Der Hund ist an seinem Stammplatz (Geldautomat) und tut nichts."
                     return "nichts"
 
 
             case _:
+                self.dog_state_message = "Der Hund tut nichts."
                 return "nichts" # default/unknown state
 
     def do_attack_state(self,gs: GameState, pl: PlayerState):
@@ -204,7 +215,7 @@ class NPCPlayerState(PlayerState):
         if ret != None:
             self.way_home = deque(ret)
             self.dog_state = DogState.GOHOME
-
+        self.dog_state_message = "Der Hund tut nichts."
         return "nichts"
 
     def check_state_trace(self, gs: GameState):
@@ -227,8 +238,10 @@ class NPCPlayerState(PlayerState):
             if self.can_dog_go(gs, self.next_loc[0].name):
                 nl = self.next_loc.popleft()
                 tw_print(f"***Der Hund geht zum/zur {nl.callnames[0]}.***")
+                self.dog_state_message = f"Der Hund läuft zum/zur {nl.callnames[0]}."
                 return f"gehe {nl.name}"
             else:
+                self.dog_state_message = "Der Hund tut nichts."
                 return "nichts"
 
         for w in self.location.ways:
@@ -243,7 +256,7 @@ class NPCPlayerState(PlayerState):
             self.dog_state = DogState.TRACE
             self.next_loc.append(pl)
             tw_print(f"**Der Hund beobachtet nun den Ort {pl.callnames[0]}**")
-
+            self.dog_state_message = f"Der Hund beobachtet nun den Ort {pl.callnames[0]}"
         return "nichts"
 
     def check_state_attack(self, gs: GameState):
@@ -264,8 +277,10 @@ class NPCPlayerState(PlayerState):
             if p != self and type(p) is PlayerState and p.location == self.location:
                 self.dog_state = DogState.ATTACK
                 self.attack_counter = 1
+                self.dog_state_message = "Der Hund wird sauer..."
                 return f'interaktion {p.name} "**Grrr!**"'
         else:
+            self.dog_state_message = "Der Hund tut nichts."
             return "nichts"
 
     def check_state_eating(self, gs: GameState):
@@ -286,11 +301,13 @@ class NPCPlayerState(PlayerState):
             del gs.objects[f.name]
             self.dog_state = DogState.EATING
             tw_print(f"**Der Hund frisst {f.name}**")
+            self.dog_state_message = f"**Der Hund frisst {f.name}**"
             self.eat_counter = 3
         return "nichts"
 
     def do_state_eating(self, gs: GameState):
         tw_print("**Der Hund frisst noch!**")
+        self.dog_state_message = "**Der Hund frisst noch!**"
         self.eat_counter = self.eat_counter - 1
 
         if self.eat_counter == 0:
@@ -340,41 +357,3 @@ Beschreibung des Hundes
             return ""
 
 
-    def fight(self) -> DogFight:
-        """
-        Minigame: does number provided by player beat number provided by dog?
-        * both numbers one from 1,2,3,4
-        * 4 beats 3, 3 beats 2, 2 beats 1, 1 beats 4
-        * All other combinations -> TIE
-        * Check if dog has won -> return WON
-        * Check if player has lost -> return LOST
-        :param p: Player input (number from 1,2,3,4)
-        :return: DogFight state (WON, LOST, TIE) from Dog's perspective
-        """
-        import random
-        d = random.randint(1,3)
-
-
-        tw_print(f"***{'#'*40}***")
-        tw_print("***Kampf mit dem Hund!***".center(40))
-        tw_print("Regeln:  3 schlägt 2, 2 schlägt 1, 1 schlägt 3 \n... alles andere: Unentschieden")
-
-        inp = ""
-        while inp not in ["1","2","3"]:
-            inp = input("Gib eine Zahl aus 1,2,3 ein: ")
-        p = int(inp.strip())
-        tw_print(f"Du hast: {p}")
-        tw_print(f"Hund hat: {d}")
-        #
-        # Modulo calc: scale 1,2,3 to 0,1,2
-        #
-        d=d-1
-        p=p-1
-        if (d+1)%3 == p:
-            tw_print("***Der Hund verliert den Kampf!***")
-            return DogFight.LOST
-        if (p+1)%3 == d:
-            tw_print("***Du verlierst den Kampf gegen den Hund!***")
-            return DogFight.WON
-        tw_print("***Unentschieden!***")
-        return DogFight.TIE
