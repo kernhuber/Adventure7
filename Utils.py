@@ -15,9 +15,10 @@ class dl(IntFlag):
     EXPLOSIONSTATE  = auto() # test messages from the explosion NPC
     SYSTEST         = auto() # test game engine with atomic messages
     SYSTESTLLM      = auto() # test game with actual sentences
+    WEBGUI          = auto() # WebGUI debugging
 
 DEBUG = True
-DEBUG_LEVEL = dl.LLM|dl.LLM_PROMPT|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE
+DEBUG_LEVEL = dl.LLM|dl.LLM_PROMPT|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.WEBGUI
 ADV_LOGGER = None
 
 class dlogger():
