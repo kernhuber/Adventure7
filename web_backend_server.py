@@ -430,6 +430,35 @@ class WebAdventureServer:
         dprint(dl.WEBGUI,
                f"✅ Command '{command_to_execute['function_call']['name']}' ausgeführt. Queue: {len(session['cmd_q'])}, Pending: {session['pending_llm_input'] is not None}")
 
+        # Schritt 6.5: Sende NPC-Actions falls vorhanden
+        if "pending_npc_actions" in session and session["pending_npc_actions"]:
+            npc_actions = session["pending_npc_actions"]
+            del session["pending_npc_actions"]  # Cleanup
+
+            # Formatiere Nachrichten für bessere Unterscheidung
+            formatted_actions = []
+            for action in npc_actions:
+                if '💥 EXPLOSION:' in action:
+                    # Echte Explosion - markiere sie eindeutig
+                    formatted_actions.append(action)
+                elif 'explodiert in' in action and 'Spielzügen' in action:
+                    # Timer-Nachricht - markiere als Timer
+                    formatted_actions.append(f"**💣 Timer:** {action}")
+                elif '**Hund:**' in action:
+                    # Hund-Aktion bleibt wie sie ist
+                    formatted_actions.append(action)
+                else:
+                    # Andere NPC-Aktionen
+                    formatted_actions.append(action)
+
+            npc_message = {
+                "type": "npc_actions",
+                "actions": formatted_actions,
+                "game_state": session["state"]
+            }
+            await websocket.send(json.dumps(npc_message))
+            dprint(dl.WEBGUI, f"💥 NPC-Actions gesendet: {len(npc_actions)} Aktionen")
+
         # Schritt 7: Wenn noch Commands in Queue oder Pending Input vorhanden, sofort weiter verarbeiten
         if session["cmd_q"] or session["pending_llm_input"]:
             dprint(dl.WEBGUI, f"🔄 Weitere Commands verfügbar - continue processing...")
@@ -490,10 +519,12 @@ class WebAdventureServer:
                     session["state"] = self.serialize_real_game_state(game, update_narration=update_narration,
                                                                       session_id=session_id)
 
-                    # NPC-Züge ausführen
+                    # NPC-Züge sammeln (NICHT senden!) - die werden später in handle_command gesendet
+                    npc_actions = []
                     try:
-                        await self.process_npc_turns(game, None,
-                                                     session_id)  # websocket=None, da wir nur den state updaten
+                        npc_actions = await self.collect_npc_actions(game, session_id)
+                        # Speichere NPC-Actions in der Session für handle_command
+                        session["pending_npc_actions"] = npc_actions
                     except Exception as e:
                         dprint(dl.WEBGUI, f"⚠️  NPC-Fehler: {e}")
 
@@ -566,7 +597,65 @@ class WebAdventureServer:
         else:
             return f"Demo-Kommando '{func_name}' ausgeführt"
 
-    async def process_npc_turns(self, game, websocket, session_id=None):
+    async def collect_npc_actions(self, game, session_id=None):
+        """Sammle NPC-Aktionen OHNE sie zu senden - für später in handle_command"""
+        try:
+            from NPCPlayerState import NPCPlayerState
+            # Versuche auch ExplosionState zu importieren
+            try:
+                from ExplosionState import ExplosionState
+                EXPLOSION_AVAILABLE = True
+            except ImportError:
+                EXPLOSION_AVAILABLE = False
+                dprint(dl.WEBGUI, "⚠️  ExplosionState nicht verfügbar")
+
+            npc_actions = []
+            players_to_remove = []  # Für Spieler die durch Explosion eliminiert werden
+
+            for npc in game.players:
+                if isinstance(npc, NPCPlayerState):
+                    # Normaler NPC (Hund)
+                    npc_input = npc.NPC_game_move(game)
+                    if npc_input and npc_input != "nichts":
+                        npc_result = game.verb_execute(npc, npc_input)
+                        if npc_result and npc_result.strip():
+                            npc_actions.append(f"**{npc.name}:** {npc_result}")
+
+                elif EXPLOSION_AVAILABLE and isinstance(npc, ExplosionState):
+                    # Explosion-NPC - VEREINFACHT
+                    dprint(dl.WEBGUI, f"💥 Sammle Explosion: Timer={npc.kaboom_timer}")
+
+                    # ExplosionState.explosion_input() macht ALLES und gibt Nachrichten zurück
+                    explosion_messages = npc.explosion_input(game)
+
+                    # Verwende die Nachrichten direkt (keine verb_execute nötig!)
+                    if explosion_messages and explosion_messages != "nichts":
+                        npc_actions.append(f"**💥 EXPLOSION:** {explosion_messages}")
+                        dprint(dl.WEBGUI, f"💥 Explosion-Messages gesammelt: {len(explosion_messages)} Zeichen")
+
+                    # Prüfe ob die Explosion abgelaufen ist (kaboom_timer = 0 nach explosion_input)
+                    if npc.kaboom_timer <= 0:
+                        dprint(dl.WEBGUI, "💥 Explosion ist abgelaufen - entferne ExplosionState")
+                        players_to_remove.append(npc)
+
+            # Entferne abgelaufene Explosionen
+            for player in players_to_remove:
+                if player in game.players:
+                    game.players.remove(player)
+                    dprint(dl.WEBGUI, f"🗑️  {player.name} aus Spielerliste entfernt")
+
+            # Update game state nach NPC-Aktionen - OHNE Narration (da schon gemacht)
+            if session_id and hasattr(self, 'game_sessions') and session_id in self.game_sessions:
+                session = self.game_sessions[session_id]
+                session["state"] = self.serialize_real_game_state(game, update_narration=False, session_id=session_id)
+
+            return npc_actions
+
+        except Exception as e:
+            dprint(dl.WEBGUI, f"⚠️  NPC-Sammeln-Fehler: {e}")
+            import traceback
+            traceback.print_exc()
+            return []
         """Führe NPC-Züge aus - inklusive ExplosionState"""
         try:
             from NPCPlayerState import NPCPlayerState
@@ -746,6 +835,92 @@ def create_working_html():
         .explosion { color: #ff4444; font-weight: bold; animation: blink 1s infinite; }
         .explosion-timer { color: #ffaa00; font-weight: bold; }
         @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.5; } }
+
+        /* Explosions-Overlay */
+        #explosion-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .explosion-cloud {
+            position: relative;
+            width: 400px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: explosion-shake 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes explosion-shake {
+            0% { transform: translate(0px, 0px) scale(1); }
+            100% { transform: translate(2px, -2px) scale(1.02); }
+        }
+
+        /* Wolken-Kreise */
+        .cloud-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffff00 20%, #ff8800 60%, #ff4400 100%);
+            animation: cloud-pulse 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes cloud-pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            100% { transform: scale(1.05); opacity: 1; }
+        }
+
+        .cloud-circle:nth-child(1) { width: 120px; height: 120px; top: 30px; left: 30px; }
+        .cloud-circle:nth-child(2) { width: 100px; height: 100px; top: 20px; right: 20px; }
+        .cloud-circle:nth-child(3) { width: 90px; height: 90px; bottom: 30px; left: 40px; }
+        .cloud-circle:nth-child(4) { width: 110px; height: 110px; bottom: 20px; right: 30px; }
+        .cloud-circle:nth-child(5) { width: 80px; height: 80px; top: 120px; left: 30px; }
+        .cloud-circle:nth-child(6) { width: 70px; height: 70px; bottom: 100px; right: 20px; }
+        .cloud-circle:nth-child(7) { width: 70px; height: 70px; bottom: 120px; right: 10px; }
+
+        /* Zentraler gelber Kreis mit Text */
+        .explosion-center {
+            position: relative;
+            z-index: 10;
+            background: radial-gradient(circle, #ffff00 20%, #ff8800 60%, #ff4400 100%);
+>           animation: cloud-pulse 1s ease-in-out infinite alternate;
+            border-radius: 50%;
+            width: 265px;
+            height: 265px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #cc0000;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 0 30px #ffff00;
+            animation: center-glow 0.8s ease-in-out infinite alternate;
+        }
+
+        @keyframes center-glow {
+            0% { box-shadow: 0 0 20px #ffff00; }
+            100% { box-shadow: 0 0 40px #ffff00, 0 0 60px #ff8800; }
+        }
+
+        .explosion-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #cc0000;
+            text-shadow: 1px 1px 2px #000;
+        }
     </style>
 </head>
 <body>
@@ -796,6 +971,23 @@ def create_working_html():
     <div style="margin-top: 20px;">
         <input type="text" id="user-input" placeholder="Was möchtest du tun?" onkeypress="if(event.key==='Enter') sendCommand()" disabled>
         <button id="send-button" onclick="sendCommand()" disabled>Senden</button>
+    </div>
+
+    <!-- Explosions-Overlay -->
+    <div id="explosion-overlay" onclick="hideExplosion()">
+        <div class="explosion-cloud">
+            <div class="cloud-circle"></div>
+            <div class="cloud-circle"></div>
+            <div class="cloud-circle"></div>
+            <div class="cloud-circle"></div>
+            <div class="cloud-circle"></div>
+            <div class="cloud-circle"></div>
+            <div class="cloud-circle"></div>
+            <div class="explosion-center">
+                <div class="explosion-title">💥 KABUMM! 💥</div>
+                <div id="explosion-text">Explosion!</div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -875,21 +1067,7 @@ def create_working_html():
                         break;
                     case 'npc_actions':
                         if (data.actions && data.actions.length > 0) {
-                            // Formatiere Explosions-Nachrichten speziell
-                            let formattedActions = data.actions.map(action => {
-                                if (action.includes('💥 EXPLOSION') || action.includes('KABUMM')) {
-                                    return `<span class="explosion">${action}</span>`;
-                                } else if (action.includes('💣 Timer') || action.includes('explodiert in')) {
-                                    return `<span class="explosion-timer">${action}</span>`;
-                                } else {
-                                    return action;
-                                }
-                            });
-
-                            gameState.lastAction = {
-                                command: 'NPC-Aktionen',
-                                result: formattedActions.join('\\n')
-                            };
+                            this.handleNPCActions(data.actions);
                         }
                         if (data.game_state) this.updateGameState(data.game_state);
                         else updateUI();
@@ -902,6 +1080,50 @@ def create_working_html():
                         updateUI();
                         break;
                 }
+            }
+
+            handleNPCActions(actions) {
+                // Sortiere NPC-Actions nach Typ
+                let dogActions = [];
+                let explosionTimers = [];
+                let realExplosions = [];
+
+                for (let action of actions) {
+                    if (action.includes('💥 EXPLOSION:') && action.includes('KABUMM')) {
+                        // Echte Explosion - ins Overlay
+                        let explosionText = action.replace('**💥 EXPLOSION:**', '').trim();
+                        realExplosions.push(explosionText);
+                    } else if (action.includes('💣 Timer:') || action.includes('explodiert in')) {
+                        // Timer-Nachricht - in letzte Aktion
+                        explosionTimers.push(action.replace('**💣 Timer:**', '').trim());
+                    } else if (action.includes('**Hund:**')) {
+                        // Hund-Aktion - update Hund-Status
+                        let dogAction = action.replace('**Hund:**', '').trim();
+                        dogActions.push(dogAction);
+                    }
+                }
+
+                // Verarbeite Timer-Nachrichten (in lastAction)
+                if (explosionTimers.length > 0) {
+                    gameState.lastAction = {
+                        command: 'Explosion Timer',
+                        result: explosionTimers.join('\\n')
+                    };
+                }
+
+                // Verarbeite Hund-Aktionen (update Hund-Status)
+                if (dogActions.length > 0) {
+                    if (gameState.dog) {
+                        gameState.dog.state = dogActions[dogActions.length - 1]; // Letzte Aktion
+                    }
+                }
+
+                // Verarbeite echte Explosionen (Overlay)
+                if (realExplosions.length > 0) {
+                    showExplosion(realExplosions.join('\\n'));
+                }
+
+                updateUI();
             }
 
             updateGameState(newState) {
@@ -999,6 +1221,33 @@ def create_working_html():
                 backend.sendCommand(command);
             } else {
                 console.error('❌ Kein Backend');
+            }
+        }
+
+        function showExplosion(explosionText) {
+            const overlay = document.getElementById('explosion-overlay');
+            const textElement = document.getElementById('explosion-text');
+
+            if (overlay && textElement) {
+                // Bereinige HTML-Tags aus dem Text
+                let cleanText = explosionText.replace(/<[^>]*>/g, '');
+                // Kürze den Text für bessere Darstellung
+                if (cleanText.length > 300) {
+                    cleanText = cleanText.substring(0, 297) + '...';
+                }
+
+                textElement.innerHTML = cleanText.replace(/\\n/g, '<br>');
+                overlay.style.display = 'flex';
+
+                console.log('💥 Explosion-Overlay angezeigt!');
+            }
+        }
+
+        function hideExplosion() {
+            const overlay = document.getElementById('explosion-overlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+                console.log('💥 Explosion-Overlay versteckt');
             }
         }
 
