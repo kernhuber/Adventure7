@@ -506,8 +506,12 @@ class WebAdventureServer:
                         thirst_message = f"***Du hast jetzt richtig Durst! Es reicht noch für {player.thirst_counter} Spielrunden, dann verdurstest Du!***"
 
                     # Echte Game-Engine
+                    # Skip "umsehen", weil das sowieso im WebGUI ständig gemacht wird
+                    #if not is_look_around:
+                    #    result = game.verb_execute_json(player, command_dict)
+                    #else:
+                    #    result = "(umsehen unnötig - siehe Panel oben)"
                     result = game.verb_execute_json(player, command_dict)
-
                     # Füge Durst-Nachricht hinzu, falls vorhanden
                     if thirst_message:
                         result = f"{result}\n\n{thirst_message}"
@@ -914,12 +918,135 @@ def create_working_html():
             0% { box-shadow: 0 0 20px #ffff00; }
             100% { box-shadow: 0 0 40px #ffff00, 0 0 60px #ff8800; }
         }
-
+            #explosion-overlay {
+              position: fixed;
+              top: 0; left: 0;
+              width: 100vw; height: 100vh;
+              display: none;
+              justify-content: center;
+              align-items: center;
+              z-index: 9999;
+              overflow: hidden;
+              background: radial-gradient(circle at center, #222 0%, #000 100%);
+            }
+        
+            .flash {
+              position: absolute;
+              width: 100%;
+              height: 100%;
+              background: white;
+              animation: flashAnim 0.25s ease-out forwards;
+            }
+        
+            @keyframes flashAnim {
+              0% { opacity: 1; }
+              100% { opacity: 0; }
+            }
+        
+            .core {
+              position: absolute;
+              width: 250px;
+              height: 250px;
+              border-radius: 50%;
+              background: radial-gradient(circle, red, black);
+              animation: coreAnim 3s ease-out forwards;
+              opacity: 0.9;
+            }
+        
+            @keyframes coreAnim {
+              0%   { transform: scale(3); background: white; opacity: 1; }
+              30%  { transform: scale(1); background: orange; }
+              60%  { transform: scale(0.6); background: red; }
+              100% { transform: scale(0.3); background: black; opacity: 0; }
+            }
+        
+            .shockwave {
+              position: absolute;
+              width: 50px;
+              height: 50px;
+              border-radius: 50%;
+              border: 3px solid white;
+              opacity: 0.5;
+              animation: shockwaveAnim 1s ease-out forwards;
+              pointer-events: none;
+            }
+        
+            @keyframes shockwaveAnim {
+              0%   { transform: scale(1); opacity: 0.5; }
+              100% { transform: scale(15); opacity: 0; }
+            }
+        
+            #explosion-particles {
+              position: absolute;
+              width: 100%;
+              height: 100%;
+              pointer-events: none;
+            }
+        
+            .particle, .sparkle {
+              position: absolute;
+              border-radius: 50%;
+              animation-fill-mode: forwards;
+            }
+        
+            .particle {
+              background-color: white;
+              animation-name: particleAnim;
+            }
+        
+            @keyframes particleAnim {
+              0%   { transform: translate(0, 0) scale(1); background-color: white;   opacity: 1; }
+              20%  { background-color: yellow; }
+              40%  { background-color: orange; }
+              60%  { background-color: red; }
+              80%  { background-color: brown; }
+              100% { transform: var(--translate) scale(0.1); background-color: black; opacity: 0; }
+            }
+        
+            .sparkle {
+              background-color: gold;
+              box-shadow: 0 0 8px 2px gold;
+              animation-name: sparkleAnim;
+            }
+        
+            @keyframes sparkleAnim {
+              0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+              25%  { transform: var(--sparkle-1) scale(0.8); opacity: 0.8; }
+              50%  { transform: var(--sparkle-2) scale(0.6); opacity: 0.6; }
+              75%  { transform: var(--sparkle-3) scale(0.4); opacity: 0.4; }
+              100% { transform: var(--sparkle-4) scale(0.2); opacity: 0; }
+            }
+        
+            .message-box {
+              background-color: darkred;
+              color: white;
+              padding: 40px;
+              font-size: 2em;
+              display: none;
+              z-index: 10;
+              text-align: center;
+              border: 2px solid white;
+            }
         .explosion-title {
             font-size: 18px;
             margin-bottom: 10px;
             color: #cc0000;
             text-shadow: 1px 1px 2px #000;
+        }
+        .dog-danger { 
+            background: rgba(255, 0, 0, 0.3); 
+            border-color: #ff0000; 
+            animation: danger-pulse 0.5s infinite; 
+        }
+        
+        .dog-nearby { 
+            background: rgba(255, 165, 0, 0.2); 
+            border-color: #ffa500; 
+        }
+        
+        .dog-safe { 
+            background: rgba(0, 255, 0, 0.1); 
+            border-color: #00ff00; 
         }
     </style>
 </head>
@@ -975,19 +1102,11 @@ def create_working_html():
 
     <!-- Explosions-Overlay -->
     <div id="explosion-overlay" onclick="hideExplosion()">
-        <div class="explosion-cloud">
-            <div class="cloud-circle"></div>
-            <div class="cloud-circle"></div>
-            <div class="cloud-circle"></div>
-            <div class="cloud-circle"></div>
-            <div class="cloud-circle"></div>
-            <div class="cloud-circle"></div>
-            <div class="cloud-circle"></div>
-            <div class="explosion-center">
-                <div class="explosion-title">💥 KABUMM! 💥</div>
-                <div id="explosion-text">Explosion!</div>
-            </div>
-        </div>
+          <div class="flash"></div>
+          <div class="core"></div>
+          <div class="shockwave" id="shockwave"></div>
+          <div id="explosion-particles"></div>
+          <div class="message-box" id="explosion-message"></div>
     </div>
 
     <script>
@@ -1081,7 +1200,10 @@ def create_working_html():
                         break;
                 }
             }
-
+            
+            
+            
+            
             handleNPCActions(actions) {
                 // Sortiere NPC-Actions nach Typ
                 let dogActions = [];
@@ -1149,7 +1271,31 @@ def create_working_html():
                 }
             }
         }
-
+        function isNearby(loc1, loc2) {
+            const ways = gameState.environment?.ways || [];
+            return ways.includes(loc2);
+        }
+        
+        function updateDogDanger() {
+                const playerLoc = gameState.player?.location || '';
+                const dogLoc = gameState.dog?.location || '';
+                const dogDiv = document.getElementById('dogstate');
+                
+                // Entferne alle Status-Klassen
+                dogDiv.classList.remove('dog-danger', 'dog-nearby', 'dog-safe');
+                
+                if (playerLoc === dogLoc && playerLoc !== '') {
+                    // Gleicher Ort - GEFAHR!
+                    dogDiv.classList.add('dog-danger');
+                } else if (isNearby(playerLoc, dogLoc)) {
+                    // Nachbar-Ort - Warnung
+                    dogDiv.classList.add('dog-nearby');
+                } else {
+                    // Weit weg - sicher
+                    dogDiv.classList.add('dog-safe');
+                }
+            }
+            
         function updateUI() {
             try {
                 const playerName = document.getElementById('player-name');
@@ -1201,7 +1347,7 @@ def create_working_html():
 
                 if (dog_loc) dog_loc.textContent = "Der Hund ist momentan hier: "+ (gameState.dog?.location || 'Unbekannt');
                 if (dog_state) dog_state.textContent =  (gameState.dog?.state || 'Der Hund döst vor sich hin');
-
+                updateDogDanger()
 
             } catch (error) {
                 console.error('❌ UI-Fehler:', error);
@@ -1224,31 +1370,82 @@ def create_working_html():
             }
         }
 
-        function showExplosion(explosionText) {
-            const overlay = document.getElementById('explosion-overlay');
-            const textElement = document.getElementById('explosion-text');
-
-            if (overlay && textElement) {
-                // Bereinige HTML-Tags aus dem Text
-                let cleanText = explosionText.replace(/<[^>]*>/g, '');
-                // Kürze den Text für bessere Darstellung
-                if (cleanText.length > 300) {
-                    cleanText = cleanText.substring(0, 297) + '...';
-                }
-
-                textElement.innerHTML = cleanText.replace(/\\n/g, '<br>');
-                overlay.style.display = 'flex';
-
-                console.log('💥 Explosion-Overlay angezeigt!');
-            }
+        function showExplosion(text) {
+          const overlay = document.getElementById("explosion-overlay");
+          const messageBox = document.getElementById("explosion-message");
+          const particlesContainer = document.getElementById("explosion-particles");
+          const shockwave = document.getElementById("shockwave");
+        
+          overlay.style.display = "flex";
+          messageBox.style.display = "none";
+          particlesContainer.innerHTML = "";
+          shockwave.style.display = "block";
+        
+          const centerX = window.innerWidth / 2;
+          const centerY = window.innerHeight / 2;
+          shockwave.style.left = `${centerX - 25}px`;
+          shockwave.style.top = `${centerY - 25}px`;
+        
+          // --- Trümmerteilchen ---
+          for (let i = 0; i < 80; i++) {
+            const angle = Math.random() * 2 * Math.PI;
+            const distance = 100 + Math.random() * 200;
+            const dx = Math.cos(angle) * distance;
+            const dy = Math.sin(angle) * distance;
+            const size = 4 + Math.random() * 8;
+        
+            const p = document.createElement("div");
+            p.className = "particle";
+            p.style.width = `${size}px`;
+            p.style.height = `${size}px`;
+            p.style.left = `${centerX - size / 2}px`;
+            p.style.top = `${centerY - size / 2}px`;
+            p.style.animationDuration = `${1.5 + Math.random()}s`;
+            p.style.animationDelay = `${Math.random() * 0.4}s`;
+            p.style.setProperty("--translate", `translate(${dx}px, ${dy}px)`);
+        
+            particlesContainer.appendChild(p);
+          }
+        
+          // --- Glitzer-Sparkles ---
+          for (let i = 0; i < 30; i++) {
+            const angle = Math.random() * 2 * Math.PI;
+            const distance = 80 + Math.random() * 150;
+            const size = 2 + Math.random() * 4;
+        
+            const sparkle = document.createElement("div");
+            sparkle.className = "sparkle";
+            sparkle.style.width = `${size}px`;
+            sparkle.style.height = `${size}px`;
+            sparkle.style.left = `${centerX - size / 2}px`;
+            sparkle.style.top = `${centerY - size / 2}px`;
+        
+            // Vier zitternde Phasen
+            const jitter = () => {
+              const dx = (Math.random() - 0.5) * distance;
+              const dy = (Math.random() - 0.5) * distance;
+              return `translate(${dx}px, ${dy}px)`;
+            };
+        
+            sparkle.style.setProperty("--sparkle-1", jitter());
+            sparkle.style.setProperty("--sparkle-2", jitter());
+            sparkle.style.setProperty("--sparkle-3", jitter());
+            sparkle.style.setProperty("--sparkle-4", jitter());
+        
+            sparkle.style.animationDuration = `${1 + Math.random()}s`;
+            sparkle.style.animationDelay = `${Math.random() * 0.3}s`;
+        
+            particlesContainer.appendChild(sparkle);
+          }
+        
+          setTimeout(() => {
+            messageBox.innerHTML = text.replace(/\\n/g, "<br>");
+            messageBox.style.display = "block";
+          }, 4000);
         }
-
+        
         function hideExplosion() {
-            const overlay = document.getElementById('explosion-overlay');
-            if (overlay) {
-                overlay.style.display = 'none';
-                console.log('💥 Explosion-Overlay versteckt');
-            }
+          document.getElementById("explosion-overlay").style.display = "none";
         }
 
         document.addEventListener('DOMContentLoaded', function() {
