@@ -353,7 +353,7 @@ Auf dem Dach des Schuppens
                 "place_prompt": "",
                 "place_prompt_f": pp.p_innen_place_prompt_f,
                 "ways": ["w_innen_schuppen"],
-                "objects": ["o_leiter", "o_skelett", "o_geldboerse", "o_ec_karte", "o_pinsel", "o_farbeimer"],
+                "objects": ["o_leiter", "o_geldboerse", "o_ec_karte", "o_pinsel", "o_farbeimer"],
                 "callnames": ["innen", "Innenraum", "drinnen", "nach innen", "in den schuppen"]
             },
             "p_felsen": {
@@ -369,7 +369,7 @@ Auf dem Dach des Schuppens
                 "place_prompt": "",
                 "place_prompt_f": pp.p_hoehle_place_prompt_f,
                 "ways": ["w_hoehle_felsen"],
-                "objects": [],
+                "objects": ["o_skelett"],
                 "callnames": ["Höhle", "Hoehle"]
             }
         }
@@ -912,7 +912,7 @@ Auf dem Dach des Schuppens
                 "name": "o_skelett",
                 "examine": "Ein Skelett!! In einem Anzug!! Das ist wohl schon länger hier! Wie das wohl hierhin gekommen ist?",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
+                "ownedby": "p_hoehle",  # Which Player currently owns this item? Default: None
                 "callnames": ["Skelett", "Knochenmann"],
                 "fixed": True,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar

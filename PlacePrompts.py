@@ -30,6 +30,7 @@ def p_hoehle_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
 Höhle
 =====
 - Im Gegensatz zu außen ist es im inneren der Höhle schön kühl. 
+- Es riecht ein wenig nach Verwesung
 - Die Wände der Höhle sind aus Granitgestein
 - der Boden ist aus gestampftem Lehm. """
     if gs.hauptschalter:
@@ -64,7 +65,7 @@ Im Inneren des Schuppens
 ========================
 """
     if gs.dach:
-        rv = rv + """- Es riecht muffig und staubig, und ein wenig nach Verwesung. 
+        rv = rv + """- Es riecht muffig und staubig. 
 - Grelles Sonnenlicht dringt durch Ritzen zwischen den Brettern und die offene Tür. """
 
     else:

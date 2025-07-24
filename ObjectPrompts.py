@@ -230,6 +230,7 @@ Schuppen
 - Ein alter Holzschuppen
 - verwittertes äußeres
 - Sieht trotz allem stabil aus 
+- Auf dem Dach ragt etwas in die Höhe, was eine Antenne oder ein Hebel sein könnte
 """
     if not gs.dach:
         r=r+"- DerSchuppen hat kein Dach mehr. \n- Es sieht aus, als wäre das Dach weggesprengt worden."
