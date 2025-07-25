@@ -124,7 +124,7 @@ class WebAdventureServer:
                     "pending_llm_input": None,  # Pending input wie in PlayerState
                     "minigame_active": False  # NEUE: Mini-Game Status
                 }
-                game_state.cmd_q = self.game_sessions[session_id]["cmd_q"]
+                game.cmd_q = self.game_sessions[session_id]["cmd_q"]
 
                 # Initialisiere Scene-Cache für diese Session
                 if not hasattr(self, '_session_scene_cache'):
@@ -142,7 +142,7 @@ class WebAdventureServer:
                     "pending_llm_input": None,
                     "minigame_active": False
                 }
-                game_state.cmd_q = self.game_sessions[session_id]["cmd_q"]
+                game.cmd_q = self.game_sessions[session_id]["cmd_q"]
         else:
             # Demo-Modus
             dprint(dl.WEBGUI, f"📱 Erstelle Demo-GameState...")
@@ -154,7 +154,7 @@ class WebAdventureServer:
                 "pending_llm_input": None,
                 "minigame_active": False
             }
-            game_state.cmd_q = self.game_sessions[session_id]["cmd_q"]
+
 
         # Sende initialen Zustand
         await self.send_game_state(websocket, self.game_sessions[session_id]["state"])
@@ -686,9 +686,9 @@ class WebAdventureServer:
                     player.thirst_counter -= 1
                     thirst_message = ""
                     # ⬇️ Deine neue Behandlung VOR dem allgemeinen Aufruf
-                    if func_name == "pinpad":
+                    if func_name == "check_pinpad":
                         hash = args.get("hash", "")
-                        websocket = game.web_sessions.get(session_id)
+                        websocket = game.web_sessions.get(session_id)["websocket"]
                         pin_result = await self.ask_for_pin(websocket, hash)
 
                         if pin_result == "OK":

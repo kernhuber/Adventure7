@@ -269,6 +269,11 @@ def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=Non
             x = input("Geheimzahl: ")
             if x.isdigit():
                 z = f'{int(x):04d}'
+        if gs.geheimzahl == z:
+            gs.objects["o_geld_dollar"].hidden = False
+            return "**Die Zahl stimmt!** Du tippst die entsprechenden Tasten - der Automat rattert, und spuckt ein Bündel Scheine aus. Frisch gedruckte US-Dollar!"
+        else:
+            return " --- Die Zahl ist falsch. ---"
     else:
         #
         # Get number from the web interface, have
@@ -283,21 +288,20 @@ def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=Non
             return "Fehler beim Zugriff auf Web-Session."
 #---
         # Fordere PIN über Web-GUI an → Command-Queue!
+        import hashlib
+        md = hashlib.md5(gs.geheimzahl.encode()).hexdigest()
         gs.cmd_q.append({
             "function_call": {
                 "name": "check_pinpad",
                 "args": {
-                    "hash": gs.geheimzahl_md5
+                    "hash": md
                 }
             }
         })
+        return "Warte auf Eingabe..."
 
 
-    if gs.geheimzahl == z:
-        gs.objects["o_geld_dollar"].hidden = False
-        return "**Die Zahl stimmt!** Du tippst die entsprechenden Tasten - der Automat rattert, und spuckt ein Bündel Scheine aus. Frisch gedruckte US-Dollar!"
-    else:
-        return " --- Die Zahl ist falsch. ---"
+
 
 def o_pinsel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     return "Schlapp, schlapp, schlapp ... Du hast den Pinsel angewandt."

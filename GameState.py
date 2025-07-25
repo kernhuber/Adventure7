@@ -23,12 +23,12 @@ from WayPrompts import w_dach_schuppen_prompt_f
 class GameState:
 
     def __init__(self):
-        self.objects = None
-        self.ways = None
-        self.places = None
-        self.web_sessions = {}      # Tracking für aktive Web-Sessions
-        self.active_minigames = {}  # Tracking für laufende Mini-Games
-        self.cmd_q = deque()        # Will be populated by WebGameServer class
+        # self.objects = None
+        # self.ways = None
+        # self.places = None
+        # self.web_sessions = {}      # Tracking für aktive Web-Sessions
+        # self.active_minigames = {}  # Tracking für laufende Mini-Games
+        # self.cmd_q = {}        # Will be populated by WebGameServer class
         self.init_game()
 
     #
@@ -242,6 +242,15 @@ class GameState:
         self.game_won = False              # Wenn true, hat der Spieler das Spiel gewonnen.
         self.llm = GeminiInterface()       # Unser Sprachmodell
         self.gamelog = []                  # Wir schneiden alles für das LLM mit
+        #
+        # Web Interface
+        #
+        self.objects = None
+        self.ways = None
+        self.places = None
+        self.web_sessions = {}      # Tracking für aktive Web-Sessions
+        self.active_minigames = {}  # Tracking für laufende Mini-Games
+        self.cmd_q = {}        # Will be populated by WebGameServer class
 
         #
         # Place definitions
@@ -330,7 +339,7 @@ Zweite U-Bahn Station
                 "place_prompt": "",
                 "place_prompt_f": pp.p_geldautomat_place_prompt_f,
                 "ways": ["w_geldautomat_start", "w_geldautomat_warenautomat", "w_geldautomat_schuppen","w_geldautomat_felsen"],
-                "objects": ["o_geldautomat", "o_geld_dollar","o_ec_karte"],
+                "objects": ["o_geldautomat", "o_geld_dollar"],
                 "callnames": ["Geldautomat", "ATM"]
             },
             "p_schuppen": {
@@ -947,7 +956,7 @@ Auf dem Dach des Schuppens
                 "ownedby": "p_geldautomat",  # Which Player currently owns this item? Default: None
                 "callnames": ["Geldkarte", "EC-Karte", "ECKarte", "Kreditkarte"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
+                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": af.o_ec_karte_apply_f,
                 "prompt_f": op.o_ec_karte_prompt_f
             },
