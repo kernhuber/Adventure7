@@ -71,7 +71,7 @@ class NPCPlayerState(PlayerState):
         dprint(dl.NPCPLAYERSTATE,"+++ Dog Data:")
         dprint(dl.NPCPLAYERSTATE,f"+++ dog_state = {self.dog_state}, dog is in {self.location.name}")
         #
-        # Player has initiated fight, fight was executed, so do does this:
+        # Player has initiated fight, fight was executed, so do  this:
         #
         if self.command_after_fight:
             r = self.command_after_fight
@@ -173,37 +173,68 @@ class NPCPlayerState(PlayerState):
                 return "nichts" # default/unknown state
 
     def do_attack_state(self,gs: GameState, pl: PlayerState):
-        print("""
-        ********************************
-        *** Du kämpfst mit dem Hund! ***
-        ********************************
-                            """)
-        ds = self.fightgames.fight()
-        if ds == DogFight.WON:
-            #
-            # Kill player
-            #
-            return f"toeten {pl.name}"
-        elif ds == DogFight.LOST:
-            #
-            # Escape to a neighbor location
-            #
-            import random
-            l = len(self.location.ways)
-            w = []
-            for l in self.location.ways:
-                if (l.obstruction_check(gs) == "Free" and l.visible and self.can_dog_go(gs, l.destination.name)):
-                    w.append(l.destination.name)
+        # If in text mode, the routine executes a complete dogfight. The result
+        # is a string, indicating what the dog is doing **after** the fight:
+        # TIE: Nothing
+        # WON: Kill opponent
+        # LOST: flee
+        #
+        # If in web mode, this routine merely INITIATES a dog fight to be executed by
+        # the web interface by returning a special string. The results of the fight
+        # are processed in subsequent steps.
+        #
+        # Erkenne ob Web-Interface aktiv ist
+        is_web_interface = (hasattr(gs, 'web_sessions') and
+                            len(getattr(gs, 'web_sessions', {})) > 0)
 
-            if w:
-                flight = random.choice(w)
-                print(f"Der Hund flüchtet jaulend nach {flight}")
-                return f"gehe {flight}"
+        if not is_web_interface:
+            print("""
+            ********************************
+            *** Du kämpfst mit dem Hund! ***
+            ********************************
+                                """)
+            ds = self.fightgames.fight()
+            if ds == DogFight.WON:
+                #
+                # Kill player
+                #
+                return f"toeten {pl.name}"
+            elif ds == DogFight.LOST:
+                #
+                # Escape to a neighbor location
+                #
+                import random
+                l = len(self.location.ways)
+                w = []
+                for l in self.location.ways:
+                    if (l.obstruction_check(gs) == "Free" and l.visible and self.can_dog_go(gs, l.destination.name)):
+                        w.append(l.destination.name)
+
+                if w:
+                    flight = random.choice(w)
+                    print(f"Der Hund flüchtet jaulend nach {flight}")
+                    return f"gehe {flight}"
+                else:
+                    print("Der Hund kann von hier aus nirgendwo hin!")
+                    return "nichts"
             else:
-                print("Der Hund kann von hier aus nirgendwo hin!")
                 return "nichts"
         else:
-            return "nichts"
+            #
+            # Web Interface
+            #
+            # Web-Interface: Trigger Mini-Game über spezielle Nachricht
+            import random
+            game_types = ['circle_fight', 'sum_fight', 'odd_even_fight', 'close_fight']
+            selected_game = random.choice(game_types)
+            dprint(dl.NPCPLAYERSTATE, f"🎮 Starte Web-Mini-Game: {selected_game}")
+
+            # KORRIGIERT: Verwende richtige Attribut-Namen und DogState-Werte
+            self.dog_state = DogState.ATTACK  # KORRIGIERT: dog_state (nicht dog_status)
+            self.attack_counter = 2
+            self.dog_state_message = "Der Hund kämpft gerade!"
+
+            return f"MINIGAME:{selected_game}"
 
     def gets_attacked_old(self, gs:GameState, pl:PlayerState):
         """Dog gets attacked by Player!"""

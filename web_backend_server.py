@@ -793,9 +793,15 @@ class WebAdventureServer:
                     # Normaler NPC (Hund)
                     npc_input = npc.NPC_game_move(game)
                     if npc_input and npc_input != "nichts":
-                        npc_result = game.verb_execute(npc, npc_input)
-                        if npc_result and npc_result.strip():
-                            npc_actions.append(f"**{npc.name}:** {npc_result}")
+                        if "MINIGAME" not in npc_input:
+                            npc_result = game.verb_execute(npc, npc_input)
+                            if npc_result and npc_result.strip():
+                                npc_actions.append(f"**{npc.name}:** {npc_result}")
+                        else:
+                            #
+                            # Initiate Minigame in web GUI
+                            #
+                            npc_actions.append(npc_input)
 
                 elif EXPLOSION_AVAILABLE and isinstance(npc, ExplosionState):
                     # Explosion-NPC - VEREINFACHT
