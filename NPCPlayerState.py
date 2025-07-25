@@ -59,6 +59,15 @@ class NPCPlayerState(PlayerState):
         :param gs:
         :return str:
         """
+
+
+        # NEUE Prüfung für Web-Mini-Game Ergebnisse
+        if hasattr(self, '_pending_fight_result'):
+            result = self._pending_fight_result
+            del self._pending_fight_result
+            return self.process_fight_result(gs, result)
+
+            # ... bestehender Code bleibt unverändert ...
         dprint(dl.NPCPLAYERSTATE,"+++ Dog Data:")
         dprint(dl.NPCPLAYERSTATE,f"+++ dog_state = {self.dog_state}, dog is in {self.location.name}")
         #
@@ -196,7 +205,7 @@ class NPCPlayerState(PlayerState):
         else:
             return "nichts"
 
-    def gets_attacked(self, gs:GameState, pl:PlayerState):
+    def gets_attacked_old(self, gs:GameState, pl:PlayerState):
         """Dog gets attacked by Player!"""
         self.dog_state = DogState.ATTACK
         self.way_home = deque()
@@ -356,4 +365,161 @@ Beschreibung des Hundes
         else:
             return ""
 
+    # NEUE Methoden am Ende der NPCPlayerState-Klasse hinzufügen:
+
+    def gets_attacked(self, gs: GameState, pl: PlayerState):
+        """
+        KORRIGIERTE VERSION mit richtigen DogState-Werten
+        Player attacks dog - starte Mini-Game
+        """
+        from Utils import dprint, dl
+        import random
+
+        dprint(dl.NPCPLAYERSTATE, f"🥊 {pl.name} greift {self.name} an!")
+
+        # Erkenne ob Web-Interface aktiv ist
+        is_web_interface = (hasattr(gs, 'web_sessions') and
+                            len(getattr(gs, 'web_sessions', {})) > 0)
+
+        if is_web_interface:
+            # Web-Interface: Trigger Mini-Game über spezielle Nachricht
+            game_types = ['circle_fight', 'sum_fight', 'odd_even_fight', 'close_fight']
+            selected_game = random.choice(game_types)
+            dprint(dl.NPCPLAYERSTATE, f"🎮 Starte Web-Mini-Game: {selected_game}")
+
+            # KORRIGIERT: Verwende richtige Attribut-Namen und DogState-Werte
+            self.dog_state = DogState.ATTACK  # KORRIGIERT: dog_state (nicht dog_status)
+            self.attack_counter = 2
+            self.dog_state_message = "Der Hund kämpft gerade!"
+
+            return f"MINIGAME:{selected_game}"
+        else:
+            # Text-Interface: Bestehende MiniGames.py Logik
+            dprint(dl.NPCPLAYERSTATE, f"🎮 Starte Text-Mini-Game")
+
+            from MiniGames import MiniGames
+            mg = MiniGames()
+            fight_result = mg.fight()
+            return self.process_fight_result(gs, fight_result)
+
+    def process_fight_result(self, gamestate, fight_result):
+        """
+        KORRIGIERTE VERSION mit richtigen DogState-Werten
+        Verarbeite das Ergebnis eines Kampfes (für beide Interface-Typen)
+        """
+        from Utils import dprint, dl
+        import random
+
+        dprint(dl.NPCPLAYERSTATE, f"🎯 Kampfergebnis: {fight_result}")
+
+        if fight_result == DogFight.WON:
+            # Hund gewinnt - KORRIGIERT: Verwende DogState.ATTACK
+            self.dog_state = DogState.ATTACK  # KORRIGIERT: dog_state (nicht dog_status)
+            self.attack_counter = 1  # KORRIGIERT: Reduziert für sofortigen Angriff
+            self.dog_state_message = "Der Hund hat dich besiegt und ist nun sehr aggressiv!"
+
+            return """***Der Hund springt dich an und du kannst dich gerade noch zurückziehen! 
+    Der Hund knurrt bedrohlich und wirkt sehr aggressiv. Du solltest hier schnell verschwinden!***"""
+
+        elif fight_result == DogFight.LOST:
+            # Hund verliert - KORRIGIERT: Verwende DogState.GOHOME (Hund flieht)
+            self.dog_state = DogState.GOHOME  # KORRIGIERT: Hund geht nach Hause
+            self.attack_counter = 0
+            self.dog_state_message = "Der Hund ist verängstigt und läuft weg"
+
+            # Setze way_home für Flucht zum Geldautomat
+            try:
+                ret = gamestate.find_shortest_path(self.location, gamestate.places["p_geldautomat"])
+                if ret:
+                    self.way_home = deque(ret)
+            except:
+                pass
+
+            return """***Du hast den Hund im fairen Kampf besiegt! Er winselt und läuft mit eingezogenem Schwanz davon. 
+    Du hast ihn nicht verletzt, aber er wird dich eine Weile in Ruhe lassen.***"""
+
+        else:  # DogFight.TIE
+            # Unentschieden - KORRIGIERT: Verwende DogState.TRACE (Hund beobachtet)
+            self.dog_state = DogState.TRACE  # KORRIGIERT: Hund wird vorsichtig
+            self.attack_counter = 2  # Verzögerter Angriff
+            self.dog_state_message = "Der Hund ist vorsichtig und beobachtet dich"
+
+            return """***Das Duell endet unentschieden. Ihr blickt euch wachsam an, 
+    beide bereit zum nächsten Zug. Der Hund respektiert deine Kampfkraft, 
+    ist aber noch nicht besiegt.***"""
+
+    def set_fight_result(self, fight_result):
+        """
+        Setze Kampfergebnis für nächsten NPC-Zug (für Web-Interface)
+        KEINE ÄNDERUNG NÖTIG
+        """
+        self._pending_fight_result = fight_result
+
+    # ============== ALTERNATIVE SICHERE VERSION ==============
+
+    def gets_attacked_safe(self, gs: GameState, pl: PlayerState):
+        """
+        SICHERE ALTERNATIVE - falls immer noch Probleme auftreten
+        Ändert dog_state nicht, nur attack_counter und message
+        """
+        from Utils import dprint, dl
+        import random
+
+        dprint(dl.NPCPLAYERSTATE, f"🥊 {pl.name} greift {self.name} an!")
+
+        # Einfache Web-Interface Erkennung
+        is_web_interface = (pl.name == "WebPlayer")
+
+        if is_web_interface:
+            game_types = ['circle_fight', 'sum_fight', 'odd_even_fight', 'close_fight']
+            selected_game = random.choice(game_types)
+            dprint(dl.NPCPLAYERSTATE, f"🎮 Web-Mini-Game: {selected_game}")
+
+            # SICHER: Nur diese Werte ändern
+            self.attack_counter = 2
+            self.dog_state_message = "Der Hund kämpft gerade!"
+            # dog_state bleibt unverändert
+
+            return f"MINIGAME:{selected_game}"
+        else:
+            # Text-Interface
+            from MiniGames import MiniGames
+            mg = MiniGames()
+            fight_result = mg.fight()
+            return self.process_fight_result_safe(gs, fight_result)
+
+    def process_fight_result_safe(self, gamestate, fight_result):
+        """
+        SICHERE VERSION - minimal invasive Änderungen
+        """
+        if fight_result == DogFight.WON:
+            self.attack_counter = 1
+            self.dog_state_message = "Der Hund hat gewonnen und ist aggressiv!"
+            return "***Der Hund hat dich besiegt!***"
+
+        elif fight_result == DogFight.LOST:
+            self.attack_counter = 0
+            self.dog_state_message = "Der Hund ist verängstigt"
+            return "***Du hast den Hund besiegt!***"
+
+        else:  # TIE
+            self.attack_counter = 2
+            self.dog_state_message = "Der Hund ist vorsichtig"
+            return "***Unentschieden!***"
+
+    # ============== DEBUGGING AUSGABE ==============
+
+    def debug_dogstate_info(self):
+        """
+        Debug-Funktion: Zeige aktuellen Hund-Zustand
+        """
+        print("🔍 DEBUG: Aktueller Hund-Zustand:")
+        print(f"   dog_state: {self.dog_state} (Typ: {type(self.dog_state)})")
+        print(f"   attack_counter: {self.attack_counter}")
+        print(f"   dog_state_message: {self.dog_state_message}")
+        print(f"   location: {self.location.name if self.location else 'None'}")
+
+        print(f"🔍 Verfügbare DogState-Werte:")
+        for state in DogState:
+            print(f"   - DogState.{state.name} = {state}")
 

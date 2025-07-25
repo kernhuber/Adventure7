@@ -25,7 +25,11 @@ class GameState:
         self.objects = None
         self.ways = None
         self.places = None
+        self.web_sessions = {}  # Tracking für aktive Web-Sessions
+        self.active_minigames = {}  # Tracking für laufende Mini-Games
+
         self.init_game()
+
     #
     #  Initialization functions
     #
@@ -353,7 +357,7 @@ Auf dem Dach des Schuppens
                 "place_prompt": "",
                 "place_prompt_f": pp.p_innen_place_prompt_f,
                 "ways": ["w_innen_schuppen"],
-                "objects": ["o_leiter", "o_geldboerse", "o_ec_karte", "o_pinsel", "o_farbeimer"],
+                "objects": ["o_leiter", "o_ec_karte", "o_pinsel", "o_farbeimer"],
                 "callnames": ["innen", "Innenraum", "drinnen", "nach innen", "in den schuppen"]
             },
             "p_felsen": {
@@ -369,7 +373,7 @@ Auf dem Dach des Schuppens
                 "place_prompt": "",
                 "place_prompt_f": pp.p_hoehle_place_prompt_f,
                 "ways": ["w_hoehle_felsen"],
-                "objects": ["o_skelett"],
+                "objects": ["o_skelett", "o_geldboerse","o_ec_karte"],
                 "callnames": ["Höhle", "Hoehle"]
             }
         }
@@ -841,6 +845,7 @@ Auf dem Dach des Schuppens
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": af.o_blumentopf_apply_f,
+                "take_f": tf.o_blumentopf_take_f,
                 "reveal_f": rf.o_blumentopf_reveal_f,
                 "prompt_f": op.o_blumentopf_prompt_f
             },
@@ -924,7 +929,7 @@ Auf dem Dach des Schuppens
                 "name": "o_geldboerse",
                 "examine": "Eine alte Geldbörse aus Leder.",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
+                "ownedby": "p_hoehle",  # Which Player currently owns this item? Default: None
                 "callnames": ["Geldboerse", "Geldbörse", "Portemonaie", "Brieftasche"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -936,7 +941,7 @@ Auf dem Dach des Schuppens
                 "name": "o_ec_karte",
                 "examine": "Eine alte EC-Karte. Ob die noch geht?",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
+                "ownedby": "p_hoehle",  # Which Player currently owns this item? Default: None
                 "callnames": ["Geldkarte", "EC-Karte", "ECKarte", "Kreditkarte"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -1166,7 +1171,14 @@ Auf dem Dach des Schuppens
         # Aktueller Ort und Inventar (für den Parsing-Prompt, falls spezifische Aktionen damit verbunden sind)
         context_data["player_location_id"] = pl.location.name
         context_data["player_inventory_ids"] = [item.name for item in pl.inventory]
+        # NEUE Web-Interface Informationen hinzufügen
+        context_data["web_interface_active"] = self.is_web_interface_active()
+        context_data["active_web_sessions"] = len(self.web_sessions)
 
+        # Mini-Game Status
+        active_minigames = [mg for mg in self.active_minigames.values()
+                            if mg['status'] == 'active']
+        context_data["minigames_active"] = len(active_minigames) > 0
         return context_data
 
     def compile_current_game_context(self, pl: PlayerState):
@@ -1408,8 +1420,9 @@ Auf dem Dach des Schuppens
 
                 pl.add_to_inventory(obj)
                 if obj.take_f != None:
-                    tw_print(obj.take_f(self,pl))
-                r= f"Du hast {what} nun bei dir"
+                    r= obj.take_f(self,pl)
+                else:
+                    r= f"Du hast {what} nun bei dir"
             else:
                 r = f"Du kannst {what} nicht aufnehmen"
         return r
@@ -1626,11 +1639,18 @@ Am Ort sind folgende Objekte zu sehen:"""
             tw_print(f'- "{i.name}" --> {i.examine}')
         return "nichts"
 
-    def verb_context(self, pl:PlayerState):
+    def verb_context(self, pl: PlayerState):
+        """ERWEITERTE Kontext-Ausgabe mit Web-Interface Info"""
         from pprint import pprint
+
+        # Bestehende Kontext-Ausgabe
         r = self.compile_current_game_context(pl)
         pprint(r)
-        return "nichts"
+
+        # NEUE Web-Interface Debug-Info
+        if self.is_web_interface_active():
+            print("\n=== WEB-INTERFACE STATUS ===")
+            self.debug_web_status()
 
     def verb_quit(self, pl: PlayerState):
         self.game_over  = True
@@ -1686,13 +1706,76 @@ Am Ort sind folgende Objekte zu sehen:"""
         """Wechsle Layout-Modus"""
         # Diese Funktion würde in GameState hinzugefügt
         return "layout_toggle"  # Spezieller Return-Code
-#
-# Obstruction Check Functions
-#
+
+    #
+    # Additional code for web based mini games
+    #
 
 
+    def register_web_session(self, session_id, websocket=None):
+        """Registriere eine neue Web-Session"""
+        self.web_sessions[session_id] = {
+            'websocket': websocket,
+            'active': True,
+            'minigame_active': False,
+            'created_at': self.time
+        }
 
+    def unregister_web_session(self, session_id):
+        """Entferne eine Web-Session"""
+        if session_id in self.web_sessions:
+            del self.web_sessions[session_id]
+        if session_id in self.active_minigames:
+            del self.active_minigames[session_id]
 
+    def is_web_interface_active(self):
+        """Prüfe ob mindestens eine Web-Session aktiv ist"""
+        return len(self.web_sessions) > 0
+
+    def start_minigame_session(self, session_id, game_type, player):
+        """Starte eine Mini-Game Session"""
+        self.active_minigames[session_id] = {
+            'game_type': game_type,
+            'player': player,
+            'started_at': self.time,
+            'status': 'active'
+        }
+        if session_id in self.web_sessions:
+            self.web_sessions[session_id]['minigame_active'] = True
+
+    def complete_minigame_session(self, session_id, result):
+        """Beende eine Mini-Game Session"""
+        if session_id in self.active_minigames:
+            from NPCPlayerState import NPCPlayerState, DogFight
+
+            result_map = {
+                'WON': DogFight.WON,
+                'LOST': DogFight.LOST,
+                'TIE': DogFight.TIE
+            }
+
+            dog_result = result_map.get(result, DogFight.TIE)
+            dog = next((p for p in self.players if isinstance(p, NPCPlayerState)), None)
+            if dog and hasattr(dog, 'set_fight_result'):
+                dog.set_fight_result(dog_result)
+
+            del self.active_minigames[session_id]
+            if session_id in self.web_sessions:
+                self.web_sessions[session_id]['minigame_active'] = False
+
+    def debug_web_status(self):
+        """
+        Debug-Ausgabe für Web-Interface Status
+        """
+        from Utils import dprint, dl
+
+        dprint(dl.GAMESTATE, f"🌐 Web-Sessions: {len(self.web_sessions)}")
+        for session_id, info in self.web_sessions.items():
+            dprint(dl.GAMESTATE, f"  - {session_id}: active={info['active']}, minigame={info['minigame_active']}")
+
+        dprint(dl.GAMESTATE, f"🎮 Active Mini-Games: {len(self.active_minigames)}")
+        for session_id, info in self.active_minigames.items():
+            dprint(dl.GAMESTATE, f"  - {session_id}: {info['game_type']} ({info['status']})")
 
 
 

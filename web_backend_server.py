@@ -1,10 +1,11 @@
-# Funktionierender Web-Server ohne Syntax-Fehler
+# Vollständige web_backend_server.py mit Mini-Game Integration
 import asyncio
 import json
 import threading
 import webbrowser
 import time
 from pathlib import Path
+import random
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from typing import Dict, Set
 from collections import deque
@@ -83,6 +84,10 @@ class WebAdventureServer:
             try:
                 dprint(dl.WEBGUI, f"🎮 Versuche echtes GameState zu erstellen...")
                 game = GameState()
+
+                # NEUE: Registriere Web-Session im GameState
+                game.register_web_session(session_id, websocket)
+
                 dprint(dl.WEBGUI, f"✅ GameState erstellt")
 
                 # Spieler erstellen
@@ -115,7 +120,8 @@ class WebAdventureServer:
                     "game": game,
                     "state": game_state,
                     "cmd_q": deque(),  # Command queue wie in PlayerState
-                    "pending_llm_input": None  # Pending input wie in PlayerState
+                    "pending_llm_input": None,  # Pending input wie in PlayerState
+                    "minigame_active": False  # NEUE: Mini-Game Status
                 }
 
                 # Initialisiere Scene-Cache für diese Session
@@ -131,7 +137,8 @@ class WebAdventureServer:
                     "type": "demo",
                     "state": game_state,
                     "cmd_q": deque(),
-                    "pending_llm_input": None
+                    "pending_llm_input": None,
+                    "minigame_active": False
                 }
         else:
             # Demo-Modus
@@ -141,7 +148,8 @@ class WebAdventureServer:
                 "type": "demo",
                 "state": game_state,
                 "cmd_q": deque(),
-                "pending_llm_input": None
+                "pending_llm_input": None,
+                "minigame_active": False
             }
 
         # Sende initialen Zustand
@@ -295,7 +303,12 @@ class WebAdventureServer:
         """Client-Verbindung beenden"""
         self.connected_clients.discard(websocket)
         session_id = str(id(websocket))
+
+        # NEUE: Entferne Web-Session auch aus GameState
         if session_id in self.game_sessions:
+            session = self.game_sessions[session_id]
+            if session["type"] == "real" and "game" in session:
+                session["game"].unregister_web_session(session_id)
             del self.game_sessions[session_id]
 
         # Bereinige auch Scene-Cache für diese Session
@@ -317,6 +330,151 @@ class WebAdventureServer:
         except Exception as e:
             dprint(dl.WEBGUI, f"❌ Fehler beim Senden: {e}")
 
+    # ============== NEUE MINI-GAME FUNKTIONEN ==============
+
+    def create_minigame_data(self, game_type):
+        """Erstelle Spiel-spezifische Daten für Mini-Games"""
+        if game_type == "sum_fight":
+            # Generiere 10 Zufallszahlen wie in MiniGames.py
+            stones = [random.randint(1, 10) for _ in range(10)]
+            total_sum = sum(stones)
+            max_stone = max(stones)
+
+            # Zielzahl muss mindestens so groß wie der größte Stein sein
+            reach = random.randint(max_stone, total_sum)
+
+            # Münzwurf wer anfängt (0 = Hund, 1 = Spieler)
+            who_starts = random.choice([0, 1])
+
+            dprint(dl.WEBGUI, f"🎲 Sum Fight: stones={stones}, reach={reach}, starts={who_starts}")
+
+            return {
+                "stones": stones,
+                "reach": reach,
+                "whoStarts": who_starts
+            }
+
+        # Andere Spiele brauchen keine speziellen Daten
+        return {}
+
+    async def trigger_minigame(self, websocket, game_type):
+        """Starte ein Mini-Game im Web-Interface"""
+        session_id = str(id(websocket))
+        if session_id not in self.game_sessions:
+            return
+
+        session = self.game_sessions[session_id]
+
+        # Markiere Mini-Game als aktiv
+        session["minigame_active"] = True
+
+        # Registriere Mini-Game im GameState falls verfügbar
+        if session["type"] == "real" and "game" in session:
+            game = session["game"]
+            player = game.players[0] if game.players else None
+            if player and hasattr(game, 'start_minigame_session'):
+                game.start_minigame_session(session_id, game_type, player)
+
+        # Erstelle Spiel-Daten
+        game_data = self.create_minigame_data(game_type)
+
+        # Sende Mini-Game-Aufforderung an Client
+        message = {
+            "type": "start_minigame",
+            "game_type": game_type,
+            "game_data": game_data
+        }
+
+        await websocket.send(json.dumps(message))
+        dprint(dl.WEBGUI, f"🎮 Mini-Game gestartet: {game_type}")
+
+    async def handle_minigame_result(self, websocket, data):
+        """Verarbeite Ergebnis eines Mini-Games"""
+        session_id = str(id(websocket))
+        if session_id not in self.game_sessions:
+            await websocket.send(json.dumps({
+                "type": "error",
+                "message": "Keine aktive Spielsession"
+            }))
+            return
+
+        session = self.game_sessions[session_id]
+        game_type = data.get('game_type')
+        result = data.get('result')  # 'WON', 'LOST', 'TIE'
+
+        dprint(dl.WEBGUI, f"🎮 Mini-Game Ergebnis: {game_type} -> {result}")
+
+        # Markiere Mini-Game als nicht mehr aktiv
+        session["minigame_active"] = False
+
+        # Konvertiere Web-Result zu MiniGames.py Format
+        if session["type"] == "real" and GAME_MODULES_AVAILABLE:
+            try:
+                from NPCPlayerState import DogFight
+
+                # Konvertiere String zu DogFight Enum
+                dog_result_map = {
+                    'WON': DogFight.WON,  # Hund gewinnt
+                    'LOST': DogFight.LOST,  # Hund verliert
+                    'TIE': DogFight.TIE  # Unentschieden
+                }
+
+                dog_fight_result = dog_result_map.get(result, DogFight.TIE)
+
+                # Suche Hund in der Spielerliste und verarbeite Ergebnis
+                game = session["game"]
+                from NPCPlayerState import NPCPlayerState
+                dog = next((p for p in game.players if isinstance(p, NPCPlayerState)), None)
+
+                fight_message = "Mini-Game beendet"
+
+                if dog and hasattr(dog, 'process_fight_result'):
+                    # Übergebe Ergebnis direkt an Hund-Logik
+                    fight_message = dog.process_fight_result(game, dog_fight_result)
+                    dprint(dl.WEBGUI, f"✅ Fight result verarbeitet: {fight_message[:50]}...")
+
+                # Beende Mini-Game Session im GameState
+                if hasattr(game, 'complete_minigame_session'):
+                    game.complete_minigame_session(session_id, result)
+
+                # Sende Ergebnis an Client
+                response = {
+                    "type": "minigame_complete",
+                    "game_type": game_type,
+                    "result": result,
+                    "message": fight_message,
+                    "game_state": self.serialize_real_game_state(game, update_narration=False, session_id=session_id)
+                }
+
+                await websocket.send(json.dumps(response))
+                dprint(dl.WEBGUI, f"✅ Mini-Game Ergebnis verarbeitet: {result}")
+
+            except Exception as e:
+                dprint(dl.WEBGUI, f"❌ Fehler beim Verarbeiten des Mini-Game Ergebnisses: {e}")
+                await websocket.send(json.dumps({
+                    "type": "error",
+                    "message": f"Fehler beim Verarbeiten des Spielergebnisses: {str(e)}"
+                }))
+        else:
+            # Demo-Modus
+            demo_messages = {
+                'WON': f"***Hund gewinnt das {game_type}! (Demo)***",
+                'LOST': f"***Du gewinnst das {game_type}! (Demo)***",
+                'TIE': f"***{game_type} endet unentschieden! (Demo)***"
+            }
+
+            response = {
+                "type": "minigame_complete",
+                "game_type": game_type,
+                "result": result,
+                "message": demo_messages.get(result, "Mini-Game beendet (Demo)"),
+                "game_state": session["state"]
+            }
+
+            await websocket.send(json.dumps(response))
+
+    # ============== ERWEITERTE COMMAND HANDLING ==============
+
     async def handle_command(self, websocket, command_data):
         """Verarbeite Spieler-Kommando - Exakte Nachbildung von Player_game_move Logik"""
         session_id = str(id(websocket))
@@ -328,6 +486,15 @@ class WebAdventureServer:
             return
 
         session = self.game_sessions[session_id]
+
+        # NEUE: Blockiere Commands während Mini-Game
+        if session.get("minigame_active", False):
+            await websocket.send(json.dumps({
+                "type": "info",
+                "message": "Bitte beende zuerst das laufende Mini-Game!"
+            }))
+            return
+
         raw_command = command_data.get('command', '').strip()
 
         dprint(dl.WEBGUI, f"📥 Kommando empfangen: '{raw_command}' (Modus: {session['type']})")
@@ -435,39 +602,48 @@ class WebAdventureServer:
             npc_actions = session["pending_npc_actions"]
             del session["pending_npc_actions"]  # Cleanup
 
-            # Formatiere Nachrichten für bessere Unterscheidung
-            formatted_actions = []
+            # NEUE: Prüfe auf Mini-Game Trigger in NPC-Actions
+            filtered_actions = []
             for action in npc_actions:
-                if '💥 EXPLOSION:' in action:
-                    # Echte Explosion - markiere sie eindeutig
-                    formatted_actions.append(action)
-                elif 'explodiert in' in action and 'Spielzügen' in action:
-                    # Timer-Nachricht - markiere als Timer
-                    formatted_actions.append(f"**💣 Timer:** {action}")
-                elif '**Hund:**' in action:
-                    # Hund-Aktion bleibt wie sie ist
-                    formatted_actions.append(action)
-                else:
-                    # Andere NPC-Aktionen
-                    formatted_actions.append(action)
+                if 'MINIGAME:' in action:
+                    # Extrahiere Mini-Game Type
+                    game_type = action.split('MINIGAME:')[1].strip()
+                    dprint(dl.WEBGUI, f"🎮 Mini-Game Trigger erkannt: {game_type}")
 
-            npc_message = {
-                "type": "npc_actions",
-                "actions": formatted_actions,
-                "game_state": session["state"]
-            }
-            await websocket.send(json.dumps(npc_message))
-            dprint(dl.WEBGUI, f"💥 NPC-Actions gesendet: {len(npc_actions)} Aktionen")
+                    # Starte Mini-Game
+                    await self.trigger_minigame(websocket, game_type)
+
+                    # Ersetze die Nachricht durch einen Hinweis
+                    filtered_actions.append(f"**🎮 Ein Kampf beginnt!** Bereite dich auf das {game_type}-Mini-Game vor!")
+                else:
+                    # Formatiere normale Nachrichten für bessere Unterscheidung
+                    if '💥 EXPLOSION:' in action:
+                        # Echte Explosion - markiere sie eindeutig
+                        filtered_actions.append(action)
+                    elif 'explodiert in' in action and 'Spielzügen' in action:
+                        # Timer-Nachricht - markiere als Timer
+                        filtered_actions.append(f"**💣 Timer:** {action}")
+                    elif '**Hund:**' in action:
+                        # Hund-Aktion bleibt wie sie ist
+                        filtered_actions.append(action)
+                    else:
+                        # Andere NPC-Aktionen
+                        filtered_actions.append(action)
+
+            if filtered_actions:
+                npc_message = {
+                    "type": "npc_actions",
+                    "actions": filtered_actions,
+                    "game_state": session["state"]
+                }
+                await websocket.send(json.dumps(npc_message))
+                dprint(dl.WEBGUI, f"💥 NPC-Actions gesendet: {len(filtered_actions)} Aktionen")
 
         # Schritt 7: Wenn noch Commands in Queue oder Pending Input vorhanden, sofort weiter verarbeiten
         if session["cmd_q"] or session["pending_llm_input"]:
             dprint(dl.WEBGUI, f"🔄 Weitere Commands verfügbar - continue processing...")
             # Simuliere weiteres Command ohne User-Input
             await self.handle_command(websocket, {"command": ""})  # Empty command triggers queue processing
-
-    def create_simple_command(self, user_input):
-        """Erstelle einfaches Command ohne LLM"""
-        return {'function_call': {'name': 'zurueckweisen', 'args': {'why': f'Einfache Verarbeitung: {user_input}'}}}
 
     async def execute_single_command(self, session, command_dict, session_id):
         """Führe ein einzelnes Command aus"""
@@ -506,12 +682,8 @@ class WebAdventureServer:
                         thirst_message = f"***Du hast jetzt richtig Durst! Es reicht noch für {player.thirst_counter} Spielrunden, dann verdurstest Du!***"
 
                     # Echte Game-Engine
-                    # Skip "umsehen", weil das sowieso im WebGUI ständig gemacht wird
-                    #if not is_look_around:
-                    #    result = game.verb_execute_json(player, command_dict)
-                    #else:
-                    #    result = "(umsehen unnötig - siehe Panel oben)"
                     result = game.verb_execute_json(player, command_dict)
+
                     # Füge Durst-Nachricht hinzu, falls vorhanden
                     if thirst_message:
                         result = f"{result}\n\n{thirst_message}"
@@ -660,108 +832,11 @@ class WebAdventureServer:
             import traceback
             traceback.print_exc()
             return []
-        """Führe NPC-Züge aus - inklusive ExplosionState"""
-        try:
-            from NPCPlayerState import NPCPlayerState
-            # Versuche auch ExplosionState zu importieren
-            try:
-                from ExplosionState import ExplosionState
-                EXPLOSION_AVAILABLE = True
-            except ImportError:
-                EXPLOSION_AVAILABLE = False
-                dprint(dl.WEBGUI, "⚠️  ExplosionState nicht verfügbar")
 
-            npc_actions = []
-            players_to_remove = []  # Für Spieler die durch Explosion eliminiert werden
-
-            for npc in game.players:
-                if isinstance(npc, NPCPlayerState):
-                    # Normaler NPC (Hund)
-                    npc_input = npc.NPC_game_move(game)
-                    if npc_input and npc_input != "nichts":
-                        npc_result = game.verb_execute(npc, npc_input)
-                        if npc_result and npc_result.strip():
-                            npc_actions.append(f"**{npc.name}:** {npc_result}")
-
-                elif EXPLOSION_AVAILABLE and isinstance(npc, ExplosionState):
-                    # Explosion-NPC - VEREINFACHT
-                    dprint(dl.WEBGUI, f"💥 Verarbeite Explosion: Timer={npc.kaboom_timer}")
-
-                    # ExplosionState.explosion_input() macht ALLES und gibt Nachrichten zurück
-                    explosion_messages = npc.explosion_input(game)
-
-                    # Verwende die Nachrichten direkt (keine verb_execute nötig!)
-                    if explosion_messages and explosion_messages != "nichts":
-                        npc_actions.append(f"**💥 EXPLOSION:** {explosion_messages}")
-
-                    # Prüfe ob die Explosion abgelaufen ist (kaboom_timer = 0 nach explosion_input)
-                    if npc.kaboom_timer <= 0:
-                        dprint(dl.WEBGUI, "💥 Explosion ist abgelaufen - entferne ExplosionState")
-                        players_to_remove.append(npc)
-                    # Keine separate Timer-Nachricht mehr nötig - kommt von explosion_input()
-
-            # Entferne abgelaufene Explosionen
-            for player in players_to_remove:
-                if player in game.players:
-                    game.players.remove(player)
-                    dprint(dl.WEBGUI, f"🗑️  {player.name} aus Spielerliste entfernt")
-
-            # Update game state nach NPC-Aktionen - OHNE Narration (da schon gemacht)
-            if session_id and hasattr(self, 'game_sessions') and session_id in self.game_sessions:
-                session = self.game_sessions[session_id]
-                session["state"] = self.serialize_real_game_state(game, update_narration=False, session_id=session_id)
-
-            # Sende NPC-Aktionen an Client
-            if npc_actions and websocket:
-                npc_message = {
-                    "type": "npc_actions",
-                    "actions": npc_actions,
-                    "game_state": self.serialize_real_game_state(game, update_narration=False, session_id=session_id)
-                }
-                await websocket.send(json.dumps(npc_message))
-
-        except Exception as e:
-            dprint(dl.WEBGUI, f"⚠️  NPC-Fehler (inklusive Explosion): {e}")
-            import traceback
-            traceback.print_exc()
-
-    def process_demo_command(self, game_state, command):
-        """Demo-Kommando-Verarbeitung (Legacy - wird nicht mehr verwendet)"""
-        if "hilfe" in command:
-            return "**Demo-Modus aktiv** - Verfügbare Kommandos: hilfe, umsehen, gehe zum [Ort], inventar"
-        elif "umsehen" in command:
-            return "Du blickst umher. Die Wüstensonne brennt erbarmungslos."
-        elif "inventar" in command:
-            items = game_state["player"]["inventory"]
-            return f"**Du trägst bei dir:** {', '.join(items)}" if items else "Dein Inventar ist leer."
-        elif "schuppen" in command and "gehe" in command:
-            game_state["player"]["location"] = "Schuppen"
-            game_state["environment"]["objects"] = ["Blumentopf", "Stuhl"]
-            game_state["environment"]["ways"] = ["Zurück zum Start"]
-            game_state["scene_description"] = "Du stehst vor einem alten Holzschuppen."
-            return "Du gehst zum Schuppen."
-        elif "start" in command and "gehe" in command:
-            game_state["player"]["location"] = "Wüsten-Start"
-            game_state["environment"]["objects"] = ["Kaputtes Fahrrad"]
-            game_state["environment"]["ways"] = ["Zum Schuppen", "Zum Warenautomat", "Zum Geldautomat"]
-            game_state["scene_description"] = "Du bist zurück am Startpunkt."
-            return "Du kehrst zum Start zurück."
-        else:
-            return f"Du versuchst: '{command}'. (Demo-Modus - versuche: hilfe, umsehen, gehe zum Schuppen)"
-
-    def process_simple_command(self, command):
-        """Einfache Kommando-Verarbeitung für echte Game-Engine ohne LLM (Legacy - wird nicht mehr verwendet)"""
-        if "hilfe" in command:
-            return "**Verfügbare Kommandos:** gehe zu [Ort], untersuche [Objekt], nimm [Objekt], umsehen, inventar"
-        elif "umsehen" in command:
-            return "Du blickst umher. Die Wüstensonne brennt erbarmungslos."
-        elif "inventar" in command:
-            return "Verwende 'inventar' Kommando für Inventar-Anzeige."
-        else:
-            return f"Du versuchst: '{command}'. (Verwende 'hilfe' für verfügbare Kommandos)"
+    # ============== CLIENT HANDLING ==============
 
     async def handle_client(self, websocket):
-        """Handle einzelne Client-Verbindung"""
+        """Handle einzelne Client-Verbindung - ERWEITERT für Mini-Games"""
         try:
             await self.register_client(websocket)
 
@@ -772,6 +847,8 @@ class WebAdventureServer:
 
                     if message_type == 'command':
                         await self.handle_command(websocket, data)
+                    elif message_type == 'minigame_result':  # NEUE
+                        await self.handle_minigame_result(websocket, data)
                     elif message_type == 'ping':
                         await websocket.send(json.dumps({"type": "pong"}))
                     else:
@@ -806,6 +883,7 @@ class WebAdventureServer:
         """Starte Server"""
         dprint(dl.WEBGUI, f"🌐 Browser wird geöffnet auf: http://{self.host}:{self.http_port}/adventure_web.html")
         dprint(dl.WEBGUI, f"💡 Game-Module verfügbar: {'✅ Ja' if GAME_MODULES_AVAILABLE else '❌ Nein (Demo-Modus)'}")
+        dprint(dl.WEBGUI, f"🎮 Mini-Game Support: ✅ Aktiviert")
         dprint(dl.WEBGUI, f"{'=' * 60}")
 
         time.sleep(1)
@@ -822,12 +900,12 @@ class WebAdventureServer:
 
 
 def create_working_html():
-    """Erstelle eine garantiert funktionierende HTML-Datei"""
+    """Erstelle eine garantiert funktionierende HTML-Datei MIT Mini-Game Support"""
     html_content = '''<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>🏜️ Wüsten-Adventure</title>
+    <title>🏜️ Wüsten-Adventure mit Mini-Games</title>
     <style>
         body { font-family: monospace; background: #2c1810; color: #f5deb3; padding: 20px; }
         .panel { background: rgba(0,0,0,0.7); border: 2px solid #cd853f; padding: 15px; margin: 10px 0; border-radius: 8px; }
@@ -839,6 +917,27 @@ def create_working_html():
         .explosion { color: #ff4444; font-weight: bold; animation: blink 1s infinite; }
         .explosion-timer { color: #ffaa00; font-weight: bold; }
         @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.5; } }
+
+        .dog-danger { 
+            background: rgba(255, 0, 0, 0.3); 
+            border-color: #ff0000; 
+            animation: danger-pulse 0.5s infinite; 
+        }
+
+        .dog-nearby { 
+            background: rgba(255, 165, 0, 0.2); 
+            border-color: #ffa500; 
+        }
+
+        .dog-safe { 
+            background: rgba(0, 255, 0, 0.1); 
+            border-color: #00ff00; 
+        }
+
+        @keyframes danger-pulse {
+            0% { box-shadow: 0 0 5px rgba(255, 0, 0, 0.5); }
+            100% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+        }
 
         /* Explosions-Overlay */
         #explosion-overlay {
@@ -870,188 +969,107 @@ def create_working_html():
             100% { transform: translate(2px, -2px) scale(1.02); }
         }
 
-        /* Wolken-Kreise */
-        .cloud-circle {
+        .flash {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            animation: flashAnim 0.25s ease-out forwards;
+        }
+
+        @keyframes flashAnim {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .core {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: radial-gradient(circle, red, black);
+            animation: coreAnim 3s ease-out forwards;
+            opacity: 0.9;
+        }
+
+        @keyframes coreAnim {
+            0%   { transform: scale(3); background: white; opacity: 1; }
+            30%  { transform: scale(1); background: orange; }
+            60%  { transform: scale(0.6); background: red; }
+            100% { transform: scale(0.3); background: black; opacity: 0; }
+        }
+
+        .shockwave {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid white;
+            opacity: 0.5;
+            animation: shockwaveAnim 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes shockwaveAnim {
+            0%   { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(15); opacity: 0; }
+        }
+
+        #explosion-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .particle, .sparkle {
             position: absolute;
             border-radius: 50%;
-            background: radial-gradient(circle, #ffff00 20%, #ff8800 60%, #ff4400 100%);
-            animation: cloud-pulse 1s ease-in-out infinite alternate;
+            animation-fill-mode: forwards;
         }
 
-        @keyframes cloud-pulse {
-            0% { transform: scale(0.95); opacity: 0.8; }
-            100% { transform: scale(1.05); opacity: 1; }
+        .particle {
+            background-color: white;
+            animation-name: particleAnim;
         }
 
-        .cloud-circle:nth-child(1) { width: 120px; height: 120px; top: 30px; left: 30px; }
-        .cloud-circle:nth-child(2) { width: 100px; height: 100px; top: 20px; right: 20px; }
-        .cloud-circle:nth-child(3) { width: 90px; height: 90px; bottom: 30px; left: 40px; }
-        .cloud-circle:nth-child(4) { width: 110px; height: 110px; bottom: 20px; right: 30px; }
-        .cloud-circle:nth-child(5) { width: 80px; height: 80px; top: 120px; left: 30px; }
-        .cloud-circle:nth-child(6) { width: 70px; height: 70px; bottom: 100px; right: 20px; }
-        .cloud-circle:nth-child(7) { width: 70px; height: 70px; bottom: 120px; right: 10px; }
+        @keyframes particleAnim {
+            0%   { transform: translate(0, 0) scale(1); background-color: white;   opacity: 1; }
+            20%  { background-color: yellow; }
+            40%  { background-color: orange; }
+            60%  { background-color: red; }
+            80%  { background-color: brown; }
+            100% { transform: var(--translate) scale(0.1); background-color: black; opacity: 0; }
+        }
 
-        /* Zentraler gelber Kreis mit Text */
-        .explosion-center {
-            position: relative;
+        .sparkle {
+            background-color: gold;
+            box-shadow: 0 0 8px 2px gold;
+            animation-name: sparkleAnim;
+        }
+
+        @keyframes sparkleAnim {
+            0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+            25%  { transform: var(--sparkle-1) scale(0.8); opacity: 0.8; }
+            50%  { transform: var(--sparkle-2) scale(0.6); opacity: 0.6; }
+            75%  { transform: var(--sparkle-3) scale(0.4); opacity: 0.4; }
+            100% { transform: var(--sparkle-4) scale(0.2); opacity: 0; }
+        }
+
+        .message-box {
+            background-color: darkred;
+            color: white;
+            padding: 40px;
+            font-size: 2em;
+            display: none;
             z-index: 10;
-            background: radial-gradient(circle, #ffff00 20%, #ff8800 60%, #ff4400 100%);
->           animation: cloud-pulse 1s ease-in-out infinite alternate;
-            border-radius: 50%;
-            width: 265px;
-            height: 265px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             text-align: center;
-            color: #cc0000;
-            font-weight: bold;
-            font-size: 14px;
-            padding: 20px;
-            box-sizing: border-box;
-            box-shadow: 0 0 30px #ffff00;
-            animation: center-glow 0.8s ease-in-out infinite alternate;
-        }
-
-        @keyframes center-glow {
-            0% { box-shadow: 0 0 20px #ffff00; }
-            100% { box-shadow: 0 0 40px #ffff00, 0 0 60px #ff8800; }
-        }
-            #explosion-overlay {
-              position: fixed;
-              top: 0; left: 0;
-              width: 100vw; height: 100vh;
-              display: none;
-              justify-content: center;
-              align-items: center;
-              z-index: 9999;
-              overflow: hidden;
-              background: radial-gradient(circle at center, #222 0%, #000 100%);
-            }
-        
-            .flash {
-              position: absolute;
-              width: 100%;
-              height: 100%;
-              background: white;
-              animation: flashAnim 0.25s ease-out forwards;
-            }
-        
-            @keyframes flashAnim {
-              0% { opacity: 1; }
-              100% { opacity: 0; }
-            }
-        
-            .core {
-              position: absolute;
-              width: 250px;
-              height: 250px;
-              border-radius: 50%;
-              background: radial-gradient(circle, red, black);
-              animation: coreAnim 3s ease-out forwards;
-              opacity: 0.9;
-            }
-        
-            @keyframes coreAnim {
-              0%   { transform: scale(3); background: white; opacity: 1; }
-              30%  { transform: scale(1); background: orange; }
-              60%  { transform: scale(0.6); background: red; }
-              100% { transform: scale(0.3); background: black; opacity: 0; }
-            }
-        
-            .shockwave {
-              position: absolute;
-              width: 50px;
-              height: 50px;
-              border-radius: 50%;
-              border: 3px solid white;
-              opacity: 0.5;
-              animation: shockwaveAnim 1s ease-out forwards;
-              pointer-events: none;
-            }
-        
-            @keyframes shockwaveAnim {
-              0%   { transform: scale(1); opacity: 0.5; }
-              100% { transform: scale(15); opacity: 0; }
-            }
-        
-            #explosion-particles {
-              position: absolute;
-              width: 100%;
-              height: 100%;
-              pointer-events: none;
-            }
-        
-            .particle, .sparkle {
-              position: absolute;
-              border-radius: 50%;
-              animation-fill-mode: forwards;
-            }
-        
-            .particle {
-              background-color: white;
-              animation-name: particleAnim;
-            }
-        
-            @keyframes particleAnim {
-              0%   { transform: translate(0, 0) scale(1); background-color: white;   opacity: 1; }
-              20%  { background-color: yellow; }
-              40%  { background-color: orange; }
-              60%  { background-color: red; }
-              80%  { background-color: brown; }
-              100% { transform: var(--translate) scale(0.1); background-color: black; opacity: 0; }
-            }
-        
-            .sparkle {
-              background-color: gold;
-              box-shadow: 0 0 8px 2px gold;
-              animation-name: sparkleAnim;
-            }
-        
-            @keyframes sparkleAnim {
-              0%   { transform: translate(0, 0) scale(1); opacity: 1; }
-              25%  { transform: var(--sparkle-1) scale(0.8); opacity: 0.8; }
-              50%  { transform: var(--sparkle-2) scale(0.6); opacity: 0.6; }
-              75%  { transform: var(--sparkle-3) scale(0.4); opacity: 0.4; }
-              100% { transform: var(--sparkle-4) scale(0.2); opacity: 0; }
-            }
-        
-            .message-box {
-              background-color: darkred;
-              color: white;
-              padding: 40px;
-              font-size: 2em;
-              display: none;
-              z-index: 10;
-              text-align: center;
-              border: 2px solid white;
-            }
-        .explosion-title {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #cc0000;
-            text-shadow: 1px 1px 2px #000;
-        }
-        .dog-danger { 
-            background: rgba(255, 0, 0, 0.3); 
-            border-color: #ff0000; 
-            animation: danger-pulse 0.5s infinite; 
-        }
-        
-        .dog-nearby { 
-            background: rgba(255, 165, 0, 0.2); 
-            border-color: #ffa500; 
-        }
-        
-        .dog-safe { 
-            background: rgba(0, 255, 0, 0.1); 
-            border-color: #00ff00; 
+            border: 2px solid white;
         }
     </style>
 </head>
 <body>
-    <h1>🏜️ Wüsten-Adventure</h1>
+    <h1>🏜️ Wüsten-Adventure <span style="color: #cd853f;">🎮 mit Mini-Games</span></h1>
     <div id="connection-status" class="status">Verbinde...</div>
 
     <div class="grid">
@@ -1102,15 +1120,19 @@ def create_working_html():
 
     <!-- Explosions-Overlay -->
     <div id="explosion-overlay" onclick="hideExplosion()">
-          <div class="flash"></div>
-          <div class="core"></div>
-          <div class="shockwave" id="shockwave"></div>
-          <div id="explosion-particles"></div>
-          <div class="message-box" id="explosion-message"></div>
+        <div class="flash"></div>
+        <div class="core"></div>
+        <div class="shockwave" id="shockwave"></div>
+        <div id="explosion-particles"></div>
+        <div class="message-box" id="explosion-message"></div>
     </div>
 
+    <!-- Mini-Games werden von minigames.js erstellt -->
+
+    <!-- Scripts -->
+    <script src="minigames.js"></script>
     <script>
-        console.log('🚀 Adventure startet...');
+        console.log('🚀 Adventure mit Mini-Games startet...');
 
         let gameState = {
             round: 1,
@@ -1166,6 +1188,17 @@ def create_working_html():
                 }
             }
 
+            sendMinigameResult(gameType, result) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify({ 
+                        type: 'minigame_result', 
+                        game_type: gameType, 
+                        result: result 
+                    }));
+                    console.log(`🎮 Mini-Game Ergebnis gesendet: ${gameType} -> ${result}`);
+                }
+            }
+
             handleMessage(data) {
                 switch(data.type) {
                     case 'game_state':
@@ -1180,8 +1213,6 @@ def create_working_html():
                         }
                         if (data.game_state) this.updateGameState(data.game_state);
                         else updateUI();
-
-                        // Debug-Info anzeigen
                         this.updateDebugInfo(data);
                         break;
                     case 'npc_actions':
@@ -1190,6 +1221,19 @@ def create_working_html():
                         }
                         if (data.game_state) this.updateGameState(data.game_state);
                         else updateUI();
+                        break;
+                    case 'start_minigame':  // NEUE
+                        this.startMinigame(data.game_type, data.game_data);
+                        break;
+                    case 'minigame_complete': // NEUE
+                        this.handleMinigameComplete(data);
+                        break;
+                    case 'info':
+                        gameState.lastAction = {
+                            command: 'Info',
+                            result: '💡 ' + data.message
+                        };
+                        updateUI();
                         break;
                     case 'error':
                         gameState.lastAction = {
@@ -1200,10 +1244,56 @@ def create_working_html():
                         break;
                 }
             }
-            
-            
-            
-            
+
+            startMinigame(gameType, gameData) {
+                console.log(`🎮 Starte Mini-Game: ${gameType}`);
+
+                // Update UI
+                gameState.lastAction = {
+                    command: 'Mini-Game',
+                    result: `🎮 ${gameType} wird gestartet...`
+                };
+                updateUI();
+
+                // Deaktiviere normale Eingabe während Mini-Game
+                document.getElementById('user-input').disabled = true;
+                document.getElementById('send-button').disabled = true;
+
+                // Starte Mini-Game
+                if (miniGames) {
+                    miniGames.showGame(gameType, gameData, (result) => {
+                        // Re-aktiviere Eingabe
+                        document.getElementById('user-input').disabled = false;
+                        document.getElementById('send-button').disabled = false;
+
+                        // Sende Ergebnis an Server
+                        this.sendMinigameResult(gameType, result);
+                    });
+                } else {
+                    console.error('❌ MiniGames nicht geladen!');
+                    // Re-aktiviere Eingabe bei Fehler
+                    document.getElementById('user-input').disabled = false;
+                    document.getElementById('send-button').disabled = false;
+                }
+            }
+
+            handleMinigameComplete(data) {
+                console.log(`✅ Mini-Game beendet: ${data.game_type} -> ${data.result}`);
+
+                // Zeige Ergebnismeldung
+                gameState.lastAction = {
+                    command: `🎮 ${data.game_type}`,
+                    result: data.message
+                };
+
+                // Update Game State
+                if (data.game_state) {
+                    this.updateGameState(data.game_state);
+                } else {
+                    updateUI();
+                }
+            }
+
             handleNPCActions(actions) {
                 // Sortiere NPC-Actions nach Typ
                 let dogActions = [];
@@ -1222,6 +1312,12 @@ def create_working_html():
                         // Hund-Aktion - update Hund-Status
                         let dogAction = action.replace('**Hund:**', '').trim();
                         dogActions.push(dogAction);
+                    } else if (action.includes('🎮') && action.includes('Mini-Game')) {
+                        // Mini-Game Ankündigung - zeige in letzter Aktion
+                        gameState.lastAction = {
+                            command: 'Kampf-Vorbereitung',
+                            result: action
+                        };
                     }
                 }
 
@@ -1271,31 +1367,32 @@ def create_working_html():
                 }
             }
         }
+
         function isNearby(loc1, loc2) {
             const ways = gameState.environment?.ways || [];
             return ways.includes(loc2);
         }
-        
+
         function updateDogDanger() {
-                const playerLoc = gameState.player?.location || '';
-                const dogLoc = gameState.dog?.location || '';
-                const dogDiv = document.getElementById('dogstate');
-                
-                // Entferne alle Status-Klassen
-                dogDiv.classList.remove('dog-danger', 'dog-nearby', 'dog-safe');
-                
-                if (playerLoc === dogLoc && playerLoc !== '') {
-                    // Gleicher Ort - GEFAHR!
-                    dogDiv.classList.add('dog-danger');
-                } else if (isNearby(playerLoc, dogLoc)) {
-                    // Nachbar-Ort - Warnung
-                    dogDiv.classList.add('dog-nearby');
-                } else {
-                    // Weit weg - sicher
-                    dogDiv.classList.add('dog-safe');
-                }
+            const playerLoc = gameState.player?.location || '';
+            const dogLoc = gameState.dog?.location || '';
+            const dogDiv = document.getElementById('dogstate');
+
+            // Entferne alle Status-Klassen
+            dogDiv.classList.remove('dog-danger', 'dog-nearby', 'dog-safe');
+
+            if (playerLoc === dogLoc && playerLoc !== '') {
+                // Gleicher Ort - GEFAHR!
+                dogDiv.classList.add('dog-danger');
+            } else if (isNearby(playerLoc, dogLoc)) {
+                // Nachbar-Ort - Warnung
+                dogDiv.classList.add('dog-nearby');
+            } else {
+                // Weit weg - sicher
+                dogDiv.classList.add('dog-safe');
             }
-            
+        }
+
         function updateUI() {
             try {
                 const playerName = document.getElementById('player-name');
@@ -1371,81 +1468,81 @@ def create_working_html():
         }
 
         function showExplosion(text) {
-          const overlay = document.getElementById("explosion-overlay");
-          const messageBox = document.getElementById("explosion-message");
-          const particlesContainer = document.getElementById("explosion-particles");
-          const shockwave = document.getElementById("shockwave");
-        
-          overlay.style.display = "flex";
-          messageBox.style.display = "none";
-          particlesContainer.innerHTML = "";
-          shockwave.style.display = "block";
-        
-          const centerX = window.innerWidth / 2;
-          const centerY = window.innerHeight / 2;
-          shockwave.style.left = `${centerX - 25}px`;
-          shockwave.style.top = `${centerY - 25}px`;
-        
-          // --- Trümmerteilchen ---
-          for (let i = 0; i < 80; i++) {
-            const angle = Math.random() * 2 * Math.PI;
-            const distance = 100 + Math.random() * 200;
-            const dx = Math.cos(angle) * distance;
-            const dy = Math.sin(angle) * distance;
-            const size = 4 + Math.random() * 8;
-        
-            const p = document.createElement("div");
-            p.className = "particle";
-            p.style.width = `${size}px`;
-            p.style.height = `${size}px`;
-            p.style.left = `${centerX - size / 2}px`;
-            p.style.top = `${centerY - size / 2}px`;
-            p.style.animationDuration = `${1.5 + Math.random()}s`;
-            p.style.animationDelay = `${Math.random() * 0.4}s`;
-            p.style.setProperty("--translate", `translate(${dx}px, ${dy}px)`);
-        
-            particlesContainer.appendChild(p);
-          }
-        
-          // --- Glitzer-Sparkles ---
-          for (let i = 0; i < 30; i++) {
-            const angle = Math.random() * 2 * Math.PI;
-            const distance = 80 + Math.random() * 150;
-            const size = 2 + Math.random() * 4;
-        
-            const sparkle = document.createElement("div");
-            sparkle.className = "sparkle";
-            sparkle.style.width = `${size}px`;
-            sparkle.style.height = `${size}px`;
-            sparkle.style.left = `${centerX - size / 2}px`;
-            sparkle.style.top = `${centerY - size / 2}px`;
-        
-            // Vier zitternde Phasen
-            const jitter = () => {
-              const dx = (Math.random() - 0.5) * distance;
-              const dy = (Math.random() - 0.5) * distance;
-              return `translate(${dx}px, ${dy}px)`;
-            };
-        
-            sparkle.style.setProperty("--sparkle-1", jitter());
-            sparkle.style.setProperty("--sparkle-2", jitter());
-            sparkle.style.setProperty("--sparkle-3", jitter());
-            sparkle.style.setProperty("--sparkle-4", jitter());
-        
-            sparkle.style.animationDuration = `${1 + Math.random()}s`;
-            sparkle.style.animationDelay = `${Math.random() * 0.3}s`;
-        
-            particlesContainer.appendChild(sparkle);
-          }
-        
-          setTimeout(() => {
-            messageBox.innerHTML = text.replace(/\\n/g, "<br>");
-            messageBox.style.display = "block";
-          }, 4000);
+            const overlay = document.getElementById("explosion-overlay");
+            const messageBox = document.getElementById("explosion-message");
+            const particlesContainer = document.getElementById("explosion-particles");
+            const shockwave = document.getElementById("shockwave");
+
+            overlay.style.display = "flex";
+            messageBox.style.display = "none";
+            particlesContainer.innerHTML = "";
+            shockwave.style.display = "block";
+
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            shockwave.style.left = `${centerX - 25}px`;
+            shockwave.style.top = `${centerY - 25}px`;
+
+            // --- Trümmerteilchen ---
+            for (let i = 0; i < 80; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = 100 + Math.random() * 200;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+                const size = 4 + Math.random() * 8;
+
+                const p = document.createElement("div");
+                p.className = "particle";
+                p.style.width = `${size}px`;
+                p.style.height = `${size}px`;
+                p.style.left = `${centerX - size / 2}px`;
+                p.style.top = `${centerY - size / 2}px`;
+                p.style.animationDuration = `${1.5 + Math.random()}s`;
+                p.style.animationDelay = `${Math.random() * 0.4}s`;
+                p.style.setProperty("--translate", `translate(${dx}px, ${dy}px)`);
+
+                particlesContainer.appendChild(p);
+            }
+
+            // --- Glitzer-Sparkles ---
+            for (let i = 0; i < 30; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = 80 + Math.random() * 150;
+                const size = 2 + Math.random() * 4;
+
+                const sparkle = document.createElement("div");
+                sparkle.className = "sparkle";
+                sparkle.style.width = `${size}px`;
+                sparkle.style.height = `${size}px`;
+                sparkle.style.left = `${centerX - size / 2}px`;
+                sparkle.style.top = `${centerY - size / 2}px`;
+
+                // Vier zitternde Phasen
+                const jitter = () => {
+                    const dx = (Math.random() - 0.5) * distance;
+                    const dy = (Math.random() - 0.5) * distance;
+                    return `translate(${dx}px, ${dy}px)`;
+                };
+
+                sparkle.style.setProperty("--sparkle-1", jitter());
+                sparkle.style.setProperty("--sparkle-2", jitter());
+                sparkle.style.setProperty("--sparkle-3", jitter());
+                sparkle.style.setProperty("--sparkle-4", jitter());
+
+                sparkle.style.animationDuration = `${1 + Math.random()}s`;
+                sparkle.style.animationDelay = `${Math.random() * 0.3}s`;
+
+                particlesContainer.appendChild(sparkle);
+            }
+
+            setTimeout(() => {
+                messageBox.innerHTML = text.replace(/\\n/g, "<br>");
+                messageBox.style.display = "block";
+            }, 4000);
         }
-        
+
         function hideExplosion() {
-          document.getElementById("explosion-overlay").style.display = "none";
+            document.getElementById("explosion-overlay").style.display = "none";
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -1457,7 +1554,7 @@ def create_working_html():
             }, 1000);
         });
 
-        console.log('✅ Script geladen');
+        console.log('✅ Script mit Mini-Game Support geladen');
     </script>
 </body>
 </html>'''
@@ -1465,12 +1562,12 @@ def create_working_html():
     with open("adventure_web.html", "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    dprint(dl.WEBGUI, "✅ Funktionierende HTML-Datei erstellt!")
+    dprint(dl.WEBGUI, "✅ HTML-Datei mit Mini-Game Support erstellt!")
 
 
 def run_working_adventure():
-    """Starte funktionierenden Web-Server"""
-    dprint(dl.WEBGUI, "🏜️ Starte FUNKTIONIERENDEN Wüsten-Adventure Web-Server...")
+    """Starte funktionierenden Web-Server mit Mini-Game Support"""
+    dprint(dl.WEBGUI, "🏜️ Starte ERWEITERTEN Wüsten-Adventure Web-Server mit Mini-Games...")
 
     try:
         server = WebAdventureServer()
@@ -1482,6 +1579,6 @@ def run_working_adventure():
 
 
 if __name__ == "__main__":
-    # Erstelle HTML-File
+    # Erstelle HTML-File mit Mini-Game Support
     create_working_html()
     run_working_adventure()

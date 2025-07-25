@@ -17,6 +17,7 @@ def o_blumentopf_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=N
 def o_skelett_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
     if gs.objects["o_geldboerse"].hidden:
         gs.objects["o_geldboerse"].hidden = False
+        gs.objects["o_geldboerse"].ownedby = pl.location
         gs.objects["o_skelett"].examine = "Bei diesem Knochenmann hast Du eine Geldbörse gefunden!"
         return "Oh weh, der sitzt wohl schon länger hier! Ein Skelett, welches einen verschlissenen Anzug trägt. **Im Anzug findest du eine Geldboerse!**"
 
