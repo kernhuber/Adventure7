@@ -449,8 +449,7 @@ Beschreibung des Hundes
             self.attack_counter = 1  # KORRIGIERT: Reduziert für sofortigen Angriff
             self.dog_state_message = "Der Hund hat dich besiegt und ist nun sehr aggressiv!"
 
-            return """***Der Hund springt dich an und du kannst dich gerade noch zurückziehen! 
-    Der Hund knurrt bedrohlich und wirkt sehr aggressiv. Du solltest hier schnell verschwinden!***"""
+            return """***Der Hund hat dich im Kampf besiegt!***"""
 
         elif fight_result == DogFight.LOST:
             # Hund verliert - KORRIGIERT: Verwende DogState.GOHOME (Hund flieht)
@@ -519,24 +518,26 @@ Beschreibung des Hundes
             fight_result = mg.fight()
             return self.process_fight_result_safe(gs, fight_result)
 
-    def process_fight_result_safe(self, gamestate, fight_result):
+    def process_fight_result_safe(self, gs:GameState, fight_result):
         """
         SICHERE VERSION - minimal invasive Änderungen
         """
         if fight_result == DogFight.WON:
             self.attack_counter = 1
             self.dog_state_message = "Der Hund hat gewonnen und ist aggressiv!"
-            return "***Der Hund hat dich besiegt!***"
+            return f"toeten {gs.players[0].name}"
 
         elif fight_result == DogFight.LOST:
             self.attack_counter = 0
-            self.dog_state_message = "Der Hund ist verängstigt"
-            return "***Du hast den Hund besiegt!***"
+            self.dog_state = DogState.GOHOME
+
+            self.dog_state_message = "Der Hund ist verängstigt und läuft zu seinem Stammplatz, dem Geldautomaten."
+            return self.setup_state_gohome(gs)
 
         else:  # TIE
             self.attack_counter = 2
             self.dog_state_message = "Der Hund ist vorsichtig"
-            return "***Unentschieden!***"
+            return "nichts"
 
     # ============== DEBUGGING AUSGABE ==============
 
