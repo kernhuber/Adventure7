@@ -14,6 +14,7 @@ from Utils import dpprint, dprint, dl
 class PlayerState:
     from GameObject import GameObject
     name: str
+    # session_id: str  # Will be populated later
     location: Place
     inventory: List[GameObject] = field(default_factory=list)
     # last_input: str = "Ich sehe mich erst einmal um."

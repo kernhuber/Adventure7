@@ -92,6 +92,7 @@ class WebAdventureServer:
 
                 # Spieler erstellen
                 player = PlayerState("WebPlayer", game.places["p_start"])
+                player.session_id = session_id  # 👈 Spieler bekommt seine Session-ID
                 game.players.append(player)
 
                 # Umschlag hinzufügen
@@ -123,6 +124,7 @@ class WebAdventureServer:
                     "pending_llm_input": None,  # Pending input wie in PlayerState
                     "minigame_active": False  # NEUE: Mini-Game Status
                 }
+                game_state.cmd_q = self.game_sessions[session_id]["cmd_q"]
 
                 # Initialisiere Scene-Cache für diese Session
                 if not hasattr(self, '_session_scene_cache'):
@@ -140,6 +142,7 @@ class WebAdventureServer:
                     "pending_llm_input": None,
                     "minigame_active": False
                 }
+                game_state.cmd_q = self.game_sessions[session_id]["cmd_q"]
         else:
             # Demo-Modus
             dprint(dl.WEBGUI, f"📱 Erstelle Demo-GameState...")
@@ -151,6 +154,7 @@ class WebAdventureServer:
                 "pending_llm_input": None,
                 "minigame_active": False
             }
+            game_state.cmd_q = self.game_sessions[session_id]["cmd_q"]
 
         # Sende initialen Zustand
         await self.send_game_state(websocket, self.game_sessions[session_id]["state"])
@@ -526,9 +530,19 @@ class WebAdventureServer:
                 return
 
             # Schritt 3: Verarbeite User Input
-            if user_input.lower() in ["quit", "inventory", "dogstate", "nichts", "context", "toggle_layout"]:
+            if user_input.lower() in ["quit", "inventory", "dogstate", "nichts", "context", "toggle_layout","pinpad"]:
                 # Direkte Commands ohne LLM-Parsing
-                session["cmd_q"].append({'function_call': {'name': user_input.lower(), 'args': {}}})
+                if user_input.lower().startswith("pinpad"):
+                    hash = "81dc9bdb52d04dc20036dbd8313ed055"  # MD5 für 1234
+                    pin_result = await self.ask_for_pin(websocket, hash)
+                    session["cmd_q"].append({
+                        "function_call": {
+                            "name": "zurueckweisen",
+                            "args": {"why": f"PIN-Eingabe ergab: {pin_result}"}
+                        }
+                    })
+                else:
+                    session["cmd_q"].append({'function_call': {'name': user_input.lower(), 'args': {}}})
             else:
                 # LLM-Parsing erforderlich
                 if session["type"] == "real" and GAME_MODULES_AVAILABLE:
@@ -650,6 +664,7 @@ class WebAdventureServer:
         try:
             # Bestimme ob Narration aktualisiert werden soll
             func_name = command_dict.get('function_call', {}).get('name', '')
+            args = command_dict.get('function_call', {}).get('args', {})
             queue_empty = len(session["cmd_q"]) == 0
             is_look_around = func_name == "umsehen"
 
@@ -670,7 +685,17 @@ class WebAdventureServer:
                     # Durst-Logik - GENAU wie in Player_game_move
                     player.thirst_counter -= 1
                     thirst_message = ""
+                    # ⬇️ Deine neue Behandlung VOR dem allgemeinen Aufruf
+                    if func_name == "pinpad":
+                        hash = args.get("hash", "")
+                        websocket = game.web_sessions.get(session_id)
+                        pin_result = await self.ask_for_pin(websocket, hash)
 
+                        if pin_result == "OK":
+                            game.objects["o_geld_dollar"].hidden = False
+                            return "**Die Zahl stimmt!** Der Automat rattert und spuckt frische US-Dollar aus."
+                        else:
+                            return " --- Die Zahl ist falsch. ---"
                     if player.thirst_counter == 0:
                         game.game_over = True
                         thirst_message = "***Leider bist du verdurstet!***"
@@ -904,6 +929,27 @@ class WebAdventureServer:
         except KeyboardInterrupt:
             dprint(dl.WEBGUI, f"\n👋 Server beendet")
 
+    async def ask_for_pin(self, websocket, expected_md5_hash: str) -> str:
+        """
+        Fordere den WebClient auf, eine PIN-Eingabe durchzuführen und gib "OK" oder "FAIL" zurück.
+        """
+        try:
+            await websocket.send(json.dumps({
+                "type": "pinpad",
+                "hash": expected_md5_hash
+            }))
+            dprint(dl.WEBGUI, f"🔐 PINPAD an Client gesendet")
+
+            # Warte auf die Antwort vom Client
+            async for message in websocket:
+                data = json.loads(message)
+                if data.get("type") == "pinpad_result":
+                    result = data.get("result", "FAIL")
+                    dprint(dl.WEBGUI, f"🔐 PINPAD Ergebnis empfangen: {result}")
+                    return result
+        except Exception as e:
+            dprint(dl.WEBGUI, f"❌ Fehler in ask_for_pin: {e}")
+            return "FAIL"
 
 def create_working_html():
     """Erstelle eine garantiert funktionierende HTML-Datei MIT Mini-Game Support"""
@@ -1137,6 +1183,9 @@ def create_working_html():
 
     <!-- Scripts -->
     <script src="minigames.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="pinpad.js"></script>
+    
     <script>
         console.log('🚀 Adventure mit Mini-Games startet...');
 
@@ -1233,6 +1282,17 @@ def create_working_html():
                         break;
                     case 'minigame_complete': // NEUE
                         this.handleMinigameComplete(data);
+                        break;
+                    case 'pinpad':
+                        const hash = data.hash;
+                        showPinPad(hash).then(result => {
+                            if (backend && backend.ws && backend.ws.readyState === WebSocket.OPEN) {
+                                backend.ws.send(JSON.stringify({
+                                    type: "pinpad_result",
+                                    result: result
+                                }));
+                            }
+                        });
                         break;
                     case 'info':
                         gameState.lastAction = {
@@ -1582,6 +1642,8 @@ def run_working_adventure():
         dprint(dl.WEBGUI, "\n👋 Server beendet")
     except Exception as e:
         dprint(dl.WEBGUI, f"❌ Fehler: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":

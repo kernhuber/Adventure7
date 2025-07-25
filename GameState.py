@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections import deque
 
 from Place import Place
 from Way import Way
@@ -25,9 +26,9 @@ class GameState:
         self.objects = None
         self.ways = None
         self.places = None
-        self.web_sessions = {}  # Tracking für aktive Web-Sessions
+        self.web_sessions = {}      # Tracking für aktive Web-Sessions
         self.active_minigames = {}  # Tracking für laufende Mini-Games
-
+        self.cmd_q = deque()        # Will be populated by WebGameServer class
         self.init_game()
 
     #
@@ -227,10 +228,12 @@ class GameState:
         self.schuppentuer=False
         self.leiter = False
         self.hebel = False                 # Warenautomat --> Ubahn
-        self.geheimzahl = 18513            # Geldautomat - wobei der nur zwischen 0 und 999 akzeptiert
+        from random import randint
+        self.geheimzahl = f"{randint(1, 9999):04d}"
+        # self.geheimzahl = 18513            # Geldautomat - wobei der nur zwischen 0 und 999 akzeptiert
         self.ubahn_in_otherstation = False # Ist unsere U-Bahn in Station 2?
         self.felsen = True                 # Ist der Felsen noch im Weg?
-        self.hauptschalter = False         # Ohne Strom geht hier gar nichts
+        self.hauptschalter = True          # Ohne Strom geht hier gar nichts
         self.dach = True                   # An Ende hat jemand das Dach weggesprengt
         self.warenautomat_intakt = True    # oder den Warenautomat
         self.geldautomat_intakt = True     # oder den Geldautomat
@@ -327,7 +330,7 @@ Zweite U-Bahn Station
                 "place_prompt": "",
                 "place_prompt_f": pp.p_geldautomat_place_prompt_f,
                 "ways": ["w_geldautomat_start", "w_geldautomat_warenautomat", "w_geldautomat_schuppen","w_geldautomat_felsen"],
-                "objects": ["o_geldautomat", "o_geld_dollar"],
+                "objects": ["o_geldautomat", "o_geld_dollar","o_ec_karte"],
                 "callnames": ["Geldautomat", "ATM"]
             },
             "p_schuppen": {
@@ -357,7 +360,7 @@ Auf dem Dach des Schuppens
                 "place_prompt": "",
                 "place_prompt_f": pp.p_innen_place_prompt_f,
                 "ways": ["w_innen_schuppen"],
-                "objects": ["o_leiter", "o_ec_karte", "o_pinsel", "o_farbeimer"],
+                "objects": ["o_leiter", "o_pinsel", "o_farbeimer"],
                 "callnames": ["innen", "Innenraum", "drinnen", "nach innen", "in den schuppen"]
             },
             "p_felsen": {
@@ -941,10 +944,10 @@ Auf dem Dach des Schuppens
                 "name": "o_ec_karte",
                 "examine": "Eine alte EC-Karte. Ob die noch geht?",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_hoehle",  # Which Player currently owns this item? Default: None
+                "ownedby": "p_geldautomat",  # Which Player currently owns this item? Default: None
                 "callnames": ["Geldkarte", "EC-Karte", "ECKarte", "Kreditkarte"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
+                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
                 "apply_f": af.o_ec_karte_apply_f,
                 "prompt_f": op.o_ec_karte_prompt_f
             },
@@ -1777,6 +1780,10 @@ Am Ort sind folgende Objekte zu sehen:"""
         for session_id, info in self.active_minigames.items():
             dprint(dl.GAMESTATE, f"  - {session_id}: {info['game_type']} ({info['status']})")
 
-
-
+    def get_session_id_for_player(self, player: PlayerState) -> str:
+        if hasattr(self, 'web_sessions'):
+            for sid, ws in self.web_sessions.items():
+                if hasattr(player, "session_id") and player.session_id == sid:
+                    return sid
+        return None
 

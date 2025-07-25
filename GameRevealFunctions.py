@@ -35,10 +35,9 @@ def o_geldboerse_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=N
 def o_muelleimer_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
     if gs.objects["o_geheimzahl"].hidden:
         from random import randint
-        gs.geheimzahl = randint(1, 9999)
         gs.objects["o_geheimzahl"].hidden = False
-        gs.objects["o_geheimzahl"].examine = f"Eine Geheimzahl: {gs.geheimzahl:04}"
-        return f"Im Mülleimer findest Du einen Zettel mit einer Geheimzahl! Die Geheimzahl ist: {gs.geheimzahl:04}"
+        gs.objects["o_geheimzahl"].examine = f"Eine Geheimzahl: {gs.geheimzahl}"
+        return f"Im Mülleimer findest Du einen Zettel mit einer Geheimzahl! Die Geheimzahl ist: {gs.geheimzahl}"
     else:
         return gs.objects["o_geheimzahl"].examine
 

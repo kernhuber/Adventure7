@@ -252,18 +252,47 @@ def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=Non
 
     if pl.location.name!="p_geldautomat" and onwhat.name!="o_geldautomat":
         return "Ich verstehe nicht, was genau du mit der Geldkarte machen willst!"
+    #
+    # Web-Version oder nicht?
+    #
+    is_web_interface = (hasattr(gs, 'web_sessions') and
+                        len(getattr(gs, 'web_sessions', {})) > 0)
+    if not is_web_interface:
+        print(f"{'*'*60}")
+        print(f"*{' '*58}*")
+        s=("Bitte geben sie die Geheimzahl ein!").center(58," ")
+        print(f'*{s}*')
+        print(f"*{' ' * 58}*")
+        print(f"{'*' * 60}")
+        z = -1
+        while z<0:
+            x = input("Geheimzahl: ")
+            if x.isdigit():
+                z = f'{int(x):04d}'
+    else:
+        #
+        # Get number from the web interface, have
+        #
 
-    print(f"{'*'*60}")
-    print(f"*{' '*58}*")
-    s=("Bitte geben sie die Geheimzahl ein!").center(58," ")
-    print(f'*{s}*')
-    print(f"*{' ' * 58}*")
-    print(f"{'*' * 60}")
-    z = -1
-    while z<0:
-        x = input("Geheimzahl: ")
-        if x.isdigit():
-            z = int(x)
+
+#----
+        # Statt pl.websocket
+        session_id = getattr(pl, 'session_id', None)
+
+        if session_id is None:
+            return "Fehler beim Zugriff auf Web-Session."
+#---
+        # Fordere PIN über Web-GUI an → Command-Queue!
+        gs.cmd_q.append({
+            "function_call": {
+                "name": "check_pinpad",
+                "args": {
+                    "hash": gs.geheimzahl_md5
+                }
+            }
+        })
+
+
     if gs.geheimzahl == z:
         gs.objects["o_geld_dollar"].hidden = False
         return "**Die Zahl stimmt!** Du tippst die entsprechenden Tasten - der Automat rattert, und spuckt ein Bündel Scheine aus. Frisch gedruckte US-Dollar!"
