@@ -236,7 +236,7 @@ class NPCPlayerState(PlayerState):
 
             return f"MINIGAME:{selected_game}"
 
-    def gets_attacked_old(self, gs:GameState, pl:PlayerState):
+    def gets_attacked(self, gs:GameState, pl:PlayerState):
         """Dog gets attacked by Player!"""
         self.dog_state = DogState.ATTACK
         self.way_home = deque()
@@ -398,7 +398,7 @@ Beschreibung des Hundes
 
     # NEUE Methoden am Ende der NPCPlayerState-Klasse hinzufügen:
 
-    def gets_attacked(self, gs: GameState, pl: PlayerState):
+    def gets_attacked_new(self, gs: GameState, pl: PlayerState):
         """
         KORRIGIERTE VERSION mit richtigen DogState-Werten
         Player attacks dog - starte Mini-Game
