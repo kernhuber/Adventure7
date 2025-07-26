@@ -233,7 +233,7 @@ class GameState:
         # self.geheimzahl = 18513            # Geldautomat - wobei der nur zwischen 0 und 999 akzeptiert
         self.ubahn_in_otherstation = False # Ist unsere U-Bahn in Station 2?
         self.felsen = True                 # Ist der Felsen noch im Weg?
-        self.hauptschalter = True          # Ohne Strom geht hier gar nichts
+        self.hauptschalter = False         # Ohne Strom geht hier gar nichts
         self.dach = True                   # An Ende hat jemand das Dach weggesprengt
         self.warenautomat_intakt = True    # oder den Warenautomat
         self.geldautomat_intakt = True     # oder den Geldautomat
@@ -385,7 +385,7 @@ Auf dem Dach des Schuppens
                 "place_prompt": "",
                 "place_prompt_f": pp.p_hoehle_place_prompt_f,
                 "ways": ["w_hoehle_felsen"],
-                "objects": ["o_skelett", "o_geldboerse","o_ec_karte"],
+                "objects": ["o_skelett", "o_geldboerse", "o_ec_karte"],
                 "callnames": ["Höhle", "Hoehle"]
             }
         }
@@ -953,7 +953,7 @@ Auf dem Dach des Schuppens
                 "name": "o_ec_karte",
                 "examine": "Eine alte EC-Karte. Ob die noch geht?",  # Text to me emitted when object is examined
                 "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_geldautomat",  # Which Player currently owns this item? Default: None
+                "ownedby": "p_hoehle",  # Which Player currently owns this item? Default: None
                 "callnames": ["Geldkarte", "EC-Karte", "ECKarte", "Kreditkarte"],
                 "fixed": False,  # False bedeutet: Kann aufgenommen werden
                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
@@ -1723,15 +1723,19 @@ Am Ort sind folgende Objekte zu sehen:"""
     # Additional code for web based mini games
     #
 
+    from WebDialogs import WebDialogs
 
     def register_web_session(self, session_id, websocket=None):
         """Registriere eine neue Web-Session"""
+        from WebDialogs import WebDialogs
         self.web_sessions[session_id] = {
             'websocket': websocket,
             'active': True,
             'minigame_active': False,
-            'created_at': self.time
+            'created_at': self.time,
+            'WebDialogs': WebDialogs(websocket,session_id)
         }
+
 
     def unregister_web_session(self, session_id):
         """Entferne eine Web-Session"""

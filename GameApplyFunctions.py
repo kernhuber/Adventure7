@@ -279,7 +279,6 @@ def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=Non
         # Get number from the web interface, have
         #
 
-
 #----
         # Statt pl.websocket
         session_id = getattr(pl, 'session_id', None)
