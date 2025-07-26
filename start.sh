@@ -2,6 +2,7 @@
 git pull
 git checkout Adventure9-Zombie
 test -e ./venv || ( python3 -m venv ./venv; . ./venv/bin/activate; pip install -r requirements.txt )
+test -e ./.apikey && . ./.apikey
 clear
 echo
 echo
@@ -13,5 +14,5 @@ else
   export GOOGLE_API_KEY
 fi
 
-python3 Adventure9.py
+python3 ./web_backend_server.py
 
