@@ -448,8 +448,9 @@ Beschreibung des Hundes
             self.dog_state = DogState.ATTACK  # KORRIGIERT: dog_state (nicht dog_status)
             self.attack_counter = 1  # KORRIGIERT: Reduziert für sofortigen Angriff
             self.dog_state_message = "Der Hund hat dich besiegt und ist nun sehr aggressiv!"
-
-            return """***Der Hund hat dich im Kampf besiegt!***"""
+            gamestate.game_won = False
+            gamestate.game_over = True
+            return """***Der Hund hat dich im Kampf besiegt! Du verlierst das Spiel!***"""
 
         elif fight_result == DogFight.LOST:
             # Hund verliert - KORRIGIERT: Verwende DogState.GOHOME (Hund flieht)

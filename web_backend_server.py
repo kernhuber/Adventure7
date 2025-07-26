@@ -9,11 +9,75 @@ import random
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from typing import Dict, Set
 from collections import deque
+
+from tornado import websocket
+
 import Utils
 
 Utils.ADV_LOGGER = Utils.dlogger()
 
 from Utils import tw_print, dprint, dpprint, dl
+
+txt_final_lost_text = """
+
+################################
+
+# An einem weit entfernten Ort #
+
+################################
+
+
+Eine schwarz gekleidete Gestalt lehnt sich in einem Ledersessel zurück und stößt mit einem leisen Hauchen beißenden Zigarettenrauch aus. Dann drückt sie die Zigarette langsam im Aschenbecher aus und fragt: „Ist der Bote gekommen?“
+
+
+„Ich fürchte nicht“, erwidert eine zweite Gestalt, die am anderen Ende des Raumes in einem Sessel der bequemen Sitzecke sitzt und gemächlich an einem Glas mit goldenem Whiskey nippt.
+
+
+„Das war zu befürchten.“ – „Ja … und nun?“
+
+
+Die erste Gestalt erhebt sich und verschränkt die Hände hinter dem Rücken. Nach kurzem Überlegen sagt sie ruhig: „Wie geplant. Es bleibt leider keine andere Wahl.“
+
+
+Die zweite Gestalt nickt wortlos. Gemeinsam treten sie zu einem Schaltpult in der Ecke des Raumes.
+
+
+Jeder steckt einen Schlüssel in eines der beiden Schlüssellöcher und beide betätigen gleichzeitig den Schalter in der Mitte des Pultes.
+
+
+*********************************
+
+*** Dann geht die Welt unter. ***
+
+*********************************
+
+"""
+
+txt_final_won_text = """
+
+################################
+# An einem weit entfernten Ort #
+################################
+
+Eine schwarz gekleidete Gestalt lehnt sich in einem Ledersessel zurück.
+„Der Bote hat den Umschlag gebracht“, sagt sie und wedelt mit dem Umschlag.
+
+„Das sind großartige Neuigkeiten!“, erwidert eine zweite Gestalt und erhebt sich aus einer bequemen Sitzecke am anderen Ende des Raumes. Einen Moment lang starren beide den Umschlag an. Dann öffnet ihn die erste Gestalt und zieht einen vergilbten Notizzettel hervor. Auf diesem sind in krakeliger Handschrift einige Zeichen gekritzelt.
+
+Lange betrachten sie schweigend den Zettel.
+Dann entspannen sich ihre Gesichtszüge.
+
+„Damit ist die Bedrohung endgültig vorbei.“
+„Gott sei Dank“, murmelt die erste Gestalt, zerknüllt den Zettel und wirft ihn in einen Papierkorb neben der Sitzecke.
+
+Anschließend verlassen beide den Raum durch eine schwere, mit Leder gepolsterte Tür.
+
+******************************
+*** Die Welt ist gerettet! ***
+******************************
+
+"""
+
 
 # Prüfe ob websockets installiert ist
 try:
@@ -284,7 +348,7 @@ class WebAdventureServer:
                 "game_over": getattr(game, 'game_over', False),
                 "game_won": getattr(game, 'game_won', False),
                 "player": {
-                    "name": getattr(player, 'name', 'WebPlayer'),
+                    "name": getattr(player, 'name', player.name),
                     "location": getattr(current_location, 'callnames', ['Unbekannt'])[0],
                     "thirst": getattr(player, 'thirst_counter', 40),
                     "inventory": [getattr(item, 'callnames', ['Unbekanntes Item'])[0]
@@ -422,6 +486,16 @@ class WebAdventureServer:
                     'LOST': DogFight.LOST,  # Hund verliert
                     'TIE': DogFight.TIE  # Unentschieden
                 }
+                #
+                # Wenn der Hund gesiegt hat, ist das Spiel zu Ende
+                #
+                if result == "WON":
+                    txt=f"""Der Hund hat Dich besiegt - du verlierst das Spiel!
+  
+  {txt_final_lost_text}                  
+                    """
+                    game = session["game"]
+                    await self.do_game_over(session_id, game.game_won, txt)
 
                 dog_fight_result = dog_result_map.get(result, DogFight.TIE)
 
@@ -707,7 +781,21 @@ class WebAdventureServer:
                         thirst_message = f"***Du hast jetzt richtig Durst! Es reicht noch für {player.thirst_counter} Spielrunden, dann verdurstest Du!***"
 
                     # Echte Game-Engine
-                    result = game.verb_execute_json(player, command_dict)
+                    if not game.game_over:
+                        result = game.verb_execute_json(player, command_dict)
+                    #
+                    # game_over kann durch Verdursten oder durch irgendwelche Aktionen bei verb_execute kommen
+                    #
+                    if game.game_over:
+                        txt = f"""
+{thirst_message}
+                        
+{result}
+                        
+{txt_final_won_text if game.game_won else txt_final_lost_text}
+"""
+
+                        await self.do_game_over(session_id,game.game_won,txt)
 
                     # Füge Durst-Nachricht hinzu, falls vorhanden
                     if thirst_message:
@@ -929,6 +1017,47 @@ class WebAdventureServer:
         except KeyboardInterrupt:
             dprint(dl.WEBGUI, f"\n👋 Server beendet")
 
+    import re
+
+    def clean_game_over_text(self,text):
+        import re
+        """Bereinigt Text für optimale Darstellung im Game-Over-Screen"""
+        # 1. Normalisiere Zeilenenumbrüche
+        text = text.replace('\r\n', '\n').replace('\r', '\n')
+
+        # 2. Entferne Leerzeichen am Zeilenanfang/-ende jeder Zeile
+        lines = [line.strip() for line in text.split('\n')]
+        text = '\n'.join(lines)
+
+        # 3. Reduziere mehrfache Leerzeilen auf maximal eine
+        #text = re.sub(r'\n\s*\n\s*\n+', '\n\n', text)
+
+        # 4. Entferne führende/trailing Leerzeilen
+        text = text.strip()
+
+        return text
+
+    async def do_game_over(self, session_id, won:bool, text:str):
+        dprint(dl.WEBGUI,"Ending game with explicit command")
+        text = self.clean_game_over_text(text)
+        try:
+            # WebSocket aus der Session holen
+            if session_id in self.game_sessions:
+                session = self.game_sessions[session_id]
+                if session["type"] == "real" and "game" in session:
+                    game = session["game"]
+                    # WebSocket aus game.web_sessions holen (falls registriert)
+                    if hasattr(game, 'web_sessions') and session_id in game.web_sessions:
+                        websocket = game.web_sessions[session_id]["websocket"]
+                        await websocket.send(json.dumps({"type": "game_over", "text": text, "won": won}))
+                        dprint(dl.WEBGUI,"Sent game_over message to client")
+                        return
+
+            dprint(dl.WEBGUI, "❌ WebSocket für Game-Over nicht gefunden")
+        except Exception as e:
+            dpprint(dl.WEBGUI,e)
+
+
     async def ask_for_pin(self, websocket, expected_md5_hash: str) -> str:
         """
         Fordere den WebClient auf, eine PIN-Eingabe durchzuführen und gib "OK" oder "FAIL" zurück.
@@ -951,9 +1080,11 @@ class WebAdventureServer:
             dprint(dl.WEBGUI, f"❌ Fehler in ask_for_pin: {e}")
             return "FAIL"
 
-def create_working_html():
+def create_working_html(playername:str):
     """Erstelle eine garantiert funktionierende HTML-Datei MIT Mini-Game Support"""
-    html_content = '''<!DOCTYPE html>
+    import re
+
+    html_content = re.sub(r"%%pl_name%%", playername,'''<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -1185,13 +1316,14 @@ def create_working_html():
     <script src="minigames.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="pinpad.js"></script>
+    <script src="game_over.js"></script>
     
     <script>
         console.log('🚀 Adventure mit Mini-Games startet...');
 
         let gameState = {
             round: 1,
-            player: { name: "WebPlayer", location: "Start", thirst: 40, inventory: [] },
+            player: { name: "%%pl_name%%", location: "Start", thirst: 40, inventory: [] },
             environment: { objects: [], ways: [], blockedWays: [] },
             dog: {location: "Geldautomat", state:"Hund tut nichts..."},
             lastAction: { command: "Noch keine", result: "Warte auf Verbindung..." }
@@ -1255,6 +1387,7 @@ def create_working_html():
             }
 
             handleMessage(data) {
+                console.log("data.type = ", data.type);
                 switch(data.type) {
                     case 'game_state':
                         this.updateGameState(data.data);
@@ -1293,6 +1426,11 @@ def create_working_html():
                                 }));
                             }
                         });
+                        break;
+                    case 'game_over':
+                        const text = data.text
+                        const won = data.won
+                        gameOver(won,text)
                         break;
                     case 'info':
                         gameState.lastAction = {
@@ -1623,7 +1761,7 @@ def create_working_html():
         console.log('✅ Script mit Mini-Game Support geladen');
     </script>
 </body>
-</html>'''
+</html>''')
 
     with open("adventure_web.html", "w", encoding="utf-8") as f:
         f.write(html_content)
@@ -1648,5 +1786,5 @@ def run_working_adventure():
 
 if __name__ == "__main__":
     # Erstelle HTML-File mit Mini-Game Support
-    create_working_html()
+    create_working_html("WebPlayer")
     run_working_adventure()
