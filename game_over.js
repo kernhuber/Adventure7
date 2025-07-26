@@ -250,11 +250,11 @@ function gameOver(won, text) {
         }
 
         // Timing
-        let delay = 80; // Standard für Zeichen
+        let delay = 40; // Standard für Zeichen
         if (token.type === 'break') {
-            delay = 200; // Pause bei <br>
+            delay = 100; // Pause bei <br>
         } else if (token.content === ' ') {
-            delay = 50; // Leerzeichen schneller
+            delay = 25; // Leerzeichen schneller
         }
 
         setTimeout(typeNextToken, delay);
