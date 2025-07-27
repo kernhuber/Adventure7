@@ -42,7 +42,32 @@ class MiniGames {
             text-align: center;
             box-shadow: 0 0 20px rgba(205, 133, 63, 0.5);
         `;
+            // Bild-Container für die linke Seite
+            const imageContainer = document.createElement('div');
+            imageContainer.style.cssText = `
+                width: 50%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                padding-left: 50px;
+            `;
 
+            const gameImage = document.createElement('img');
+            gameImage.src = 'dog.png';
+            gameImage.style.cssText = `
+                max-width: 80%;
+                max-height: 60%;
+                object-fit: contain;
+                filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+            `;
+
+            // Fehlerbehandlung für Bilder
+            gameImage.onerror = function() {
+                this.style.display = 'none';
+            };
+
+        overlay.appendChild(gameImage);
         overlay.appendChild(gameContainer);
         document.body.appendChild(overlay);
     }
