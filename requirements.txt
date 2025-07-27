@@ -3,3 +3,4 @@ google-generativeai
 regex
 websockets
 tornado
+python-dotenv

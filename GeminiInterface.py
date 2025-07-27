@@ -5,6 +5,8 @@ import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
 from pprint import pprint
 from Utils import dprint, dpprint, dl
 from google.api_core import retry
+import os
+from dotenv import load_dotenv
 
 # Konfiguration der Gemini API mit deinem API-Schlüssel
 # Es wird dringend empfohlen, den API-Schlüssel nicht direkt im Code zu speichern!
@@ -15,8 +17,9 @@ from google.api_core import retry
 class GeminiInterface:
     def  __init__(self):
         apikey = os.environ.get("GOOGLE_API_KEY",None)
-        while apikey == None:
-            apikey = input("Google API Key: ")
+        if not apikey:
+            load_dotenv("apikey.env")
+            apikey = os.getenv("GOOGLE_API_KEY")  # Ausgabe: bar
 
         genai.configure(api_key=apikey)
         #
