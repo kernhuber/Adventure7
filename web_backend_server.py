@@ -4,6 +4,8 @@ import json
 import threading
 import webbrowser
 import time
+import sys
+import os
 from pathlib import Path
 import random
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -98,6 +100,14 @@ except ImportError as e:
     dprint(dl.WEBGUI, f"⚠️  Game-Module nicht verfügbar: {e}")
     dprint(dl.WEBGUI, "⚠️  Verwende Demo-Modus")
     GAME_MODULES_AVAILABLE = False
+
+#
+# PyInstaller-Mode?
+#
+    if hasattr(sys, '_MEIPASS'):
+        # Im PyInstaller-Betrieb
+        base_path = sys._MEIPASS
+        os.chdir(base_path)
 
 
 class WebAdventureServer:
