@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>🏜️ Wüsten-Adventure mit Mini-Games</title>
+    <style>
+        body { font-family: monospace; background: #2c1810; color: #f5deb3; padding: 20px; }
+        .panel { background: rgba(0,0,0,0.7); border: 2px solid #cd853f; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
+        #user-input { width: 80%; padding: 10px; background: #333; color: #f5deb3; border: 1px solid #cd853f; }
+        #send-button { padding: 10px 20px; background: #8b4513; color: #f5deb3; border: 1px solid #cd853f; cursor: pointer; }
+        .status { color: #ffd700; }
+        .debug-info { font-size: 0.8em; color: #888; margin-top: 5px; }
+        .explosion { color: #ff4444; font-weight: bold; animation: blink 1s infinite; }
+        .explosion-timer { color: #ffaa00; font-weight: bold; }
+        @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.5; } }
+
+        .dog-danger { 
+            background: rgba(255, 0, 0, 0.3); 
+            border-color: #ff0000; 
+            animation: danger-pulse 0.5s infinite; 
+        }
+
+        .dog-nearby { 
+            background: rgba(255, 165, 0, 0.2); 
+            border-color: #ffa500; 
+        }
+
+        .dog-safe { 
+            background: rgba(0, 255, 0, 0.1); 
+            border-color: #00ff00; 
+        }
+
+        @keyframes danger-pulse {
+            0% { box-shadow: 0 0 5px rgba(255, 0, 0, 0.5); }
+            100% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+        }
+
+        /* Explosions-Overlay */
+        #explosion-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .explosion-cloud {
+            position: relative;
+            width: 400px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: explosion-shake 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes explosion-shake {
+            0% { transform: translate(0px, 0px) scale(1); }
+            100% { transform: translate(2px, -2px) scale(1.02); }
+        }
+
+        .flash {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            animation: flashAnim 0.25s ease-out forwards;
+        }
+
+        @keyframes flashAnim {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .core {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: radial-gradient(circle, red, black);
+            animation: coreAnim 3s ease-out forwards;
+            opacity: 0.9;
+        }
+
+        @keyframes coreAnim {
+            0%   { transform: scale(3); background: white; opacity: 1; }
+            30%  { transform: scale(1); background: orange; }
+            60%  { transform: scale(0.6); background: red; }
+            100% { transform: scale(0.3); background: black; opacity: 0; }
+        }
+
+        .shockwave {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid white;
+            opacity: 0.5;
+            animation: shockwaveAnim 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes shockwaveAnim {
+            0%   { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(15); opacity: 0; }
+        }
+
+        #explosion-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .particle, .sparkle {
+            position: absolute;
+            border-radius: 50%;
+            animation-fill-mode: forwards;
+        }
+
+        .particle {
+            background-color: white;
+            animation-name: particleAnim;
+        }
+
+        @keyframes particleAnim {
+            0%   { transform: translate(0, 0) scale(1); background-color: white;   opacity: 1; }
+            20%  { background-color: yellow; }
+            40%  { background-color: orange; }
+            60%  { background-color: red; }
+            80%  { background-color: brown; }
+            100% { transform: var(--translate) scale(0.1); background-color: black; opacity: 0; }
+        }
+
+        .sparkle {
+            background-color: gold;
+            box-shadow: 0 0 8px 2px gold;
+            animation-name: sparkleAnim;
+        }
+
+        @keyframes sparkleAnim {
+            0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+            25%  { transform: var(--sparkle-1) scale(0.8); opacity: 0.8; }
+            50%  { transform: var(--sparkle-2) scale(0.6); opacity: 0.6; }
+            75%  { transform: var(--sparkle-3) scale(0.4); opacity: 0.4; }
+            100% { transform: var(--sparkle-4) scale(0.2); opacity: 0; }
+        }
+
+        .message-box {
+            background-color: darkred;
+            color: white;
+            padding: 40px;
+            font-size: 2em;
+            display: none;
+            z-index: 10;
+            text-align: center;
+            border: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏜️ Wüsten-Adventure <span style="color: #cd853f;">🎮 mit Mini-Games</span></h1>
+    <div id="connection-status" class="status">Verbinde...</div>
+
+    <div class="grid">
+        <div id="scene" class="panel">
+            <h2>🌅 Aktuelle Szene</h2>
+            <div id="scene-content">Lade Spiel...</div>
+        </div>
+
+        <div id="status" class="panel">
+            <h2>👤 Status</h2>
+            <div id="player-info">
+                <div id="player-name">Spieler: Lade...</div>
+                <div id="location">Ort: Lade...</div>
+                <div id="thirst">Durst: <span id="thirst-value">40/40</span></div>
+            </div>
+            <h3>🎒 Inventar:</h3>
+            <div id="inventory">Lade...</div>
+        </div>
+
+        <div id="dogstate" class="panel">
+            <h2>🐕 Hund </h2>
+            <div id="dog-info">
+                <div id="dog-location"> Ort: Lade... </div>
+                <div id="dog-state"> Tut gerade: Lade ...</div>
+            </div>
+        </div>
+
+        <div id="environment" class="panel">
+            <h2>🗺️ Umgebung</h2>
+            <h3>📦 Objekte:</h3>
+            <ul id="objects-list"><li>Lade...</li></ul>
+            <h3>🚶 Wege:</h3>
+            <ul id="ways-list"><li>Lade...</li></ul>
+        </div>
+    </div>
+
+    <div id="last-action" class="panel">
+        <h2>⚡ Letzte Aktion</h2>
+        <div id="last-command"><strong>Kommando:</strong> <span id="command-text">Noch keine</span></div>
+        <div id="last-result"><div id="result-text">Warte auf Verbindung...</div></div>
+        <div class="debug-info" id="debug-info">Debug: Warte auf Verbindung...</div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <input type="text" id="user-input" placeholder="Was möchtest du tun?" onkeypress="if(event.key==='Enter') sendCommand()" disabled>
+        <button id="send-button" onclick="sendCommand()" disabled>Senden</button>
+    </div>
+
+    <!-- Explosions-Overlay -->
+    <div id="explosion-overlay" onclick="hideExplosion()">
+        <div class="flash"></div>
+        <div class="core"></div>
+        <div class="shockwave" id="shockwave"></div>
+        <div id="explosion-particles"></div>
+        <div class="message-box" id="explosion-message"></div>
+    </div>
+
+    <!-- Mini-Games werden von minigames.js erstellt -->
+
+    <!-- Scripts -->
+    <script src="minigames.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="welcome.js"></script>
+    <script src="pinpad.js"></script>
+    <script src="game_over.js"></script>
+    <script src="askplayername.js"></script>
+    <script src="websockets.js"></script>
+</body>
+</html>
