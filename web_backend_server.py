@@ -418,65 +418,10 @@ class WebAdventureServer:
         except Exception as e:
             dprint(dl.WEBGUI, f"❌ Fehler beim Senden: {e}")
 
-    # ============== NEUE MINI-GAME FUNKTIONEN ==============
 
-    def create_minigame_data(self, game_type):
-        """Erstelle Spiel-spezifische Daten für Mini-Games"""
-        if game_type == "sum_fight":
-            # Generiere 10 Zufallszahlen wie in MiniGames.py
-            stones = [random.randint(1, 10) for _ in range(10)]
-            total_sum = sum(stones)
-            max_stone = max(stones)
 
-            # Zielzahl muss mindestens so groß wie der größte Stein sein
-            reach = random.randint(max_stone, total_sum)
 
-            # Münzwurf wer anfängt (0 = Hund, 1 = Spieler)
-            who_starts = random.choice([0, 1])
-
-            dprint(dl.WEBGUI, f"🎲 Sum Fight: stones={stones}, reach={reach}, starts={who_starts}")
-
-            return {
-                "stones": stones,
-                "reach": reach,
-                "whoStarts": who_starts
-            }
-
-        # Andere Spiele brauchen keine speziellen Daten
-        return {}
-
-    async def trigger_minigame(self, websocket, game_type):
-        """Starte ein Mini-Game im Web-Interface"""
-        session_id = str(id(websocket))
-        if session_id not in self.game_sessions:
-            return
-
-        session = self.game_sessions[session_id]
-
-        # Markiere Mini-Game als aktiv
-        session["minigame_active"] = True
-
-        # Registriere Mini-Game im GameState falls verfügbar
-        if session["type"] == "real" and "game" in session:
-            game = session["game"]
-            player = game.players[0] if game.players else None
-            if player and hasattr(game, 'start_minigame_session'):
-                game.start_minigame_session(session_id, game_type, player)
-
-        # Erstelle Spiel-Daten
-        game_data = self.create_minigame_data(game_type)
-
-        # Sende Mini-Game-Aufforderung an Client
-        message = {
-            "type": "start_minigame",
-            "game_type": game_type,
-            "game_data": game_data
-        }
-
-        await websocket.send(json.dumps(message))
-        dprint(dl.WEBGUI, f"🎮 Mini-Game gestartet: {game_type}")
-
-    async def handle_minigame_result(self, websocket, data):
+    async def handle_minigame_result(self, websocket, result):
         """Verarbeite Ergebnis eines Mini-Games"""
         session_id = str(id(websocket))
         if session_id not in self.game_sessions:
@@ -487,10 +432,9 @@ class WebAdventureServer:
             return
 
         session = self.game_sessions[session_id]
-        game_type = data.get('game_type')
-        result = data.get('result')  # 'WON', 'LOST', 'TIE'
 
-        dprint(dl.WEBGUI, f"🎮 Mini-Game Ergebnis: {game_type} -> {result}")
+
+        dprint(dl.WEBGUI, f"🎮 Mini-Game Ergebnis:  -> {result}")
 
         # Markiere Mini-Game als nicht mehr aktiv
         session["minigame_active"] = False
@@ -539,7 +483,6 @@ class WebAdventureServer:
                 # Sende Ergebnis an Client
                 response = {
                     "type": "minigame_complete",
-                    "game_type": game_type,
                     "result": result,
                     "message": fight_message,
                     "game_state": self.serialize_real_game_state(game, update_narration=False, session_id=session_id)
@@ -557,14 +500,13 @@ class WebAdventureServer:
         else:
             # Demo-Modus
             demo_messages = {
-                'WON': f"***Hund gewinnt das {game_type}! (Demo)***",
-                'LOST': f"***Du gewinnst das {game_type}! (Demo)***",
-                'TIE': f"***{game_type} endet unentschieden! (Demo)***"
+                'WON': f"***Hund gewinnt den Kampf! (Demo)***",
+                'LOST': f"***Du gewinnst den Kampf! (Demo)***",
+                'TIE': f"***Der Kampf endet unentschieden! (Demo)***"
             }
 
             response = {
                 "type": "minigame_complete",
-                "game_type": game_type,
                 "result": result,
                 "message": demo_messages.get(result, "Mini-Game beendet (Demo)"),
                 "game_state": session["state"]
@@ -625,7 +567,7 @@ class WebAdventureServer:
                 return
 
             # Schritt 3: Verarbeite User Input
-            if user_input.lower() in ["quit", "inventory", "dogstate", "nichts", "context", "toggle_layout","pinpad"]:
+            if user_input.lower() in ["quit", "inventory", "dogstate", "nichts", "context", "toggle_layout","pinpad","minigame"]:
                 # Direkte Commands ohne LLM-Parsing
                 if user_input.lower().startswith("pinpad"):
                     hash = "81dc9bdb52d04dc20036dbd8313ed055"  # MD5 für 1234
@@ -634,6 +576,14 @@ class WebAdventureServer:
                         "function_call": {
                             "name": "zurueckweisen",
                             "args": {"why": f"PIN-Eingabe ergab: {pin_result}"}
+                        }
+                    })
+                elif user_input.lower().startswith("minigame"):
+                    minigame_result = await self.wd.do_minigame()
+                    session["cmd_q"].append({
+                        "function_call": {
+                            "name": "zurueckweisen",
+                            "args": {"why": f"Minigame-Result ergab: {minigame_result}"}
                         }
                     })
                 else:
@@ -714,16 +664,17 @@ class WebAdventureServer:
             # NEUE: Prüfe auf Mini-Game Trigger in NPC-Actions
             filtered_actions = []
             for action in npc_actions:
-                if 'MINIGAME:' in action:
+                if 'MINIGAME' in action:
                     # Extrahiere Mini-Game Type
-                    game_type = action.split('MINIGAME:')[1].strip()
-                    dprint(dl.WEBGUI, f"🎮 Mini-Game Trigger erkannt: {game_type}")
+                    dprint(dl.WEBGUI, f"🎮 Mini-Game Trigger erkannt!")
 
                     # Starte Mini-Game
-                    await self.trigger_minigame(websocket, game_type)
-
-                    # Ersetze die Nachricht durch einen Hinweis
-                    filtered_actions.append(f"**🎮 Ein Kampf beginnt!** Bereite dich auf das {game_type}-Mini-Game vor!")
+                    result = await self.wd.do_minigame()
+                    #
+                    # Find Dog in Players in current session
+                    #
+                    r = await self.handle_minigame_result(websocket,result)
+                    filtered_actions.append(r)
                 else:
                     # Formatiere normale Nachrichten für bessere Unterscheidung
                     if '💥 EXPLOSION:' in action:
@@ -986,8 +937,8 @@ class WebAdventureServer:
 
                     if message_type == 'command':
                         await self.handle_command(websocket, data)
-                    elif message_type == 'minigame_result':  # NEUE
-                        await self.handle_minigame_result(websocket, data)
+                    #elif message_type == 'minigame_result':  # NEUE
+                    #    await self.handle_minigame_result(websocket, data)
                     elif message_type == 'ping':
                         await websocket.send(json.dumps({"type": "pong"}))
                     else:

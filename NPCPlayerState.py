@@ -413,17 +413,13 @@ Beschreibung des Hundes
                             len(getattr(gs, 'web_sessions', {})) > 0)
 
         if is_web_interface:
-            # Web-Interface: Trigger Mini-Game über spezielle Nachricht
-            game_types = ['circle_fight', 'sum_fight', 'odd_even_fight', 'close_fight']
-            selected_game = random.choice(game_types)
-            dprint(dl.NPCPLAYERSTATE, f"🎮 Starte Web-Mini-Game: {selected_game}")
 
             # KORRIGIERT: Verwende richtige Attribut-Namen und DogState-Werte
             self.dog_state = DogState.ATTACK  # KORRIGIERT: dog_state (nicht dog_status)
             self.attack_counter = 2
             self.dog_state_message = "Der Hund kämpft gerade!"
 
-            return f"MINIGAME:{selected_game}"
+            return f"MINIGAME"
         else:
             # Text-Interface: Bestehende MiniGames.py Logik
             dprint(dl.NPCPLAYERSTATE, f"🎮 Starte Text-Mini-Game")

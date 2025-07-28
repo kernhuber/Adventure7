@@ -190,11 +190,11 @@ class AdventureBackend {
     }
 
     handleMinigameComplete(data) {
-        console.log(`✅ Mini-Game beendet: ${data.game_type} -> ${data.result}`);
+        console.log(`✅ Mini-Game beendet:  ${data.result}`);
 
         // Zeige Ergebnismeldung
         gameState.lastAction = {
-            command: `🎮 ${data.game_type}`,
+            command: `🎮 Minigame`,
             result: data.message
         };
 
