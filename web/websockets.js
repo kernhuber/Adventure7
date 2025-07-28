@@ -263,6 +263,18 @@ class AdventureBackend {
         if (newState.scene_description) {
             const content = document.getElementById('scene-content');
             if (content) content.innerHTML = newState.scene_description.replace(/\n/g, '<br>');
+
+                // ✨ Flash-Effekt auf Panel "scene"
+            console.log("Attempting to flash scene-content panel")
+            const panel = document.getElementById('scene');
+            if (panel) {
+                console.log("Found panel")
+                panel.classList.remove('flash-scene'); // falls schon vorhanden
+                void panel.offsetWidth; // Reflow erzwingen
+                panel.classList.add('flash-scene');
+            }
+            else
+                console.log("panel not found")
         }
     }
 
@@ -302,6 +314,23 @@ function updateDogDanger() {
     } else {
         // Weit weg - sicher
         dogDiv.classList.add('dog-safe');
+    }
+}
+
+function updateStatus() {
+
+    const plDiv = document.getElementById('status');
+    const thirst = (gameState.player?.thirst || 40)
+
+    // Entferne alle Status-Klassen
+    plDiv.classList.remove('player-danger', 'player-thirsty', 'player-safe');
+
+    if (thirst>=20) {
+        plDiv.classList.add('player-safe')
+    } else if (thirst>=10) {
+        plDiv.classList.add('player-thirsty')
+    } else {
+        plDiv.classList.add('player-danger')
     }
 }
 
@@ -357,6 +386,7 @@ function updateUI() {
         if (dog_loc) dog_loc.textContent = "Der Hund ist momentan hier: "+ (gameState.dog?.location || 'Unbekannt');
         if (dog_state) dog_state.textContent =  (gameState.dog?.state || 'Der Hund döst vor sich hin');
         updateDogDanger()
+        updateStatus()
 
     } catch (error) {
         console.error('❌ UI-Fehler:', error);

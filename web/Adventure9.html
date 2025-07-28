@@ -4,11 +4,17 @@
     <meta charset="UTF-8">
     <title>🏜️ Wüsten-Adventure mit Mini-Games</title>
     <style>
-        body { font-family: monospace; background: #2c1810; color: #f5deb3; padding: 20px; }
+        body { font-family: monospace; background: #2c1810; color: #f5deb3; padding: 20px; font-size:20px}
         .panel { background: rgba(0,0,0,0.7); border: 2px solid #cd853f; padding: 15px; margin: 10px 0; border-radius: 8px; }
         .grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
-        #user-input { width: 80%; padding: 10px; background: #333; color: #f5deb3; border: 1px solid #cd853f; }
-        #send-button { padding: 10px 20px; background: #8b4513; color: #f5deb3; border: 1px solid #cd853f; cursor: pointer; }
+        .subgrid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            grid-column: 1 / span 3; /* Subgrid soll sich über ganze Breite der übergeordneten Grid-Spalten erstrecken */
+        }
+        #user-input { width: 80%; padding: 10px; background: #333; color: #f5deb3; border: 1px solid #cd853f; font-size:24px }
+        #send-button { padding: 10px 20px; background: #8b4513; color: #f5deb3; border: 1px solid #cd853f; cursor: pointer; font-size:24px }
         .status { color: #ffd700; }
         .debug-info { font-size: 0.8em; color: #888; margin-top: 5px; }
         .explosion { color: #ff4444; font-weight: bold; animation: blink 1s infinite; }
@@ -29,6 +35,23 @@
         .dog-safe { 
             background: rgba(0, 255, 0, 0.1); 
             border-color: #00ff00; 
+        }
+
+
+        .player-danger {
+            background: rgba(255, 0, 0, 0.3);
+            border-color: #ff0000;
+            animation: danger-pulse 0.5s infinite;
+        }
+
+        .player-thirsty {
+            background: rgba(255, 165, 0, 0.2);
+            border-color: #ffa500;
+        }
+
+        .player-safe {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: #00ff00;
         }
 
         @keyframes danger-pulse {
@@ -163,6 +186,14 @@
             text-align: center;
             border: 2px solid white;
         }
+        @keyframes flash-highlight {
+            0%   { background-color: #ffe4b5; }
+            100% { background-color: rgba(0,0,0,0.7); }
+        }
+
+        .flash-scene {
+            animation: flash-highlight 0.4s ease-out;
+        }
     </style>
 </head>
 <body>
@@ -193,22 +224,24 @@
                 <div id="dog-state"> Tut gerade: Lade ...</div>
             </div>
         </div>
-
-        <div id="environment" class="panel">
-            <h2>🗺️ Umgebung</h2>
-            <h3>📦 Objekte:</h3>
-            <ul id="objects-list"><li>Lade...</li></ul>
-            <h3>🚶 Wege:</h3>
-            <ul id="ways-list"><li>Lade...</li></ul>
+        <div class="subgrid">
+            <div id="environment" class="panel">
+                <h2>🗺️ Umgebung</h2>
+                <h3>📦 Objekte:</h3>
+                <ul id="objects-list"><li>Lade...</li></ul>
+                <h3>🚶 Wege:</h3>
+                <ul id="ways-list"><li>Lade...</li></ul>
+            </div>
+            <div id="last-action" class="panel">
+                <h2>⚡ Letzte Aktion</h2>
+                <div id="last-command"><strong>Kommando:</strong> <span id="command-text">Noch keine</span></div>
+                <div id="last-result"><div id="result-text">Warte auf Verbindung...</div></div>
+                <div class="debug-info" id="debug-info">Debug: Warte auf Verbindung...</div>
+            </div>
         </div>
     </div>
 
-    <div id="last-action" class="panel">
-        <h2>⚡ Letzte Aktion</h2>
-        <div id="last-command"><strong>Kommando:</strong> <span id="command-text">Noch keine</span></div>
-        <div id="last-result"><div id="result-text">Warte auf Verbindung...</div></div>
-        <div class="debug-info" id="debug-info">Debug: Warte auf Verbindung...</div>
-    </div>
+
 
     <div style="margin-top: 20px;">
         <input type="text" id="user-input" placeholder="Was möchtest du tun?" onkeypress="if(event.key==='Enter') sendCommand()" disabled>

@@ -99,7 +99,7 @@ class ExplosionState(PlayerState):
             elif self.location.name == "p_geldautomat":
                 gs.geldautomat_intakt = False  # Fixed: war == statt =
                 log_explosion("  -->***Der Geldautomat ist zerstört!***")
-            elif self.location.name == "p_schuppen":
+            elif self.location.name == "p_schuppen" or self.location.name == "p_innen":
                 gs.schuppen_intakt = False
                 log_explosion("  -->***Der Schuppen ist zerstört!***")
 
