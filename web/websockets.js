@@ -342,7 +342,7 @@ function updateUI() {
 
         if (playerName) playerName.textContent = 'Spieler: ' + (gameState.player?.name || 'Unbekannt');
         if (location) location.textContent = 'Ort: ' + (gameState.player?.location || 'Unbekannt');
-        if (thirstValue) thirstValue.textContent = (gameState.player?.thirst || 40) + '/40';
+        if (thirstValue) thirstValue.textContent = 'In ' + (gameState.player?.thirst || 40) + ' Spielzügen verdurstest du.'
 
         const inventory = document.getElementById('inventory');
         if (inventory) {
