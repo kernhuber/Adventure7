@@ -12,7 +12,7 @@ unter, aber das ist eine andere Geschichte.
 sie nicht mehr. Glücklicherweise bist Du an einem Ort gestrandet, an
 dem es Rettung geben könnte. 
 <p> <strong>Und nun?</strong>
-<p> Tipp: sieh dich um oder ersuche um Hilfe! `;
+<p> (Weiter mit einem Mausklick) `;
 
 window.onload =function() {
     showWelcome(welc);

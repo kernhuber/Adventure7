@@ -1513,7 +1513,6 @@ Am Ort sind folgende Objekte zu sehen:"""
     Folgende Kommandos kannst du absetzen:
     
     hilfe  ............................ Diese Hilfe
-    inventory ......................... Zeigt an, was du gerade bei dir hast
     nichts ............................ Eine Spielrunde abwarten
     quit .............................. Spiel beenden
     
