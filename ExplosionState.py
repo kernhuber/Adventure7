@@ -52,6 +52,11 @@ class ExplosionState(PlayerState):
             return timer_msg  # Gib Timer-Nachricht für Web-UI zurück
         else:
             # 💥 EXPLOSION! 💥 (Timer ist jetzt 0 oder weniger)
+
+            # return self.do_kaboom_location(gs)
+            #
+            # Der Rest wir dnicht mehr ausgeführt
+            #
             log_explosion("***(((( KABUMM!!! ))))***")
             log_explosion(f"Die Sprengladung explodiert hier: {self.location.name}")
 
@@ -65,52 +70,103 @@ class ExplosionState(PlayerState):
             delplayers = []
 
             # Spieler eliminieren die am Explosionsort sind
-            for p in gs.players:
-                if type(p) is not ExplosionState:
-                    if p.location == self.location:
-                        log_explosion(f"Es hat auch ***{p.name}*** erwischt, der dummerweise am selben Platz war!!")
-                        if p.inventory:
-                            log_explosion("Und auch die Objekte in seinem/ihrem Inventory (sofern vorhanden):")
-                            for o in p.inventory:
-                                log_explosion(f"- {o.name}")
-                                delobjs.append(o)
-                        dprint(dl.EXPLOSIONSTATE, f" ... removing player {p.name}")
-                        delplayers.append(p)
-                else:
-                    delplayers.append(p)
+
+            # for p in gs.players:
+            #     if type(p) is not ExplosionState:
+            #         if p.location == self.location:
+            #             log_explosion(f"Es hat auch ***{p.name}*** erwischt, der dummerweise am selben Platz war!!")
+            #             if p.inventory:
+            #                 log_explosion("Und auch die Objekte in seinem/ihrem Inventory (sofern vorhanden):")
+            #                 for o in p.inventory:
+            #                     log_explosion(f"- {o.name}")
+            #                     delobjs.append(o)
+            #             dprint(dl.EXPLOSIONSTATE, f" ... removing player {p.name}")
+            #             delplayers.append(p)
+            #     else:
+            #         delplayers.append(p)
 
             # Orts-spezifische Effekte
-            if self.location.name == "p_dach":
+
+
+            #
+            # Wenn die Sprengladung in p_dach, p_schuppen oder p_innen explodiert, werden alle
+            # Objekte darin zerstört sowie alle Spieler an diesen Orten.
+            #
+            p_schuppen = gs.places["p_schuppen"]
+            p_dach = gs.places["p_dach"]
+            p_innen = gs.places["p_innen"]
+            if self.location in [p_schuppen, p_dach, p_innen]:
+                delplayers = [p for p in gs.players if p.location.name in ["p_schuppen", "p_dach", "p_innen"]]
+                delobjs = p_schuppen.place_objects + p_dach.place_objects + p_innen.place_objects
+                gs.ways["w_schuppen_dach"].visible = False
+                gs.ways["w_dach_schuppen"].visible = False
+                gs.ways["w_schuppen_innen"].visible = False
+                gs.ways["w_innen_schuppen"].visible = False
+                gs.schuppen_intakt = False
                 gs.dach = False
-                log_explosion_simple("--- Der Schuppen hat nun kein Dach mehr! ---")
-            elif self.location.name == "p_warenautomat":
-                gs.warenautomat_intakt = False
-                import random
-                nl = random.choice(
-                    ["p_ubahn", "p_warenautomat", "p_geldautomat", "p_schuppen", "p_dach", "p_felsen", "p_innen"])
-                dprint(dl.EXPLOSIONSTATE, f"Spoiler: die Fahrradkette ist nun hier: {nl}")
+            else:
+                delplayers = [p for p in gs.players if p.location == self.location]
+                delobjs = self.location.place_objects
+            #
+            # Jetzt die Objekte in den Inventories der betroffenen Spieler
+            #
+            if delplayers:
+                log_explosion("Folgende Spieler hat es erwischt:")
 
-                gs.objects["o_fahrradkette"].hidden = False
-                gs.objects["o_fahrradkette"].ownedby = gs.places[nl]
-                gs.places[nl].place_objects.append(gs.objects["o_fahrradkette"])
-                log_explosion(
-                    "  -->***Der Warenautomat! Mit all seinem Inhalt!*** Ob die Fahrradkette irgendwo zu finden ist?")
+            for p in delplayers:
+                if not isinstance(p,ExplosionState):
+                    log_explosion(f"🪦 {p.name}")
+                    delobjs = delobjs + p.inventory
 
-            elif self.location.name == "p_geldautomat":
+            # if self.location.name == "p_warenautomat":
+            #     gs.warenautomat_intakt = False
+            #     import random
+            #     nl = random.choice(
+            #         ["p_ubahn", "p_warenautomat", "p_geldautomat", "p_schuppen", "p_dach", "p_felsen", "p_innen"])
+            #     dprint(dl.EXPLOSIONSTATE, f"Spoiler: die Fahrradkette ist nun hier: {nl}")
+            #
+            #     gs.objects["o_fahrradkette"].hidden = False
+            #     gs.objects["o_fahrradkette"].ownedby = gs.places[nl]
+            #     gs.places[nl].place_objects.append(gs.objects["o_fahrradkette"])
+            #     log_explosion(
+            #         "  -->***Der Warenautomat! Mit all seinem Inhalt!*** Ob die Fahrradkette irgendwo zu finden ist?")
+
+            if self.location.name == "p_geldautomat":
                 gs.geldautomat_intakt = False  # Fixed: war == statt =
                 log_explosion("  -->***Der Geldautomat ist zerstört!***")
-            elif self.location.name == "p_schuppen" or self.location.name == "p_innen":
-                gs.schuppen_intakt = False
-                log_explosion("  -->***Der Schuppen ist zerstört!***")
+            #
+            # Spezialfall Fahrradkette: diese wird nicht zerstört, sondern fliegt durch die Gegend und landet irgendwo
+            #
+            fk = gs.objects["o_fahrradkette"]
+            fk_flag = False
+            if fk in delobjs:
+                import random
+                #
+                # Fahrradkette wird nicht aus dem Spiel gelöscht, sondern bekommt einen neuen Ort
+                #
+                delobjs.remove(fk)
+                no_fly_locs = ["p_hoehle", "p_wagen", "p_ubahn2"]
+
+                if self.location in [p_schuppen, p_dach, p_innen]:
+                    no_fly_locs = no_fly_locs.append(["p_dach", "p_innen"])
+
+                fly_locs_str = [l for l in gs.places if l not in no_fly_locs]
+
+                fk_new_loc_str = random.choice(fly_locs_str)
+                fk_new_loc = gs.places[fk_new_loc_str]
+                fk_new_loc.place_objects.append(fk)
+                fk.ownedby = fk_new_loc
+                fk_flag = True
+                dprint(dl.EXPLOSIONSTATE, f"Die Fahrradkette ist jetzt hier: {fk_new_loc.callnames[0]}")
 
             # Objekte eliminieren
             log_explosion("***Folgende Objekte*** sind pulverisiert worden")
-            objects_destroyed = []
-            for o in self.location.place_objects:
+
+
+            for o in delobjs:
                 if o.name != "o_fahrradkette":
-                    objects_destroyed.append(o.name)
-                    log_explosion_simple(f"- {o.name}")
-                    delobjs.append(o)
+                    log_explosion_simple(f"- {o.callnames[0]}")
+
 
                 # Spezielle Objekt-Effekte
                 if o.name == "o_felsen":
@@ -144,7 +200,7 @@ class ExplosionState(PlayerState):
                 log_explosion(
                     "***Die Sprengladung ist leider am falschen Ort explodiert. Du kannst das Spiel nicht mehr gewinnen. Verwende 'quit' um es zu beenden, oder sieh dich noch ein wenig um, wenn es dich interessiert.***")
             else:
-                log_explosion("***Die Explosion war erfolgreich! Der Weg zum Sieg ist nun frei!***")
+                log_explosion("***Die Explosion war erfolgreich!***")
 
             # Sammle alle Nachrichten für Web-UI
             if explosion_messages:

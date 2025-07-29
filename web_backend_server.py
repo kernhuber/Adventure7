@@ -418,9 +418,6 @@ class WebAdventureServer:
         except Exception as e:
             dprint(dl.WEBGUI, f"❌ Fehler beim Senden: {e}")
 
-
-
-
     async def handle_minigame_result(self, websocket, result):
         """Verarbeite Ergebnis eines Mini-Games"""
         session_id = str(id(websocket))
@@ -527,6 +524,9 @@ class WebAdventureServer:
             return
 
         session = self.game_sessions[session_id]
+        game = session["game"]
+        if game.game_over:
+            return
 
         # NEUE: Blockiere Commands während Mini-Game
         if session.get("minigame_active", False):
@@ -726,6 +726,9 @@ class WebAdventureServer:
             if session["type"] == "real" and GAME_MODULES_AVAILABLE:
                 game = session["game"]
                 player = game.players[0] if game.players else None
+                if player is None:
+                    game.game_over = True
+
 
                 if player and hasattr(game, 'verb_execute_json'):
                     # Durst-Logik - GENAU wie in Player_game_move
@@ -766,7 +769,8 @@ class WebAdventureServer:
 {txt_final_won_text if game.game_won else txt_final_lost_text}
 """
 
-                        await self.do_game_over(session_id,game.game_won,txt)
+                        # await self.do_game_over(session_id,game.game_won,txt)
+                        await self.wd.do_game_over(game.game_won, txt)
 
                     # Füge Durst-Nachricht hinzu, falls vorhanden
                     if thirst_message:

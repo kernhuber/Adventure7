@@ -108,51 +108,6 @@ class WebDialogs:
         # Andere Spiele brauchen keine speziellen Daten
         return {}
 
-    async def trugger_minigame(self, websocket, player, game_type):
-        """Starte ein Mini-Game im Web-Interface"""
-        session_id = str(id(websocket))
-        if session_id not in self.game_sessions:
-            return
-
-        session = self.game_sessions[session_id]
-
-        # Markiere Mini-Game als aktiv
-        #session["minigame_active"] = True
-
-        # Registriere Mini-Game im GameState falls verfügbar
-
-        self.start_minigame_session(session_id, game_type, player)
-
-        # Erstelle Spiel-Daten
-        game_data = self.create_minigame_data(game_type)
-
-        # Sende Mini-Game-Aufforderung an Client
-        message = {
-            "type": "start_minigame",
-            "game_type": game_type,
-            "game_data": game_data
-        }
-
-        await websocket.send(json.dumps(message))
-        dprint(dl.WEBGUI, f"🎮 Mini-Game gestartet: {game_type}")
-
-    async def hundle_minigame_result(self, websocket, data):
-        """Verarbeite Ergebnis eines Mini-Games"""
-
-        await self.ws.send(json.dumps({
-            "type": "error",
-            "message": "Keine aktive Spielsession"
-        }))
-        return
-
-        session = self.game_sessions[session_id]
-        game_type = data.get('game_type')
-        result = data.get('result')  # 'WON', 'LOST', 'TIE'
-
-        dprint(dl.WEBGUI, f"🎮 Mini-Game Ergebnis: {game_type} -> {result}")
-
-        # Markiere Mini-Game als nicht mehr aktiv
-        session["minigame_active"] = False
 
     async def do_minigame(self)->str:
         try:
