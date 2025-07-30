@@ -25,9 +25,17 @@ def o_skelett_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None
         return gs.objects["o_skelett"].examine
 
 def o_geldboerse_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
-    if gs.objects["o_ec_karte"].hidden:
-        gs.objects["o_ec_karte"].hidden = False
-        gs.objects["o_geldboerse"].examine = "In dieser Geldbörse hast Du eine EC-Karte gefunden"
+    o_ec_karte = gs.objects["o_ec_karte"]
+    o_geldboerse = gs.objects["o_geldboerse"]
+    if o_ec_karte.hidden:
+        o_ec_karte.hidden = False
+        o_ec_karte.ownedby = o_geldboerse.ownedby
+        if isinstance(o_ec_karte.ownedby, "Place"):
+            o_ec_karte.ownedby.place_objects.append(o_ec_karte)
+        else:
+            o_ec_karte.ownedby.inventory.append(o_ec_karte)
+
+        o_geldboerse.examine = "In dieser Geldbörse hast Du eine EC-Karte gefunden"
         return "Fein! Hier ist eine EC-Karte! Die passt bestimmt in einen Geldautomaten!"
     else:
         return gs.objects["o_geldboerse"].examine
