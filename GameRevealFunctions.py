@@ -1,11 +1,15 @@
 from GameState import GameState
 from PlayerState import PlayerState
 from GameObject import GameObject
+
 """
  Reveal Functions Functions executed when a game object is "revealed
 
 """
-def o_blumentopf_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
+
+
+def o_blumentopf_reveal_f(gs: GameState, pl: PlayerState = None, what: GameObject = None,
+                          onwhat: GameObject = None) -> str:
     if gs.objects["o_schluessel"].hidden:
         retstr = "Ein alter Blumentopf - aber warte: **unter dem Blumentopf liegt ein Schlüssel!!!**"
         gs.objects["o_blumentopf"].examine = "Unter diesem Blumentopf hast Du den Schlüssel gefunden"
@@ -14,7 +18,9 @@ def o_blumentopf_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=N
     else:
         return gs.objects["o_blumentopf"].examine
 
-def o_skelett_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
+
+def o_skelett_reveal_f(gs: GameState, pl: PlayerState = None, what: GameObject = None,
+                       onwhat: GameObject = None) -> str:
     if gs.objects["o_geldboerse"].hidden:
         gs.objects["o_geldboerse"].hidden = False
         gs.objects["o_geldboerse"].ownedby = pl.location
@@ -24,7 +30,9 @@ def o_skelett_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None
     else:
         return gs.objects["o_skelett"].examine
 
-def o_geldboerse_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
+
+def o_geldboerse_reveal_f(gs: GameState, pl: PlayerState = None, what: GameObject = None,
+                          onwhat: GameObject = None) -> str:
     o_ec_karte = gs.objects["o_ec_karte"]
     o_geldboerse = gs.objects["o_geldboerse"]
     if o_ec_karte.hidden:
@@ -40,7 +48,9 @@ def o_geldboerse_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=N
     else:
         return gs.objects["o_geldboerse"].examine
 
-def o_muelleimer_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=None, onwhat: GameObject=None) ->str:
+
+def o_muelleimer_reveal_f(gs: GameState, pl: PlayerState = None, what: GameObject = None,
+                          onwhat: GameObject = None) -> str:
     if gs.objects["o_geheimzahl"].hidden:
         from random import randint
         gs.objects["o_geheimzahl"].hidden = False
@@ -48,4 +58,3 @@ def o_muelleimer_reveal_f(gs: GameState, pl:PlayerState=None, what: GameObject=N
         return f"Im Mülleimer findest Du einen Zettel mit einer Geheimzahl! Die Geheimzahl ist: {gs.geheimzahl}"
     else:
         return gs.objects["o_geheimzahl"].examine
-
