@@ -197,7 +197,7 @@ class WebAdventureServer:
                     dprint(dl.WEBGUI, f"⚠️  Hund konnte nicht hinzugefügt werden: {e}")
 
                 # Konvertiere zu serialisierbarem Format - MIT initialer Narration
-                game_state = self.serialize_real_game_state(game, update_narration=True, session_id=session_id)
+                game_state = self.serialize_real_game_state(game, session_id=session_id)
 
                 # Session mit Command-Queue und Pending-Input erstellen
                 self.game_sessions[session_id] = {
@@ -270,7 +270,7 @@ class WebAdventureServer:
             das Fahrrad zu reparieren und deinen wichtigen Briefumschlag rechtzeitig abzuliefern."""
         }
 
-    def serialize_real_game_state(self, game, update_narration=False, session_id=None):
+    def serialize_real_game_state(self, game, session_id=None):
         """Konvertiere echtes GameState zu JSON-Format"""
         from NPCPlayerState import NPCPlayerState
         try:
@@ -320,33 +320,9 @@ class WebAdventureServer:
                 pass
 
             # Szenenbeschreibung - NUR wenn explizit angefordert
-            scene_description = "Du befindest dich an einem mysteriösen Ort."
-            if update_narration:
-                try:
-                    if hasattr(game, 'llm') and game.llm and hasattr(game.llm, 'narrate'):
-                        dprint(dl.WEBGUI, f"🎭 Generiere neue Szenenbeschreibung für {current_location.name}")
-                        scene_description = game.llm.narrate(game, player)
-                    elif hasattr(current_location, 'description'):
-                        scene_description = current_location.description
-                except Exception as e:
-                    dprint(dl.WEBGUI, f"⚠️  Narration-Fehler: {e}")
-                    scene_description = "Du befindest dich an einem geheimnisvollen Ort."
 
-                # Cache die neue Beschreibung in der Session
-                if session_id and hasattr(self, '_session_scene_cache'):
-                    self._session_scene_cache[session_id] = scene_description
-            else:
-                # Verwende gecachte Beschreibung, falls vorhanden
-                if session_id and hasattr(self, '_session_scene_cache') and session_id in self._session_scene_cache:
-                    scene_description = self._session_scene_cache[session_id]
-                    dprint(dl.WEBGUI, f"♻️  Verwende gecachte Szenenbeschreibung für Session {session_id}")
-                else:
-                    # Fallback: einfache Beschreibung ohne LLM
-                    try:
-                        if hasattr(current_location, 'description'):
-                            scene_description = current_location.description
-                    except:
-                        pass
+            scene_description = game.llm.narrate(game, player)
+
 
             # Hund-Informationen
             dog_info = {
@@ -482,7 +458,7 @@ class WebAdventureServer:
                     "type": "minigame_complete",
                     "result": result,
                     "message": fight_message,
-                    "game_state": self.serialize_real_game_state(game, update_narration=False, session_id=session_id)
+                    "game_state": self.serialize_real_game_state(game, session_id=session_id)
                 }
 
                 await websocket.send(json.dumps(response))
@@ -715,13 +691,9 @@ class WebAdventureServer:
             is_look_around = func_name == "umsehen"
 
             # Narration nur bei vollständig abgearbeiteten Sätzen oder explizitem Umsehen
-            update_narration = queue_empty or is_look_around
 
-            if update_narration:
-                dprint(dl.WEBGUI, f"🎭 Aktualisiere Narration (Queue leer: {queue_empty}, Umsehen: {is_look_around})")
-            else:
-                dprint(dl.WEBGUI,
-                       f"♻️  Verwende gecachte Narration (Queue: {len(session['cmd_q'])}, Command: {func_name})")
+            dprint(dl.WEBGUI, f"🎭 Aktualisiere Narration (Queue leer: {queue_empty}, Umsehen: {is_look_around})")
+
 
             if session["type"] == "real" and GAME_MODULES_AVAILABLE:
                 game = session["game"]
@@ -780,7 +752,7 @@ class WebAdventureServer:
                         game.time += 1
 
                     # Update game state - MIT Narration nur bei Bedarf
-                    session["state"] = self.serialize_real_game_state(game, update_narration=update_narration,
+                    session["state"] = self.serialize_real_game_state(game,
                                                                       session_id=session_id)
 
                     # NPC-Züge sammeln (NICHT senden!) - die werden später in handle_command gesendet
@@ -917,7 +889,7 @@ class WebAdventureServer:
             # Update game state nach NPC-Aktionen - OHNE Narration (da schon gemacht)
             if session_id and hasattr(self, 'game_sessions') and session_id in self.game_sessions:
                 session = self.game_sessions[session_id]
-                session["state"] = self.serialize_real_game_state(game, update_narration=False, session_id=session_id)
+                session["state"] = self.serialize_real_game_state(game, session_id=session_id)
 
             return npc_actions
 

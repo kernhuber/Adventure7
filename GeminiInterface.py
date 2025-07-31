@@ -15,6 +15,25 @@ from dotenv import load_dotenv
 # Alternativ:
 
 class GeminiInterface:
+    class _narration_cache:
+        def __init__(self):
+            self.cache = {}
+
+        def update(self,room:str,prompt:str, narration:str):
+            self.cache[room] = {"prompt":prompt,"narration":narration}
+
+        def invalidate(self,room:str):
+            del self.cache[room]
+
+        def get(self, room:str, prompt:str):
+            if room in self.cache:
+                if prompt == self.cache[room][prompt]:
+                    return self.cache[room]["narration"]
+                else:
+                    return None
+            else:
+                return None
+
     def  __init__(self):
         apikey = os.environ.get("GOOGLE_API_KEY",None)
         if not apikey:
@@ -38,6 +57,7 @@ class GeminiInterface:
         self.tokens = 0
         self.numcalls = 0
         self.token_details = []
+        self.narration_cache = self._narration_cache()
 
 
     def gen_narration_prompt(self, gs:"GameState", pl:"PlayerState") -> str:
@@ -165,7 +185,13 @@ Die Ortsbeschreibung:
 
     def narrate(self, gs:"GameState", pl:"PlayerState") -> str:
         prompt = self.gen_narration_prompt(gs,pl)
+        n = self.narration_cache.get(pl.location.name,prompt=prompt)
+        if n:
+            dprint(dl.LLM,f"GeminiInterface.narrate: using cached narration for room {pl.location.name}")
+            return n
+
         try:
+            dprint(dl.LLM, f"GeminiInterface.narrate: generating new narration for room {pl.location.name}")
             response = self.gemini_text_model.generate_content(prompt,
                                                                generation_config = genai.types.GenerationConfig(
                                                                        max_output_tokens=200  # Beispiel: Maximal 200 Tokens für Szenenbeschreibungen
