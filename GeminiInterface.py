@@ -3,7 +3,7 @@ import google.generativeai as genai
 import os
 import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
 from pprint import pprint
-from Utils import dprint, dpprint, dl
+from Utils import dprint, dpprint, dl, ddiff
 from google.api_core import retry
 import os
 from dotenv import load_dotenv
@@ -27,9 +27,10 @@ class GeminiInterface:
 
         def get(self, room:str, prompt:str):
             if room in self.cache:
-                if prompt == self.cache[room][prompt]:
+                if prompt == self.cache[room]["prompt"]:
                     return self.cache[room]["narration"]
                 else:
+                    ddiff(dl.LLM,self.cache[room]["prompt"], prompt)
                     return None
             else:
                 return None
@@ -186,6 +187,7 @@ Die Ortsbeschreibung:
     def narrate(self, gs:"GameState", pl:"PlayerState") -> str:
         prompt = self.gen_narration_prompt(gs,pl)
         n = self.narration_cache.get(pl.location.name,prompt=prompt)
+        room = pl.location.name
         if n:
             dprint(dl.LLM,f"GeminiInterface.narrate: using cached narration for room {pl.location.name}")
             return n
@@ -203,11 +205,13 @@ Die Ortsbeschreibung:
             self.token_details.append(response.usage_metadata.total_token_count)
             r = self.clean_truncated_sentence(response.text)
             self.txt_prev_description[pl.location.name] = r
+            self.narration_cache.update(room=room,prompt=prompt, narration=r)
             return r
         except Exception as e:
             # Wenn die LLM-Interaktion nicht funktioniert hat, gebe den Prompt zurück
             print("Exception!!")
             pprint(e) #
+            self.narration_cache.invalidate(room)
             return prompt
 
 

@@ -4,6 +4,7 @@ from rich.prompt import Prompt
 from pprint import pprint
 import datetime
 from enum import IntFlag, auto
+import difflib
 
 class dl(IntFlag):
     GAMELOOP        = auto()  # Messages from the game loop
@@ -18,7 +19,7 @@ class dl(IntFlag):
     WEBGUI          = auto() # WebGUI debugging
 
 DEBUG = True
-DEBUG_LEVEL = dl.LLM|dl.LLM_PROMPT|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.WEBGUI
+DEBUG_LEVEL = dl.LLM|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.WEBGUI
 ADV_LOGGER = None
 
 class dlogger():
@@ -47,6 +48,25 @@ class dlogger():
             else:
                 pprint(x)
 
+    def ddiff(self,l:dl,a,b):
+        if DEBUG and (l & DEBUG_LEVEL):
+            if self.logfile:
+                with open(self.logfile, "a", encoding="utf-8") as f:
+                    from pprint import pformat
+                    f.write("************* Difference between texts:\n")
+                    lines1 = a.splitlines(keepends=True)
+                    lines2 = b.splitlines(keepends=True)
+                    diff = difflib.unified_diff(
+                        lines1,
+                        lines2,
+                        fromfile=f'Version {a}',
+                        tofile=f'Version {b}'
+                    )
+                    for l in diff:
+                        f.write(f"{l}\n")
+            else:
+                pprint(f"text A: \n {a}\n {'#'*30}\n\nText B: \n{b}")
+
 
 console = Console()
 
@@ -62,3 +82,7 @@ def dprint(l:dl, x):
 def dpprint(l:dl, x):
     if ADV_LOGGER:
         ADV_LOGGER.dpprint(l, x)
+
+def ddiff(l:dl, a, b):
+    if ADV_LOGGER:
+        ADV_LOGGER.ddiff(l,a,b)
