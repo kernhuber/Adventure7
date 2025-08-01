@@ -6,6 +6,9 @@ import datetime
 from enum import IntFlag, auto
 import difflib
 
+#
+# Debugging and logging
+#
 class dl(IntFlag):
     GAMELOOP        = auto()  # Messages from the game loop
     GAMESTATE       = auto() # Game State (engine)
