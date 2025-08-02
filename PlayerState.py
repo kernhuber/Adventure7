@@ -3,7 +3,7 @@ from typing import List, Optional
 from Place import Place
 from collections import deque
 from SysTest import SysTest
-from Utils import dpprint, dprint, dl
+from Utils import dpprint, dprint, dl, return_do_nothing, json_cmd
 
 
 #from GameState import GameState
@@ -66,7 +66,7 @@ class PlayerState:
         if self.thirst_counter == 0:
             gs.game_over = True
             tw_print("***Leider bist du verdurstet!***")
-            return "nichts"
+            return json_cmd("nichts")
         if self.thirst_counter == 20:
             tw_print("***Du hast Gottseidank noch keinen wirklichen Durst. Nur ein wenig. Ein wenig Durst hast du schon.***")
         elif self.thirst_counter == 10:
