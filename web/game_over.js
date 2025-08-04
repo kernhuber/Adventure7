@@ -1,4 +1,14 @@
 function gameOver(won, text) {
+    if (typeof window.explosion_running === "undefined") {
+        window.explosion_running = false;
+    }
+        // Falls Explosion läuft, warte ab
+    if (window.explosion_running) {
+        console.log("💣 Explosion läuft noch, warte mit gameOver...");
+        waitForExplosionThen(() => gameOver(won, text));
+        return;
+    }
+
     // Overlay erstellen
     const overlay = document.createElement('div');
     overlay.style.cssText = `
@@ -321,4 +331,13 @@ function gameOver(won, text) {
             typeNextToken();
         }
     }, 500); // Kurze Verzögerung für dramatischen Effekt
+}
+
+function waitForExplosionThen(callback) {
+    const interval = setInterval(() => {
+        if (!window.explosion_running) {
+            clearInterval(interval);
+            callback();
+        }
+    }, 100); // alle 100ms prüfen
 }

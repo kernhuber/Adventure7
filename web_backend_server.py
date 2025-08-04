@@ -503,8 +503,7 @@ class WebAdventureServer:
 
         session = self.game_sessions[session_id]
         game = session["game"]
-        if game.game_over:
-            return
+
 
         # NEUE: Blockiere Commands während Mini-Game
         if session.get("minigame_active", False):
@@ -693,6 +692,7 @@ class WebAdventureServer:
 
             # NEUE: Prüfe auf Mini-Game Trigger in NPC-Actions
             filtered_actions = []
+            explosion_happened = False
             for action in npc_actions:
                 args = action.get("function_call",{}).get("args",{})
                 f_call = action.get("function_call",{}).get("name",None)
@@ -714,6 +714,7 @@ class WebAdventureServer:
                         case "do_explosion":
                             # Echte Explosion - markiere sie eindeutig
                             #filtered_actions.append(args["message"])
+                            explosion_happened = True
                             filtered_actions.append({
                                 "command":f_call,
                                 "message":args["message"]
@@ -752,6 +753,13 @@ class WebAdventureServer:
                 #
                 await websocket.send(json.dumps(npc_message))
                 dprint(dl.WEBGUI, f"💥 NPC-Actions gesendet: {len(filtered_actions)} Aktionen")
+                #
+                # Hat die Explosion uns weggeputzt?
+                #
+                if explosion_happened:
+                    if game.check_game_over():
+                        game.game_over = True
+                        await self.wd.do_game_over(False,txt_final_lost_text)
 
         # Schritt 7: Wenn noch Commands in Queue oder Pending Input vorhanden, sofort weiter verarbeiten
         if session["cmd_q"] or session["pending_llm_input"]:
@@ -774,6 +782,8 @@ class WebAdventureServer:
             if session["type"] == "real" and GAME_MODULES_AVAILABLE:
                 game = session["game"]
                 player = game.players[0] if game.players else None
+
+
 
                 if player and hasattr(game, 'verb_execute_json'):
                     # Durst-Logik - GENAU wie in Player_game_move
@@ -979,7 +989,6 @@ class WebAdventureServer:
                 if player in game.players:
                     game.players.remove(player)
                     dprint(dl.WEBGUI, f"🗑️  {player.name} aus Spielerliste entfernt")
-
             # Update game state nach NPC-Aktionen - OHNE Narration (da schon gemacht)
             if session_id and hasattr(self, 'game_sessions') and session_id in self.game_sessions:
                 session = self.game_sessions[session_id]

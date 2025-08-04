@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from collections import deque
 
+from sympy import trunc
+
 from Place import Place
 from Way import Way
 from typing import Dict, List
@@ -1096,6 +1098,31 @@ Auf dem Dach des Schuppens
     #
     # Verbs to be executed
     #
+    def check_game_over(self):
+        """ Based on current configuration: is the game over?"""
+        if self.game_over:
+            return True     # Trivial
+        pl = next((p for p in self.players if type(p) is PlayerState),None)
+        if not pl:
+            return True     # No more Players in the game
+        #
+        # Einige andere Kriterien: wenn das Spiel komplexer wird, könnte diese Routine
+        # rech aufwändig werden.
+        #
+        sprengladung_weg = self.objects.get("o_sprengladung",None) is None
+
+        if sprengladung_weg:
+            if self.felsen:
+                return True  # Felsen noch da, aber keine Sprengladung mehr
+
+            if not self.schuppen_intakt:
+                return True  # Man kann den Warenautomaten ohne den Hebel nicht mehr bewegen
+
+            if not self.geldautomat_intakt:
+                return True  # Ich kann keine Dollars mehr ziehen
+
+        return False
+
     def compile_current_game_context_for_llm_tools(self, pl: 'PlayerState') -> dict:  # Name angepasst
         context_data = {}
 

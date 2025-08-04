@@ -108,7 +108,6 @@ class WebDialogs:
         # Andere Spiele brauchen keine speziellen Daten
         return {}
 
-
     async def do_minigame(self)->str:
         try:
             game_types = ['circle_fight', 'sum_fight', 'odd_even_fight', 'close_fight']

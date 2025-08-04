@@ -274,6 +274,7 @@ class AdventureBackend {
                     break;
                 case "explosion_message":
                     explosionTimers.push(action.message);
+                    showExplosionMessage(action.message)
                     break;
                 case "dog_message":
                     dogActions.push(action.message);
@@ -304,6 +305,7 @@ class AdventureBackend {
 
         // Verarbeite echte Explosionen (Overlay)
         if (realExplosions.length > 0) {
+            hideExplosionMessage()
             showExplosion(realExplosions.join('\n'));
         }
 
@@ -474,6 +476,12 @@ function showExplosion(text) {
     particlesContainer.innerHTML = "";
     shockwave.style.display = "block";
 
+    //
+    // In case game over directly follows the explosion
+    //
+
+    window.explosion_running = true;
+
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
     shockwave.style.left = `${centerX - 25}px`;
@@ -539,6 +547,7 @@ function showExplosion(text) {
 
 function hideExplosion() {
     document.getElementById("explosion-overlay").style.display = "none";
+    window.explosion_running = false;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
