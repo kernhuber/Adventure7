@@ -83,6 +83,8 @@ class AdventureBackend {
     }
 
     handleMessage(data) {
+        console.log("++++handleMessage:")
+        console.log("data = ", data);
         console.log("data.type = ", data.type);
         switch(data.type) {
             case 'game_state':
@@ -189,6 +191,7 @@ class AdventureBackend {
         }
     }
 
+
     handleMinigameComplete(data) {
         console.log(`✅ Mini-Game beendet:  ${data.result}`);
 
@@ -206,7 +209,7 @@ class AdventureBackend {
         }
     }
 
-    handleNPCActions(actions) {
+    handleNPCActions_old(actions) {
         // Sortiere NPC-Actions nach Typ
         let dogActions = [];
         let explosionTimers = [];
@@ -230,6 +233,57 @@ class AdventureBackend {
                     command: 'Kampf-Vorbereitung',
                     result: action
                 };
+            }
+        }
+
+        // Verarbeite Timer-Nachrichten (in lastAction)
+        if (explosionTimers.length > 0) {
+            gameState.lastAction = {
+                command: 'Explosion Timer',
+                result: explosionTimers.join('\n')
+            };
+        }
+
+        // Verarbeite Hund-Aktionen (update Hund-Status)
+        if (dogActions.length > 0) {
+            if (gameState.dog) {
+                gameState.dog.state = dogActions[dogActions.length - 1]; // Letzte Aktion
+            }
+        }
+
+        // Verarbeite echte Explosionen (Overlay)
+        if (realExplosions.length > 0) {
+            showExplosion(realExplosions.join('\n'));
+        }
+
+        updateUI();
+    }
+
+    handleNPCActions(actions) {
+        // Sortiere NPC-Actions nach Typ
+        let dogActions = [];
+        let explosionTimers = [];
+        let realExplosions = [];
+        console.log("+++++ handleNPCActions:")
+        console.log("Actions = ", actions)
+        for (let action of actions) {
+            console.log("Single Action = ", action)
+            switch (action.command) {
+                case 'do_explosion':
+                    realExplosions.push(action.message);
+                    break;
+                case "explosion_message":
+                    explosionTimers.push(action.message);
+                    break;
+                case "dog_message":
+                    dogActions.push(action.message);
+                    break;
+                case "minigame":
+                    gameState.lastAction = {
+                        command: 'Kampf-Vorbereitung',
+                        result: action.message
+                    };
+                    break;
             }
         }
 

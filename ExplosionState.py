@@ -1,7 +1,7 @@
 from PlayerState import PlayerState
 from GameState import GameState
 from dataclasses import dataclass, field
-from Utils import tw_print, dprint, dl, json_cmd
+from Utils import tw_print, dprint, dl, json_cmd_simple
 
 
 @dataclass
@@ -49,7 +49,7 @@ class ExplosionState(PlayerState):
             # Noch Zeit bis zur Explosion
             timer_msg = f"***Sprengladung explodiert in {self.kaboom_timer} Spielzügen in {self.location.name}***"
             log_explosion(timer_msg)
-            return json_cmd(timer_msg)  # Gib Timer-Nachricht für Web-UI zurück
+            return json_cmd_simple("explosion_message",timer_msg)  # Gib Timer-Nachricht für Web-UI zurück
         else:
             # 💥 EXPLOSION! 💥 (Timer ist jetzt 0 oder weniger)
 
@@ -204,6 +204,6 @@ class ExplosionState(PlayerState):
 
             # Sammle alle Nachrichten für Web-UI
             if explosion_messages:
-                return json_cmd("\n".join(explosion_messages))
+                return json_cmd_simple("do_explosion","\n".join(explosion_messages))
             else:
-                return json_cmd("💥 EXPLOSION! 💥")  # Fallback falls keine Messages gesammelt wurden
+                return json_cmd_simple("do_explosion","💥 EXPLOSION! 💥")  # Fallback falls keine Messages gesammelt wurden

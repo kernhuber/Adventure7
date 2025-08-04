@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from collections import deque
 from typing import List, Deque, Any
 from enum import Enum, auto
-from Utils import tw_print, dprint, dl, json_cmd, return_do_nothing
+from Utils import tw_print, dprint, dl, json_cmd_simple, return_do_nothing
 
 class DogState(Enum):
     START = auto()
@@ -94,7 +94,7 @@ class NPCPlayerState(PlayerState):
                 #if self.check_state_gohome(gs):
                 #    return self.setup_state_go(gs)
                 self.dog_state_message = "Der Hund tut nichts."
-                return_do_nothing()
+                return return_do_nothing()
 
             case DogState.ATTACK:
                 # Something to eat?
@@ -108,7 +108,7 @@ class NPCPlayerState(PlayerState):
                     self.attack_counter = 2
                     self.dog_state = DogState.START
                     self.dog_state_message = "Der Hund tut nichts."
-                    return_do_nothing()
+                    return return_do_nothing()
                 #
                 # OK - still here: who are you?
                 #
@@ -124,9 +124,10 @@ class NPCPlayerState(PlayerState):
                         l = 2*(3-self.attack_counter)
                         rs = f'**G{"R"*l}{"O"*l}{"A"*l}{"R"*l}{"!"*l}'
                         self.dog_state_message = f"{rs} - Der Hund ist sauer und greift gleich an!"
-                        return json_cmd(f'interaktion {pl.name} "**{rs}**"')
+                        # return json_cmd(f'interaktion {pl.name} "**{rs}**"')
+                        return json_cmd_simple("interaktion", pl.name, f'**{rs}**')
                     else:
-                        return_do_nothing()
+                        return return_do_nothing()
                 else:
                     return self.do_attack_state(gs, pl)
 
@@ -150,33 +151,34 @@ class NPCPlayerState(PlayerState):
                 else:
                     return self.setup_state_gohome(gs)
                 self.dog_state_message = "Der Hund tut nichts."
-                return_do_nothing()
+                return return_do_nothing()
 
             case DogState.GOHOME:
                 if not self.way_home:
                     self.dog_state = DogState.START
                     self.dog_state_message = "Der Hund tut nichts."
-                    return_do_nothing()
+                    return return_do_nothing()
 
                 nl = self.way_home.popleft()
                 if nl:
                     if self.can_dog_go(gs, nl.destination.name):
                         tw_print(f"Auf seinem Weg zum Geldautomaten geht der Hund hierhin: {nl.destination.callnames[0]} ({nl.destination.name})")
                         self.dog_state_message = f"Der Hund geht jetzt hierhin: {nl.destination.callnames[0]}"
-                        return json_cmd(f'gehe {nl.destination.name}')
+                        # return json_cmd(f'gehe {nl.destination.name}')
+                        return json_cmd_simple("gehe",nl.destination.name)
                     else:
                         self.dog_state_message = "Der Hund tut nichts."
-                        return_do_nothing()
+                        return return_do_nothing()
                 else:
                     self.dog_state = DogState.START
                     tw_print("**Der Hund ist nun wieder an seinem Stammplatz**")
                     self.dog_state_message = "Der Hund ist an seinem Stammplatz (Geldautomat) und tut nichts."
-                    return_do_nothing()
+                    return return_do_nothing()
 
 
             case _:
                 self.dog_state_message = "Der Hund tut nichts."
-                return_do_nothing() # default/unknown state
+                return return_do_nothing() # default/unknown state
 
     def do_attack_state(self,gs: GameState, pl: PlayerState):
         # If in text mode, the routine executes a complete dogfight. The result
@@ -204,7 +206,8 @@ class NPCPlayerState(PlayerState):
                 #
                 # Kill player
                 #
-                return json_cmd(f"toeten {pl.name}")
+                # return json_cmd(f"toeten {pl.name}")
+                return json_cmd_simple("toeten", pl.name)
             elif ds == DogFight.LOST:
                 #
                 # Escape to a neighbor location
@@ -219,12 +222,13 @@ class NPCPlayerState(PlayerState):
                 if w:
                     flight = random.choice(w)
                     print(f"Der Hund flüchtet jaulend nach {flight}")
-                    return json_cmd(f"gehe {flight}")
+                    # return json_cmd(f"gehe {flight}")
+                    return json_cmd_simple("gehe", flight)
                 else:
                     print("Der Hund kann von hier aus nirgendwo hin!")
-                    return_do_nothing()
+                    return return_do_nothing()
             else:
-                return_do_nothing()
+                return return_do_nothing()
         else:
             #
             # Web Interface
@@ -240,7 +244,8 @@ class NPCPlayerState(PlayerState):
             self.attack_counter = 2
             self.dog_state_message = "Der Hund kämpft gerade!"
 
-            return json_cmd(f"MINIGAME:{selected_game}")
+            # return json_cmd(f"MINIGAME:{selected_game}")
+            return json_cmd_simple("minigame",selected_game)
 
     def gets_attacked(self, gs:GameState, pl:PlayerState):
         """Dog gets attacked by Player!"""
@@ -262,7 +267,7 @@ class NPCPlayerState(PlayerState):
             self.way_home = deque(ret)
             self.dog_state = DogState.GOHOME
         self.dog_state_message = "Der Hund tut nichts."
-        return_do_nothing()
+        return return_do_nothing()
 
     def check_state_trace(self, gs: GameState):
         if self.next_loc:
@@ -285,10 +290,11 @@ class NPCPlayerState(PlayerState):
                 nl = self.next_loc.popleft()
                 tw_print(f"***Der Hund geht zum/zur {nl.callnames[0]}.***")
                 self.dog_state_message = f"Der Hund läuft zum/zur {nl.callnames[0]}."
-                return json_cmd(f"gehe {nl.name}")
+                # return json_cmd(f"gehe {nl.name}")
+                return json_cmd_simple("gehe", nl.name)
             else:
                 self.dog_state_message = "Der Hund tut nichts."
-                return_do_nothing()
+                return return_do_nothing()
 
         for w in self.location.ways:
             dsts.append(w.destination)
@@ -303,7 +309,7 @@ class NPCPlayerState(PlayerState):
             self.next_loc.append(pl)
             tw_print(f"**Der Hund beobachtet nun den Ort {pl.callnames[0]}**")
             self.dog_state_message = f"Der Hund beobachtet nun den Ort {pl.callnames[0]}"
-        return_do_nothing()
+        return return_do_nothing()
 
     def check_state_attack(self, gs: GameState):
         #
@@ -324,10 +330,11 @@ class NPCPlayerState(PlayerState):
                 self.dog_state = DogState.ATTACK
                 self.attack_counter = 1
                 self.dog_state_message = "Der Hund wird sauer..."
-                return json_cmd(f'interaktion {p.name} "**Grrr!**"')
+                #return json_cmd(f'interaktion {p.name} "**Grrr!**"')
+                return json_cmd_simple("interaktion", p.name, "**Grrr!**")
         else:
             self.dog_state_message = "Der Hund tut nichts."
-            return_do_nothing()
+            return return_do_nothing()
 
     def check_state_eating(self, gs: GameState):
         for i in self.location.place_objects:
@@ -349,7 +356,7 @@ class NPCPlayerState(PlayerState):
             tw_print(f"**Der Hund frisst {f.name}**")
             self.dog_state_message = f"**Der Hund frisst {f.name}**"
             self.eat_counter = 3
-        return_do_nothing()
+        return return_do_nothing()
 
     def do_state_eating(self, gs: GameState):
         tw_print("**Der Hund frisst noch!**")
@@ -360,7 +367,7 @@ class NPCPlayerState(PlayerState):
             rs = DogState.START
         else:
             rs = DogState.EATING
-        return rs,json_cmd("nichts")
+        return rs,json_cmd_simple("nichts")
 
     def dog_prompt(self,gs: GameState,pl: PlayerState):
 
@@ -425,7 +432,8 @@ Beschreibung des Hundes
             self.attack_counter = 2
             self.dog_state_message = "Der Hund kämpft gerade!"
 
-            return json_cmd("MINIGAME")
+            # return json_cmd("MINIGAME")
+            return json_cmd_simple("minigame")
         else:
             # Text-Interface: Bestehende MiniGames.py Logik
             dprint(dl.NPCPLAYERSTATE, f"🎮 Starte Text-Mini-Game")
@@ -452,8 +460,8 @@ Beschreibung des Hundes
             self.dog_state_message = "Der Hund hat dich besiegt und ist nun sehr aggressiv!"
             gamestate.game_won = False
             gamestate.game_over = True
-            return json_cmd("""***Der Hund hat dich im Kampf besiegt! Du verlierst das Spiel!***""")
-
+            #return json_cmd("""***Der Hund hat dich im Kampf besiegt! Du verlierst das Spiel!***""")
+            return json_cmd_simple("gameover","""***Der Hund hat dich im Kampf besiegt! Du verlierst das Spiel!***""")
         elif fight_result == DogFight.LOST:
             # Hund verliert - KORRIGIERT: Verwende DogState.GOHOME (Hund flieht)
             self.dog_state = DogState.GOHOME  # KORRIGIERT: Hund geht nach Hause
@@ -468,7 +476,7 @@ Beschreibung des Hundes
             except:
                 pass
 
-            return json_cmd("""***Du hast den Hund im fairen Kampf besiegt! Er winselt und läuft mit eingezogenem Schwanz davon. 
+            return json_cmd_simple("dog_message",""""***Du hast den Hund im fairen Kampf besiegt! Er winselt und läuft mit eingezogenem Schwanz davon. 
     Du hast ihn nicht verletzt, aber er wird dich eine Weile in Ruhe lassen.***""")
 
         else:  # DogFight.TIE
@@ -477,7 +485,7 @@ Beschreibung des Hundes
             self.attack_counter = 2  # Verzögerter Angriff
             self.dog_state_message = "Der Hund ist vorsichtig und beobachtet dich"
 
-            return json_cmd("""***Das Duell endet unentschieden. Ihr blickt euch wachsam an, 
+            return json_cmd_simple("dog_message","""""***Das Duell endet unentschieden. Ihr blickt euch wachsam an, 
     beide bereit zum nächsten Zug. Der Hund respektiert deine Kampfkraft, 
     ist aber noch nicht besiegt.***""")
 
@@ -513,7 +521,7 @@ Beschreibung des Hundes
             self.dog_state_message = "Der Hund kämpft gerade!"
             # dog_state bleibt unverändert
 
-            return json_cmd(f"MINIGAME:{selected_game}")
+            return json_cmd_simple("minigame",selected_game)
         else:
             # Text-Interface
             from MiniGames import MiniGames
@@ -528,7 +536,7 @@ Beschreibung des Hundes
         if fight_result == DogFight.WON:
             self.attack_counter = 1
             self.dog_state_message = "Der Hund hat gewonnen und ist aggressiv!"
-            return json_cmd(f"toeten {gs.players[0].name}")
+            return json_cmd_simple("toeten", gs.players[0].name)
 
         elif fight_result == DogFight.LOST:
             self.attack_counter = 0
@@ -540,7 +548,7 @@ Beschreibung des Hundes
         else:  # TIE
             self.attack_counter = 2
             self.dog_state_message = "Der Hund ist vorsichtig"
-            return_do_nothing()
+            return return_do_nothing()
 
     # ============== DEBUGGING AUSGABE ==============
 

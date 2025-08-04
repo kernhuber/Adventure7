@@ -1673,8 +1673,8 @@ Am Ort sind folgende Objekte zu sehen:"""
         else:
             return ""
 
-    def verb_interact(self, pl: PlayerState, who, what):
-        return f'{pl.name} an {who}:  "{what}"'
+    def verb_interact(self, pl: PlayerState, whom, input):
+        return f'{pl.name} an {whom}:  "{input}"'
 
     def verb_reject(self, pl: PlayerState, why)->str:
         """ LLM rejects to do something because it did not understand user input and provides explanation in "why" """

@@ -91,40 +91,70 @@ def ddiff(l:dl, a, b):
     if ADV_LOGGER:
         ADV_LOGGER.ddiff(l,a,b)
 
+game_known_tokens = ["anwenden",
+                    "nimm",
+                    "ablegen",
+                    "untersuche",
+                    "umsehen",
+                    "hilfe",
+                    "gehe",
+                    "llm",
+                    "toeten",
+                    "angreifen",
+                    "inventory",
+                    "context",
+                    "dogstate",
+                    "quit",
+                    "nichts",
+                    "interaktion",
+                    "zurueckweisen",
+                    "zurückweisen",
+                    "unbekannt",
+                    "toggle_layout",
+                    "minigame",
+                    "gameover",
+                    "player_message",
+                    "dog_message",
+                    "explosion_message",
+                    "do_explosion",
+                    "check_pinpad"]
 #
 # Translate "String"-style commands to JSON
 #
 # ({'function_call': {'name': ui, 'args': {}}})
 
-def json_cmd(cmd_in:str):
-    dprint(dl.CMDLOG,f"json_cmd: {cmd_in}")
 
-    # tokens = input.split()
-    import regex as re
-    tokens = re.findall(r'#[^#]*#|[\p{L}_][\p{L}\p{N}_-]*[\p{L}\p{N}_]', cmd_in)
-    #
-    # Jetzt noch Anführungszeichen bzz "#" entfernen falls nötig ("#" als Substitute für Anführungszeihen)
-    #
-    tokens = [t[1:-1] if t.startswith('#') else t for t in tokens]
-    if tokens[0] in ["anwenden","nimm","ablegen","untersuche","umsehen","hilfe","gehe","llm","toeten","angreifen","inventory","context","dogstate","quit","nichts","interaktion","zurueckweisen","zurückweisen","unbekannt","toggle_layout"]:
-        match tokens[0]:
+
+
+
+#
+# Return commands in the same way the LLM does return them via function call:
+#
+
+def json_cmd_simple(cmd_in:str, arg1:str=None, arg2:str=None):
+    dprint(dl.CMDLOG,f"json_cmd_simple: {cmd_in}, {arg1 if arg1 else ''}, {arg2 if arg2 else ''}")
+
+
+
+    if cmd_in in game_known_tokens:
+        match cmd_in:
             case "anwenden":
                 args = {
-                    "what":tokens[1],
-                    "towhat":tokens[2] if tokens[2] else None,
+                    "what":arg1,
+                    "towhat":arg2 if arg2 else None,
                 }
 
             case "nimm":
                 args = {
-                    "whato":tokens[1]
+                    "whato":arg1
                 }
             case "ablegen":
                 args = {
-                    "whato":tokens[1]
+                    "whato":arg1
                 }
             case "untersuche":
                 args = {
-                    "what":tokens[1]
+                    "what":arg1
                 }
             case "umsehen":
                 args = {}
@@ -132,17 +162,17 @@ def json_cmd(cmd_in:str):
                 args = {}
             case "gehe":
                 args = {
-                    "direction":tokens[1]
+                    "direction":arg1
                 }
             case "llm":
                 args = {}
             case "toeten":
                 args = {
-                    "whom":tokens[1]
+                    "whom":arg1
                 }
             case "angreifen":
                 args = {
-                    "whom":tokens[1],
+                    "whom":arg1,
                 }
             case "inventory":
                 args = {}
@@ -156,34 +186,69 @@ def json_cmd(cmd_in:str):
                 args = {}
             case "interaktion":
                 args = {
-                    "whom":tokens[1],
-                    "what":tokens[2] if tokens[2] else None,
+                    "whom":arg1,
+                    "input":arg2 if arg2 else None,
                 }
             case "zurueckweisen":
                 args = {
-                    "why":tokens[1]
+                    "why":arg1
                 }
             case "zurückweisen":
                 args = {
-                    "why": tokens[1]
+                    "why": arg1
                 }
 
             case "unbekannt":
                 args = {}
+
             case "toggle_layout":
                 args = {}
 
+            case "minigame":
+                args = {}
+                if arg1:
+                    args["whichgame"] = arg1
+
+            case "gameover":
+                args = {}
+                if arg1:
+                    args["message"] = arg1
+
+            case "player_message":
+                args = {
+                    "message": arg1
+                }
+
+            case "dog_message":
+                args = {
+                    "message": arg1
+                }
+
+            case "explosion_message":
+                args = {
+                    "message": arg1
+                }
+
+            case "do_explosion":
+                args = {
+                    "message": arg1
+                }
+
+            case "check_pinpad":
+                args = {
+                    "hash":arg1
+                }
 
         cmd_struct = {
             "function_call":{
-                "name":tokens[0],
+                "name":cmd_in,
                 "args":args
             }
         }
     else:
         cmd_struct = {
             "function_call":{
-                "name":"gen_message",
+                "name":"message",
                 "args":{
                     "message":cmd_in
                 }
@@ -191,8 +256,9 @@ def json_cmd(cmd_in:str):
         }
     dprint(dl.CMDLOG,"Resulting CMD structure:")
     dpprint(dl.CMDLOG,cmd_struct)
-    return cmd_in
+    return cmd_struct
+
 
 
 def return_do_nothing():
-    return "nichts"
+    return json_cmd_simple("nichts")

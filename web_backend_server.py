@@ -15,6 +15,8 @@ from collections import deque
 from tornado import websocket
 
 import Utils
+import traceback
+from Utils import json_cmd_simple
 
 Utils.ADV_LOGGER = Utils.dlogger()
 
@@ -517,6 +519,51 @@ class WebAdventureServer:
         dprint(dl.WEBGUI, f"📥 Kommando empfangen: '{raw_command}' (Modus: {session['type']})")
 
         # Bestimme welches Command zu verarbeiten ist - EXAKT wie Player_game_move
+
+        #
+        # Beispiel: (annahme: wir sind im Schuppen, und dort gibt es eine Leiter (o_leiter))
+        #
+        # user_input: "nimm die Leiter, gehe nach draussen, und lehne die Leiter an den Schuppen"
+        #
+        # --> Wird zur Verarbeitung an das LLM gesandt. Im aktuellen Kontext gibt es nur
+        #     eine Leiter, aber keinen Schuppen. Dss LLM erzeugt folgende function_calls:
+        #
+        #  cmd_q = [
+        #            {...{"nimm", "o_leiter"} ...}
+        #            {...{"gehe", "p_schuppen} ...}
+        #            {...{"rest", "lehne die Leiter an den Schuppen"}
+        #          ]
+        #
+        # Die Kommandos werden nun pro Spielrunde nach und nach abgearbeitet. Das "rest"-
+        # Kommando ist besonders, es wird wieder an das LLM übergeben. Wenn eins der
+        # vorigen Kommandos einen neuen Kontext erzeugt hat (z.B. durch Gehen an einen
+        # anderen Ort, so wird es eine neue cmd_q erzeugen:
+        #
+        # cmd_q = [
+        #             {... {"anwenden", "o_leiter", "o_schuppen"} ...}
+        #         ]
+        #
+        # ... sonst:
+        #
+        # cmd_q = [
+        #             { ... {"zurueckweisen", "Das geht hier nicht..."} ...}
+        #         ]
+        #
+        # Eine neue Benutzereingabe wird vom GUI erst abgefragt, wenn cmd_q leer ist. Die
+        # Kommandos sind alle in dem JSON-Format, welches auch vom LLM zurückgeliefert
+        # wird:
+        # {
+        #   "function_call" : {
+        #        "name": "<func_name>":
+        #        "args": {
+        #            "arg1_name": "arg1_value"
+        #                ...
+        #            "agnn_name": "argn_value"
+        #        }
+        #    }
+        # }
+        #
+
         command_to_execute = None
 
         # Schritt 1: Prüfe ob Commands in Queue vorhanden sind
@@ -528,7 +575,7 @@ class WebAdventureServer:
             # Schritt 2: Keine Commands in Queue - hole User Input
             user_input = None
 
-            # Prüfe pending input zuerst
+            # Prüfe pending input (aus einem "rest"-Function Call ) zuerst
             if session["pending_llm_input"]:
                 user_input = session["pending_llm_input"]
                 session["pending_llm_input"] = None
@@ -545,16 +592,8 @@ class WebAdventureServer:
             # Schritt 3: Verarbeite User Input
             if user_input.lower() in ["quit", "inventory", "dogstate", "nichts", "context", "toggle_layout","pinpad","minigame"]:
                 # Direkte Commands ohne LLM-Parsing
-                if user_input.lower().startswith("pinpad"):
-                    hash = "81dc9bdb52d04dc20036dbd8313ed055"  # MD5 für 1234
-                    pin_result = await self.wd.ask_for_pin(hash)
-                    session["cmd_q"].append({
-                        "function_call": {
-                            "name": "zurueckweisen",
-                            "args": {"why": f"PIN-Eingabe ergab: {pin_result}"}
-                        }
-                    })
-                elif user_input.lower().startswith("minigame"):
+
+                if user_input.lower().startswith("minigame"):
                     minigame_result = await self.wd.do_minigame()
                     session["cmd_q"].append({
                         "function_call": {
@@ -565,7 +604,10 @@ class WebAdventureServer:
                 else:
                     session["cmd_q"].append({'function_call': {'name': user_input.lower(), 'args': {}}})
             else:
-                # LLM-Parsing erforderlich
+                # LLM-Parsing erforderlich.
+                # user_input hat an dieser Stelle entweder einen Wert aus einer Benutzereingabe
+                # oder aus einem "rest"-Kommando
+                #
                 if session["type"] == "real" and GAME_MODULES_AVAILABLE:
                     try:
                         game = session["game"]
@@ -579,7 +621,12 @@ class WebAdventureServer:
                             dprint(dl.WEBGUI,
                                    f"🤖 LLM parsed {len(parsed_commands)} commands: {[cmd['function_call']['name'] for cmd in parsed_commands]}")
 
-                            # Intercepte "rest-command" - GENAU wie in Player_game_move
+                            # Intercept "rest-command" - GENAU wie in Player_game_move
+                            # Das "rest"-Kommando kann, wenn es überhaupt existiert, nur am
+                            # Ende des Arrays stehen, welcher vom LLM zurückgeliefert wurde.
+                            # Wenn es existiert, werte es aus (Argument in remaining_input schreiben),
+                            # und lösche es vom Ende der Queue
+
                             if len(parsed_commands) > 1:
                                 if parsed_commands[-1]["function_call"]["name"] == "rest":
                                     session["pending_llm_input"] = parsed_commands[-1]["function_call"]["args"][
@@ -604,6 +651,8 @@ class WebAdventureServer:
                         {'function_call': {'name': 'zurueckweisen', 'args': {'why': f'Demo: {user_input}'}}})
 
             # Schritt 4: Nimm das erste Command aus der Queue
+            # An dieser Stelle wird die Queue nach und nach abgearbeitet (pro Spielrunde ein Kommando)
+            #
             if session["cmd_q"]:
                 command_to_execute = session["cmd_q"].popleft()
             else:
@@ -614,6 +663,7 @@ class WebAdventureServer:
         dprint(dl.WEBGUI, f"▶️  Führe aus: {command_to_execute['function_call']['name']}")
         result = await self.execute_single_command(session, command_to_execute, session_id)
 
+        res_msg = json_cmd_simple("player_message", result)
         # Schritt 6: Sende Antwort
         response = {
             "type": "command_result",
@@ -633,6 +683,10 @@ class WebAdventureServer:
                f"✅ Command '{command_to_execute['function_call']['name']}' ausgeführt. Queue: {len(session['cmd_q'])}, Pending: {session['pending_llm_input'] is not None}")
 
         # Schritt 6.5: Sende NPC-Actions falls vorhanden
+        #
+        # Nun werden die NPCs behandelt. Auch diese können ein Kommando pro Spielrunde absetzen.
+        # Da sie aber nur einzelne Kommandos absetzen, wird keine komplexe Parsing-Logik benötigt
+
         if "pending_npc_actions" in session and session["pending_npc_actions"]:
             npc_actions = session["pending_npc_actions"]
             del session["pending_npc_actions"]  # Cleanup
@@ -640,38 +694,62 @@ class WebAdventureServer:
             # NEUE: Prüfe auf Mini-Game Trigger in NPC-Actions
             filtered_actions = []
             for action in npc_actions:
-                if 'MINIGAME' in action:
-                    # Extrahiere Mini-Game Type
-                    dprint(dl.WEBGUI, f"🎮 Mini-Game Trigger erkannt!")
+                args = action.get("function_call",{}).get("args",{})
+                f_call = action.get("function_call",{}).get("name",None)
+                if f_call:
+                    match f_call:
+                        case "minigame":
+                            dprint(dl.WEBGUI, f"🎮 Mini-Game Trigger erkannt!")
 
-                    # Starte Mini-Game
-                    result = await self.wd.do_minigame()
-                    #
-                    # Find Dog in Players in current session
-                    #
-                    r = await self.handle_minigame_result(websocket,result)
-                    filtered_actions.append(r)
-                else:
-                    # Formatiere normale Nachrichten für bessere Unterscheidung
-                    if '💥 EXPLOSION:' in action:
-                        # Echte Explosion - markiere sie eindeutig
-                        filtered_actions.append(action)
-                    elif 'explodiert in' in action and 'Spielzügen' in action:
-                        # Timer-Nachricht - markiere als Timer
-                        filtered_actions.append(f"**💣 Timer:** {action}")
-                    elif '**Hund:**' in action:
-                        # Hund-Aktion bleibt wie sie ist
-                        filtered_actions.append(action)
-                    else:
-                        # Andere NPC-Aktionen
-                        filtered_actions.append(action)
+                            # Starte Mini-Game
+                            result = await self.wd.do_minigame()
+                            #
+                            # Find Dog in Players in current session
+                            #
+                            r = await self.handle_minigame_result(websocket,result)
+                            filtered_actions.append(r)
+
+                        # Formatiere normale Nachrichten für bessere Unterscheidung
+                        # if '💥 EXPLOSION:' in action:
+                        case "do_explosion":
+                            # Echte Explosion - markiere sie eindeutig
+                            #filtered_actions.append(args["message"])
+                            filtered_actions.append({
+                                "command":f_call,
+                                "message":args["message"]
+                            })
+
+                        # elif 'explodiert in' in action and 'Spielzügen' in action:
+                        case "explosion_message":
+                            # Timer-Nachricht - markiere als Timer
+                            filtered_actions.append(
+                                {
+                                    "command":f_call,
+                                    "message":f"**💣 Timer:** {args['message']}"
+                                }
+                            )
+                        case "dog_message": # '**Hund:**' in action:
+                            # Hund-Aktion bleibt wie sie ist
+                            filtered_actions.append(
+                                {
+                                    "command":f_call,
+                                    "message":args["message"]
+                                }
+                            )
+                        case _:
+                            # Andere NPC-Aktionen
+                            filtered_actions.append({})
 
             if filtered_actions:
                 npc_message = {
                     "type": "npc_actions",
+                    "command": action, #NEU!!
                     "actions": filtered_actions,
                     "game_state": session["state"]
                 }
+                #
+                # An das GUI senden, wo es dann (in JavaScript) weiterverarbeitet wird
+                #
                 await websocket.send(json.dumps(npc_message))
                 dprint(dl.WEBGUI, f"💥 NPC-Actions gesendet: {len(filtered_actions)} Aktionen")
 
@@ -690,17 +768,12 @@ class WebAdventureServer:
             queue_empty = len(session["cmd_q"]) == 0
             is_look_around = func_name == "umsehen"
 
-            # Narration nur bei vollständig abgearbeiteten Sätzen oder explizitem Umsehen
-
             dprint(dl.WEBGUI, f"🎭 Aktualisiere Narration (Queue leer: {queue_empty}, Umsehen: {is_look_around})")
 
 
             if session["type"] == "real" and GAME_MODULES_AVAILABLE:
                 game = session["game"]
                 player = game.players[0] if game.players else None
-                if player is None:
-                    game.game_over = True
-
 
                 if player and hasattr(game, 'verb_execute_json'):
                     # Durst-Logik - GENAU wie in Player_game_move
@@ -837,6 +910,7 @@ class WebAdventureServer:
         """Sammle NPC-Aktionen OHNE sie zu senden - für später in handle_command"""
         try:
             from NPCPlayerState import NPCPlayerState
+            from Utils import json_cmd_simple
             # Versuche auch ExplosionState zu importieren
             try:
                 from ExplosionState import ExplosionState
@@ -851,12 +925,23 @@ class WebAdventureServer:
             for npc in game.players:
                 if isinstance(npc, NPCPlayerState):
                     # Normaler NPC (Hund)
+                    #
+                    # Der NPCPlayerState ("Hund") liefert ergebnisse, die erst durch
+                    # verb_execute ausgeführt werden müssen (z.B: er geht irgendwo hin)
+                    # Die verb_execute-Funktion liefert Strings, die erst in dog_messages
+                    # umgewandelt werden müssen. (Dies ist notwendig, weil die gleichen
+                    # execute-Methoden für alle NPC aufgerufen werden, egal ob PlayerState
+                    # oder NPNCPlayerState)
+                    #
                     npc_input = npc.NPC_game_move(game)
-                    if npc_input and npc_input != "nichts":
-                        if "MINIGAME" not in npc_input:
-                            npc_result = game.verb_execute(npc, npc_input)
+                    command = npc_input.get("function_call",{}).get("name",None)
+                    args = npc_input.get("function_call",{}).get("args",{})
+
+                    if npc_input and command != "nichts":
+                        if command != "minigame":
+                            npc_result = game.verb_execute_json(npc, npc_input)
                             if npc_result and npc_result.strip():
-                                npc_actions.append(f"**{npc.name}:** {npc_result}")
+                                npc_actions.append(json_cmd_simple("dog_message",f"**{npc.name}:** {npc_result}"))
                         else:
                             #
                             # Initiate Minigame in web GUI
@@ -868,12 +953,21 @@ class WebAdventureServer:
                     dprint(dl.WEBGUI, f"💥 Sammle Explosion: Timer={npc.kaboom_timer}")
 
                     # ExplosionState.explosion_input() macht ALLES und gibt Nachrichten zurück
-                    explosion_messages = npc.explosion_input(game)
+                    #explosion_messages = npc.explosion_input(game)
+                    #
+                    # ExplosionState liefert immer Ergebnisse vom Typ
+                    # explosion_message oder do_explosion, die nicht weiter
+                    # von verb_execute interpretiert werden müssen, sondern
+                    # direkt zur Ausgabe an das GUI übergeben werden können
+                    #
+                    npc_input = npc.explosion_input(game)
+                    command = npc_input.get("function_call", {}).get("name", None)
+                    args = npc_input.get("function_call", {}).get("args", {})
 
                     # Verwende die Nachrichten direkt (keine verb_execute nötig!)
-                    if explosion_messages and explosion_messages != "nichts":
-                        npc_actions.append(f"**💥 EXPLOSION:** {explosion_messages}")
-                        dprint(dl.WEBGUI, f"💥 Explosion-Messages gesammelt: {len(explosion_messages)} Zeichen")
+                    if npc_input and command != "nichts":
+                        npc_actions.append(npc_input)
+                        dprint(dl.WEBGUI, f"💥 Explosion-Messages gesammelt!")
 
                     # Prüfe ob die Explosion abgelaufen ist (kaboom_timer = 0 nach explosion_input)
                     if npc.kaboom_timer <= 0:
@@ -924,6 +1018,7 @@ class WebAdventureServer:
                     dprint(dl.WEBGUI, f"❌ JSON-Fehler: {e}")
                 except Exception as e:
                     dprint(dl.WEBGUI, f"❌ Fehler beim Verarbeiten: {e}")
+                    traceback.print_exc()
 
         except websockets.exceptions.ConnectionClosed:
             dprint(dl.WEBGUI, "🔌 Client-Verbindung normal geschlossen")
