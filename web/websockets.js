@@ -465,7 +465,7 @@ function sendCommand() {
     }
 }
 
-function showExplosion(text) {
+function showExplosion_old(text) {
     const overlay = document.getElementById("explosion-overlay");
     const messageBox = document.getElementById("explosion-message");
     const particlesContainer = document.getElementById("explosion-particles");
@@ -539,6 +539,64 @@ function showExplosion(text) {
         particlesContainer.appendChild(sparkle);
     }
 
+    setTimeout(() => {
+        messageBox.innerHTML = text.replace(/\n/g, "<br>");
+        messageBox.style.display = "block";
+    }, 4000);
+}
+
+function hideExplosion_old() {
+    document.getElementById("explosion-overlay").style.display = "none";
+    window.explosion_running = false;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    backend = new AdventureBackend();
+    updateUI();
+    setTimeout(() => {
+        const input = document.getElementById('user-input');
+        if (input) input.focus();
+    }, 1000);
+});
+
+
+function showExplosion(text) {
+    const overlay = document.getElementById("explosion-overlay");
+    const messageBox = document.getElementById("explosion-message");
+    const particlesContainer = document.getElementById("explosion-particles");
+    const shockwave = document.getElementById("shockwave");
+
+    overlay.style.display = "flex";
+    messageBox.style.display = "none";
+    particlesContainer.innerHTML = "";
+    shockwave.style.display = "none"; // Verstecken da wir das Video nutzen
+
+    //
+    // In case game over directly follows the explosion
+    //
+
+    window.explosion_running = true;
+
+    // Video-Element erstellen und abspielen
+    const video = document.createElement("video");
+    video.src = "explosion.mp4";
+    video.autoplay = true;
+    video.muted = true; // Nötig für autoplay in den meisten Browsern
+    video.loop = false; // Video spielt nur einmal ab
+    video.style.position = "absolute";
+    video.style.top = "50%";
+    video.style.left = "50%";
+    video.style.transform = "translate(-50%, -50%)";
+    video.style.width = "100vw"; // Skaliert auf Bildschirmbreite
+    video.style.height = "auto"; // Behält Seitenverhältnis bei
+    video.style.maxWidth = "none";
+    video.style.maxHeight = "none";
+    video.style.zIndex = "1";
+
+    // Video in den particles-Container einfügen
+    particlesContainer.appendChild(video);
+
+    // Text-Overlay nach 4 Sekunden anzeigen (wie im Original)
     setTimeout(() => {
         messageBox.innerHTML = text.replace(/\n/g, "<br>");
         messageBox.style.display = "block";
