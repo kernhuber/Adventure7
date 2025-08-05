@@ -448,7 +448,8 @@ class WebAdventureServer:
 
                 if dog and hasattr(dog, 'process_fight_result'):
                     # Übergebe Ergebnis direkt an Hund-Logik
-                    fight_message = dog.process_fight_result(game, dog_fight_result)
+                    fight_message_json = dog.process_fight_result(game, dog_fight_result)
+                    fight_message = fight_message_json["function_call"]["args"]["message"]
                     dprint(dl.WEBGUI, f"✅ Fight result verarbeitet: {fight_message[:50]}...")
 
                 # Beende Mini-Game Session im GameState

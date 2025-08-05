@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta charset="UTF-8">
     <title>🏜️ Wüsten-Adventure mit Mini-Games</title>
     <style>
@@ -260,13 +263,14 @@
     <!-- Mini-Games werden von minigames.js erstellt -->
 
     <!-- Scripts -->
-    <script src="minigames.js"></script>
+    <!-- Dummy Version parameters in order to force reload an no cache usage by browser -->
+    <script src="minigames.js?v=1.0.4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="welcome.js"></script>
-    <script src="pinpad.js"></script>
-    <script src="game_over.js"></script>
-    <script src="askplayername.js"></script>
-    <script src="explosion_message.js"></script>
-    <script src="websockets.js"></script>
+    <script src="welcome.js?v=1.0.4"></script>
+    <script src="pinpad.js?v=1.0.4"></script>
+    <script src="game_over.js?v=1.0.4"></script>
+    <script src="askplayername.js?v=1.0.4"></script>
+    <script src="explosion_message.js?v=1.0.4"></script>
+    <script src="websockets.js?v=1.0.4"></script>
 </body>
 </html>
