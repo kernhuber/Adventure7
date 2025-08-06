@@ -550,14 +550,14 @@ function hideExplosion_old() {
     window.explosion_running = false;
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    backend = new AdventureBackend();
-    updateUI();
-    setTimeout(() => {
-        const input = document.getElementById('user-input');
-        if (input) input.focus();
-    }, 1000);
-});
+// document.addEventListener('DOMContentLoaded', function() {
+//     backend = new AdventureBackend();
+//     updateUI();
+//     setTimeout(() => {
+//         const input = document.getElementById('user-input');
+//         if (input) input.focus();
+//     }, 1000);
+// });
 
 
 function showExplosion(text) {
