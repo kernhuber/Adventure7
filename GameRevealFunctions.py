@@ -1,6 +1,11 @@
-from GameState import GameState
-from PlayerState import PlayerState
-from GameObject import GameObject
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from GameState import GameState
+    from PlayerState import PlayerState
+    from GameObject import GameObject
+    from Place import Place
+
 
 """
  Reveal Functions Functions executed when a game object is "revealed
@@ -8,8 +13,8 @@ from GameObject import GameObject
 """
 
 
-def o_blumentopf_reveal_f(gs: GameState, pl: PlayerState = None, what: GameObject = None,
-                          onwhat: GameObject = None) -> str:
+def o_blumentopf_reveal_f(gs: "GameState", pl: "PlayerState" = None, what: "GameObject" = None,
+                          onwhat: "GameObject" = None) -> str:
     if gs.objects["o_schluessel"].hidden:
         retstr = "Ein alter Blumentopf - aber warte: **unter dem Blumentopf liegt ein Schlüssel!!!**"
         gs.objects["o_blumentopf"].examine = "Unter diesem Blumentopf hast Du den Schlüssel gefunden"
@@ -19,8 +24,8 @@ def o_blumentopf_reveal_f(gs: GameState, pl: PlayerState = None, what: GameObjec
         return gs.objects["o_blumentopf"].examine
 
 
-def o_skelett_reveal_f(gs: GameState, pl: PlayerState = None, what: GameObject = None,
-                       onwhat: GameObject = None) -> str:
+def o_skelett_reveal_f(gs: "GameState", pl: "PlayerState" = None, what: "GameObject" = None,
+                       onwhat: "GameObject" = None) -> str:
     if gs.objects["o_geldboerse"].hidden:
         gs.objects["o_geldboerse"].hidden = False
         gs.objects["o_geldboerse"].ownedby = pl.location
@@ -31,14 +36,13 @@ def o_skelett_reveal_f(gs: GameState, pl: PlayerState = None, what: GameObject =
         return gs.objects["o_skelett"].examine
 
 
-def o_geldboerse_reveal_f(gs: GameState, pl: PlayerState = None, what: GameObject = None,
-                          onwhat: GameObject = None) -> str:
+def o_geldboerse_reveal_f(gs: "GameState", pl: "PlayerState" = None, what: "GameObject" = None,
+                          onwhat: "GameObject" = None) -> str:
     o_ec_karte = gs.objects["o_ec_karte"]
     o_geldboerse = gs.objects["o_geldboerse"]
     if o_ec_karte.hidden:
         o_ec_karte.hidden = False
         o_ec_karte.ownedby = o_geldboerse.ownedby
-        from Place import Place
         if isinstance(o_ec_karte.ownedby, Place):
             o_ec_karte.ownedby.place_objects.append(o_ec_karte)
         else:
@@ -50,8 +54,8 @@ def o_geldboerse_reveal_f(gs: GameState, pl: PlayerState = None, what: GameObjec
         return gs.objects["o_geldboerse"].examine
 
 
-def o_muelleimer_reveal_f(gs: GameState, pl: PlayerState = None, what: GameObject = None,
-                          onwhat: GameObject = None) -> str:
+def o_muelleimer_reveal_f(gs: "GameState", pl: "PlayerState" = None, what: "GameObject" = None,
+                          onwhat: "GameObject" = None) -> str:
     if gs.objects["o_geheimzahl"].hidden:
         from random import randint
         gs.objects["o_geheimzahl"].hidden = False

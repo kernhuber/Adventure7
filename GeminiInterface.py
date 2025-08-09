@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 import google.generativeai as genai
 import os
@@ -15,6 +16,9 @@ from dotenv import load_dotenv
 # Alternativ:
 
 class GeminiInterface:
+    # --- LLM-generic alias (compatibility) ---
+    def validate_llm_tools_schema(self, tools_list):
+        return self.validate_gemini_tools_schema(tools_list)
     class _narration_cache:
         def __init__(self):
             self.cache = {}

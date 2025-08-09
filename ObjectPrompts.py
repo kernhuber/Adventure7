@@ -1,12 +1,19 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from GameState import GameState
+    from PlayerState import PlayerState
+    from GameObject import GameObject
+    from Place import Place
+    from Way import Way
+
 """
 prompt functions for Game Objects go here
 """
 
-from GameState import GameState
-from PlayerState import PlayerState
 
 
-def o_umschlag_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_umschlag_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """ 
 Briefumschlag
 =============
@@ -15,7 +22,7 @@ Briefumschlag
 
 
 
-def o_warenautomat_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_warenautomat_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     r = """
 Warenautomat
 ============
@@ -50,7 +57,7 @@ Warenautomat
 #                 "apply_f": af.o_fahrradkette_apply_f
 #             },
 
-def o_fahrradkette_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_fahrradkette_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Fahrradkette
 ============
@@ -60,7 +67,7 @@ Fahrradkette
     """
 
 
-def o_fahrrad_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_fahrrad_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Fahrrad    
 =======
@@ -75,7 +82,7 @@ Fahrrad
 #             #
 #
 
-def o_muelleimer_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_muelleimer_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Mülleimer
 =========
@@ -95,7 +102,7 @@ Mülleimer
 #                 "apply_f": af.o_salami_apply_f
 #             },
 
-def o_salami_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_salami_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Salami
 ======
@@ -106,7 +113,7 @@ Salami
     """
 
 
-def o_geheimzahl_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_geheimzahl_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return f"""
 Geheimzahl
 ==========
@@ -121,7 +128,7 @@ Geheimzahl
 
 
 
-def o_tuerschliesser_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_tuerschliesser_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Türschliesser
 =============
@@ -134,7 +141,7 @@ Türschliesser
 #             # Place: p_ubahn2
 #             #
 
-def o_pizzaautomat_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_pizzaautomat_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Pizza-Automat
 =============
@@ -150,7 +157,7 @@ Pizza-Automat
     """
 
 
-def o_geld_lire_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_geld_lire_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Lire
 ====
@@ -159,7 +166,7 @@ Lire
     """
 
 
-def o_pizza_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_pizza_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Pizza
 =====
@@ -172,7 +179,7 @@ Pizza
 #             #
 
 
-def o_geldautomat_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_geldautomat_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     r = """
 Geldautomat
 ===========
@@ -200,7 +207,7 @@ Geldautomat
 #                 "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
 #                 "apply_f": af.o_geld_dollar_apply_f
 #             },
-def o_geld_dollar_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_geld_dollar_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Dollar
 ======
@@ -223,7 +230,7 @@ Kaufe mit den US-Dollar eine Pizza am Automaten --> 'anwenden o_geld_dollar o_pi
 #             #
 
 
-def o_schuppen_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_schuppen_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     r="""
 Schuppen
 ========
@@ -244,7 +251,7 @@ Schuppen
 
 
 
-def o_blumentopf_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_blumentopf_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Blumentopf
 ==========
@@ -253,7 +260,7 @@ Blumentopf
     """
 
 
-def o_schluessel_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_schluessel_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Schluessel
 ==========
@@ -272,7 +279,7 @@ Schluessel
 #                 "apply_f": af.o_stuhl_apply_f
 #             },
 
-def o_stuhl_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_stuhl_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Stuhl
 =====
@@ -282,7 +289,7 @@ Stuhl
     """
 
 
-def o_schrott_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_schrott_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Schrott
 =======
@@ -308,7 +315,7 @@ Schrott
 #                 "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
 #                 "apply_f": af.o_hebel_apply_f
 #             },
-def o_hebel_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_hebel_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     r="""
 Hebel
 =======
@@ -327,7 +334,7 @@ Hebel
 #             # Place: p_innen
 #             #
 
-def o_leiter_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_leiter_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Leiter
 ======
@@ -343,7 +350,7 @@ Verwendung der Leiter
 
 
 
-def o_skelett_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_skelett_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Skelett
 =======
@@ -357,7 +364,7 @@ Skelett
 
 
 
-def o_geldboerse_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_geldboerse_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Geldbörse
 =========
@@ -369,7 +376,7 @@ Geldbörse
 """
 
 
-def o_ec_karte_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_ec_karte_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 EC-Karte
 ========
@@ -378,7 +385,7 @@ EC-Karte
 """
 
 
-def o_pinsel_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_pinsel_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Pinsel
 ======
@@ -387,7 +394,7 @@ Pinsel
 """
 
 
-def o_farbeimer_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_farbeimer_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Farbeimer
 =========
@@ -406,7 +413,7 @@ Farbeimer
 #                 "apply_f": af.o_sprengladung_apply_f
 #             },
 
-def o_sprengladung_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_sprengladung_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Sprengladung
 ============
@@ -431,7 +438,7 @@ Sprengladung
 #                 "apply_f": af.o_felsen_apply_f
 #             },
 
-def o_felsen_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_felsen_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Felsen
 ======
@@ -459,7 +466,7 @@ Felsen
 #
 #         }
 
-def o_hauptschalter_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_hauptschalter_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Hauptschalter
 =============
@@ -475,7 +482,7 @@ Anwendung
 
 """
 
-def o_wasserspender_prompt_f(gs:GameState, pl:PlayerState) -> str:
+def o_wasserspender_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Wasserspender
 =============

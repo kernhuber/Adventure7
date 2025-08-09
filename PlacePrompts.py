@@ -1,19 +1,26 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from GameState import GameState
+    from PlayerState import PlayerState
+    from GameObject import GameObject
+    from Place import Place
+    from Way import Way
+
 """
 For the LLM interaction: Some places have differing Prompt snippets depending
 on changes in game- and/or player state. Instead of setting these in the object
 itself, a function is called
 """
-from GameState import GameState
-from PlayerState import PlayerState
 
-def p_warenautomat_place_prompt_f(gs: GameState, pl: PlayerState=None) -> str:
+def p_warenautomat_place_prompt_f(gs: "GameState", pl: "PlayerState"=None) -> str:
     return """
 Warenautomat
 ============
 - An diesem Ort befindet sich der Warenautomat für Fahrradteile, der weiter unten beschrieben wird
     """
 
-def p_felsen_place_prompt_f(gs:GameState, pl: PlayerState)-> str:
+def p_felsen_place_prompt_f(gs: "GameState", pl: "PlayerState")-> str:
     rv = """
 Felsen
 ======
@@ -25,7 +32,7 @@ Felsen
     else:
         return f"{rv}- Spuren einer großen Explosion sind zu sehen.\n- Wo vorher ein Felsblock lag, ist nun der Eingang zu einer Höhle.\n"
 
-def p_hoehle_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
+def p_hoehle_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     rv = """
 Höhle
 =====
@@ -38,7 +45,7 @@ Höhle
     else:
         return f"{rv}- Eine Glühbirne hängt von der Decke, aber sie ist ausgeschaltet.\n- Das einzige Licht kommt vom Höhleneingang"
 
-def p_schuppen_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
+def p_schuppen_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     rv ="""
 Schuppen
 ========
@@ -59,7 +66,7 @@ Unbedingt beachten:
 
     return rv
 
-def p_innen_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
+def p_innen_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     rv = """
 Im Inneren des Schuppens
 ========================
@@ -74,7 +81,7 @@ Im Inneren des Schuppens
 
     return rv
 
-def p_warenautomat_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
+def p_warenautomat_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     rv = """
 Warenautomat
 ============
@@ -92,7 +99,7 @@ Warenautomat
 """
     return rv
 
-def p_geldautomat_place_prompt_f(gs: GameState, pl: PlayerState) -> str:
+def p_geldautomat_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     rv = """
 Geldautomat
 ===========
@@ -109,4 +116,3 @@ Geldautomat
         rv = rv + """- Ein Geldautomat, der weiter unten beschrieben ist 
 """
     return rv
-
