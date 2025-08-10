@@ -4,9 +4,13 @@ Special functions when a GameObject is "taken"
 from GameState import GameState
 from PlayerState import PlayerState
 
+def _F(gs: GameState):
+    """Return the structured flags container (GameFlags) from GameState."""
+    return gs.get_flags()
+
 def o_leiter_take_f(gs: GameState, pl: PlayerState=None) -> str:
     """ If Leiter is taken away, some paths may become invisible"""
-    if gs.leiter:
+    if _F(gs).leiter:
         gs.leiter = False
         return "Du hast die Leiter nun bei Dir, aber so kannst du nicht mehr auf den Schuppen klettern"
     else:

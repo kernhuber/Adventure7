@@ -7,6 +7,10 @@ if TYPE_CHECKING:
     from Place import Place
     from Way import Way
 
+
+def _F(gs: "GameState"):
+    """Return the structured flags container (GameFlags) from GameState."""
+    return gs.get_flags()
 """
 For the LLM interaction: Some places have differing Prompt snippets depending
 on changes in game- and/or player state. Instead of setting these in the object
@@ -27,7 +31,7 @@ Felsen
 - Hier ist ein Hügel aus Gestein und Felsen. 
 - Das Gestein ist so bröckelig, dass man nicht auf den Hügel steigen kann.
 """
-    if gs.felsen:
+    if _F(gs).felsen:
         return f"{rv}- Ein Trampelpfad führt zu dem Hügel und endet vor einem Felsblock, der weiter unten beschrieben wird.\n"
     else:
         return f"{rv}- Spuren einer großen Explosion sind zu sehen.\n- Wo vorher ein Felsblock lag, ist nun der Eingang zu einer Höhle.\n"
@@ -40,7 +44,7 @@ Höhle
 - Es riecht ein wenig nach Verwesung
 - Die Wände der Höhle sind aus Granitgestein
 - der Boden ist aus gestampftem Lehm. """
-    if gs.hauptschalter:
+    if _F(gs).hauptschalter:
         return f"{rv}- Eine Glühbirne hängt von der Decke und erleuchtet die Höhle.\n- Man kann elektrisches Summen vernehmen\n"
     else:
         return f"{rv}- Eine Glühbirne hängt von der Decke, aber sie ist ausgeschaltet.\n- Das einzige Licht kommt vom Höhleneingang"
@@ -58,7 +62,7 @@ Unbedingt beachten:
 * Interpretiere Benutzereingaben wie "...gehe in den Schuppen" oder "...gehe hinein" so, als
   hätte der Benutzer "gehe nach innen" eingegeben. Gemeint ist dann nämlich der Ort "innen"
 """
-    if gs.schuppen_intakt:
+    if _F(gs).schuppen_intakt:
         rv = rv+"- Hier ist Holzschuppen, der weiter unten beschrieben wird\n"
     else:
         rv = rv+"- Trümmer eines Holzschuppens liegen herum\n- Es sieht so aus, als hätte eine große Explosion stattgefunden\n"
@@ -71,7 +75,7 @@ def p_innen_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
 Im Inneren des Schuppens
 ========================
 """
-    if gs.dach:
+    if _F(gs).dach:
         rv = rv + """- Es riecht muffig und staubig. 
 - Grelles Sonnenlicht dringt durch Ritzen zwischen den Brettern und die offene Tür. """
 
@@ -86,7 +90,7 @@ def p_warenautomat_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
 Warenautomat
 ============
 """
-    if not gs.warenautomat_intakt:
+    if not _F(gs).warenautomat_intakt:
         rv = rv+ """- verschmauchter Boden
 - Explosionsspuren
 - einige Trümmer eines Warenautomaten
@@ -104,7 +108,7 @@ def p_geldautomat_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
 Geldautomat
 ===========
 """
-    if not gs.geldautomat_intakt:
+    if not _F(gs).geldautomat_intakt:
         rv= rv+ """- verschmauchter Boden
 - Explosionsspuren
 - einige Trümmer eines Geldautomaten

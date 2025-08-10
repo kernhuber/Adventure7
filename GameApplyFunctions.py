@@ -7,7 +7,13 @@ from PlayerState import PlayerState
 from NPCPlayerState import NPCPlayerState
 from ExplosionState import ExplosionState
 from Place import Place
+
 from Way import Way
+
+# Helper: get the structured flags container from GameState.
+def _F(gs: GameState):
+    """Return the structured flags container (GameFlags) from GameState."""
+    return gs.get_flags()
 
 def o_schluessel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     #
@@ -48,7 +54,7 @@ def o_tuerschliesser_apply_f(gs: GameState, pl: PlayerState=None, what: GameObje
     if pl.location != gs.places["p_wagen"]:
         return "Hier ist kein Türschließer"
 
-    if gs.ubahn_in_otherstation:
+    if _F(gs).ubahn_in_otherstation:
         gs.ubahn_in_otherstation = False
         gs.ways["w_wagen_ubahn"].visible = True
         gs.ways["w_wagen_ubahn2"].visible = False
@@ -70,8 +76,8 @@ def o_geld_lire_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=No
     if pl.location.name == "p_warenautomat" and onwhat.name == "o_warenautomat":
         if not pl.is_in_inventory(gs.objects["o_umschlag"]):
             return "Es wäre alles so schön - leider fällt dir auf, dass du den wichtigen Briefumschlag irgendwo verlegt hast. Finde ihn erst!"
-        if not gs.hebel:
-            if not gs.hauptschalter:
+        if not _F(gs).hebel:
+            if not _F(gs).hauptschalter:
                 return "Eigentlich sollte dies gar nicht passieren können - aber der Automat hat keinen Strom!"
             if gs.objects["o_fahrradkette"].hidden:
                 gs.objects["o_fahrradkette"].hidden = False
@@ -97,10 +103,10 @@ def o_geld_dollar_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=
     #
 
     if pl.location.name == "p_warenautomat" and onwhat.name=="o_warenautomat":
-        if gs.hebel:
+        if _F(gs).hebel:
             return 'Der Warenautomat liegt auf dem Bauch. Er ist zwar völlig intakt, und nicht zerbrochen, aber da kann man kein Geld einwerfen!'
         else:
-            if not gs.hauptschalter:
+            if not _F(gs).hauptschalter:
                 return "Der Automat ist ausgeschaltet"
             else:
                 return 'Der Automat zeigt an: "Mi dispiace molto, ma in questa macchina si accettano solo lire italiane.". Er will also italienische Lira haben - aber wo bekomme ich die her?'
@@ -136,11 +142,11 @@ def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, 
     # Ich bin der Hebel - ich kann nicht auf "irgendwas" angewandt werden, ich kann nur selber
     # angewandt werden.
     #
-    if not gs.hauptschalter:
+    if not _F(gs).hauptschalter:
         return "Du ruckelst am Hebel, aber nichts passiert"
     if pl != None:
         if pl.location == gs.places["p_dach"]:
-            if gs.hebel:
+            if _F(gs).hebel:
                 gs.hebel = False
                 gs.ways["w_warenautomat_ubahn"].visible = False
                 gs.places["p_warenautomat"].description = "Hier steht ein Warenautomat, an dem man Fahrradteile kaufen kann."
@@ -247,7 +253,7 @@ def o_geldboerse_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=N
     return "Was genau soll ich mit der Geldbörse tun?"
 
 def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    if not gs.hauptschalter:
+    if not _F(gs).hauptschalter:
         return "Sieht so aus, als wäre der Automat ausgeschaltet"
 
     if pl.location.name!="p_geldautomat" and onwhat.name!="o_geldautomat":
@@ -288,7 +294,7 @@ def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=Non
 #---
         # Fordere PIN über Web-GUI an → Command-Queue!
         import hashlib
-        md = hashlib.md5(gs.geheimzahl.encode()).hexdigest()
+        md = hashlib.md5(_F(gs).geheimzahl.encode()).hexdigest()
         gs.cmd_q.append({
             "function_call": {
                 "name": "check_pinpad",

@@ -7,6 +7,9 @@ if TYPE_CHECKING:
     from Place import Place
     from Way import Way
 
+def _F(gs: "GameState"):
+    """Return the structured flags container (GameFlags) from GameState."""
+    return gs.get_flags()
 """
 prompt functions for Game Objects go here
 """
@@ -31,14 +34,14 @@ Warenautomat
 - Beschriftungen in  italienischer Sprache
 - Sieht älter, aber nicht beschädigt aus
     """
-    if gs.hebel:
+    if _F(gs).hebel:
         r = r+ "- Liegt auf dem Rücken und ist ausgeschaltet"
         "- Wo er stand, ist nun eine Öffnung im Boden"
         "- Aus der Öffnung kommt angenehm kühle Luft"
         "- Es ist eine Treppe in der Öffnung"
     else:
         r = r+"- steht aufrecht und stabil da\n"
-        if gs.hauptschalter:
+        if _F(gs).hauptschalter:
             r=r+"- Ist angeschaltet und bereit, Teile gegen Geld auszugeben\n"
         else:
             r=r+"- Ist ausgeschaltet und funktioniert nicht, solange kein Strom da ist\n"
@@ -118,7 +121,7 @@ def o_geheimzahl_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
 Geheimzahl
 ==========
 - Ein Zettel mit einer Geheimzahl
-- Die Geheimzahl ist {gs.geheimzahl}. Wichtig: sie muss bei der Beschreibung IMMER angegeben werden!
+- Die Geheimzahl ist {_F(gs).geheimzahl}. Wichtig: sie muss bei der Beschreibung IMMER angegeben werden!
     """
 
 #             #
@@ -190,7 +193,7 @@ Geldautomat
 - Hat Bildschirm un Tastatur
 - Hat einen Geldausgabeschacht
     """
-    if gs.hauptschalter:
+    if _F(gs).hauptschalter:
         r=r+"""- Der Automat ist angeschaltet und funktioniert"
 - Der Bildschirm zeigt 'Bitte Karte eingeben' an"""
     else:
@@ -239,13 +242,13 @@ Schuppen
 - Sieht trotz allem stabil aus 
 - Auf dem Dach ragt etwas in die Höhe, was eine Antenne oder ein Hebel sein könnte
 """
-    if not gs.dach:
+    if not _F(gs).dach:
         r=r+"- DerSchuppen hat kein Dach mehr. \n- Es sieht aus, als wäre das Dach weggesprengt worden."
-    if gs.schuppentuer:
+    if _F(gs).schuppentuer:
         r=r+"- Die Schuppentür steht offen\n"
     else:
         r=r+"- Die Schuppentür ist mit einem Schloss verschlossen\n"
-    if gs.leiter:
+    if _F(gs).leiter:
         r=r+"- Es lehnt eine Leiter am Schuppen\n- Über die Leiter kann man auf das Schuppendach steigen"
     return r
 
@@ -325,7 +328,7 @@ Hebel
 - Etwas rostig, aber scheint funktional
 - Ein kleines Schild am Boden zeigt zwei mögliche Stellungen des Hebels an: "U-Bahn" und "Warenautomat" 
     """
-    if gs.hebel:
+    if _F(gs).hebel:
         r=r+'- Der Hebel steht auf Stellung "U-Bahn"\n'
     else:
         r=r+'- Der Hebel steht auf Stellung "Warenautomat"\n'
