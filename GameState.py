@@ -8,10 +8,15 @@ from sympy import trunc
 from Place import Place
 from Way import Way
 from typing import Dict, List
+from typing import Set
 from PlayerState import PlayerState
 from GameObject import GameObject
-from GeminiInterface import GeminiInterface
+from services.world import GameFlags, WorldModel, ContextBuilder
+
 from Utils import tw_print, dprint, dl, dpprint
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from services.interfaces import LLMClient
 
 #
 # Maintains the state from the game perspective. There are player states as well
@@ -19,12 +24,79 @@ from Utils import tw_print, dprint, dl, dpprint
 
 from typing import Callable
 
+
 from WayPrompts import w_dach_schuppen_prompt_f
 
 
 class GameState:
 
-    def __init__(self):
+    # --- Central list of flag field names kept in sync with GameFlags ---
+    FLAG_FIELDS: Set[str] = {
+        "schuppentuer",
+        "leiter",
+        "hebel",
+        "geheimzahl",
+        "ubahn_in_otherstation",
+        "felsen",
+        "hauptschalter",
+        "dach",
+        "warenautomat_intakt",
+        "geldautomat_intakt",
+        "schuppen_intakt",
+        "game_over",
+        "game_won",
+        "time",
+        "debug_mode",
+    }
+
+    # Provide legacy attribute access to flags (read)
+    def __getattr__(self, name: str):
+        # Called only if normal attribute lookup fails
+        if name in getattr(self, "FLAG_FIELDS", set()) and hasattr(self, "_flags"):
+            return getattr(self._flags, name)
+        raise AttributeError(name)
+
+    # Keep GameFlags in sync when legacy attributes are set (write)
+    def __setattr__(self, name, value):
+        # During __init__, _flags may not exist yet; fall back to default behavior
+        if name.startswith("_") or not hasattr(self, "_flags"):
+            return object.__setattr__(self, name, value)
+        if name in self.FLAG_FIELDS:
+            object.__setattr__(self._flags, name, value)
+            # Also keep a shadow attribute for any existing direct reads in older code paths
+            return object.__setattr__(self, name, value)
+        return object.__setattr__(self, name, value)
+
+    # World containers exposed as properties (stay backward-compatible)
+    @property
+    def objects(self):
+        return self._world.objects
+
+    @objects.setter
+    def objects(self, value):
+        self._world.objects = value
+
+    @property
+    def ways(self):
+        return self._world.ways
+
+    @ways.setter
+    def ways(self, value):
+        self._world.ways = value
+
+    @property
+    def places(self):
+        return self._world.places
+
+    @places.setter
+    def places(self, value):
+        self._world.places = value
+
+    def __init__(self, *, llm: "LLMClient | None" = None):
+        self.llm = llm
+        self._context = ContextBuilder()
+        self._world = WorldModel()
+
         # self.objects = None
         # self.ways = None
         # self.places = None
@@ -134,9 +206,13 @@ class GameState:
         return objects
 
     def from_definitions(self,place_defs, way_defs, object_defs):
-        self.places = self._init_places(place_defs)
-        self.ways = self._init_ways(way_defs, self.places)
-        self.objects = self._init_objects(object_defs, self.places)
+        self._world.places = self._init_places(place_defs)
+        self._world.ways = self._init_ways(way_defs, self._world.places)
+        self._world.objects = self._init_objects(object_defs, self._world.places)
+        # Backward-compatible aliases (many callers read gs.objects/ways/places)
+        self.places = self._world.places
+        self.ways = self._world.ways
+        self.objects = self._world.objects
 
 
     def emit_waydefs(self,pl,wy):
@@ -242,14 +318,41 @@ class GameState:
         self.schuppen_intakt = True        # oder den Schuppen
         self.game_over = False             # Na hoffentlich noch nicht so schnell!
         self.game_won = False              # Wenn true, hat der Spieler das Spiel gewonnen.
-        self.llm = GeminiInterface()       # Unser Sprachmodell
+        # Mirror flags into a structured container (GameFlags) for future decoupling
+        self._flags = GameFlags(
+            schuppentuer=self.schuppentuer,
+            leiter=self.leiter,
+            hebel=self.hebel,
+            geheimzahl=self.geheimzahl,
+            ubahn_in_otherstation=self.ubahn_in_otherstation,
+            felsen=self.felsen,
+            hauptschalter=self.hauptschalter,
+            dach=self.dach,
+            warenautomat_intakt=self.warenautomat_intakt,
+            geldautomat_intakt=self.geldautomat_intakt,
+            schuppen_intakt=self.schuppen_intakt,
+            game_over=self.game_over,
+            game_won=self.game_won,
+            time=self.time,
+            debug_mode=self.debug_mode,
+        )
+        #self.llm = GeminiInterface()       # Unser Sprachmodell
+        # Prefer injected LLM; fallback to local GeminiInterface to avoid module-level import cycles
+        if self.llm is None:
+            from GeminiInterface import GeminiInterface  # local import prevents import cycles
+            self.llm = GeminiInterface()  # Unser Sprachmodell
         self.gamelog = []                  # Wir schneiden alles für das LLM mit
+
+        #self.objects = None
+        #self.ways = None
+        #self.places = None
+        self._world.places = {}
+        self._world.ways = {}
+        self._world.objects = {}
+
         #
         # Web Interface
         #
-        self.objects = None
-        self.ways = None
-        self.places = None
         self.web_sessions = {}      # Tracking für aktive Web-Sessions
         self.active_minigames = {}  # Tracking für laufende Mini-Games
         self.cmd_q = {}        # Will be populated by WebGameServer class
@@ -1041,31 +1144,11 @@ Auf dem Dach des Schuppens
     # Utility Functions
     #
     def obj_name_from_friendly_name(self, n:str)->str:
-        """
-        Return the object name from a user friendly name. For example:
-        Geldautomat --> o_geldautomat
-
-        If identifier is given and not found within objects list, just return it
-
-        """
-        for v in self.objects.values():
-            if n in v.callnames:
-                return v.name
-        return n
+        return self._world.obj_name_from_friendly_name(n)
 
     def place_name_from_friendly_name(self, n:str)->str:
-        """
-        Return the object name from a user friendly name. For example:
-        Geldautomat --> p_geldautomat
-
-        If identifier is given and not found within objects list, just return it
-
-        """
-        dprint(dl.GAMESTATE,f"This is place_name_from_friendly_name({n})")
-        for v in self.places.values():
-            if n in v.callnames:
-                return v.name
-        return n
+        dprint(dl.GAMESTATE, f"This is place_name_from_friendly_name({n})")
+        return self._world.place_name_from_friendly_name(n)
 
     from typing import List, Optional
 
@@ -1073,28 +1156,7 @@ Auf dem Dach des Schuppens
     # Find shortest Path between two places
     #
     def find_shortest_path(self, start: Place, goal: Place) -> Optional[List[Way]]:
-        from collections import deque
-        queue = deque()
-        queue.append((start, []))  # Elemente sind Tupel: (aktueller Ort, bisheriger Pfad)
-        visited = set()
-
-        while queue:
-            current_place, path_so_far = queue.popleft()
-
-            if current_place == goal:
-                return path_so_far  # Erfolgreich: Rückgabe des Pfads als Liste von Way-Objekten
-
-            if current_place.name in visited:
-                continue
-
-            visited.add(current_place.name)
-
-            for way in current_place.ways:
-                if way.visible and way.destination.name not in visited and way.obstruction_check(self)=="Free":
-                    new_path = path_so_far + [way]
-                    queue.append((way.destination, new_path))
-
-        return None  # Kein Pfad gefunden
+        return self._world.find_shortest_path(self, start, goal)
     #
     # Verbs to be executed
     #
@@ -1123,152 +1185,15 @@ Auf dem Dach des Schuppens
 
         return False
 
-    def compile_current_game_context_for_llm_tools(self, pl: 'PlayerState') -> dict:  # Name angepasst
-        context_data = {}
-
-        # 1. Informationen für die Narration (Bleiben als detaillierte Beschreibungen)
-        narration_details = {}
-        narration_details["Ortsname"] = pl.location.callnames[0]
-        narration_details["Beschreibung"] = pl.location.place_prompt_f(self,
-                                                                       pl) if pl.location.place_prompt_f else pl.location.place_prompt
-
-        # Objekte hier und in den Nachbarfeldern
-        # Nachbarfelder nötig für Sätze wie "gehe zum Schuppen und untersuche den Blumentopf"
-        narration_details["Objekte hier"] = []
-        all_object_ids_in_context = []  # Diese Liste sammeln wir für die 'enum's
-        for obj in pl.location.place_objects:
-            if not obj.hidden:
-                # Nutze prompt_f, um die objektspezifische Beschreibung für die Narration zu bekommen
-                obj_description_text = obj.prompt_f(self, pl) if obj.prompt_f else obj.examine
-                narration_details["Objekte hier"].append({obj.callnames[0]: obj_description_text})
-                all_object_ids_in_context.append(obj.name)  # Fügen die interne ID hinzu
-        # narration_details["Objekte in benachbarten Feldern"] = []
-        # all_object_ids_in_neighborhood = []
-        # for neigh in pl.location.ways:
-        #     for obj in neigh.destination.place_objects:
-        #         if not obj.hidden:
-        #             # Nutze prompt_f, um die objektspezifische Beschreibung für die Narration zu bekommen
-        #             obj_description_text = obj.prompt_f(self, pl) if obj.prompt_f else obj.examine
-        #             narration_details["Objekte in benachbarten Feldern"].append({obj.callnames[0]: obj_description_text})
-        #             all_object_ids_in_neighborhood.append(obj.name)  # Fügen die interne ID hinzu
-
-        # Objekte im Inventar des Spielers
-        narration_details["Objekte, die der Spieler bei sich trägt"] = []
-        for obj in pl.inventory:
-            obj_description_text = obj.prompt_f(self, pl) if obj.prompt_f else obj.examine
-            narration_details["Objekte, die der Spieler bei sich trägt"].append(
-                {obj.callnames[0]: obj_description_text})
-            all_object_ids_in_context.append(obj.name)  # Fügen die interne ID hinzu
-
-        # Wege von diesem Feld und von den Nachbarfeldern
-        # Nachbarfelder sind nötig für Sätze wie
-        # "Springe vom Schuppen und gehe zum Warenautomat"
-        narration_details["Wo man hingehen kann"] = []
-        all_place_ids_for_navigation = []  # Diese Liste sammeln wir für die 'enum's
-        allw = pl.location.ways.copy()
-        # dstn = [dn.destination.name for dn in pl.location.ways] # Names of ways we can go to (avoid circles)
-        # dstn.append(pl.location.name)               # also own name
-        # for w in pl.location.ways:
-        #     d = w.destination
-        #     for v in d.ways:
-        #         if v.destination.name not in dstn:
-        #             allw.append(v)
-        #             dstn.append(v.destination.name)
-
-        for w in pl.location.ways:
-            if w.visible:
-                wd = {}
-                wd["Ziel"] = w.destination.name
-                wd["Alternative Namen für das Ziel"] = w.destination.callnames
-                if w.way_prompt_f:
-                    wd["Spezielle Anweisungen für den Weg"] = w.way_prompt_f(self, pl, w)
-                narration_details["Wo man hingehen kann"].append(wd)
-                all_place_ids_for_navigation.append(w.destination.name)  # Fügen die Ziel-ID hinzu
-
-        # Hund (NPC)
-        from NPCPlayerState import NPCPlayerState
-        dog_pl = next((p for p in self.players if isinstance(p, NPCPlayerState)), None)
-        if dog_pl:
-            dog_description = dog_pl.dog_prompt(self, pl)
-            if dog_description:
-                narration_details["Achtung"] = dog_description
-                all_object_ids_in_context.append(
-                    dog_pl.name)  # Fügen auch den Hund als "Objekt" hinzu, das man anwenden kann (z.B. Salami an Hund)
-
-        context_data["narration_details"] = narration_details  # Dies ist der Block für den Narrator-Prompt
-
-        # 2. Spezifische Listen für LLM Tools (enum-Werte)
-        context_data["available_object_ids"] = list(
-            set(all_object_ids_in_context))  # Set für Einzigartigkeit, dann zurück zu Liste
-        #context_data["available_object_ids_in_neighborhood"] = list(set(all_object_ids_in_neighborhood))
-        context_data["available_place_ids"] = list(set(all_place_ids_for_navigation))
-
-        # Die IDs aller Spieler, die ein Ziel sein könnten (primär der Spieler selbst und NPCs)
-        context_data["available_target_player_ids"] = [p.name for p in self.players if
-                                                       isinstance(p, PlayerState) or isinstance(p, NPCPlayerState)]
-
-        # Aktueller Ort und Inventar (für den Parsing-Prompt, falls spezifische Aktionen damit verbunden sind)
-        context_data["player_location_id"] = pl.location.name
-        context_data["player_inventory_ids"] = [item.name for item in pl.inventory]
-        # NEUE Web-Interface Informationen hinzufügen
-        context_data["web_interface_active"] = self.is_web_interface_active()
-        context_data["active_web_sessions"] = len(self.web_sessions)
-
-        # Mini-Game Status
-        active_minigames = [mg for mg in self.active_minigames.values()
-                            if mg['status'] == 'active']
-        context_data["minigames_active"] = len(active_minigames) > 0
-        return context_data
+    def compile_current_game_context_for_llm_tools(self, pl: 'PlayerState') -> dict:
+        return self._context.build_for_llm_tools(self, pl)
 
     def compile_current_game_context(self, pl: PlayerState):
-        """
-        Compile current game context for LLM parse function
-        """
-        from Way import Way
-        rval = {}
-        details = {}
-        details["Ortsname"] = pl.location.callnames[0]
-        if pl.location.place_prompt_f != None:
-            details["Beschreibung"] = pl.location.place_prompt_f(self,pl)
-        else:
-            details["Beschreibung"] = pl.location.place_prompt
-        details["Objekte hier"] = { p.callnames[0]:f"{p.prompt_f(self,pl)}" for p in pl.location.place_objects if not p.hidden}
-        details["Objekte, die des Spieler bei sich trägt"] = {p.callnames[0]:f"{p.prompt_f(self,pl)}" for p in pl.inventory}
-        #details["Wo man hingehen kann"] = {w.destination.callnames[0]:{"Alternative Bezeichnungen für den Weg":w.destination.callnames}  for w in pl.location.ways if w.visible}
-        wege = {}
-        for w in pl.location.ways:
-            if w.visible:
-                wd={}
-                wd["Ziel"] = w.destination.name
-                wd["Alternative Namen für das Ziel"] = w.destination.callnames
-                if w.way_prompt_f:
-                    wd["Spezielle Anweisungen für den Weg"] = w.way_prompt_f(self,pl,w)
-                wege[w.name] = wd
-        details["Wo man hingehen kann"] = wege
-        #
-        # Dog somewhere near?
-        #
-        from NPCPlayerState import NPCPlayerState, DogState
-        dog_pl = None
-        dog_around = False
-        r=""
-        for p in self.players:
-            if type(p) is NPCPlayerState:
-                dog_pl = p
-                break
-        #
-        # Dog might have been killed by explosive charge, so in fact dog_pl MAY be None
-        #
+        return self._context.build(self, pl)
 
-
-        if dog_pl:
-            dp = dog_pl.dog_prompt(self,pl)
-            if dp != "":
-                details["Achtung"] = dp
-
-        # details["Spieler-Inventory"] = {i.callnames[0]:i.name for i in pl.get_inventory()}
-        rval["Aktueller Ort"] = details
-        return rval
+    def get_flags(self) -> GameFlags:
+        """Access to the structured flags container (in addition to legacy attributes)."""
+        return self._flags
 
     def verb_execute_json(self, pl: PlayerState, command_dict: dict) -> str:
         """ Instead of a string (see verb_execute) cmd is a dictionary as was returned by the LLM as structured
@@ -1289,11 +1214,10 @@ Auf dem Dach des Schuppens
             "anwenden":(self.verb_apply,2),
             "nimm":(self.verb_take,1),
             "ablegen":(self.verb_drop,1),
-            "umsehen":(self.verb_lookaround,0),
+            "umsehen":(self.verb_context,0),
             "untersuche": (self.verb_examine,1),
             "hilfe":(self.verb_help,0),
             "gehe":(self.verb_walk,1),
-            "llm": (self.verb_llm,0),
             "toeten": (self.verb_kill,1),
             "angreifen": (self.verb_attack,0),
             "inventory": (self.verb_inventory,0),
@@ -1355,11 +1279,10 @@ Auf dem Dach des Schuppens
             "anwenden":(self.verb_apply,2),
             "nimm":(self.verb_take,1),
             "ablegen":(self.verb_drop,1),
-            "umsehen":(self.verb_lookaround,0),
+            "umsehen":(self.verb_context,0),
             "untersuche": (self.verb_examine,1),
             "hilfe":(self.verb_help,0),
             "gehe":(self.verb_walk,1),
-            "llm": (self.verb_llm,0),
             "toeten": (self.verb_kill,1),
             "angreifen": (self.verb_attack,0),
             "inventory": (self.verb_inventory,0),
@@ -1754,13 +1677,24 @@ Am Ort sind folgende Objekte zu sehen:"""
     def register_web_session(self, session_id, websocket=None):
         """Registriere eine neue Web-Session"""
         from WebDialogs import WebDialogs
-        self.web_sessions[session_id] = {
+
+        # Ensure per-session command queue exists
+        if session_id not in self.cmd_q:
+            self.cmd_q[session_id] = []
+
+        sess = {
             'websocket': websocket,
             'active': True,
             'minigame_active': False,
             'created_at': self.time,
-            'WebDialogs': WebDialogs(websocket,session_id)
+            'WebDialogs': WebDialogs(websocket, session_id),
+            # Added fields expected by web_backend_server
+            'type': 'real',
+            'game': self,
+            'cmd_q': self.cmd_q[session_id],
         }
+        self.web_sessions[session_id] = sess
+        return sess
 
 
     def unregister_web_session(self, session_id):

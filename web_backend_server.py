@@ -20,7 +20,11 @@ from Utils import json_cmd_simple
 
 Utils.ADV_LOGGER = Utils.dlogger()
 
+
 from Utils import tw_print, dprint, dpprint, dl
+
+# Adapter für LLM-Client Gemini importieren
+from services.adapters import LLMClientGemini
 
 txt_final_lost_text = """
 
@@ -168,7 +172,8 @@ class WebAdventureServer:
             # Versuche echtes GameState zu verwenden
             try:
                 dprint(dl.WEBGUI, f"🎮 Versuche echtes GameState zu erstellen...")
-                game = GameState()
+                llm = LLMClientGemini()
+                game = GameState(llm=llm)
 
                 # NEUE: Registriere Web-Session im GameState
                 game.register_web_session(session_id, websocket)

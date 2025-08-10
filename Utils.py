@@ -4,7 +4,9 @@ from rich.prompt import Prompt
 from pprint import pprint
 import datetime
 from enum import IntFlag, auto
+
 import difflib
+import inspect
 
 #
 # Debugging and logging
@@ -132,7 +134,16 @@ game_known_tokens = ["anwenden",
 #
 
 def json_cmd_simple(cmd_in:str, arg1:str=None, arg2:str=None):
-    dprint(dl.CMDLOG,f"json_cmd_simple: {cmd_in}, {arg1 if arg1 else ''}, {arg2 if arg2 else ''}")
+    # capture and log callsite (file:line in function), helps trace where JSON commands are created
+    try:
+        frm = inspect.stack()[1]
+        caller_file = frm.filename
+        caller_func = frm.function
+        caller_line = frm.lineno
+        caller_info = f"{caller_file}:{caller_line} in {caller_func}()"
+    except Exception:
+        caller_info = "unknown"
+    dprint(dl.CMDLOG, f"[json_cmd_simple] caller={caller_info} cmd={cmd_in}, {arg1 if arg1 else ''}, {arg2 if arg2 else ''}")
 
 
 

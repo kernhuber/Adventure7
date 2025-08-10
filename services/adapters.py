@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from services.interfaces import LLMClient
-from Adventure.GeminiInterface import GeminiInterface as _GeminiInterface
+from GeminiInterface import GeminiInterface as _GeminiInterface
 
 class LLMClientGemini(LLMClient):
     def __init__(self, **kwargs: Any) -> None:

@@ -1,6 +1,7 @@
 from collections import deque
 from rich.prompt import Prompt
 from GameState import GameState
+from services.adapters import LLMClientGemini
 from EnhancedUI import EnhancedUI
 
 import Utils
@@ -84,10 +85,10 @@ class Adventure:
 
 
     def __init__(self, players):
-        self.game = GameState()
+        llm = LLMClientGemini()
+        self.game = GameState(llm=llm)
         self.ui = EnhancedUI()
         # Rest der Initialisierung.
-        self.game = GameState()
         #
         # Interactive Players
         #
