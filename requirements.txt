@@ -1,4 +1,5 @@
 rich
+sympy
 google-generativeai
 regex
 websockets
