@@ -215,9 +215,9 @@ class NPCPlayerState(PlayerState):
                 import random
                 l = len(self.location.ways)
                 w = []
-                for l in self.location.ways:
-                    if (l.obstruction_check(gs) == "Free" and l.visible and self.can_dog_go(gs, l.destination.name)):
-                        w.append(l.destination.name)
+                for way in self.location.ways:
+                    if (way.obstruction_check(gs) == "Free" and way.visible and self.can_dog_go(gs, way.destination.name)):
+                        w.append(way.destination.name)
 
                 if w:
                     flight = random.choice(w)
@@ -257,7 +257,7 @@ class NPCPlayerState(PlayerState):
         return r
 
     def check_state_gohome(self, gs: GameState):
-        if self.way_home and gs.find_shortest_path(self.location,gs.places["o_geldautomat"]) != None:
+        if self.way_home and gs.find_shortest_path(self.location, gs.places["p_geldautomat"]) is not None:
             return True
         return False
 

@@ -145,10 +145,11 @@ class ExplosionState(PlayerState):
                 # Fahrradkette wird nicht aus dem Spiel gelöscht, sondern bekommt einen neuen Ort
                 #
                 delobjs.remove(fk)
+                fk.hidden = False # Kette ist jetzt sichtbar
                 no_fly_locs = ["p_hoehle", "p_wagen", "p_ubahn2"]
 
                 if self.location in [p_schuppen, p_dach, p_innen]:
-                    no_fly_locs = no_fly_locs.append(["p_dach", "p_innen"])
+                    no_fly_locs.extend(["p_dach", "p_innen"])
 
                 fly_locs_str = [l for l in gs.places if l not in no_fly_locs]
 
@@ -158,13 +159,14 @@ class ExplosionState(PlayerState):
                 fk.ownedby = fk_new_loc
                 fk_flag = True
                 dprint(dl.EXPLOSIONSTATE, f"Die Fahrradkette ist jetzt hier: {fk_new_loc.callnames[0]}")
+                log_explosion_simple("***Die Fahrradkette!! Hoffentlich hat die Explosion sie nicht zerstört!***")
 
             # Objekte eliminieren
             log_explosion("***Folgende Objekte*** sind pulverisiert worden")
 
 
             for o in delobjs:
-                if o.name != "o_fahrradkette":
+                if o.name != "o_fahrradkette" and o.name != "o_sprengladung":
                     log_explosion_simple(f"- {o.callnames[0]}")
 
 

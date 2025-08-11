@@ -1198,6 +1198,27 @@ Auf dem Dach des Schuppens
 
         # Einige andere Kriterien: wenn das Spiel komplexer wird, könnte diese Routine
         # recht aufwändig werden.
+
+        # Kette:
+        # Wir testen nur, ob
+        # - der Spieler die Kette im Inventar hat , oder
+        # - es einen Weg vom Spieler zur Kette gibt, und die Kette sichtbar ist
+        # wenn dem so ist, kann das Spiel weitergehen, auch wenn die Sprengladung an einem falschen Ort ist.
+        # pl enthält an dieser Stelle den Spieler (s.o.)
+
+        kette = self.objects.get("o_fahrradkette",None)
+        if not kette:
+            return True     # Die Kette ist aus dem Spiel geflogen - Game over
+        if kette in pl.inventory:
+            return False    # Player hat Kette bei sich - alles in Ordnung - kein Gamne Over
+        if kette.hidden and not f.warenautomat_intakt:
+            return True     # Warenautomat gesprengt und Kette nicht auffindbar --> Game Over
+
+        sp = self._world.find_shortest_path(self,pl.location,kette.ownedby) # Tatsächlich zweimal "self"
+        if sp is not None and not kette.hidden:
+            return False    # Es gibt einen Weg vom Spieler zur Kette und die Kette ist nicht hidden
+
+
         sprengladung_weg = self.objects.get("o_sprengladung", None) is None
 
         if sprengladung_weg:
