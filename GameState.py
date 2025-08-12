@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
 from collections import deque
 
-from sympy import trunc
 
 from Place import Place
 from Way import Way
@@ -29,6 +29,172 @@ from WayPrompts import w_dach_schuppen_prompt_f
 
 
 class GameState:
+
+    def _resolve_func_from_string(self, ref, module_map):
+        """
+        Resolve dotted function references coming from JSON, e.g.
+        "GameApplyFunctions.o_warenautomat_apply_f" into a callable.
+
+        Accepted formats:
+          - None or "" -> returns None
+          - already-callable -> returns as-is
+          - "Module.func" where Module is one of: GameApplyFunctions, GameTakeFunctions,
+            GameRevealFunctions, GameObstructionCheckFunctions, PlacePrompts, ObjectPrompts, WayPrompts
+        """
+        if not ref:
+            return None
+        if callable(ref):
+            return ref
+        if isinstance(ref, str):
+            # Allow "Module.func" or "Module:func"
+            ref = ref.replace(":", ".")
+            if "." not in ref:
+                return None
+            mod_name, func_name = ref.split(".", 1)
+            mod = module_map.get(mod_name)
+            if not mod:
+                return None
+            return getattr(mod, func_name, None)
+        return None
+
+    def _maybe_load_world_from_json(self, module_map):
+        """
+        Optional external world loader.
+        Looks for ./data/world.json (relative to project root).
+        Expected JSON structure:
+        {
+          "place_defs": {...},
+          "way_defs": {...},
+          "object_defs": {...}
+        }
+        Any callback fields (apply_f, reveal_f, take_f, prompt_f, place_prompt_f,
+        way_prompt_f, obstruction_check) may be strings like "GameApplyFunctions.o_xxx"
+        and are resolved to callables.
+        Returns (place_defs, way_defs, object_defs) or None if file not present/invalid.
+        """
+        # Compute candidate paths
+        candidates = [
+            os.path.join("data", "world.json"),
+            os.path.join(os.path.dirname(__file__), "data", "world.json"),
+        ]
+        path = next((p for p in candidates if os.path.exists(p)), None)
+        if not path:
+            return None
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as e:
+            dprint(dl.GAMESTATE, f"[world.json] Fehler beim Laden: {e}")
+            return None
+
+        place_defs = data.get("place_defs") or {}
+        way_defs = data.get("way_defs") or {}
+        object_defs = data.get("object_defs") or {}
+
+        # Normalize/resolve callbacks in places
+        for _pname, pval in place_defs.items():
+            if isinstance(pval, dict):
+                if "place_prompt_f" in pval:
+                    pval["place_prompt_f"] = self._resolve_func_from_string(pval.get("place_prompt_f"), module_map)
+
+        # Normalize/resolve callbacks in ways
+        for _wname, wval in way_defs.items():
+            if isinstance(wval, dict):
+                if "obstruction_check" in wval:
+                    wval["obstruction_check"] = self._resolve_func_from_string(wval.get("obstruction_check"), module_map)
+                if "way_prompt_f" in wval:
+                    wval["way_prompt_f"] = self._resolve_func_from_string(wval.get("way_prompt_f"), module_map)
+
+        # Normalize/resolve callbacks in objects
+        for _oname, oval in object_defs.items():
+            if isinstance(oval, dict):
+                for key in ("apply_f", "reveal_f", "take_f", "prompt_f"):
+                    if key in oval:
+                        oval[key] = self._resolve_func_from_string(oval.get(key), module_map)
+
+        return place_defs, way_defs, object_defs
+
+    def _validate_world_defs(self, place_defs, way_defs, object_defs):
+        """
+        Lightweight validator for loaded world definitions.
+        - Checks required fields and simple referential integrity.
+        - Warns (does not raise) on problems.
+        Call this right after loading JSON and before from_definitions().
+        """
+        def warn(msg):
+            dprint(dl.GAMESTATE, f"[world.json][WARN] {msg}")
+
+        # --- Places ---
+        required_place_fields = ("description", "ways", "objects")
+        for pname, p in (place_defs or {}).items():
+            if not isinstance(p, dict):
+                warn(f"Place '{pname}' is not a dict")
+                continue
+            for f in required_place_fields:
+                if f not in p:
+                    warn(f"Place '{pname}' missing field '{f}'")
+            # Callback type checks
+            if "place_prompt_f" in p and p.get("place_prompt_f") not in (None,):
+                if not callable(p.get("place_prompt_f")):
+                    warn(f"Place '{pname}': place_prompt_f not resolved to callable")
+            # Ways / objects should be lists
+            if "ways" in p and not isinstance(p.get("ways"), list):
+                warn(f"Place '{pname}': 'ways' should be a list of way names")
+            if "objects" in p and not isinstance(p.get("objects"), list):
+                warn(f"Place '{pname}': 'objects' should be a list of object names")
+
+        # --- Ways ---
+        required_way_fields = ("source", "destination", "text_direction", "description")
+        for wname, w in (way_defs or {}).items():
+            if not isinstance(w, dict):
+                warn(f"Way '{wname}' is not a dict")
+                continue
+            for f in required_way_fields:
+                if f not in w:
+                    warn(f"Way '{wname}' missing field '{f}'")
+            src = w.get("source")
+            dst = w.get("destination")
+            if src and src not in place_defs:
+                warn(f"Way '{wname}': unknown source place '{src}'")
+            if dst and dst not in place_defs:
+                warn(f"Way '{wname}': unknown destination place '{dst}'")
+            # Callback checks
+            if "obstruction_check" in w and w.get("obstruction_check") not in (None,):
+                if not callable(w.get("obstruction_check")):
+                    warn(f"Way '{wname}': obstruction_check not resolved to callable")
+            if "way_prompt_f" in w and w.get("way_prompt_f") not in (None,):
+                if not callable(w.get("way_prompt_f")):
+                    warn(f"Way '{wname}': way_prompt_f not resolved to callable")
+
+        # --- Objects ---
+        required_object_fields = ("name", "ownedby", "examine")
+        for oname, o in (object_defs or {}).items():
+            if not isinstance(o, dict):
+                warn(f"Object '{oname}' is not a dict")
+                continue
+            for f in required_object_fields:
+                if f not in o:
+                    warn(f"Object '{oname}' missing field '{f}'")
+            # Name consistency
+            if o.get("name") and o.get("name") != oname:
+                warn(f"Object key '{oname}' != object.name '{o.get('name')}'")
+            # Place reference
+            ob = o.get("ownedby")
+            if ob and ob not in place_defs:
+                warn(f"Object '{oname}': unknown ownedby place '{ob}'")
+            # Callback checks
+            for cb in ("apply_f", "reveal_f", "take_f", "prompt_f"):
+                if cb in o and o.get(cb) not in (None,):
+                    if not callable(o.get(cb)):
+                        warn(f"Object '{oname}': {cb} not resolved to callable")
+            # callnames type
+            if "callnames" in o and o.get("callnames") not in (None,):
+                cn = o.get("callnames")
+                if not isinstance(cn, list) or not all(isinstance(s, str) for s in cn):
+                    warn(f"Object '{oname}': callnames should be list[str]")
+
+
 
     # --- Central list of flag field names kept in sync with GameFlags ---
     FLAG_FIELDS: Set[str] = {
@@ -121,7 +287,7 @@ class GameState:
                 ways=[],  # Wird später in _init_ways gefüllt
                 place_objects=[]  # Wird später in _init_objects gefüllt
             )
-            place.callnames = [s.lower() for s in place.callnames ]
+            place.callnames = [s.lower() for s in (place.callnames or [])] or [place_name.lower()]
             places[place_name] = place
 
         return places
@@ -184,7 +350,7 @@ class GameState:
                 take_f      = obj_data.get("take_f", None),
                 prompt_f    = obj_data.get("prompt_f", None)
             )
-            obj.callnames = [s.lower() for s in obj.callnames]
+            obj.callnames = [s.lower() for s in (obj.callnames or [])] or [obj.name.lower()]
             fn = obj_data.get("apply_f", None)
             obj.apply_f = fn
             ownedby_str = obj_data.get("ownedby", None)
@@ -193,7 +359,6 @@ class GameState:
             else:
                 obj.ownedby = None
             # obj.ownedby = obj_data.get("ownedby", None)
-
 
             # Füge das Objekt dem passenden Place hinzu
             for place in places.values():
@@ -368,775 +533,24 @@ class GameState:
         import ObjectPrompts as op
         import WayPrompts as wp
 
-        place_defs = {
-            "p_start": {
-                "description": "Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. ",
-                "place_prompt": """ 
-Start
-=====
-- Ein unbenannter, eigenartiger Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. 
-- Es liegt hier das kaputte Fahrrad, welches weiter unten beschrieben wird.
-- Die Straße erstreckt sich in beiden Richtungen zum Horizont. 
-                """,
-                "ways": ["w_start_warenautomat","w_start_geldautomat", "w_start_schuppen"],
-                "objects": [""],
-                "callnames": ["Start"]
-            },
-            "p_warenautomat": {
-                "description": "Hier ist ein Warenautomat, an dem man Fahrradteile kaufen kann",
-                "place_prompt": "",
-                "place_prompt_f": pp.p_warenautomat_place_prompt_f,
-                "ways": ["w_warenautomat_start", "w_warenautomat_geldautomat","w_warenautomat_schuppen","w_warenautomat_ubahn","w_warenautomat_felsen"],
-                "objects": ["o_warenautomat"],
-                "callnames": ["Warenautomat"]
-            },
-            "p_ubahn": {
-                "description": "Eine U-Bahn-Station",
-                "place_prompt": """
-U-Bahn Station
-==============
-- Im Gegensatz zur Oberfläche herrscht eine angenehm Kühle. Es ist wichtig, auf diesen Kontrast hinzuweisen 
-- Alles sauber und aufgeräumt
-- An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für ein Reisebüro. 
-- Keine Schmierereien oder Graffitis
-- Der Boden ist mit Marmorfliesen gefliest.
-- Neonröhren tauchen alles in angenehmes Licht. 
-- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind. 
-        """,
-                "ways": ["w_ubahn_warenautomat", "w_ubahn_wagen"],
-                "objects": ["o_muelleimer", "o_salami", "o_geheimzahl"],
-                "callnames": ["U-Bahn", "UBahn", "U-Bahnhof", "Bahnsteig", "Bahnhof"]
-            },
-            "p_wagen": {
-                "description": "Im U-Bahn-Wagen",
-                "place_prompt": """Im inneren des U-Bahnwagens ist es sauber. Neonlicht leuchtet über den Sitzreihen. Auch hier gibt es einige
-                Werbeplakate, die in kleinen Rahmen über den Fenstern des Wagens angebracht sind. Sie werben für den neuartigen C64 von Commodore, 
-                den großartigen ZX Spectrum von Sinclair und das neue Album "Best of 80ies". 
-            
-        """,
-                "ways": ["w_wagen_ubahn", "w_wagen_ubahn2"],
-                "objects": ["o_tuerschliesser"],
-                "callnames": ["Wagen","Bahnwagen","U-Bahnwagen"]
-            },
-            "p_ubahn2": {
-                "description": "Eine zweite U-Bahn-Station",
-                "place_prompt": """
-Zweite U-Bahn Station
-=====================
-- Im Gegensatz zur Oberfläche herrscht eine angenehm Kühle. Es ist wichtig, auf diesen Kontrast hinzuweisen 
-- Im Gegensatz zur ersten U-Bahn-Station ist die Luft etwas abgestanden
-- Es riecht nach mediterranen Gewürzen
-- Alles sauber und aufgeräumt
-- An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für den neuen VW-Golf, eins für den neuen Heimcomputer C64 von Commodore. 
-- Keine Schmierereien oder Graffitis
-- Der Boden ist mit Marmorfliesen gefliest.
-- Neonröhren tauchen alles in angenehmes Licht. 
-- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind.
-- Wichtig: du darfst den Hund in der Beschreibung ausschließlich nur erwähnen, wenn er im Wagen (p_wagen) oder hier am Ort ist. In allen 
-  anderen Fällen kann man den Hund von hier nicht sehen.
-        """,
-                "ways": ["w_ubahn2_wagen"],
-                "objects": ["o_pizzaautomat", "o_geld_lire", "o_pizza"],
-                "callnames": ["U-Bahn-2"]
-            },
-            "p_geldautomat": {
-                "description": "Hier ist ein Geldautomat, an dem man Bargeld bekommen kann",
-                "place_prompt": "",
-                "place_prompt_f": pp.p_geldautomat_place_prompt_f,
-                "ways": ["w_geldautomat_start", "w_geldautomat_warenautomat", "w_geldautomat_schuppen","w_geldautomat_felsen"],
-                "objects": ["o_geldautomat", "o_geld_dollar"],
-                "callnames": ["Geldautomat", "ATM"]
-            },
-            "p_schuppen": {
-                "description": "Hier ist ein alter Holzschuppen",
-                "place_prompt": "",
-                "place_prompt_f": pp.p_schuppen_place_prompt_f,
-                "ways": ["w_schuppen_start", "w_schuppen_warenautomat", "w_schuppen_geldautomat","w_schuppen_innen","w_schuppen_dach", "w_schuppen_felsen"],
-                "objects": ["o_schuppen","o_blumentopf","o_schluessel", "o_stuhl", "o_schrott"],
-                "callnames": ["Schuppen", "Holzschuppen"]
-            },
-            "p_dach": {
-                "description": "Das Dach des Holzschuppens",
-                "place_prompt": """
-Auf dem Dach des Schuppens
-==========================
-- Man kann weit blicken. 
-- Man sieht den Geldautomaten und den Warenautomaten, sowie einen Hügel aus Gestein. 
-- Hier gibt es großen Hebel, der weiter unten beschrieben wird.
-            
-        """,
-                "ways": ["w_dach_schuppen"],
-                "objects": ["o_hebel"],
-                "callnames": ["Dach", "Schuppendach"]
-            },
-            "p_innen": {
-                "description": "Im inneren des Holzschuppens",
-                "place_prompt": "",
-                "place_prompt_f": pp.p_innen_place_prompt_f,
-                "ways": ["w_innen_schuppen"],
-                "objects": ["o_leiter", "o_pinsel", "o_farbeimer"],
-                "callnames": ["innen", "Innenraum", "drinnen", "nach innen", "in den schuppen"]
-            },
-            "p_felsen": {
-                "description": "Vor dem Berg liegt ein großer Felsen",
-                "place_prompt": "",
-                "place_prompt_f": pp.p_felsen_place_prompt_f,
-                "ways": ["w_felsen_hoehle","w_felsen_schuppen", "w_felsen_warenautomat", "w_felsen_geldautomat"],
-                "objects": ["o_felsen"],
-                "callnames": ["Felsen", "Berg", "Hügel", "Huegel", "Felsblock"]
-            },
-            "p_hoehle": {
-                "description": "In die Höhle, deren Eingang freigesprengt wurde.",
-                "place_prompt": "",
-                "place_prompt_f": pp.p_hoehle_place_prompt_f,
-                "ways": ["w_hoehle_felsen"],
-                "objects": ["o_skelett", "o_geldboerse", "o_ec_karte"],
-                "callnames": ["Höhle", "Hoehle"]
-            }
+        module_map = {
+            "GameApplyFunctions": af,
+            "GameTakeFunctions": tf,
+            "GameRevealFunctions": rf,
+            "GameObstructionCheckFunctions": ocf,
+            "PlacePrompts": pp,
+            "ObjectPrompts": op,
+            "WayPrompts": wp,
         }
 
-        way_defs = {
-            #
-            # Place: p_start
-            #
-
-            "w_start_warenautomat": {
-                "source": "p_start",
-                "destination": "p_warenautomat",
-                "text_direction": "zum Warenautomat",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_start_geldautomat": {
-                "source": "p_start",
-                "destination": "p_geldautomat",
-                "text_direction": "zum Geldautomaten",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_start_schuppen": {
-                "source": "p_start",
-                "destination": "p_schuppen",
-                "text_direction": "zum Schuppen",
-                "obstruction_check": None,
-                "description": ""
-            },
-            #
-            # Place: p_warenautomat
-            #
-
-            "w_warenautomat_start": {
-                "source": "p_warenautomat",
-                "destination": "p_start",
-                "text_direction": "zum Start, wo das kaputte Fahrrad liegt",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_warenautomat_geldautomat": {
-                "source": "p_warenautomat",
-                "destination": "p_geldautomat",
-                "text_direction": "zum Geldautomaten",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_warenautomat_schuppen": {
-                "source": "p_warenautomat",
-                "destination": "p_schuppen",
-                "text_direction": "zum Schuppen",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_warenautomat_ubahn": {
-                "source": "p_warenautomat",
-                "destination": "p_ubahn",
-                "text_direction": "herunter zur U-Bahn",
-                "obstruction_check": ocf.w_warenautomat_ubahn_f,
-                "visible": False,
-                "description": "Eine Treppe, die zu einer U-Bahn-Station führt!"
-            },
-            #
-            # Place: p_ubahn
-            #
-
-            "w_ubahn_warenautomat": {
-                "source": "p_ubahn",
-                "destination": "p_warenautomat",
-                "text_direction": "hoch zum Warenautomaten",
-                "obstruction_check": None,
-                "way_prompt_f": wp.w_ubahn_warenautomat_prompt_f,
-                "description": ""
-            },
-            "w_ubahn_wagen": {
-                "source": "p_ubahn",
-                "destination": "p_wagen",
-                "text_direction": "in den U-Bahnwagen hinein",
-                "obstruction_check": None,
-                "description": ""
-            },
-            #
-            # Place: p_wagen
-            #
-
-            "w_wagen_ubahn": {
-                "source": "p_wagen",
-                "destination": "p_ubahn",
-                "text_direction": "auf den Bahnsteig der U-Bahn",
-                "obstruction_check": None,
-                "visible": True,
-                "description": ""
-            },
-            "w_wagen_ubahn2": {
-                "source": "p_wagen",
-                "destination": "p_ubahn2",
-                "text_direction": "zur zweiten Haltestelle",
-                "obstruction_check": None,
-                "visible": False,
-                "description": ""
-            },
-            #
-            # Place: p_ubahn2
-            #
-
-            "w_ubahn2_wagen": {
-                "source": "p_ubahn2",
-                "destination": "p_wagen",
-                "text_direction": "in den U-Bahnwagen",
-                "obstruction_check": None,
-                "description": "",
-                "visible": False,
-                "description": "",
-            },
-            #
-            # Place: p_geldautomat
-            #
-
-            "w_geldautomat_start": {
-                "source": "p_geldautomat",
-                "destination": "p_start",
-                "text_direction": "zum Start, wo das kaputte Fahrrad liegt",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_geldautomat_warenautomat": {
-                "source": "p_geldautomat",
-                "destination": "p_warenautomat",
-                "text_direction": "zum Warenautomaten",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_geldautomat_schuppen": {
-                "source": "p_geldautomat",
-                "destination": "p_schuppen",
-                "text_direction": "zum Schuppen",
-                "obstruction_check": None,
-                "description": ""
-            },
-            #
-            # Place: p_schuppen
-            #
-
-            "w_schuppen_start": {
-                "source": "p_schuppen",
-                "destination": "p_start",
-                "text_direction": "zum Start",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_schuppen_warenautomat": {
-                "source": "p_schuppen",
-                "destination": "p_warenautomat",
-                "text_direction": "zum Warenautomat",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_schuppen_geldautomat": {
-                "source": "p_schuppen",
-                "destination": "p_geldautomat",
-                "text_direction": "zum Geldautomaten",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_schuppen_innen": {
-                "source": "p_schuppen",
-                "destination": "p_innen",
-                "text_direction": "in den Schuppen hinein",
-                "obstruction_check": ocf.w_schuppen_innen_f,
-                "description": ""
-            },
-            "w_schuppen_dach": {
-                "source": "p_schuppen",
-                "destination": "p_dach",
-                "visible": False,
-                "text_direction": "auf das Dach des Schuppens",
-                "obstruction_check": ocf.w_schuppen_dach_f,
-                "way_prompt_f": wp.w_schuppen_dach_prompt_f,
-                "description": ""
-            },
-            #
-            # Place: p_dach
-            #
-
-            "w_dach_schuppen": {
-                "source": "p_dach",
-                "destination": "p_schuppen",
-                "text_direction": "vom dach des Schuppens herunter",
-                "obstruction_check": None,
-                "way_prompt_f": wp.w_dach_schuppen_prompt_f,
-                "description": ""
-            },
-            #
-            # Place: p_innen
-            #
-
-            "w_innen_schuppen": {
-                "source": "p_innen",
-                "destination": "p_schuppen",
-                "text_direction": "aus dem Schuppen heraus",
-                "obstruction_check": None,
-                "way_prompt_f": wp.w_innen_schuppen_prompt_f,
-                "description": ""
-            },
-            #
-            # Place: p_felsen
-            #
-            "w_felsen_schuppen": {
-                "source": "p_felsen" ,
-                "destination": "p_schuppen",
-                "text_direction": "zum Schuppen",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_schuppen_felsen": {
-                "source": "p_schuppen",
-                "destination": "p_felsen",
-                "text_direction": "zum Felsen",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_felsen_warenautomat": {
-                "source": "p_felsen",
-                "destination": "p_warenautomat",
-                "text_direction": "zum Warenautomat",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_warenautomat_felsen": {
-                "source": "p_warenautomat",
-                "destination": "p_felsen",
-                "text_direction": "zum Felsen",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_felsen_geldautomat": {
-                "source": "p_felsen",
-                "destination": "p_geldautomat",
-                "text_direction": "zum Geldautomat",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_geldautomat_felsen": {
-                "source": "p_geldautomat",
-                "destination": "p_felsen",
-                "text_direction": "zum Felsen",
-                "obstruction_check": None,
-                "description": ""
-            },
-            "w_felsen_hoehle": {
-                "source": "p_felsen",
-                "destination": "p_hoehle",
-                "text_direction": "in die Höhle",
-                "obstruction_check": ocf.w_felsen_hoehle_f,
-                "description": ""
-            },
-            "w_hoehle_felsen": {
-                "source": "p_hoehle",
-                "destination": "p_felsen",
-                "text_direction": "aus der Höhle heraus zum Felsen",
-                "obstruction_check": None,
-                "way_prompt_f": wp.w_hoehle_felsen_prompt_f,
-                "description": ""
-            },
-        }
-
-        object_defs = {
-            #
-            # Place: p_warenautomat
-            #
-            "o_umschlag":{
-                "name": "o_umschlag",
-                "examine": "Ein versiegelter Briefumschlag",
-                "help_text": "Dieser Umschlag muss sein Ziel erreichen, sonst geht die Welt unter!",
-                "callnames": ["Umschlag", "Briefumschlag"],
-                "ownedby": "",
-                "fixed": False,
-                "hidden": True,
-                "apply_f": af.o_umschlag_apply_f,
-                "prompt_f": op.o_umschlag_prompt_f
-            },
-            "o_warenautomat": {
-                "name": "o_warenautomat",
-                "examine": "Ein Warenautomat mit Fahrradteilen. Er enthält tatsächlich auch eine Fahrradkette! Der Automat ist gut in Schuss und wirkt neu.",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "callnames": ["Warenautomat", "Automat"],
-                "ownedby": "p_warenautomat",  # Which Player currently owns this item? Default: None
-                "fixed": True,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f":  af.o_warenautomat_apply_f,
-                "prompt_f": op.o_warenautomat_prompt_f
-
-            },
-            "o_fahrradkette": {
-                "name": "o_fahrradkette",
-                "examine": "Genau die Fahrradkette, die du zum Gewinnen des Spiels benötigst!",
-                "help_text": "",
-                "callnames": ["Fahrradkette", "Kette"],
-                "ownedby": "p_warenautomat",
-                "fixed": False,
-                "hidden": True,
-                "apply_f": af.o_fahrradkette_apply_f,
-                "prompt_f": op.o_fahrradkette_prompt_f
-            },
-            "o_fahrrad": {
-                "name": "o_fahrrad",
-                "examine": "Das Fahrrad, mit dem du gekommen bist",
-                "help_text": "",
-                "callnames": ["Fahrrad", "Rad"],
-                "ownedby": "p_start",
-                "fixed": True,
-                "hidden": False,
-                "apply_f": None,
-                "prompt_f": op.o_fahrrad_prompt_f
-            },
-
-            #
-            # Place: p_ubahn
-            #
-
-            "o_muelleimer": {
-                "name": "o_muelleimer",
-                "examine": "Ein Mülleimer, gefüllt mit Papier, Plastik und Glasmüll. Gottseidank ist nichts ekeliges drin.",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "callnames": ["Mülleimer", "Muelleimer", "Abfalleimer", "Abfallbehälter", "Abfallbehaelter"],
-                "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
-                "fixed": True,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_muelleimer_apply_f,
-                "reveal_f": rf.o_muelleimer_reveal_f,
-                "prompt_f": op.o_muelleimer_prompt_f
-            },
-            "o_wasserspender": {
-                "name": "o_wasserspender",
-                "examine": "Ein Wasserspender - hier kannst du genässlich trinken.",
-                # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "callnames": ["Wasserspender", "Quelle", "Trinkstelle", "Zapfhanh", "Trinkbrunnen", "Wasserstelle"],
-                "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
-                "fixed": True,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_wasserspender_apply_f,
-                # "reveal_f": rf.o_wasserspender_reveal_f,
-                "prompt_f": op.o_wasserspender_prompt_f
-            },
-            "o_salami": {
-                "name": "o_salami",
-                "examine": "Eine schöne italienische Salami. Schon etwas älter, aber noch geniessbar - zumindest für Hunde",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "callnames": ["Salami", "Wurst"],
-                "ownedby": "p_wagen",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_salami_apply_f,
-                "prompt_f": op.o_salami_prompt_f
-            },
-            "o_geheimzahl": {
-                "name": "o_geheimzahl",
-                "examine": "Eine Geheimzahl...",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "callnames": ["Geheimzahl", "Geheimcode", "PIN", "Geheimnummer"],
-                "ownedby": "p_ubahn",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_geheimzahl_apply_f,
-                "prompt_f": op.o_geheimzahl_prompt_f
-            },
-            #
-            # Place: p_wagen
-            #
-
-            "o_tuerschliesser": {
-                "name": "o_tuerschliesser",
-                "examine": "Ein Türschliesser - ein Kästchen mit einem Knopf. Wenn man diesen Betätigt, geht eine Tür auf oder zu.",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "callnames": ["Türschliesser","Tuerschliesser", "Türschließer", "Tuerschließer"],
-                "ownedby": "p_wagen",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_tuerschliesser_apply_f,
-                "prompt_f": op.o_tuerschliesser_prompt_f
-            },
-            #
-            # Place: p_ubahn2
-            #
-
-            "o_pizzaautomat": {
-                "name": "o_pizzaautomat",
-                "examine": "Ein Pizza-Automat, der angemalt ist wie die italienische Flagge. Auf seinen Seiten ist ein Koch also Comicfigur abgebildet. Man kann Geld einwerfen, und dann backt der Automat eine Pizza",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "callnames": ["Pizzaautomat", "Pizza-Automat"],
-                "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
-                "fixed": True,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_pizzaautomat_apply_f,
-                "prompt_f": op.o_pizzaautomat_prompt_f
-            },
-            "o_geld_lire": {
-                "name": "o_geld_lire",
-                "examine": "Italienische Lira! Eine ganze Menge davon! Die hat man schon lange nicht mehr gesehen!",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "callnames": ["Lire", "Lira", "italienische Lira", "italienische Lire", "italienisches Geld"],
-                "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_geld_lire_apply_f,
-                "prompt_f": op.o_geld_lire_prompt_f
-            },
-            "o_pizza": {
-                "name": "o_pizza",
-                "examine": "Eine Salami-Pizza mit viel Käse.",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "callnames": ["Pizza"],
-                "ownedby": "p_ubahn2",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_pizza_apply_f,
-                "prompt_f": op.o_pizza_prompt_f
-            },
-            #
-            # Place: p_geldautomat
-            #
-
-            "o_geldautomat": {
-                "name": "o_geldautomat",
-                "examine": "Ein Geldautomat, der sehr neu aussieht. Er ist klar mit 'ATM' gekennzeichnet. Man muss eine Karte einstecken, eine Geheimnummer eingeben, und wenn Geld auf dem Konto ist, kann man es abheben.",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_geldautomat",  # Which Player currently owns this item? Default: None
-                "callnames": ["Geldautomat", "ATM"],
-                "fixed": True,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_geldautomat_apply_f,
-                "prompt_f": op.o_geldautomat_prompt_f
-            },
-            "o_geld_dollar": {
-                "name": "o_geld_dollar",
-                "examine": "US-Dollar! Diese werden fast überall gerne genommen! Aber eben nur fast - es soll Warenautomaten geben, die sie nicht akzeptieren. Ob du wohl Glück hast?",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "callnames": ["Dollar", "US-Dollar"],
-                "ownedby": "p_geldautomat",  # Which Player currently owns this item? Default: None
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_geld_dollar_apply_f,
-                "prompt_f": op.o_geld_dollar_prompt_f
-            },
-            #
-            # Place: p_schuppen
-            #
-
-            "o_schuppen": {
-                "name": "o_schuppen",
-                "examine": "Ein alter Holzschuppen, in dem womöglich interessante Dinge sind. "
-                           "Der Schuppen muss aufgeschlossen werden, sonst kann man ihn nicht betreten.",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
-                "callnames": ["Schuppen", "Holzschuppen"],
-                "fixed": True,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_schuppen_apply_f,
-                "prompt_f": op.o_schuppen_prompt_f
-            },
-            "o_blumentopf": {
-                "name": "o_blumentopf",
-                "examine": "Ein alter Blumentopf aus Ton.",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
-                "callnames": ["Blumentopf"],
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_blumentopf_apply_f,
-                "take_f": tf.o_blumentopf_take_f,
-                "reveal_f": rf.o_blumentopf_reveal_f,
-                "prompt_f": op.o_blumentopf_prompt_f
-            },
-            "o_schluessel": {
-                "name": "o_schluessel",
-                "examine": "Ein Schlüssel aus Metall.",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
-                "callnames": ["Schlüssel", "Schluessel"],
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_schluessel_apply_f,
-                "prompt_f": op.o_schluessel_prompt_f
-            },
-            "o_stuhl": {
-                "name": "o_stuhl",
-                "examine": "Ein rostiger, alter Gartenstuhl. Da macht man dich bestimmt dreckig, wenn man sich draufsetzt!",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
-                "callnames": ["Stuhl", "Gartenstuhl", "Hocker"],
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_stuhl_apply_f,
-                "prompt_f": op.o_stuhl_prompt_f
-            },
-            "o_schrott": {
-                "name": "o_schrott",
-                "examine": "Eine Menge Schrott! Hier kanns man stundelang herumsuchen - aber man wird hier nichts besonderes finden.",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_schuppen",  # Which Player currently owns this item? Default: None
-                "callnames": ["Schrott", "Schrotthaufen"],
-                "fixed": True,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_schrott_apply_f,
-                "prompt_f": op.o_schrott_prompt_f
-            },
-            #
-            # Place: p_dach
-            #
-
-            "o_hebel": {
-                "name": "o_hebel",
-                "examine": "Ein großer, schwarzer Hebel aus Metall.",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_dach",  # Which Player currently owns this item? Default: None
-                "callnames": ["Hebel", "Schalter"],
-                "fixed": True,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_hebel_apply_f,
-                "prompt_f": op.o_hebel_prompt_f
-            },
-            #
-            # Place: p_innen
-            #
-
-            "o_leiter": {
-                "name": "o_leiter",
-                "examine": "Eine stablie Holzleiter",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
-                "callnames": ["Leiter"],
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_leiter_apply_f, # Funktion: Leiter wurd "angewandt"
-                "take_f": tf.o_leiter_take_f, # Funktion: Leiter wird aufgenommen
-                "prompt_f": op.o_leiter_prompt_f
-            },
-            "o_skelett": {
-                "name": "o_skelett",
-                "examine": "Ein Skelett!! In einem Anzug!! Das ist wohl schon länger hier! Wie das wohl hierhin gekommen ist?",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_hoehle",  # Which Player currently owns this item? Default: None
-                "callnames": ["Skelett", "Knochenmann"],
-                "fixed": True,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_skelett_apply_f,
-                "reveal_f": rf.o_skelett_reveal_f,
-                "prompt_f": op.o_skelett_prompt_f
-            },
-            "o_geldboerse": {
-                "name": "o_geldboerse",
-                "examine": "Eine alte Geldbörse aus Leder.",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_hoehle",  # Which Player currently owns this item? Default: None
-                "callnames": ["Geldboerse", "Geldbörse", "Portemonaie", "Brieftasche"],
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_geldboerse_apply_f,
-                "reveal_f": rf.o_geldboerse_reveal_f,
-                "prompt_f": op.o_geldboerse_prompt_f
-            },
-            "o_ec_karte": {
-                "name": "o_ec_karte",
-                "examine": "Eine alte EC-Karte. Ob die noch geht?",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_hoehle",  # Which Player currently owns this item? Default: None
-                "callnames": ["Geldkarte", "EC-Karte", "ECKarte", "Kreditkarte"],
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": True,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_ec_karte_apply_f,
-                "prompt_f": op.o_ec_karte_prompt_f
-            },
-            "o_pinsel": {
-                "name": "o_pinsel",
-                "examine": "Ein alter, vertrockneter Pinsel",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
-                "callnames": ["Pinsel"],
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_pinsel_apply_f,
-                "prompt_f": op.o_pinsel_prompt_f
-            },
-            "o_farbeimer": {
-                "name": "o_farbeimer",
-                "examine": "Ein Eimer mit vertrockneter, rosa Farbe.",  # Text to me emitted when object is examined
-                "help_text": "",  # Text to be emitted when player asks for help with object
-                "ownedby": "p_innen",  # Which Player currently owns this item? Default: None
-                "callnames": ["Farbeimer"],
-                "fixed": False,  # False bedeutet: Kann aufgenommen werden
-                "hidden": False,  # True bedeutet: Das Objekt ist nicht sichtbar
-                "apply_f": af.o_farbeimer_apply_f,
-                "prompt_f": op.o_farbeimer_prompt_f
-            },
-            "o_sprengladung":{
-                "name": "o_sprengladung",
-                "examine": "Eine Sprengladung. Hiermit muss man bestimmt vorsichtig sein. Sie hat einen Knopf, mit dem man sie aktivieren kann.",
-                "help_text": "Damit kann man viel kaputt machen, aber sicher auch einiges aus dem Weg räumen",
-                "ownedby": "p_innen",
-                "callnames": ["Sprengladung"],
-                "fixed": False,
-                "hidden": False,
-                "apply_f": af.o_sprengladung_apply_f,
-                "prompt_f": op.o_sprengladung_prompt_f
-            },
-            #
-            # Place: Felsen
-            #
-            "o_felsen": {
-                "name": "o_felsen",
-                "examine": "Ein großer Felsen",
-                "help_text": "Ob der Felsen hier wirklich liegen soll?",
-                "ownedby": "p_felsen",
-                "callnames": ["Felsen", "Felsblock", "Stein", "Gesteinsblock"],
-                "fixed": True,
-                "hidden": False,
-                "apply_f": af.o_felsen_apply_f,
-                "prompt_f": op.o_felsen_prompt_f
-            },
-            #
-            # Place: Höhle
-            #
-            "o_hauptschalter": {
-                "name": "o_hauptschalter",
-                "examine": "Ein großer Sicherungsschalter",
-                "help_text": "Dieser Schalter sieht wichtig aus!",
-                "ownedby": "p_hoehle",
-                "callnames": ["Schalter", "Hauptschalter", "Sicherung", "Sicherungsschalter", "Breaker"],
-                "fixed": True,
-                "hidden": False,
-                "apply_f": af.o_hauptschalter_apply_f,
-                "prompt_f": op.o_hauptschalter_prompt_f
-            }
-
-        }
-
-        #
-        # Added new Stuff in place_defs? --> Uncomment the following functions in order to emit skeletons
-        # for objects and their apply-Functions as well as ways.
-        #
-
-
-        #emit_waydefs(place_defs, way_defs)
-        #self.emit_objdefs(place_defs, object_defs)
+        # Try optional external world file first; fall back to inline defs below
+        external_defs = self._maybe_load_world_from_json(module_map)
+        if external_defs:
+            place_defs, way_defs, object_defs = external_defs
+            self._validate_world_defs(place_defs, way_defs, object_defs)
+        else:
+            dprint(dl.GAMESTATE,"FATAL: No external definitions. Terminating game ...")
+            exit(-1)
 
         self.from_definitions(place_defs, way_defs, object_defs)
 
