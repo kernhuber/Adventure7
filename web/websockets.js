@@ -443,6 +443,7 @@ function updateUI() {
         if (dog_state) dog_state.textContent =  (gameState.dog?.state || 'Der Hund döst vor sich hin');
         updateDogDanger()
         updateStatus()
+        showPowerMain(gameState.power_main)
 
     } catch (error) {
         console.error('❌ UI-Fehler:', error);

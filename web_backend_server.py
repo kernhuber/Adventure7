@@ -345,11 +345,14 @@ class WebAdventureServer:
                     }
                 except:
                     pass
-
+            #
+            #
+            #
             return {
                 "round": getattr(game, 'time', 1),
                 "game_over": getattr(game, 'game_over', False),
                 "game_won": getattr(game, 'game_won', False),
+                "power_main": getattr(game, 'hauptschalter', False),
                 "player": {
                     "name": getattr(player, 'name', player.name),
                     "location": getattr(current_location, 'callnames', ['Unbekannt'])[0],
