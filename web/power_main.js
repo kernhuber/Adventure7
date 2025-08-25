@@ -12,8 +12,8 @@ function showPowerMain(onoff) {
             top: 0;
             right: 0;
             z-index: -1;
-            width: 112px;
-            height: 150px;
+            width: 125px;
+            height: 180px;
             pointer-events: none;
         `;
 
@@ -29,6 +29,14 @@ function showPowerMain(onoff) {
                 object-fit: contain;
                 transition: opacity 0.5s ease;
                 opacity: ${state === 'on' ? '0' : '1'}; /* off ist initial sichtbar */
+            `;
+            img.style.cssText += `
+                -webkit-mask-image: radial-gradient(ellipse at center, black 70%, transparent 100%);
+                mask-image: radial-gradient(ellipse at center, black 70%, transparent 100%);
+                -webkit-mask-repeat: no-repeat;
+                mask-repeat: no-repeat;
+                -webkit-mask-size: 100% 100%;
+                mask-size: 100% 100%;
             `;
             overlay.appendChild(img);
         });
