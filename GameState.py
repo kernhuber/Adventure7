@@ -144,6 +144,23 @@ class GameState:
             if "objects" in p and not isinstance(p.get("objects"), list):
                 warn(f"Place '{pname}': 'objects' should be a list of object names")
 
+        # Cross-reference checks for place -> ways / objects
+        way_keys = set((way_defs or {}).keys())
+        obj_keys = set((object_defs or {}).keys())
+        for pname, p in (place_defs or {}).items():
+            if not isinstance(p, dict):
+                continue
+            # Validate referenced ways exist
+            if isinstance(p.get("ways"), list):
+                for wref in p.get("ways", []):
+                    if wref not in way_keys:
+                        warn(f"Place '{pname}': unknown way reference '{wref}'")
+            # Validate referenced objects exist
+            if isinstance(p.get("objects"), list):
+                for oref in p.get("objects", []):
+                    if oref not in obj_keys:
+                        warn(f"Place '{pname}': unknown object reference '{oref}'")
+
         # --- Ways ---
         required_way_fields = ("source", "destination", "text_direction", "description")
         for wname, w in (way_defs or {}).items():
