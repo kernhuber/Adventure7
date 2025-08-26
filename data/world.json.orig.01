@@ -1,0 +1,982 @@
+{
+  "place_defs": {
+    "p_dach": {
+      "description": "Das Dach des Holzschuppens",
+      "place_prompt": "\nAuf dem Dach des Schuppens\n==========================\n- Man kann weit blicken. \n- Man sieht den Geldautomaten und den Warenautomaten, sowie einen Hügel aus Gestein. \n- Hier gibt es großen Hebel, der weiter unten beschrieben wird.\n            \n        ",
+      "place_prompt_f": null,
+      "callnames": [
+        "Dach",
+        "Schuppendach"
+      ],
+      "ways": [
+        "w_dach_schuppen"
+      ],
+      "objects": [
+        "o_hebel"
+      ]
+    },
+    "p_felsen": {
+      "description": "Vor dem Berg liegt ein großer Felsen",
+      "place_prompt": "",
+      "place_prompt_f": "PlacePrompts.p_felsen_place_prompt_f",
+      "callnames": [
+        "Felsen",
+        "Berg",
+        "Hügel",
+        "Huegel",
+        "Felsblock"
+      ],
+      "ways": [
+        "w_felsen_hoehle",
+        "w_felsen_schuppen",
+        "w_felsen_warenautomat",
+        "w_felsen_geldautomat"
+      ],
+      "objects": [
+        "o_felsen"
+      ]
+    },
+    "p_geldautomat": {
+      "description": "Hier ist ein Geldautomat, an dem man Bargeld bekommen kann",
+      "place_prompt": "",
+      "place_prompt_f": "PlacePrompts.p_geldautomat_place_prompt_f",
+      "callnames": [
+        "Geldautomat",
+        "ATM"
+      ],
+      "ways": [
+        "w_geldautomat_start",
+        "w_geldautomat_warenautomat",
+        "w_geldautomat_schuppen",
+        "w_geldautomat_felsen"
+      ],
+      "objects": [
+        "o_geldautomat",
+        "o_geld_dollar"
+      ]
+    },
+    "p_hoehle": {
+      "description": "In die Höhle, deren Eingang freigesprengt wurde.",
+      "place_prompt": "",
+      "place_prompt_f": "PlacePrompts.p_hoehle_place_prompt_f",
+      "callnames": [
+        "Höhle",
+        "Hoehle"
+      ],
+      "ways": [
+        "w_hoehle_felsen"
+      ],
+      "objects": [
+        "o_skelett",
+        "o_geldboerse",
+        "o_ec_karte"
+      ]
+    },
+    "p_innen": {
+      "description": "Im inneren des Holzschuppens",
+      "place_prompt": "",
+      "place_prompt_f": "PlacePrompts.p_innen_place_prompt_f",
+      "callnames": [
+        "innen",
+        "Innenraum",
+        "drinnen",
+        "nach innen",
+        "in den schuppen"
+      ],
+      "ways": [
+        "w_innen_schuppen"
+      ],
+      "objects": [
+        "o_leiter",
+        "o_pinsel",
+        "o_farbeimer"
+      ]
+    },
+    "p_schuppen": {
+      "description": "Hier ist ein alter Holzschuppen",
+      "place_prompt": "",
+      "place_prompt_f": "PlacePrompts.p_schuppen_place_prompt_f",
+      "callnames": [
+        "Schuppen",
+        "Holzschuppen"
+      ],
+      "ways": [
+        "w_schuppen_start",
+        "w_schuppen_warenautomat",
+        "w_schuppen_geldautomat",
+        "w_schuppen_innen",
+        "w_schuppen_dach",
+        "w_schuppen_felsen"
+      ],
+      "objects": [
+        "o_schuppen",
+        "o_blumentopf",
+        "o_schluessel",
+        "o_stuhl",
+        "o_schrott"
+      ]
+    },
+    "p_start": {
+      "description": "Ein unbenannter Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. ",
+      "place_prompt": " \nStart\n=====\n- Ein unbenannter, eigenartiger Ort an einer staubigen, monotonen Strasse durch eine heiße Wüste. \n- Es liegt hier das kaputte Fahrrad, welches weiter unten beschrieben wird.\n- Die Straße erstreckt sich in beiden Richtungen zum Horizont. \n                ",
+      "place_prompt_f": null,
+      "callnames": [
+        "Start"
+      ],
+      "ways": [
+        "w_start_warenautomat",
+        "w_start_geldautomat",
+        "w_start_schuppen"
+      ],
+      "objects": [
+        ""
+      ]
+    },
+    "p_ubahn": {
+      "description": "Eine U-Bahn-Station",
+      "place_prompt": "\nU-Bahn Station\n==============\n- Im Gegensatz zur Oberfläche herrscht eine angenehm Kühle. Es ist wichtig, auf diesen Kontrast hinzuweisen \n- Alles sauber und aufgeräumt\n- An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für ein Reisebüro. \n- Keine Schmierereien oder Graffitis\n- Der Boden ist mit Marmorfliesen gefliest.\n- Neonröhren tauchen alles in angenehmes Licht. \n- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind. \n        ",
+      "place_prompt_f": null,
+      "callnames": [
+        "U-Bahn",
+        "UBahn",
+        "U-Bahnhof",
+        "Bahnsteig",
+        "Bahnhof"
+      ],
+      "ways": [
+        "w_ubahn_warenautomat",
+        "w_ubahn_wagen"
+      ],
+      "objects": [
+        "o_muelleimer",
+        "o_salami",
+        "o_geheimzahl"
+      ]
+    },
+    "p_ubahn2": {
+      "description": "Eine zweite U-Bahn-Station",
+      "place_prompt": "\nZweite U-Bahn Station\n=====================\n- Im Gegensatz zur Oberfläche herrscht eine angenehm Kühle. Es ist wichtig, auf diesen Kontrast hinzuweisen \n- Im Gegensatz zur ersten U-Bahn-Station ist die Luft etwas abgestanden\n- Es riecht nach mediterranen Gewürzen\n- Alles sauber und aufgeräumt\n- An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für den neuen VW-Golf, eins für den neuen Heimcomputer C64 von Commodore. \n- Keine Schmierereien oder Graffitis\n- Der Boden ist mit Marmorfliesen gefliest.\n- Neonröhren tauchen alles in angenehmes Licht. \n- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind.\n- Wichtig: du darfst den Hund in der Beschreibung ausschließlich nur erwähnen, wenn er im Wagen (p_wagen) oder hier am Ort ist. In allen \n  anderen Fällen kann man den Hund von hier nicht sehen.\n        ",
+      "place_prompt_f": null,
+      "callnames": [
+        "U-Bahn-2"
+      ],
+      "ways": [
+        "w_ubahn2_wagen"
+      ],
+      "objects": [
+        "o_pizzaautomat",
+        "o_geld_lire",
+        "o_pizza"
+      ]
+    },
+    "p_wagen": {
+      "description": "Im U-Bahn-Wagen",
+      "place_prompt": "Im inneren des U-Bahnwagens ist es sauber. Neonlicht leuchtet über den Sitzreihen. Auch hier gibt es einige\n                Werbeplakate, die in kleinen Rahmen über den Fenstern des Wagens angebracht sind. Sie werben für den neuartigen C64 von Commodore, \n                den großartigen ZX Spectrum von Sinclair und das neue Album \"Best of 80ies\". \n            \n        ",
+      "place_prompt_f": null,
+      "callnames": [
+        "Wagen",
+        "Bahnwagen",
+        "U-Bahnwagen"
+      ],
+      "ways": [
+        "w_wagen_ubahn",
+        "w_wagen_ubahn2"
+      ],
+      "objects": [
+        "o_tuerschliesser"
+      ]
+    },
+    "p_warenautomat": {
+      "description": "Hier ist ein Warenautomat, an dem man Fahrradteile kaufen kann",
+      "place_prompt": "",
+      "place_prompt_f": "PlacePrompts.p_warenautomat_place_prompt_f",
+      "callnames": [
+        "Warenautomat"
+      ],
+      "ways": [
+        "w_warenautomat_start",
+        "w_warenautomat_geldautomat",
+        "w_warenautomat_schuppen",
+        "w_warenautomat_ubahn",
+        "w_warenautomat_felsen"
+      ],
+      "objects": [
+        "o_warenautomat"
+      ]
+    }
+  },
+  "way_defs": {
+    "w_dach_schuppen": {
+      "source": "p_dach",
+      "destination": "p_schuppen",
+      "text_direction": "vom dach des Schuppens herunter",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": "WayPrompts.w_dach_schuppen_prompt_f"
+    },
+    "w_felsen_geldautomat": {
+      "source": "p_felsen",
+      "destination": "p_geldautomat",
+      "text_direction": "zum Geldautomat",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_felsen_hoehle": {
+      "source": "p_felsen",
+      "destination": "p_hoehle",
+      "text_direction": "in die Höhle",
+      "description": "",
+      "obstruction_check": "GameObstructionCheckFunctions.w_felsen_hoehle_f",
+      "way_prompt_f": null
+    },
+    "w_felsen_schuppen": {
+      "source": "p_felsen",
+      "destination": "p_schuppen",
+      "text_direction": "zum Schuppen",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_felsen_warenautomat": {
+      "source": "p_felsen",
+      "destination": "p_warenautomat",
+      "text_direction": "zum Warenautomat",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_geldautomat_felsen": {
+      "source": "p_geldautomat",
+      "destination": "p_felsen",
+      "text_direction": "zum Felsen",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_geldautomat_schuppen": {
+      "source": "p_geldautomat",
+      "destination": "p_schuppen",
+      "text_direction": "zum Schuppen",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_geldautomat_start": {
+      "source": "p_geldautomat",
+      "destination": "p_start",
+      "text_direction": "zum Start, wo das kaputte Fahrrad liegt",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_geldautomat_warenautomat": {
+      "source": "p_geldautomat",
+      "destination": "p_warenautomat",
+      "text_direction": "zum Warenautomaten",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_hoehle_felsen": {
+      "source": "p_hoehle",
+      "destination": "p_felsen",
+      "text_direction": "aus der Höhle heraus zum Felsen",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": "WayPrompts.w_hoehle_felsen_prompt_f"
+    },
+    "w_innen_schuppen": {
+      "source": "p_innen",
+      "destination": "p_schuppen",
+      "text_direction": "aus dem Schuppen heraus",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": "WayPrompts.w_innen_schuppen_prompt_f"
+    },
+    "w_schuppen_dach": {
+      "source": "p_schuppen",
+      "destination": "p_dach",
+      "text_direction": "auf das Dach des Schuppens",
+      "description": "",
+      "obstruction_check": "GameObstructionCheckFunctions.w_schuppen_dach_f",
+      "way_prompt_f": "WayPrompts.w_schuppen_dach_prompt_f"
+    },
+    "w_schuppen_felsen": {
+      "source": "p_schuppen",
+      "destination": "p_felsen",
+      "text_direction": "zum Felsen",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_schuppen_geldautomat": {
+      "source": "p_schuppen",
+      "destination": "p_geldautomat",
+      "text_direction": "zum Geldautomaten",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_schuppen_innen": {
+      "source": "p_schuppen",
+      "destination": "p_innen",
+      "text_direction": "in den Schuppen hinein",
+      "description": "",
+      "obstruction_check": "GameObstructionCheckFunctions.w_schuppen_innen_f",
+      "way_prompt_f": null
+    },
+    "w_schuppen_start": {
+      "source": "p_schuppen",
+      "destination": "p_start",
+      "text_direction": "zum Start",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_schuppen_warenautomat": {
+      "source": "p_schuppen",
+      "destination": "p_warenautomat",
+      "text_direction": "zum Warenautomat",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_start_geldautomat": {
+      "source": "p_start",
+      "destination": "p_geldautomat",
+      "text_direction": "zum Geldautomaten",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_start_schuppen": {
+      "source": "p_start",
+      "destination": "p_schuppen",
+      "text_direction": "zum Schuppen",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_start_warenautomat": {
+      "source": "p_start",
+      "destination": "p_warenautomat",
+      "text_direction": "zum Warenautomat",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_ubahn2_wagen": {
+      "source": "p_ubahn2",
+      "destination": "p_wagen",
+      "text_direction": "in den U-Bahnwagen",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_ubahn_wagen": {
+      "source": "p_ubahn",
+      "destination": "p_wagen",
+      "text_direction": "in den U-Bahnwagen hinein",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_ubahn_warenautomat": {
+      "source": "p_ubahn",
+      "destination": "p_warenautomat",
+      "text_direction": "hoch zum Warenautomaten",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": "WayPrompts.w_ubahn_warenautomat_prompt_f"
+    },
+    "w_wagen_ubahn": {
+      "source": "p_wagen",
+      "destination": "p_ubahn",
+      "text_direction": "auf den Bahnsteig der U-Bahn",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_wagen_ubahn2": {
+      "source": "p_wagen",
+      "destination": "p_ubahn2",
+      "text_direction": "zur zweiten Haltestelle",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_warenautomat_felsen": {
+      "source": "p_warenautomat",
+      "destination": "p_felsen",
+      "text_direction": "zum Felsen",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_warenautomat_geldautomat": {
+      "source": "p_warenautomat",
+      "destination": "p_geldautomat",
+      "text_direction": "zum Geldautomaten",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_warenautomat_schuppen": {
+      "source": "p_warenautomat",
+      "destination": "p_schuppen",
+      "text_direction": "zum Schuppen",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_warenautomat_start": {
+      "source": "p_warenautomat",
+      "destination": "p_start",
+      "text_direction": "zum Start, wo das kaputte Fahrrad liegt",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": null
+    },
+    "w_warenautomat_ubahn": {
+      "source": "p_warenautomat",
+      "destination": "p_ubahn",
+      "text_direction": "herunter zur U-Bahn",
+      "description": "Eine Treppe, die zu einer U-Bahn-Station führt!",
+      "obstruction_check": "GameObstructionCheckFunctions.w_warenautomat_ubahn_f",
+      "way_prompt_f": null
+    }
+  },
+  "object_defs": {
+    "o_blumentopf": {
+      "name": "o_blumentopf",
+      "examine": "Ein alter Blumentopf aus Ton.",
+      "help_text": "",
+      "callnames": [
+        "Blumentopf"
+      ],
+      "ownedby": "p_schuppen",
+      "fixed": false,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_blumentopf_apply_f",
+      "reveal_f": "GameRevealFunctions.o_blumentopf_reveal_f",
+      "take_f": "GameTakeFunctions.o_blumentopf_take_f",
+      "prompt_f": "ObjectPrompts.o_blumentopf_prompt_f"
+    },
+    "o_ec_karte": {
+      "name": "o_ec_karte",
+      "examine": "Eine alte EC-Karte. Ob die noch geht?",
+      "help_text": "",
+      "callnames": [
+        "Geldkarte",
+        "EC-Karte",
+        "ECKarte",
+        "Kreditkarte"
+      ],
+      "ownedby": "p_hoehle",
+      "fixed": false,
+      "hidden": true,
+      "apply_f": "GameApplyFunctions.o_ec_karte_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_ec_karte_prompt_f"
+    },
+    "o_fahrrad": {
+      "name": "o_fahrrad",
+      "examine": "Das Fahrrad, mit dem du gekommen bist",
+      "help_text": "",
+      "callnames": [
+        "Fahrrad",
+        "Rad"
+      ],
+      "ownedby": "p_start",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": null,
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_fahrrad_prompt_f"
+    },
+    "o_fahrradkette": {
+      "name": "o_fahrradkette",
+      "examine": "Genau die Fahrradkette, die du zum Gewinnen des Spiels benötigst!",
+      "help_text": "",
+      "callnames": [
+        "Fahrradkette",
+        "Kette"
+      ],
+      "ownedby": "p_warenautomat",
+      "fixed": false,
+      "hidden": true,
+      "apply_f": "GameApplyFunctions.o_fahrradkette_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_fahrradkette_prompt_f"
+    },
+    "o_farbeimer": {
+      "name": "o_farbeimer",
+      "examine": "Ein Eimer mit vertrockneter, rosa Farbe.",
+      "help_text": "",
+      "callnames": [
+        "Farbeimer"
+      ],
+      "ownedby": "p_innen",
+      "fixed": false,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_farbeimer_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_farbeimer_prompt_f"
+    },
+    "o_felsen": {
+      "name": "o_felsen",
+      "examine": "Ein großer Felsen",
+      "help_text": "Ob der Felsen hier wirklich liegen soll?",
+      "callnames": [
+        "Felsen",
+        "Felsblock",
+        "Stein",
+        "Gesteinsblock"
+      ],
+      "ownedby": "p_felsen",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_felsen_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_felsen_prompt_f"
+    },
+    "o_geheimzahl": {
+      "name": "o_geheimzahl",
+      "examine": "Eine Geheimzahl...",
+      "help_text": "",
+      "callnames": [
+        "Geheimzahl",
+        "Geheimcode",
+        "PIN",
+        "Geheimnummer"
+      ],
+      "ownedby": "p_ubahn",
+      "fixed": false,
+      "hidden": true,
+      "apply_f": "GameApplyFunctions.o_geheimzahl_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_geheimzahl_prompt_f"
+    },
+    "o_geld_dollar": {
+      "name": "o_geld_dollar",
+      "examine": "US-Dollar! Diese werden fast überall gerne genommen! Aber eben nur fast - es soll Warenautomaten geben, die sie nicht akzeptieren. Ob du wohl Glück hast?",
+      "help_text": "",
+      "callnames": [
+        "Dollar",
+        "US-Dollar"
+      ],
+      "ownedby": "p_geldautomat",
+      "fixed": false,
+      "hidden": true,
+      "apply_f": "GameApplyFunctions.o_geld_dollar_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_geld_dollar_prompt_f"
+    },
+    "o_geld_lire": {
+      "name": "o_geld_lire",
+      "examine": "Italienische Lira! Eine ganze Menge davon! Die hat man schon lange nicht mehr gesehen!",
+      "help_text": "",
+      "callnames": [
+        "Lire",
+        "Lira",
+        "italienische Lira",
+        "italienische Lire",
+        "italienisches Geld"
+      ],
+      "ownedby": "p_ubahn2",
+      "fixed": false,
+      "hidden": true,
+      "apply_f": "GameApplyFunctions.o_geld_lire_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_geld_lire_prompt_f"
+    },
+    "o_geldautomat": {
+      "name": "o_geldautomat",
+      "examine": "Ein Geldautomat, der sehr neu aussieht. Er ist klar mit 'ATM' gekennzeichnet. Man muss eine Karte einstecken, eine Geheimnummer eingeben, und wenn Geld auf dem Konto ist, kann man es abheben.",
+      "help_text": "",
+      "callnames": [
+        "Geldautomat",
+        "ATM"
+      ],
+      "ownedby": "p_geldautomat",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_geldautomat_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_geldautomat_prompt_f"
+    },
+    "o_geldboerse": {
+      "name": "o_geldboerse",
+      "examine": "Eine alte Geldbörse aus Leder.",
+      "help_text": "",
+      "callnames": [
+        "Geldboerse",
+        "Geldbörse",
+        "Portemonaie",
+        "Brieftasche"
+      ],
+      "ownedby": "p_hoehle",
+      "fixed": false,
+      "hidden": true,
+      "apply_f": "GameApplyFunctions.o_geldboerse_apply_f",
+      "reveal_f": "GameRevealFunctions.o_geldboerse_reveal_f",
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_geldboerse_prompt_f"
+    },
+    "o_hauptschalter": {
+      "name": "o_hauptschalter",
+      "examine": "Ein großer Sicherungsschalter",
+      "help_text": "Dieser Schalter sieht wichtig aus!",
+      "callnames": [
+        "Schalter",
+        "Hauptschalter",
+        "Sicherung",
+        "Sicherungsschalter",
+        "Breaker"
+      ],
+      "ownedby": "p_hoehle",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_hauptschalter_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_hauptschalter_prompt_f"
+    },
+    "o_hebel": {
+      "name": "o_hebel",
+      "examine": "Ein großer, schwarzer Hebel aus Metall.",
+      "help_text": "",
+      "callnames": [
+        "Hebel",
+        "Schalter"
+      ],
+      "ownedby": "p_dach",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_hebel_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_hebel_prompt_f"
+    },
+    "o_leiter": {
+      "name": "o_leiter",
+      "examine": "Eine stablie Holzleiter",
+      "help_text": "",
+      "callnames": [
+        "Leiter"
+      ],
+      "ownedby": "p_innen",
+      "fixed": false,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_leiter_apply_f",
+      "reveal_f": null,
+      "take_f": "GameTakeFunctions.o_leiter_take_f",
+      "prompt_f": "ObjectPrompts.o_leiter_prompt_f"
+    },
+    "o_muelleimer": {
+      "name": "o_muelleimer",
+      "examine": "Ein Mülleimer, gefüllt mit Papier, Plastik und Glasmüll. Gottseidank ist nichts ekeliges drin.",
+      "help_text": "",
+      "callnames": [
+        "Mülleimer",
+        "Muelleimer",
+        "Abfalleimer",
+        "Abfallbehälter",
+        "Abfallbehaelter"
+      ],
+      "ownedby": "p_ubahn",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_muelleimer_apply_f",
+      "reveal_f": "GameRevealFunctions.o_muelleimer_reveal_f",
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_muelleimer_prompt_f"
+    },
+    "o_pinsel": {
+      "name": "o_pinsel",
+      "examine": "Ein alter, vertrockneter Pinsel",
+      "help_text": "",
+      "callnames": [
+        "Pinsel"
+      ],
+      "ownedby": "p_innen",
+      "fixed": false,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_pinsel_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_pinsel_prompt_f"
+    },
+    "o_pizza": {
+      "name": "o_pizza",
+      "examine": "Eine Salami-Pizza mit viel Käse.",
+      "help_text": "",
+      "callnames": [
+        "Pizza"
+      ],
+      "ownedby": "p_ubahn2",
+      "fixed": false,
+      "hidden": true,
+      "apply_f": "GameApplyFunctions.o_pizza_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_pizza_prompt_f"
+    },
+    "o_pizzaautomat": {
+      "name": "o_pizzaautomat",
+      "examine": "Ein Pizza-Automat, der angemalt ist wie die italienische Flagge. Auf seinen Seiten ist ein Koch also Comicfigur abgebildet. Man kann Geld einwerfen, und dann backt der Automat eine Pizza",
+      "help_text": "",
+      "callnames": [
+        "Pizzaautomat",
+        "Pizza-Automat"
+      ],
+      "ownedby": "p_ubahn2",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_pizzaautomat_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_pizzaautomat_prompt_f"
+    },
+    "o_salami": {
+      "name": "o_salami",
+      "examine": "Eine schöne italienische Salami. Schon etwas älter, aber noch geniessbar - zumindest für Hunde",
+      "help_text": "",
+      "callnames": [
+        "Salami",
+        "Wurst"
+      ],
+      "ownedby": "p_wagen",
+      "fixed": false,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_salami_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_salami_prompt_f"
+    },
+    "o_schluessel": {
+      "name": "o_schluessel",
+      "examine": "Ein Schlüssel aus Metall.",
+      "help_text": "",
+      "callnames": [
+        "Schlüssel",
+        "Schluessel"
+      ],
+      "ownedby": "p_schuppen",
+      "fixed": false,
+      "hidden": true,
+      "apply_f": "GameApplyFunctions.o_schluessel_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_schluessel_prompt_f"
+    },
+    "o_schrott": {
+      "name": "o_schrott",
+      "examine": "Eine Menge Schrott! Hier kanns man stundelang herumsuchen - aber man wird hier nichts besonderes finden.",
+      "help_text": "",
+      "callnames": [
+        "Schrott",
+        "Schrotthaufen"
+      ],
+      "ownedby": "p_schuppen",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_schrott_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_schrott_prompt_f"
+    },
+    "o_schuppen": {
+      "name": "o_schuppen",
+      "examine": "Ein alter Holzschuppen, in dem womöglich interessante Dinge sind. Der Schuppen muss aufgeschlossen werden, sonst kann man ihn nicht betreten.",
+      "help_text": "",
+      "callnames": [
+        "Schuppen",
+        "Holzschuppen"
+      ],
+      "ownedby": "p_schuppen",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_schuppen_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_schuppen_prompt_f"
+    },
+    "o_skelett": {
+      "name": "o_skelett",
+      "examine": "Ein Skelett!! In einem Anzug!! Das ist wohl schon länger hier! Wie das wohl hierhin gekommen ist?",
+      "help_text": "",
+      "callnames": [
+        "Skelett",
+        "Knochenmann"
+      ],
+      "ownedby": "p_hoehle",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_skelett_apply_f",
+      "reveal_f": "GameRevealFunctions.o_skelett_reveal_f",
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_skelett_prompt_f"
+    },
+    "o_sprengladung": {
+      "name": "o_sprengladung",
+      "examine": "Eine Sprengladung. Hiermit muss man bestimmt vorsichtig sein. Sie hat einen Knopf, mit dem man sie aktivieren kann.",
+      "help_text": "Damit kann man viel kaputt machen, aber sicher auch einiges aus dem Weg räumen",
+      "callnames": [
+        "Sprengladung"
+      ],
+      "ownedby": "p_innen",
+      "fixed": false,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_sprengladung_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_sprengladung_prompt_f"
+    },
+    "o_stuhl": {
+      "name": "o_stuhl",
+      "examine": "Ein rostiger, alter Gartenstuhl. Da macht man dich bestimmt dreckig, wenn man sich draufsetzt!",
+      "help_text": "",
+      "callnames": [
+        "Stuhl",
+        "Gartenstuhl",
+        "Hocker"
+      ],
+      "ownedby": "p_schuppen",
+      "fixed": false,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_stuhl_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_stuhl_prompt_f"
+    },
+    "o_tuerschliesser": {
+      "name": "o_tuerschliesser",
+      "examine": "Ein Türschliesser - ein Kästchen mit einem Knopf. Wenn man diesen Betätigt, geht eine Tür auf oder zu.",
+      "help_text": "",
+      "callnames": [
+        "Türschliesser",
+        "Tuerschliesser",
+        "Türschließer",
+        "Tuerschließer"
+      ],
+      "ownedby": "p_wagen",
+      "fixed": false,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_tuerschliesser_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_tuerschliesser_prompt_f"
+    },
+    "o_umschlag": {
+      "name": "o_umschlag",
+      "examine": "Ein versiegelter Briefumschlag",
+      "help_text": "Dieser Umschlag muss sein Ziel erreichen, sonst geht die Welt unter!",
+      "callnames": [
+        "Umschlag",
+        "Briefumschlag"
+      ],
+      "ownedby": "",
+      "fixed": false,
+      "hidden": true,
+      "apply_f": "GameApplyFunctions.o_umschlag_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_umschlag_prompt_f"
+    },
+    "o_warenautomat": {
+      "name": "o_warenautomat",
+      "examine": "Ein Warenautomat mit Fahrradteilen. Er enthält tatsächlich auch eine Fahrradkette! Der Automat ist gut in Schuss und wirkt neu.",
+      "help_text": "",
+      "callnames": [
+        "Warenautomat",
+        "Automat"
+      ],
+      "ownedby": "p_warenautomat",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_warenautomat_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_warenautomat_prompt_f"
+    },
+    "o_wasserspender": {
+      "name": "o_wasserspender",
+      "examine": "Ein Wasserspender - hier kannst du genässlich trinken.",
+      "help_text": "",
+      "callnames": [
+        "Wasserspender",
+        "Quelle",
+        "Trinkstelle",
+        "Zapfhanh",
+        "Trinkbrunnen",
+        "Wasserstelle"
+      ],
+      "ownedby": "p_ubahn",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_wasserspender_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_wasserspender_prompt_f"
+    }
+  },
+  "_editor": {
+    "positions": {
+      "p_warenautomat": {
+        "x": -298.5,
+        "y": 88.5
+      },
+      "p_wagen": {
+        "x": -703.5874007725444,
+        "y": 280.3646221614378
+      },
+      "p_ubahn2": {
+        "x": -840.8714025911629,
+        "y": 184.98011679408947
+      },
+      "p_ubahn": {
+        "x": -562.4375179206636,
+        "y": 179.66850718596694
+      },
+      "p_start": {
+        "x": -94.69485610364652,
+        "y": 379.7550983301366
+      },
+      "p_schuppen": {
+        "x": 21.773588138729195,
+        "y": -68.34285064779074
+      },
+      "p_innen": {
+        "x": 163.25796761889512,
+        "y": -6.64278770419952
+      },
+      "p_hoehle": {
+        "x": -446.86004475740526,
+        "y": -205.96907367828788
+      },
+      "p_geldautomat": {
+        "x": -89,
+        "y": 82.5
+      },
+      "p_felsen": {
+        "x": -154.32691541000054,
+        "y": -196.9586599983985
+      },
+      "p_dach": {
+        "x": 170.5269783535918,
+        "y": -127.89523376519381
+      }
+    }
+  }
+}
