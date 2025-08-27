@@ -69,3 +69,17 @@ def w_hoehle_felsen_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
 - Gehe nach draussen
 * Liefere in diesen und ähnlichen Fällen 'gehe p_felsen' zurück
     """
+
+def w_solaranlage_plateau_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
+    return """
+* Dieser Weg ist ein Pfad von der Solaranlage zum Plateau auf dem Hügel
+* Man kann diesen Weg gehen, laufen, erklimmen, erklettern und sich anderweitig auf ihm bewegen.
+* Liefere "gehe p_plateau" zurück, wenn dieser Weg beschritten wird
+"""
+
+def w_plateau_solaranlage_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
+    return """
+* Dieser Weg ist ein Pfad vom Plateau auf dem Hügel zu einer großen Solaranlage
+* Man kann diesen Weg gehen, laufen, herabklettern und sich anderweitig auf ihm bewegen.
+* Liefere "gehe p_solaranlage" zurück, wenn dieser Weg beschritten wird
+"""

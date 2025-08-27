@@ -530,3 +530,14 @@ Anwendung
 - Eigentlich kannst du sie wegwerfen
 - Liefere "nichts" zurück 
 """
+
+def o_solaranlage_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    return """
+Solaranlage
+===========
+- Eine große Solaranlage, die auf einem Gerüst steht
+- Unter der Anlage ist es schattig und kühl
+- Es wächst Gras unter der Anlage, also muss irgendwo Wasser sein, nur wo?
+- Es summt - also liefert die Anlage Strom
+- Ein Dickes Kabel verschwindet im Hügel
+"""

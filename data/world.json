@@ -207,16 +207,34 @@
     },
     "p_plateau": {
       "description": "Auf dem Felsen",
-      "place_prompt": "Man kann von hier aus die Landschaft überblicken",
+      "place_prompt": "Man kann von hier aus die Landschaft überblicken. ",
       "place_prompt_f": null,
       "callnames": [
         "Plateau"
       ],
       "ways": [
-        "w_plateau_felsen"
+        "w_plateau_felsen",
+        "w_plateau_solaranlage"
       ],
       "objects": [
         "o_flasche"
+      ]
+    },
+    "p_solaranlage": {
+      "description": "Eine große Solaranlage, die viel Strom liefert",
+      "place_prompt": "Eine große Solaranlage, die viel Strom liefert. Unter der Solaranlage gedeihen saftige Grasbüschel - irgendwo muss Wasser vorhanden sein!",
+      "place_prompt_f": "PlacePrompts.p_solaranlage_place_prompt_f",
+      "callnames": [
+        "Solaranlage",
+        "Photovoltaik",
+        "Sonnenkollektor",
+        "PV-Anlage"
+      ],
+      "ways": [
+        "w_solaranlage_plateau"
+      ],
+      "objects": [
+        "o_solaranlage"
       ]
     }
   },
@@ -467,15 +485,31 @@
       "text_direction": "zu Felsen",
       "description": "",
       "obstruction_check": null,
-      "way_prompt_f": null
+      "way_prompt_f": "WayPrompts.w_plateau_felsen_prompt_f"
     },
     "w_felsen_plateau": {
       "source": "p_felsen",
       "destination": "p_plateau",
-      "text_direction": "zu Plateau",
+      "text_direction": "zum Plateau",
       "description": "",
       "obstruction_check": null,
-      "way_prompt_f": null
+      "way_prompt_f": "WayPrompts.w_felsen_plateau_prompt_f"
+    },
+    "w_solaranlage_plateau": {
+      "source": "p_solaranlage",
+      "destination": "p_plateau",
+      "text_direction": "zum Plateau",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": "WayPrompts.w_solaranlage_plateau_prompt_f"
+    },
+    "w_plateau_solaranlage": {
+      "source": "p_plateau",
+      "destination": "p_solaranlage",
+      "text_direction": "zur Solaranlage",
+      "description": "",
+      "obstruction_check": null,
+      "way_prompt_f": "WayPrompts.w_plateau_solaranlage_prompt_f"
     }
   },
   "object_defs": {
@@ -975,6 +1009,21 @@
       "reveal_f": null,
       "take_f": null,
       "prompt_f": "ObjectPrompts.o_flasche_prompt_f"
+    },
+    "o_solaranlage": {
+      "name": "o_solaranlage",
+      "examine": "Ein Gerüst mit vielen Solarkollektoren",
+      "help_text": "",
+      "callnames": [
+        "Solaranlage", "PV-Anlage", "Photovoltaik-Anlage"
+      ],
+      "ownedby": "p_solaranlage",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": null,
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_solaranlage_prompt_f"
     }
   },
   "_editor": {
@@ -1026,6 +1075,10 @@
       "p_plateau": {
         "x": 81.54412735646332,
         "y": -370.11312440905294
+      },
+      "p_solaranlage": {
+        "x": -149.05372433630433,
+        "y": -473.5806777950817
       }
     }
   }
