@@ -226,6 +226,7 @@ class GameState:
         "warenautomat_intakt",
         "geldautomat_intakt",
         "schuppen_intakt",
+        "flasche_voll",
         "game_over",
         "game_won",
         "time",
@@ -498,6 +499,7 @@ class GameState:
         self.warenautomat_intakt = True    # oder den Warenautomat
         self.geldautomat_intakt = True     # oder den Geldautomat
         self.schuppen_intakt = True        # oder den Schuppen
+        self.flasche_voll = True           # Eine Grace Period von 20 Zügen, danach muss der Spieler den Wasserspender entdeckt haben
         self.game_over = False             # Na hoffentlich noch nicht so schnell!
         self.game_won = False              # Wenn true, hat der Spieler das Spiel gewonnen.
         # Mirror flags into a structured container (GameFlags) for future decoupling

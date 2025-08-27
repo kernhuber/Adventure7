@@ -29,7 +29,7 @@ def p_felsen_place_prompt_f(gs: "GameState", pl: "PlayerState")-> str:
 Felsen
 ======
 - Hier ist ein Hügel aus Gestein und Felsen. 
-- Das Gestein ist so bröckelig, dass man nicht auf den Hügel steigen kann.
+- Ein Weg führt auf ein Plateau auf dem Hügel.
 """
     if _F(gs).felsen:
         return f"{rv}- Ein Trampelpfad führt zu dem Hügel und endet vor einem Felsblock, der weiter unten beschrieben wird.\n"

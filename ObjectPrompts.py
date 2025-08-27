@@ -500,3 +500,33 @@ Anwendung
 - Der Wasserspender kann auch als Trinkbrunnen oder Brunnen bezeichnet werden
 - Liefere in solchen Fällen "anwenden wasserspender" zurück 
 """
+
+def o_flasche_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    if gs.flasche_voll:
+        return """
+Flasche
+=============
+- Eine Wasserflasche aus Glas
+- Die Flasche ist voll
+
+
+Anwendung
+=========
+- Aus Flasche kann getrunken, gesoffen oder gesüffelt werden
+- Man mit ihr seinen Durst oder sogar seinen Brand stillen oder löschen
+- Liefere in solchen Fällen "anwenden Flasche" zurück 
+"""
+    else:
+        return """
+Flasche
+=============
+- Eine Wasserflasche aus Glas
+- Die Flasche ist leer
+
+
+Anwendung
+=========
+- Du kannst mit der Flasche nichts mehr machen.
+- Eigentlich kannst du sie wegwerfen
+- Liefere "nichts" zurück 
+"""

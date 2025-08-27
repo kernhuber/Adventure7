@@ -215,7 +215,9 @@
       "ways": [
         "w_plateau_felsen"
       ],
-      "objects": []
+      "objects": [
+        "o_flasche"
+      ]
     }
   },
   "way_defs": {
@@ -958,6 +960,21 @@
       "reveal_f": null,
       "take_f": null,
       "prompt_f": "ObjectPrompts.o_wasserspender_prompt_f"
+    },
+    "o_flasche": {
+      "name": "o_flasche",
+      "examine": "Eine Flasche aus Glas",
+      "help_text": "Wenn man die zerdeppert, gibt es Scherben",
+      "callnames": [
+        "Flasche"
+      ],
+      "ownedby": "p_plateau",
+      "fixed": false,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_flasche_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_flasche_prompt_f"
     }
   },
   "_editor": {

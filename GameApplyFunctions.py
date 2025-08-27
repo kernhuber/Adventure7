@@ -337,3 +337,8 @@ def o_wasserspender_apply_f(gs: GameState, pl: PlayerState=None, what: GameObjec
         return "***Herrlich!*** Du hast Deinen Durst mit köstlichem, frischen Wasser gestillt. Das reicht wieder für 40 Spielzüge!"
     else:
         return "Hier ist kein Wasserspender!"
+
+def o_flasche_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None, onwhat:GameObject=None) -> str:
+    pl.thirst_counter += 20
+    gs.flasche_voll = False
+    return f"***Das tat gut!*** Du hast deinen Durst gestillt nun {pl.thirst_counter} Spielzüge, bevor du verdurstest. Die Flasche ist nun aber leer."

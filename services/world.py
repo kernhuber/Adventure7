@@ -147,6 +147,7 @@ class GameFlags:
     warenautomat_intakt: bool = True
     geldautomat_intakt: bool = True
     schuppen_intakt: bool = True
+    flasche_voll: bool = True
     game_over: bool = False
     game_won: bool = False
     time: int = 0
