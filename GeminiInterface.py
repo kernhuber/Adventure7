@@ -123,9 +123,9 @@ Die Ortsbeschreibung:
                 r = r+"\n"
 
         dog = None
-        from NPCPlayerState import NPCPlayerState
+        from NPCDogState import NPCDogState
         for d in gs.players:
-            if type(d) is NPCPlayerState:
+            if type(d) is NPCDogState:
                 dog = d
                 break
         if dog:

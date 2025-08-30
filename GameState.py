@@ -467,10 +467,10 @@ class GameState:
                 print()
 
     def add_player(self,name, npc=False):
-        from NPCPlayerState import NPCPlayerState
+        from NPCDogState import NPCDogState
         if npc:
             start_room = self.places["p_geldautomat"]
-            self.players.append(NPCPlayerState(name=name,location=start_room))
+            self.players.append(NPCDogState(name=name, location=start_room))
         else:
             start_room = self.places["p_start"]
             self.players.append(PlayerState(name,start_room))
@@ -801,11 +801,11 @@ class GameState:
         return "nichts"
 
     def verb_dogstate(self, pl: PlayerState):
-        from NPCPlayerState import NPCPlayerState
+        from NPCDogState import NPCDogState
         from pprint import pprint
         dgf = None
         for p in self.players:
-            if type(p) is NPCPlayerState:
+            if type(p) is NPCDogState:
                 dgf = p
                 break
         if not dgf:
@@ -905,9 +905,9 @@ Am Ort sind folgende Objekte zu sehen:"""
         if rs == "":
             rs="(keine)"
         dogfound = None
-        from NPCPlayerState import NPCPlayerState
+        from NPCDogState import NPCDogState
         for d in self.players:
-            if type(d) is NPCPlayerState:
+            if type(d) is NPCDogState:
                 dogfound = d
         if dogfound and dogfound.location == pl.location:
             print("\n!!!! Da ist ein großer Hund bei dir  !!!!\n")
@@ -1114,10 +1114,10 @@ Am Ort sind folgende Objekte zu sehen:"""
 
     def verb_attack(self, pl: PlayerState, whom="")->str:
         """ Player attacks dog which needs to be in the same place as Player"""
-        from NPCPlayerState import NPCPlayerState
+        from NPCDogState import NPCDogState
         dog = None
         for d in self.players:
-            if type(d) is NPCPlayerState:
+            if type(d) is NPCDogState:
                 dog = d
                 break
         if dog is None:
@@ -1203,7 +1203,7 @@ Am Ort sind folgende Objekte zu sehen:"""
     def complete_minigame_session(self, session_id, result):
         """Beende eine Mini-Game Session"""
         if session_id in self.active_minigames:
-            from NPCPlayerState import NPCPlayerState, DogFight
+            from NPCDogState import NPCDogState, DogFight
 
             result_map = {
                 'WON': DogFight.WON,
@@ -1212,7 +1212,7 @@ Am Ort sind folgende Objekte zu sehen:"""
             }
 
             dog_result = result_map.get(result, DogFight.TIE)
-            dog = next((p for p in self.players if isinstance(p, NPCPlayerState)), None)
+            dog = next((p for p in self.players if isinstance(p, NPCDogState)), None)
             if dog and hasattr(dog, 'set_fight_result'):
                 dog.set_fight_result(dog_result)
 

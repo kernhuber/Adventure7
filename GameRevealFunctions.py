@@ -43,6 +43,7 @@ def o_geldboerse_reveal_f(gs: "GameState", pl: "PlayerState" = None, what: "Game
     if o_ec_karte.hidden:
         o_ec_karte.hidden = False
         o_ec_karte.ownedby = o_geldboerse.ownedby
+        from Place import Place
         if isinstance(o_ec_karte.ownedby, Place):
             o_ec_karte.ownedby.place_objects.append(o_ec_karte)
         else:

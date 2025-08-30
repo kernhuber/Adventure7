@@ -4,7 +4,7 @@
 from GameState import GameState
 from GameObject import GameObject
 from PlayerState import PlayerState
-from NPCPlayerState import NPCPlayerState
+from NPCDogState import NPCDogState
 from ExplosionState import ExplosionState
 from Place import Place
 
@@ -212,7 +212,7 @@ def o_leiter_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
             #
             dog = None
             for d in gs.players:
-                if type(d) is NPCPlayerState:
+                if type(d) is NPCDogState:
                     dog=d
                     break
             if d==None:

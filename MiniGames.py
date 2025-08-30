@@ -4,7 +4,7 @@ Minigames for situations where Dog and Players have to fight
 import random
 
 from Utils import tw_print
-from NPCPlayerState import DogFight
+from NPCDogState import DogFight
 
 
 

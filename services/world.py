@@ -62,8 +62,8 @@ class ContextBuilder:
                 all_place_ids_for_navigation.append(w.destination.name)
 
         # Hund (NPC) – lokaler Import vermeidet Zyklen
-        from NPCPlayerState import NPCPlayerState
-        dog_pl = next((p for p in gs.players if isinstance(p, NPCPlayerState)), None)
+        from NPCDogState import NPCDogState
+        dog_pl = next((p for p in gs.players if isinstance(p, NPCDogState)), None)
         if dog_pl:
             dog_description = dog_pl.dog_prompt(gs, pl)
             if dog_description:
@@ -117,8 +117,8 @@ class ContextBuilder:
         details["Wo man hingehen kann"] = wege
 
         # Hund (optional) – lokaler Import vermeidet Zyklen
-        from NPCPlayerState import NPCPlayerState
-        dog_pl = next((p for p in gs.players if isinstance(p, NPCPlayerState)), None)
+        from NPCDogState import NPCDogState
+        dog_pl = next((p for p in gs.players if isinstance(p, NPCDogState)), None)
         if dog_pl:
             dp = dog_pl.dog_prompt(gs, pl)
             if dp:

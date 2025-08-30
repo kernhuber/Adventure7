@@ -195,8 +195,8 @@ class WebAdventureServer:
 
                 # Versuche Hund hinzuzufügen
                 try:
-                    from NPCPlayerState import NPCPlayerState
-                    dog = NPCPlayerState(name="Hund", location=game.places["p_geldautomat"])
+                    from NPCDogState import NPCDogState
+                    dog = NPCDogState(name="Hund", location=game.places["p_geldautomat"])
                     game.players.append(dog)
                     dprint(dl.WEBGUI, f"✅ Hund hinzugefügt: {dog.name} in {dog.location.name}")
                     dprint(dl.WEBGUI, f"🎮 Spieler insgesamt: {len(game.players)}")
@@ -279,14 +279,14 @@ class WebAdventureServer:
 
     def serialize_real_game_state(self, game, session_id=None):
         """Konvertiere echtes GameState zu JSON-Format"""
-        from NPCPlayerState import NPCPlayerState
+        from NPCDogState import NPCDogState
         try:
             player = game.players[0] if game.players else None
             if not player:
                 return self.create_demo_game_state()
 
             # Finde Hund (kann None sein falls Hund eliminiert wurde)
-            dog = next((d for d in game.players if type(d) is NPCPlayerState), None)
+            dog = next((d for d in game.players if type(d) is NPCDogState), None)
 
             # Sichere Zugriffe
             current_location = getattr(player, 'location', None)
@@ -425,7 +425,7 @@ class WebAdventureServer:
         # Konvertiere Web-Result zu MiniGames.py Format
         if session["type"] == "real" and GAME_MODULES_AVAILABLE:
             try:
-                from NPCPlayerState import DogFight
+                from NPCDogState import DogFight
 
                 # Konvertiere String zu DogFight Enum
                 dog_result_map = {
@@ -449,8 +449,8 @@ class WebAdventureServer:
 
                 # Suche Hund in der Spielerliste und verarbeite Ergebnis
                 game = session["game"]
-                from NPCPlayerState import NPCPlayerState
-                dog = next((p for p in game.players if isinstance(p, NPCPlayerState)), None)
+                from NPCDogState import NPCDogState
+                dog = next((p for p in game.players if isinstance(p, NPCDogState)), None)
 
                 fight_message = "Mini-Game beendet"
 
@@ -928,7 +928,7 @@ class WebAdventureServer:
     async def collect_npc_actions(self, game, session_id=None):
         """Sammle NPC-Aktionen OHNE sie zu senden - für später in handle_command"""
         try:
-            from NPCPlayerState import NPCPlayerState
+            from NPCDogState import NPCDogState
             from Utils import json_cmd_simple
             # Versuche auch ExplosionState zu importieren
             try:
@@ -942,10 +942,10 @@ class WebAdventureServer:
             players_to_remove = []  # Für Spieler die durch Explosion eliminiert werden
 
             for npc in game.players:
-                if isinstance(npc, NPCPlayerState):
+                if isinstance(npc, NPCDogState):
                     # Normaler NPC (Hund)
                     #
-                    # Der NPCPlayerState ("Hund") liefert ergebnisse, die erst durch
+                    # Der NPCDogState ("Hund") liefert ergebnisse, die erst durch
                     # verb_execute ausgeführt werden müssen (z.B: er geht irgendwo hin)
                     # Die verb_execute-Funktion liefert Strings, die erst in dog_messages
                     # umgewandelt werden müssen. (Dies ist notwendig, weil die gleichen

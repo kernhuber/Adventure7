@@ -125,7 +125,7 @@ class Adventure:
         #
         # (2)
         #
-        from NPCPlayerState import NPCPlayerState
+        from NPCDogState import NPCDogState
         from ExplosionState import ExplosionState
 
         round = 1
@@ -158,13 +158,13 @@ class Adventure:
                 for p in self.game.players:
                     if type(p) is PlayerState:
                         plf = p
-                    elif type(p) is NPCPlayerState:
+                    elif type(p) is NPCDogState:
                         dgf = p
 
                 if dgf and plf and dgf.location == plf.location and not dgf.command_after_fight:
                     tw_print(f"\n***Achtung {plf.name}!! {dgf.name} steht neben Dir! Da ist Streit vorprogrammiert!***\n\n")
 
-                if (type(pl) is NPCPlayerState):
+                if (type(pl) is NPCDogState):
                     #
                     # Non Player Character
                     #
@@ -200,7 +200,7 @@ class Adventure:
 
                 # p=self.game.verb_execute_llm(pl,user_input)
                 from PlayerState import PlayerState
-                if type(pl) is PlayerState or type(pl) is NPCPlayerState:
+                if type(pl) is PlayerState or type(pl) is NPCDogState:
                     tw_print(p)
                     print(f"{'-'*30}")
 
@@ -221,7 +221,7 @@ class Adventure:
     def gameloop(self):
         """Gameloop mit verbesserter UI"""
         from PlayerState import PlayerState
-        from NPCPlayerState import NPCPlayerState
+        from NPCDogState import NPCDogState
         self.ui.display_long_text(txt_initial_text, "Spielbeginn")
 
         round = 1
@@ -259,7 +259,7 @@ class Adventure:
                     round_actions.append(f"Du: {command_name}")
                     round_actions.append(result)
 
-                elif type(pl) is NPCPlayerState:
+                elif type(pl) is NPCDogState:
                     # NPC-Aktionen
                     npc_action = pl.NPC_game_move(self.game)
                     if npc_action and npc_action != "nichts":

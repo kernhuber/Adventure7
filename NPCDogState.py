@@ -25,7 +25,7 @@ class DogFight(Enum):
 # Our NPC Player - the Doggo
 #
 @dataclass
-class NPCPlayerState(PlayerState):
+class NPCDogState(PlayerState):
     from Place import Place
     from MiniGames import MiniGames
 
@@ -409,7 +409,7 @@ Beschreibung des Hundes
         else:
             return ""
 
-    # NEUE Methoden am Ende der NPCPlayerState-Klasse hinzufügen:
+    # NEUE Methoden am Ende der NPCDogState-Klasse hinzufügen:
 
     def gets_attacked_new(self, gs: GameState, pl: PlayerState):
         """
