@@ -27,7 +27,7 @@ class DogFight(Enum):
 @dataclass
 class NPCDogState(PlayerState):
     from Place import Place
-    from MiniGames import MiniGames
+
 
     growl: int = 0
     dog_state: DogState = DogState.START
@@ -40,7 +40,6 @@ class NPCDogState(PlayerState):
     nogo_places: List[str] = field(default_factory=lambda: ["p_dach","p_ubahn2"]) # Dog can't go to these places.
     way_home: Deque[Place] = field(default_factory=deque) # Falls Hund nach Hause geht
 
-    fightgames: MiniGames = field(default_factory = MiniGames)
 
     def can_dog_go(self, gs: GameState, plc:str)-> bool:
         if plc in self.nogo_places:
@@ -53,14 +52,14 @@ class NPCDogState(PlayerState):
         return False
 
 
-    def NPC_game_move(self, gs:GameState) -> str:
+    def NPC_game_move(self, gs:GameState) -> {}:
         """
         Doggo routine
 
 
 
         :param gs:
-        :return str:
+        :return Comman as Command Dictionary:
         """
 
 
@@ -150,8 +149,7 @@ class NPCDogState(PlayerState):
                     return self.setup_state_trace(gs)
                 else:
                     return self.setup_state_gohome(gs)
-                self.dog_state_message = "Der Hund tut nichts."
-                return return_do_nothing()
+
 
             case DogState.GOHOME:
                 if not self.way_home:
@@ -191,61 +189,19 @@ class NPCDogState(PlayerState):
         # the web interface by returning a special string. The results of the fight
         # are processed in subsequent steps.
         #
-        # Erkenne ob Web-Interface aktiv ist
-        is_web_interface = (hasattr(gs, 'web_sessions') and
-                            len(getattr(gs, 'web_sessions', {})) > 0)
+        # Web-Interface: Trigger Mini-Game über spezielle Nachricht
+        import random
+        game_types = ['circle_fight', 'sum_fight', 'odd_even_fight', 'close_fight']
+        selected_game = random.choice(game_types)
+        dprint(dl.NPCPLAYERSTATE, f"🎮 Starte Web-Mini-Game: {selected_game}")
 
-        if not is_web_interface:
-            print("""
-            ********************************
-            *** Du kämpfst mit dem Hund! ***
-            ********************************
-                                """)
-            ds = self.fightgames.fight()
-            if ds == DogFight.WON:
-                #
-                # Kill player
-                #
-                # return json_cmd(f"toeten {pl.name}")
-                return json_cmd_simple("toeten", pl.name)
-            elif ds == DogFight.LOST:
-                #
-                # Escape to a neighbor location
-                #
-                import random
-                l = len(self.location.ways)
-                w = []
-                for way in self.location.ways:
-                    if (way.obstruction_check(gs) == "Free" and way.visible and self.can_dog_go(gs, way.destination.name)):
-                        w.append(way.destination.name)
+        # KORRIGIERT: Verwende richtige Attribut-Namen und DogState-Werte
+        self.dog_state = DogState.ATTACK  # KORRIGIERT: dog_state (nicht dog_status)
+        self.attack_counter = 2
+        self.dog_state_message = "Der Hund kämpft gerade!"
 
-                if w:
-                    flight = random.choice(w)
-                    print(f"Der Hund flüchtet jaulend nach {flight}")
-                    # return json_cmd(f"gehe {flight}")
-                    return json_cmd_simple("gehe", flight)
-                else:
-                    print("Der Hund kann von hier aus nirgendwo hin!")
-                    return return_do_nothing()
-            else:
-                return return_do_nothing()
-        else:
-            #
-            # Web Interface
-            #
-            # Web-Interface: Trigger Mini-Game über spezielle Nachricht
-            import random
-            game_types = ['circle_fight', 'sum_fight', 'odd_even_fight', 'close_fight']
-            selected_game = random.choice(game_types)
-            dprint(dl.NPCPLAYERSTATE, f"🎮 Starte Web-Mini-Game: {selected_game}")
-
-            # KORRIGIERT: Verwende richtige Attribut-Namen und DogState-Werte
-            self.dog_state = DogState.ATTACK  # KORRIGIERT: dog_state (nicht dog_status)
-            self.attack_counter = 2
-            self.dog_state_message = "Der Hund kämpft gerade!"
-
-            # return json_cmd(f"MINIGAME:{selected_game}")
-            return json_cmd_simple("minigame",selected_game)
+        # return json_cmd(f"MINIGAME:{selected_game}")
+        return json_cmd_simple("minigame",selected_game)
 
     def gets_attacked(self, gs:GameState, pl:PlayerState):
         """Dog gets attacked by Player!"""
@@ -421,27 +377,16 @@ Beschreibung des Hundes
 
         dprint(dl.NPCPLAYERSTATE, f"🥊 {pl.name} greift {self.name} an!")
 
-        # Erkenne ob Web-Interface aktiv ist
-        is_web_interface = (hasattr(gs, 'web_sessions') and
-                            len(getattr(gs, 'web_sessions', {})) > 0)
 
-        if is_web_interface:
 
-            # KORRIGIERT: Verwende richtige Attribut-Namen und DogState-Werte
-            self.dog_state = DogState.ATTACK  # KORRIGIERT: dog_state (nicht dog_status)
-            self.attack_counter = 2
-            self.dog_state_message = "Der Hund kämpft gerade!"
+        # KORRIGIERT: Verwende richtige Attribut-Namen und DogState-Werte
+        self.dog_state = DogState.ATTACK  # KORRIGIERT: dog_state (nicht dog_status)
+        self.attack_counter = 2
+        self.dog_state_message = "Der Hund kämpft gerade!"
 
-            # return json_cmd("MINIGAME")
-            return json_cmd_simple("minigame")
-        else:
-            # Text-Interface: Bestehende MiniGames.py Logik
-            dprint(dl.NPCPLAYERSTATE, f"🎮 Starte Text-Mini-Game")
+        # return json_cmd("MINIGAME")
+        return json_cmd_simple("minigame")
 
-            from MiniGames import MiniGames
-            mg = MiniGames()
-            fight_result = mg.fight()
-            return self.process_fight_result(gs, fight_result)
 
     def process_fight_result(self, gamestate, fight_result):
         """
@@ -508,26 +453,17 @@ Beschreibung des Hundes
 
         dprint(dl.NPCPLAYERSTATE, f"🥊 {pl.name} greift {self.name} an!")
 
-        # Einfache Web-Interface Erkennung
-        is_web_interface = (pl.name == "WebPlayer")
+        game_types = ['circle_fight', 'sum_fight', 'odd_even_fight', 'close_fight']
+        selected_game = random.choice(game_types)
+        dprint(dl.NPCPLAYERSTATE, f"🎮 Web-Mini-Game: {selected_game}")
 
-        if is_web_interface:
-            game_types = ['circle_fight', 'sum_fight', 'odd_even_fight', 'close_fight']
-            selected_game = random.choice(game_types)
-            dprint(dl.NPCPLAYERSTATE, f"🎮 Web-Mini-Game: {selected_game}")
+        # SICHER: Nur diese Werte ändern
+        self.attack_counter = 2
+        self.dog_state_message = "Der Hund kämpft gerade!"
+        # dog_state bleibt unverändert
 
-            # SICHER: Nur diese Werte ändern
-            self.attack_counter = 2
-            self.dog_state_message = "Der Hund kämpft gerade!"
-            # dog_state bleibt unverändert
+        return json_cmd_simple("minigame",selected_game)
 
-            return json_cmd_simple("minigame",selected_game)
-        else:
-            # Text-Interface
-            from MiniGames import MiniGames
-            mg = MiniGames()
-            fight_result = mg.fight()
-            return self.process_fight_result_safe(gs, fight_result)
 
     def process_fight_result_safe(self, gs:GameState, fight_result):
         """
