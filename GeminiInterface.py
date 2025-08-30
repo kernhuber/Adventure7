@@ -1,5 +1,6 @@
 from __future__ import annotations
-
+from PlayerState import PlayerState
+from GameState import GameState
 import google.generativeai as genai
 import os
 import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
@@ -188,7 +189,14 @@ Die Ortsbeschreibung:
                 # Wenn der Text sehr kurz ist und kein Leerzeichen enthält (z.B. nur ein Wort oder Fragment)
                 return text.strip() + "..."  # Füge Ellipsen direkt an
 
-    def narrate(self, gs:"GameState", pl:"PlayerState") -> str:
+    def narrate(self, gs:GameState, pl) -> str:
+        #
+        # Generate narration only for human players. NPCs don't need that
+        #
+        if type(pl) is not PlayerState:
+            dprint(dl.LLM,f"Skipping narrate() for Player '{pl.name}'")
+            return ""
+
         prompt = self.gen_narration_prompt(gs,pl)
         n = self.narration_cache.get(pl.location.name,prompt=prompt)
         room = pl.location.name

@@ -342,3 +342,41 @@ def o_flasche_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = No
     pl.thirst_counter += 20
     gs.flasche_voll = False
     return f"***Das tat gut!*** Du hast deinen Durst gestillt nun {pl.thirst_counter} Spielzüge, bevor du verdurstest. Die Flasche ist nun aber leer."
+
+def o_falltuer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None, onwhat:GameObject=None) -> str:
+    #
+    # Are we at solaranlage?
+    #
+    if pl.location.name != "p_solaranlage":
+        return "Sowas gibt es hier nicht!"
+
+    if gs.falltuer_offen:
+        gs.falltuer_offen = False
+        gs.werbeplakat_offen = False
+        gs.ways["w_ubahn2_solaranlage"].visible = False
+        gs.ways["w_solaranlage_ubahn2"].visible = False
+        return "Die Falltür fällt krachend in ihren Rahmen und ist nun wieder verschlossen!"
+    else:
+        return "Da kann man machen, was man will - dir Tür ist zu."
+
+def o_werbeplakat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None, onwhat:GameObject=None) -> str:
+    #
+    #  Are we in ubahn2?
+    #
+    if pl.location.name != "p_ubahn2":
+        return "Sowas gibt es hier nicht!"
+
+    if gs.werbeplakat_offen:
+        gs.falltuer_offen = False
+        gs.werbeplakat_offen = False
+        gs.ways["w_ubahn2_solaranlage"].visible = False
+        gs.ways["w_solaranlage_ubahn2"].visible = False
+
+        return "Die Geheimtür hinter dem Plakat ist nun verschlossen. Auch die Falltür am anderen Ende des Weges ist zu."
+    else:
+        gs.falltuer_offen = True
+        gs.werbeplakat_offen = True
+        gs.ways["w_ubahn2_solaranlage"].visible = True
+        gs.ways["w_solaranlage_ubahn2"].visible = True
+
+        return "Du hast eine Geheimtür geöffnet, die hinter dem Plakat versteckt war! Dahinter ein Gang - und ein Rumpeln, als würde auch am anderen Ende des Ganges eine Tür aufgehen!"

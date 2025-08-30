@@ -541,3 +541,38 @@ Solaranlage
 - Es summt - also liefert die Anlage Strom
 - Ein Dickes Kabel verschwindet im Hügel
 """
+
+def o_falltuer_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    if gs.falltuer_offen:
+        return """ 
+Falltür
+=======
+- Eine Falltür aus Metall
+- Sie steht offen
+"""
+    else:
+        return """
+Falltür
+=======
+- Eine Falltür aus Metall
+- Sie ist verschlossen
+- Es scheint keinen Weg zu geben, sie von hier zu öffnen
+    """
+
+def o_werbeplakat_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    if gs.werbeplakat_offen:
+        return """ 
+Werbeplakat
+===========
+- Ein Werbeplakat, das eigentlich eine Tür ist
+- Es steht offen und gibt einen Gang frei
+- Auf dem Plakat ist Werbung für Unterhaltungstechnik aus den 80er Jahren (Videorekorder, Stereoanlagen, Heimcomputer)
+"""
+    else:
+        return """
+Falltür
+=======
+- Ein großes Werbeplakat
+- Auf dem Plakat ist Werbung für Unterhaltungstechnik aus den 80er Jahren (Videorekorder, Stereoanlagen, Heimcomputer)
+- Das Plakat hat Scharniere auf der linken Seite, und einen Griff auf der rechten Seite - könnte eine versteckte Tür sein!
+    """

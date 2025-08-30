@@ -185,7 +185,7 @@ class GameState:
                     warn(f"Way '{wname}': way_prompt_f not resolved to callable")
 
         # --- Objects ---
-        required_object_fields = ("name", "ownedby", "examine")
+        required_object_fields = ("name", "ownedby", "examine", "prompt_f")
         for oname, o in (object_defs or {}).items():
             if not isinstance(o, dict):
                 warn(f"Object '{oname}' is not a dict")
@@ -200,6 +200,7 @@ class GameState:
             ob = o.get("ownedby")
             if ob and ob not in place_defs:
                 warn(f"Object '{oname}': unknown ownedby place '{ob}'")
+
             # Callback checks
             for cb in ("apply_f", "reveal_f", "take_f", "prompt_f"):
                 if cb in o and o.get(cb) not in (None,):
@@ -227,6 +228,8 @@ class GameState:
         "geldautomat_intakt",
         "schuppen_intakt",
         "flasche_voll",
+        "falltuer_offen",
+        "werbeplakat_offen",
         "game_over",
         "game_won",
         "time",

@@ -162,12 +162,14 @@
         "U-Bahn-2"
       ],
       "ways": [
-        "w_ubahn2_wagen"
+        "w_ubahn2_wagen",
+        "w_ubahn2_solaranlage"
       ],
       "objects": [
         "o_pizzaautomat",
         "o_geld_lire",
-        "o_pizza"
+        "o_pizza",
+        "o_werbeplakat"
       ]
     },
     "p_wagen": {
@@ -231,10 +233,12 @@
         "PV-Anlage"
       ],
       "ways": [
-        "w_solaranlage_plateau"
+        "w_solaranlage_plateau",
+        "w_solaranlage_ubahn2"
       ],
       "objects": [
-        "o_solaranlage"
+        "o_solaranlage",
+        "o_falltuer"
       ]
     }
   },
@@ -510,6 +514,24 @@
       "description": "",
       "obstruction_check": null,
       "way_prompt_f": "WayPrompts.w_plateau_solaranlage_prompt_f"
+    },
+    "w_solaranlage_ubahn2": {
+      "source": "p_solaranlage",
+      "destination": "p_ubahn2",
+      "text_direction": "zu U-Bahn-2",
+      "description": "Ein geheimer Weg in den Untergrund",
+      "obstruction_check": null,
+      "visible": false,
+      "way_prompt_f": null
+    },
+    "w_ubahn2_solaranlage": {
+      "source": "p_ubahn2",
+      "destination": "p_solaranlage",
+      "text_direction": "zu Solaranlage",
+      "description": "Ein geheimer Weg zur Oberfläche",
+      "obstruction_check": null,
+      "visible": false,
+      "way_prompt_f": null
     }
   },
   "object_defs": {
@@ -1015,7 +1037,9 @@
       "examine": "Ein Gerüst mit vielen Solarkollektoren",
       "help_text": "",
       "callnames": [
-        "Solaranlage", "PV-Anlage", "Photovoltaik-Anlage"
+        "Solaranlage",
+        "PV-Anlage",
+        "Photovoltaik-Anlage"
       ],
       "ownedby": "p_solaranlage",
       "fixed": true,
@@ -1024,6 +1048,36 @@
       "reveal_f": null,
       "take_f": null,
       "prompt_f": "ObjectPrompts.o_solaranlage_prompt_f"
+    },
+    "o_falltuer": {
+      "name": "o_falltuer",
+      "examine": "Eine Falltür aus Metall im Boden.",
+      "help_text": "Eine Falltür - wo die wohl hinführt?",
+      "callnames": [
+        "Falltuer", "Falltür", "Luke", "Luke im Boden"
+      ],
+      "ownedby": "p_solaranlage",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_falltuer_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_falltuer_prompt_f"
+    },
+    "o_werbeplakat": {
+      "name": "o_werbeplakat",
+      "examine": "Ein Werbeplakat mit Werbung für 80er-Jahre-Technik. Videorekorder, Stereo-Anlagen, Heimcomputer... Warum hat es Scharniere an der Seite",
+      "help_text": "",
+      "callnames": [
+        "Werbeplakat", "Plakat", "Werbung"
+      ],
+      "ownedby": "p_ubahn2",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_werbeplakat_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_werbeplakat_prompt_f"
     }
   },
   "_editor": {
