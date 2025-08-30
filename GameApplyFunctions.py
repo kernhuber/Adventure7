@@ -149,12 +149,14 @@ def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, 
             if _F(gs).hebel:
                 gs.hebel = False
                 gs.ways["w_warenautomat_ubahn"].visible = False
+                gs.ways["w_ubahn_warenautomat"].visible = False
                 gs.places["p_warenautomat"].description = "Hier steht ein Warenautomat, an dem man Fahrradteile kaufen kann."
                 gs.objects["o_warenautomat"].examine = "Ein Warenautomat mit Fahrradteilen. Er enthält tatsächlich auch eine Fahrradkette! Jetzt bräuchte man Geld - und zwar italienische Lira. Dieser Automat akzeptiert nur diese!"
                 return "Es rumpelt - und der Warenautomat richtet sich wieder auf!"
             else:
                 gs.hebel = True
                 gs.ways["w_warenautomat_ubahn"].visible = True
+                gs.ways["w_ubahn_warenautomat"].visible = True
                 gs.objects["o_warenautomat"].examine = "Ein Warenautomat, der auf dem Rücken liegt. Da wo er stand, führt eine Treppe nach unten!"
                 gs.places["p_warenautomat"].description = "Hier liegt ein Warenautomat auf dem Rücken. Da wo er wohl gestanden hat, ist eine Öffnung im Boden. Man sieht darin eine Treppe - es geht zu einer U-Bahn-Station!"
                 return "Es rumpelt - Die siehst, wie der Warenautomat sich langsam auf den Rücken legt. Da wo er stand, ist nun eine Öffnung - und darin eine Treppe zu einer U-Bahn-Station!"
