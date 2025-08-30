@@ -667,6 +667,9 @@ class GameState:
             if not f.geldautomat_intakt:
                 return True  # Ich kann keine Dollars mehr ziehen
 
+            if not "o_solaranlage" in self._world.objects: # Er hat die Solaranlage gesprengt ...
+                return True
+
         return False
 
     def compile_current_game_context_for_llm_tools(self, pl: 'PlayerState') -> dict:
