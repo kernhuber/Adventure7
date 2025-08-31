@@ -120,3 +120,35 @@ Geldautomat
         rv = rv + """- Ein Geldautomat, der weiter unten beschrieben ist 
 """
     return rv
+
+def p_ubahn_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    rs = f"""
+U-Bahn Station
+==============
+- Im Gegensatz zur Oberfläche herrscht eine angenehm Kühle. Es ist wichtig, auf diesen Kontrast hinzuweisen 
+- Alles sauber und aufgeräumt
+- An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für ein Reisebüro. 
+- Keine Schmierereien oder Graffitis
+- Der Boden ist mit Marmorfliesen gefliest.
+- Neonröhren tauchen alles in angenehmes Licht. 
+{'- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind.' if not _F(gs).ubahn_in_otherstation else ''}
+    """
+    return rs
+
+def p_ubahn2_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    rs=f"""
+Zweite U-Bahn Station
+=====================
+- Im Gegensatz zur Oberfläche herrscht eine angenehm Kühle. Es ist wichtig, auf diesen Kontrast hinzuweisen 
+- Im Gegensatz zur ersten U-Bahn-Station ist die Luft etwas abgestanden
+- Es riecht nach mediterranen Gewürzen
+- Alles sauber und aufgeräumt
+- An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für den neuen VW-Golf, ein weiteres, welches bei den Objekten genauer beschrieben wird. 
+- Keine Schmierereien oder Graffitis
+- Der Boden ist mit Marmorfliesen gefliest.
+- Neonröhren tauchen alles in angenehmes Licht. 
+{'- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind.' if _F(gs).ubahn_in_otherstation else ''}
+- Wichtig: du darfst den Hund in der Beschreibung ausschließlich nur erwähnen, wenn er im Wagen (p_wagen) oder hier am Ort ist. In allen 
+  anderen Fällen kann man den Hund von hier nicht sehen.
+    """
+    return rs
