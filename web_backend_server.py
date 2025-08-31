@@ -571,6 +571,12 @@ class WebAdventureServer:
         #    }
         # }
         #
+        # In älteren Versionen des Spiels hatte die Klasse PlayerState eine Funktion
+        # user_input() - da wir hier ein web-Interface haben, ist die Logik dieser
+        # Funktion hierher gewandert.
+        #
+        # Todo:
+        # Drüber nachdenken die Funktion wieder zurück in PlayerState zu migrieren.
 
         command_to_execute = None
 
