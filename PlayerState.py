@@ -51,6 +51,8 @@ class PlayerState:
 
     def Player_game_move(self, gs:"GameState"):
         """
+            deprecated
+
         This function returns user input to the game engine. Two additional features:
         * if there are commands in the systest queue, return these instead of actual user input
         * Commands entered by user are appended to cmd_q, the command queue, and only in a

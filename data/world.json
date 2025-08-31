@@ -135,8 +135,8 @@
     },
     "p_ubahn": {
       "description": "Eine U-Bahn-Station",
-      "place_prompt": "\nU-Bahn Station\n==============\n- Im Gegensatz zur Oberfläche herrscht eine angenehm Kühle. Es ist wichtig, auf diesen Kontrast hinzuweisen \n- Alles sauber und aufgeräumt\n- An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für ein Reisebüro. \n- Keine Schmierereien oder Graffitis\n- Der Boden ist mit Marmorfliesen gefliest.\n- Neonröhren tauchen alles in angenehmes Licht. \n- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind. \n        ",
-      "place_prompt_f": null,
+      "place_prompt": "",
+      "place_prompt_f": "PlacePrompts.p_ubahn_place_prompt_f",
       "callnames": [
         "U-Bahn",
         "UBahn",
@@ -156,8 +156,8 @@
     },
     "p_ubahn2": {
       "description": "Eine zweite U-Bahn-Station",
-      "place_prompt": "\nZweite U-Bahn Station\n=====================\n- Im Gegensatz zur Oberfläche herrscht eine angenehm Kühle. Es ist wichtig, auf diesen Kontrast hinzuweisen \n- Im Gegensatz zur ersten U-Bahn-Station ist die Luft etwas abgestanden\n- Es riecht nach mediterranen Gewürzen\n- Alles sauber und aufgeräumt\n- An der Wand hängen einige Werbeplakate: eins für eine Limonade, eins für den neuen VW-Golf, eins für den neuen Heimcomputer C64 von Commodore. \n- Keine Schmierereien oder Graffitis\n- Der Boden ist mit Marmorfliesen gefliest.\n- Neonröhren tauchen alles in angenehmes Licht. \n- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind.\n- Wichtig: du darfst den Hund in der Beschreibung ausschließlich nur erwähnen, wenn er im Wagen (p_wagen) oder hier am Ort ist. In allen \n  anderen Fällen kann man den Hund von hier nicht sehen.\n        ",
-      "place_prompt_f": null,
+      "place_prompt": "",
+      "place_prompt_f": "PlacePrompts.p_ubahn2_place_prompt_f",
       "callnames": [
         "U-Bahn-2"
       ],
@@ -174,7 +174,7 @@
     },
     "p_wagen": {
       "description": "Im U-Bahn-Wagen",
-      "place_prompt": "Im inneren des U-Bahnwagens ist es sauber. Neonlicht leuchtet über den Sitzreihen. Auch hier gibt es einige\n                Werbeplakate, die in kleinen Rahmen über den Fenstern des Wagens angebracht sind. Sie werben für den neuartigen C64 von Commodore, \n                den großartigen ZX Spectrum von Sinclair und das neue Album \"Best of 80ies\". \n            \n        ",
+      "place_prompt": "Im inneren des U-Bahnwagens ist es sauber. Neonlicht leuchtet über den Sitzreihen. Auch hier gibt es einige Werbeplakate, die in kleinen Rahmen über den Fenstern des Wagens angebracht sind. Sie werben für den neuartigen C64 von Commodore, den großartigen ZX Spectrum von Sinclair und das neue Album \"Best of 80ies\". ",
       "place_prompt_f": null,
       "callnames": [
         "Wagen",
