@@ -151,4 +151,44 @@ Zweite U-Bahn Station
 - Wichtig: du darfst den Hund in der Beschreibung ausschließlich nur erwähnen, wenn er im Wagen (p_wagen) oder hier am Ort ist. In allen 
   anderen Fällen kann man den Hund von hier nicht sehen.
     """
-    return rs
+    return rs# --- missing_functions Output ---
+
+# Quelle (Original): PlacePrompts.py
+
+# Quelle (Stage)   : stage/PlacePrompts.py
+
+# Enthalten: 8 fehlende Funktion(en): p_labor_place_prompt_f, p_bibliothek_place_prompt_f, p_korridor_place_prompt_f, p_besenkammer_place_prompt_f, p_generatorraum_place_prompt_f, p_ubahn_schacht_place_prompt_f, p_kontrollraum_place_prompt_f, p_solaranlage_place_prompt_f
+
+
+
+def p_solaranlage_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""
+
+def p_kontrollraum_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""
+
+def p_ubahn_schacht_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""
+
+def p_korridor_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""
+
+def p_labor_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""
+
+def p_bibliothek_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""
+
+def p_besenkammer_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""
+
+def p_generatorraum_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""

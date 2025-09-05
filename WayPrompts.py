@@ -82,4 +82,36 @@ def w_plateau_solaranlage_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> s
 * Dieser Weg ist ein Pfad vom Plateau auf dem Hügel zu einer großen Solaranlage
 * Man kann diesen Weg gehen, laufen, herabklettern und sich anderweitig auf ihm bewegen.
 * Liefere "gehe p_solaranlage" zurück, wenn dieser Weg beschritten wird
-"""
+"""# --- missing_functions Output ---
+
+# Quelle (Original): ../WayPrompts.py
+
+# Quelle (Stage)   : WayPrompts.py
+
+# Enthalten: 6 fehlende Funktion(en): w_felsen_plateau_prompt_f, w_ubahnschacht_ubahn2_prompt_f, w_plateau_felsen_prompt_f, w_hohle_korridor_prompt_f, w_korridor_hohle_prompt_f, w_ubahn2_u_bahnschacht_prompt_f
+
+
+
+def w_plateau_felsen_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_felsen_plateau_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_ubahn2_u_bahnschacht_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_ubahnschacht_ubahn2_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_hohle_korridor_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_korridor_hohle_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+    # TODO: implement callback
+    return ""

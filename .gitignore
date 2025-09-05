@@ -51,3 +51,4 @@ debug/
 
 # VS Code (falls verwendet)
 .vscode/
+/stage/
