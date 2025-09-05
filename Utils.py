@@ -22,10 +22,11 @@ class dl(IntFlag):
     SYSTEST         = auto() # test game engine with atomic messages
     SYSTESTLLM      = auto() # test game with actual sentences
     WEBGUI          = auto() # WebGUI debugging
-    CMDLOG          = auto() # Testin of json_cmd-Function below
+    CMDLOG          = auto() # Testing of json_cmd-Function below
+    ZOMBIE          = auto() # General testing of Zombie NPC
 
 DEBUG = True
-DEBUG_LEVEL = dl.LLM|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.WEBGUI|dl.CMDLOG
+DEBUG_LEVEL = dl.LLM|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.WEBGUI|dl.CMDLOG|dl.ZOMBIE
 ADV_LOGGER = None
 
 class dlogger():

@@ -65,8 +65,7 @@
         "Hoehle"
       ],
       "ways": [
-        "w_hoehle_felsen",
-        "w_hohle_korridor"
+        "w_hoehle_felsen"
       ],
       "objects": [
         "o_skelett",
@@ -164,9 +163,7 @@
       ],
       "ways": [
         "w_ubahn2_wagen",
-        "w_ubahn2_solaranlage",
-        "w_u_bahn_2_kontrollraum",
-        "w_ubahn2_u_bahnschacht"
+        "w_ubahn2_solaranlage"
       ],
       "objects": [
         "o_pizzaautomat",
@@ -243,96 +240,6 @@
         "o_solaranlage",
         "o_falltuer"
       ]
-    },
-    "p_kontrollraum": {
-      "description": "Der Kontrollraum der kleinen U-Bahn.",
-      "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_kontrollraum_place_prompt_f",
-      "callnames": [
-        "Kontrollraum"
-      ],
-      "ways": [
-        "w_kontrollraum_u_bahn_2"
-      ],
-      "objects": []
-    },
-    "p_ubahn_schacht": {
-      "description": "EIn finsterer U-Bahn-Schacht",
-      "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_ubahn_schacht_place_prompt_f",
-      "callnames": [
-        "U-Bahn-Schacht"
-      ],
-      "ways": [
-        "w_ubahnschacht_ubahn2",
-        "w_u_bahn_schacht_korridor"
-      ],
-      "objects": []
-    },
-    "p_korridor": {
-      "description": "",
-      "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_korridor_place_prompt_f",
-      "callnames": [
-        "Korridor"
-      ],
-      "ways": [
-        "w_korridor_u_bahn_schacht",
-        "w_korridor_hohle",
-        "w_korridor_labor",
-        "w_korridor_bibliothek",
-        "w_korridor_besenkammer"
-      ],
-      "objects": []
-    },
-    "p_labor": {
-      "description": "",
-      "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_labor_place_prompt_f",
-      "callnames": [
-        "Labor"
-      ],
-      "ways": [
-        "w_labor_korridor",
-        "w_labor_generatorraum"
-      ],
-      "objects": []
-    },
-    "p_bibliothek": {
-      "description": "",
-      "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_bibliothek_place_prompt_f",
-      "callnames": [
-        "Bibliothek"
-      ],
-      "ways": [
-        "w_bibliothek_korridor"
-      ],
-      "objects": []
-    },
-    "p_besenkammer": {
-      "description": "",
-      "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_besenkammer_place_prompt_f",
-      "callnames": [
-        "Besenkammer"
-      ],
-      "ways": [
-        "w_besenkammer_korridor"
-      ],
-      "objects": []
-    },
-    "p_generatorraum": {
-      "description": "",
-      "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_generatorraum_place_prompt_f",
-      "callnames": [
-        "Generatorraum"
-      ],
-      "ways": [
-        "w_generatorraum_labor"
-      ],
-      "objects": []
     }
   },
   "way_defs": {
@@ -614,6 +521,7 @@
       "text_direction": "zu U-Bahn-2",
       "description": "Ein geheimer Weg in den Untergrund",
       "obstruction_check": null,
+      "visible": false,
       "way_prompt_f": null
     },
     "w_ubahn2_solaranlage": {
@@ -622,134 +530,7 @@
       "text_direction": "zu Solaranlage",
       "description": "Ein geheimer Weg zur Oberfläche",
       "obstruction_check": null,
-      "way_prompt_f": null
-    },
-    "w_u_bahn_2_kontrollraum": {
-      "source": "p_ubahn2",
-      "destination": "p_kontrollraum",
-      "text_direction": "zu Kontrollraum",
-      "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
-    },
-    "w_kontrollraum_u_bahn_2": {
-      "source": "p_kontrollraum",
-      "destination": "p_ubahn2",
-      "text_direction": "zu U-Bahn-2",
-      "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
-    },
-    "w_ubahn2_u_bahnschacht": {
-      "source": "p_ubahn2",
-      "destination": "p_ubahn_schacht",
-      "text_direction": "zu U-Bahn-Schacht",
-      "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn2_u_bahnschacht_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_ubahn2_u_bahnschacht_prompt_f"
-    },
-    "w_ubahnschacht_ubahn2": {
-      "source": "p_ubahn_schacht",
-      "destination": "p_ubahn2",
-      "text_direction": "zu U-Bahn-2",
-      "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_ubahnschacht_ubahn2_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_ubahnschacht_ubahn2_prompt_f"
-    },
-    "w_korridor_u_bahn_schacht": {
-      "source": "p_korridor",
-      "destination": "p_ubahn_schacht",
-      "text_direction": "zu U-Bahn-Schacht",
-      "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
-    },
-    "w_u_bahn_schacht_korridor": {
-      "source": "p_ubahn_schacht",
-      "destination": "p_korridor",
-      "text_direction": "zu Korridor",
-      "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
-    },
-    "w_hohle_korridor": {
-      "source": "p_hoehle",
-      "destination": "p_korridor",
-      "text_direction": "zu Korridor",
-      "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_hohle_korridor_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_hohle_korridor_prompt_f"
-    },
-    "w_korridor_hohle": {
-      "source": "p_korridor",
-      "destination": "p_hoehle",
-      "text_direction": "zu Höhle",
-      "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_korridor_hohle_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_korridor_hohle_prompt_f"
-    },
-    "w_labor_korridor": {
-      "source": "p_labor",
-      "destination": "p_korridor",
-      "text_direction": "zu Korridor",
-      "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
-    },
-    "w_korridor_labor": {
-      "source": "p_korridor",
-      "destination": "p_labor",
-      "text_direction": "zu Labor",
-      "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
-    },
-    "w_bibliothek_korridor": {
-      "source": "p_bibliothek",
-      "destination": "p_korridor",
-      "text_direction": "zu Korridor",
-      "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
-    },
-    "w_korridor_bibliothek": {
-      "source": "p_korridor",
-      "destination": "p_bibliothek",
-      "text_direction": "zu Bibliothek",
-      "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
-    },
-    "w_korridor_besenkammer": {
-      "source": "p_korridor",
-      "destination": "p_besenkammer",
-      "text_direction": "zu Besenkammer",
-      "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
-    },
-    "w_besenkammer_korridor": {
-      "source": "p_besenkammer",
-      "destination": "p_korridor",
-      "text_direction": "zu Korridor",
-      "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
-    },
-    "w_generatorraum_labor": {
-      "source": "p_generatorraum",
-      "destination": "p_labor",
-      "text_direction": "zu Labor",
-      "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
-    },
-    "w_labor_generatorraum": {
-      "source": "p_labor",
-      "destination": "p_generatorraum",
-      "text_direction": "zu Generatorraum",
-      "description": "",
-      "obstruction_check": null,
+      "visible": false,
       "way_prompt_f": null
     }
   },
@@ -1273,10 +1054,7 @@
       "examine": "Eine Falltür aus Metall im Boden.",
       "help_text": "Eine Falltür - wo die wohl hinführt?",
       "callnames": [
-        "Falltuer",
-        "Falltür",
-        "Luke",
-        "Luke im Boden"
+        "Falltuer", "Falltür", "Luke", "Luke im Boden"
       ],
       "ownedby": "p_solaranlage",
       "fixed": true,
@@ -1291,9 +1069,7 @@
       "examine": "Ein Werbeplakat mit Werbung für 80er-Jahre-Technik. Videorekorder, Stereo-Anlagen, Heimcomputer... Warum hat es Scharniere an der Seite",
       "help_text": "",
       "callnames": [
-        "Werbeplakat",
-        "Plakat",
-        "Werbung"
+        "Werbeplakat", "Plakat", "Werbung"
       ],
       "ownedby": "p_ubahn2",
       "fixed": true,
@@ -1357,34 +1133,6 @@
       "p_solaranlage": {
         "x": -149.05372433630433,
         "y": -473.5806777950817
-      },
-      "p_kontrollraum": {
-        "x": -1077.6212111181499,
-        "y": 248.72742204770677
-      },
-      "p_ubahn_schacht": {
-        "x": -1115.9539552397039,
-        "y": 91.36505951616678
-      },
-      "p_korridor": {
-        "x": -1072.2421878698317,
-        "y": -18.788594255911228
-      },
-      "p_labor": {
-        "x": -1150.9233691356017,
-        "y": -128.94224802798922
-      },
-      "p_bibliothek": {
-        "x": -1333.6385567416676,
-        "y": -67.74577371016811
-      },
-      "p_besenkammer": {
-        "x": -1246.502862282563,
-        "y": 33.665526587935446
-      },
-      "p_generatorraum": {
-        "x": -1243.592315959731,
-        "y": -246.08978457924675
       }
     }
   }
