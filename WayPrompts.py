@@ -117,9 +117,17 @@ def w_ubahnschacht_ubahn2_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way")
     return ""
 
 def w_hoehle_korridor_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
-    # TODO: implement callback
-    return ""
+
+    r = w.obstruction_check(gs)
+    if r == "Free":
+        return """
+    Der Weg führt in einen Korridor, von dem weitere Wege abgehen.
+    Man kann diesen Weg gehen, in ihn hineingehen, ihn beschreiten oder ähnliches. Wenn der Weg beschritten wird,
+    liefere "gehe p_korridor" zurück.
+    """
+    else:
+        return r
 
 def w_korridor_hohle_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
-    # TODO: implement callback
+    # TODO: ...
     return ""

@@ -235,6 +235,7 @@ class GameState:
         "flasche_voll",
         "falltuer_offen",
         "werbeplakat_offen",
+        "korridor_offen",
         "game_over",
         "game_won",
         "time",

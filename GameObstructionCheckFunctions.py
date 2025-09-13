@@ -52,9 +52,12 @@ def w_ubahnschacht_ubahn2_obstruction_check(gs: "GameState") -> str:
     return "Free"
 
 def w_hoehle_korridor_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return "Free"
+    if gs.korridor_offen:
+        return "Free"
+    else:
+        return "Die Stahltür ist fest verschlossen. Durch ein kleines, vergittertes Fenster kannst du auf der anderen Seite der Tür einen Korridor erkennen."
+
 
 def w_korridor_hoehle_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return "Free"
+    # TODO:
+    return ""

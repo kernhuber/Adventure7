@@ -151,6 +151,7 @@ class GameFlags:
     flasche_voll: bool = True
     falltuer_offen: bool = False
     werbeplakat_offen: bool = False
+    korridor_offen: bool = False
     game_over: bool = False
     game_won: bool = False
     time: int = 0

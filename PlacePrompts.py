@@ -44,6 +44,16 @@ Höhle
 - Es riecht ein wenig nach Verwesung
 - Die Wände der Höhle sind aus Granitgestein
 - der Boden ist aus gestampftem Lehm. """
+    if _F(gs).korridor_offen:
+        rv = f"""{rv}
+- Eine große, schwere Stahltür steht offen und gibt den Weg in einen Korridor frei
+"""
+    else:
+        rv = f"""{rv}
+- Eine grosse, schwere Stahltür versperrt einen Weg.
+- Durch ein kleines, vergittertes Fenster in der Stahtür kann man einen Korridor auf der anderen Seite erkennen.
+"""
+
     if _F(gs).hauptschalter:
         return f"{rv}- Eine Glühbirne hängt von der Decke und erleuchtet die Höhle.\n- Man kann elektrisches Summen vernehmen\n"
     else:
