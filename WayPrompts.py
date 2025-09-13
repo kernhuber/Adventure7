@@ -88,19 +88,27 @@ def w_plateau_solaranlage_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> s
 
 # Quelle (Stage)   : WayPrompts.py
 
-# Enthalten: 6 fehlende Funktion(en): w_felsen_plateau_prompt_f, w_ubahnschacht_ubahn2_prompt_f, w_plateau_felsen_prompt_f, w_hohle_korridor_prompt_f, w_korridor_hohle_prompt_f, w_ubahn2_u_bahnschacht_prompt_f
+# Enthalten: 6 fehlende Funktion(en): w_felsen_plateau_prompt_f, w_ubahnschacht_ubahn2_prompt_f, w_plateau_felsen_prompt_f, w_hohle_korridor_prompt_f, w_korridor_hohle_prompt_f, w_ubahn2_ubahnschacht_prompt_f
 
 
 
 def w_plateau_felsen_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
     # TODO: implement callback
-    return ""
+    return """
+Dieser Weg führt vom Plateau auf dem Hügel zum Felsen oder zum Höhleneingang.
+Man kann diesen Weg gehen, laufen, herabklettern, herablaufen oder sich anderweitig auf ihm bewegen.
+Liefere "gege p_felsen" zurück, wenn dieser Weg beschritten wird.
+            """
 
 def w_felsen_plateau_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
     # TODO: implement callback
-    return ""
+    return """
+Dieser Weg führt vom Felsen oder Höhleneingang zu einem Plateau auf dem Hügel.
+Man kann diesen Weg gehen, laufen hinaufklettern, hinauflaufen oder sich anderweitig auf ihm bewegen.
+Liefere "gehe p_plateau" zurück, wenn dieser Weg beschritten wird.
+    """
 
-def w_ubahn2_u_bahnschacht_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def w_ubahn2_ubahnschacht_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
     # TODO: implement callback
     return ""
 
@@ -108,7 +116,7 @@ def w_ubahnschacht_ubahn2_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way")
     # TODO: implement callback
     return ""
 
-def w_hohle_korridor_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def w_hoehle_korridor_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
     # TODO: implement callback
     return ""
 

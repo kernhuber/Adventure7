@@ -25,6 +25,7 @@ class dl(IntFlag):
     CMDLOG          = auto() # Testing of json_cmd-Function below
     ZOMBIE          = auto() # General testing of Zombie NPC
 
+GHOSTMODE = False    # No obstacles, no hidden ways, no NPCs
 DEBUG = True
 DEBUG_LEVEL = dl.LLM|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.WEBGUI|dl.CMDLOG|dl.ZOMBIE
 ADV_LOGGER = None

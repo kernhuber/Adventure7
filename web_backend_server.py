@@ -194,14 +194,18 @@ class WebAdventureServer:
                 dprint(dl.WEBGUI, f"✅ Spieler erstellt: {player.name} in {player.location.name}")
 
                 # Versuche Hund hinzuzufügen
-                try:
-                    from NPCDogState import NPCDogState
-                    dog = NPCDogState(name="Hund", location=game.places["p_geldautomat"])
-                    game.players.append(dog)
-                    dprint(dl.WEBGUI, f"✅ Hund hinzugefügt: {dog.name} in {dog.location.name}")
-                    dprint(dl.WEBGUI, f"🎮 Spieler insgesamt: {len(game.players)}")
-                except Exception as e:
-                    dprint(dl.WEBGUI, f"⚠️  Hund konnte nicht hinzugefügt werden: {e}")
+                from Utils import GHOSTMODE
+                if not GHOSTMODE:
+                    try:
+                        from NPCDogState import NPCDogState
+                        dog = NPCDogState(name="Hund", location=game.places["p_geldautomat"])
+                        game.players.append(dog)
+                        dprint(dl.WEBGUI, f"✅ Hund hinzugefügt: {dog.name} in {dog.location.name}")
+                        dprint(dl.WEBGUI, f"🎮 Spieler insgesamt: {len(game.players)}")
+                    except Exception as e:
+                        dprint(dl.WEBGUI, f"⚠️  Hund konnte nicht hinzugefügt werden: {e}")
+                else:
+                    dprint(dl.WEBGUI,"Kein Hund hinzugefügt - GHOSTMODE")
 
                 # Konvertiere zu serialisierbarem Format - MIT initialer Narration
                 game_state = self.serialize_real_game_state(game, session_id=session_id)

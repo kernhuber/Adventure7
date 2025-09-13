@@ -161,34 +161,34 @@ Zweite U-Bahn Station
 
 
 
-def p_solaranlage_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def p_solaranlage_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
     return ""
 
-def p_kontrollraum_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def p_kontrollraum_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
     return ""
 
-def p_ubahn_schacht_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def p_ubahn_schacht_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
     return ""
 
-def p_korridor_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def p_korridor_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
     return ""
 
-def p_labor_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def p_labor_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
     return ""
 
-def p_bibliothek_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def p_bibliothek_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
     return ""
 
-def p_besenkammer_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def p_besenkammer_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
     return ""
 
-def p_generatorraum_place_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def p_generatorraum_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
     return ""

@@ -72,6 +72,7 @@ class GameState:
         and are resolved to callables.
         Returns (place_defs, way_defs, object_defs) or None if file not present/invalid.
         """
+        from Utils import GHOSTMODE
         # Compute candidate paths
         candidates = [
             os.path.join("data", "world.json"),
@@ -98,13 +99,16 @@ class GameState:
                 if "place_prompt_f" in pval:
                     pval["place_prompt_f"] = self._resolve_func_from_string(pval.get("place_prompt_f"), module_map)
 
-        # Normalize/resolve callbacks in ways
+        # Normalize/resolve callbacks in ways, honor GHOSTMODE
         for _wname, wval in way_defs.items():
             if isinstance(wval, dict):
                 if "obstruction_check" in wval:
                     wval["obstruction_check"] = self._resolve_func_from_string(wval.get("obstruction_check"), module_map)
                 if "way_prompt_f" in wval:
                     wval["way_prompt_f"] = self._resolve_func_from_string(wval.get("way_prompt_f"), module_map)
+                if GHOSTMODE:
+                    wval["visible"] = True
+                    wval["obstruction_check"] = None
 
         # Normalize/resolve callbacks in objects
         for _oname, oval in object_defs.items():
@@ -215,6 +219,7 @@ class GameState:
 
 
     # --- Central list of flag field names kept in sync with GameFlags ---
+    # Keep in Sync with Class GameFlags in services/world.py
     FLAG_FIELDS: Set[str] = {
         "schuppentuer",
         "leiter",

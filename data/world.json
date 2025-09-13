@@ -66,7 +66,7 @@
       ],
       "ways": [
         "w_hoehle_felsen",
-        "w_hohle_korridor"
+        "w_hoehle_korridor"
       ],
       "objects": [
         "o_skelett",
@@ -165,8 +165,8 @@
       "ways": [
         "w_ubahn2_wagen",
         "w_ubahn2_solaranlage",
-        "w_u_bahn_2_kontrollraum",
-        "w_ubahn2_u_bahnschacht"
+        "w_ubahn_2_kontrollraum",
+        "w_ubahn2_ubahnschacht"
       ],
       "objects": [
         "o_pizzaautomat",
@@ -252,7 +252,7 @@
         "Kontrollraum"
       ],
       "ways": [
-        "w_kontrollraum_u_bahn_2"
+        "w_kontrollraum_ubahn_2"
       ],
       "objects": []
     },
@@ -265,7 +265,7 @@
       ],
       "ways": [
         "w_ubahnschacht_ubahn2",
-        "w_u_bahn_schacht_korridor"
+        "w_ubahn_schacht_korridor"
       ],
       "objects": []
     },
@@ -277,8 +277,8 @@
         "Korridor"
       ],
       "ways": [
-        "w_korridor_u_bahn_schacht",
-        "w_korridor_hohle",
+        "w_korridor_ubahn_schacht",
+        "w_korridor_hoehle",
         "w_korridor_labor",
         "w_korridor_bibliothek",
         "w_korridor_besenkammer"
@@ -624,7 +624,7 @@
       "obstruction_check": null,
       "way_prompt_f": null
     },
-    "w_u_bahn_2_kontrollraum": {
+    "w_ubahn_2_kontrollraum": {
       "source": "p_ubahn2",
       "destination": "p_kontrollraum",
       "text_direction": "zu Kontrollraum",
@@ -632,7 +632,7 @@
       "obstruction_check": null,
       "way_prompt_f": null
     },
-    "w_kontrollraum_u_bahn_2": {
+    "w_kontrollraum_ubahn_2": {
       "source": "p_kontrollraum",
       "destination": "p_ubahn2",
       "text_direction": "zu U-Bahn-2",
@@ -640,13 +640,13 @@
       "obstruction_check": null,
       "way_prompt_f": null
     },
-    "w_ubahn2_u_bahnschacht": {
+    "w_ubahn2_ubahnschacht": {
       "source": "p_ubahn2",
       "destination": "p_ubahn_schacht",
       "text_direction": "zu U-Bahn-Schacht",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn2_u_bahnschacht_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_ubahn2_u_bahnschacht_prompt_f"
+      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn2_ubahnschacht_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_ubahn2_ubahnschacht_prompt_f"
     },
     "w_ubahnschacht_ubahn2": {
       "source": "p_ubahn_schacht",
@@ -656,7 +656,7 @@
       "obstruction_check": "GameObstructionCheckFunctions.w_ubahnschacht_ubahn2_obstruction_check",
       "way_prompt_f": "WayPrompts.w_ubahnschacht_ubahn2_prompt_f"
     },
-    "w_korridor_u_bahn_schacht": {
+    "w_korridor_ubahn_schacht": {
       "source": "p_korridor",
       "destination": "p_ubahn_schacht",
       "text_direction": "zu U-Bahn-Schacht",
@@ -664,7 +664,7 @@
       "obstruction_check": null,
       "way_prompt_f": null
     },
-    "w_u_bahn_schacht_korridor": {
+    "w_ubahn_schacht_korridor": {
       "source": "p_ubahn_schacht",
       "destination": "p_korridor",
       "text_direction": "zu Korridor",
@@ -672,21 +672,21 @@
       "obstruction_check": null,
       "way_prompt_f": null
     },
-    "w_hohle_korridor": {
+    "w_hoehle_korridor": {
       "source": "p_hoehle",
       "destination": "p_korridor",
       "text_direction": "zu Korridor",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_hohle_korridor_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_hohle_korridor_prompt_f"
+      "obstruction_check": "GameObstructionCheckFunctions.w_hoehle_korridor_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_hoehle_korridor_prompt_f"
     },
-    "w_korridor_hohle": {
+    "w_korridor_hoehle": {
       "source": "p_korridor",
       "destination": "p_hoehle",
       "text_direction": "zu Höhle",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_korridor_hohle_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_korridor_hohle_prompt_f"
+      "obstruction_check": "GameObstructionCheckFunctions.w_korridor_hoehle_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_korridor_hoehle_prompt_f"
     },
     "w_labor_korridor": {
       "source": "p_labor",

@@ -135,6 +135,7 @@ class ContextBuilder:
 class GameFlags:
     """Container for game-wide boolean/numeric/string flags.
     GameState mirrors its legacy attributes into this structure.
+    Keep in sync with FLAG_FIELDS in class GameState!
     """
     schuppentuer: bool = False
     leiter: bool = False

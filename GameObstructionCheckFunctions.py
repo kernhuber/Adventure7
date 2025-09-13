@@ -43,18 +43,18 @@ def w_schuppen_dach_f(gs: GameState):
 
 
 
-def w_ubahn2_u_bahnschacht_obstruction_check(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def w_ubahn2_u_bahnschacht_obstruction_check(gs: "GameState") -> str:
     # TODO: implement callback
-    return ""
+    return "Free"
 
-def w_ubahnschacht_ubahn2_obstruction_check(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def w_ubahnschacht_ubahn2_obstruction_check(gs: "GameState") -> str:
     # TODO: implement callback
-    return ""
+    return "Free"
 
-def w_hohle_korridor_obstruction_check(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def w_hoehle_korridor_obstruction_check(gs: "GameState") -> str:
     # TODO: implement callback
-    return ""
+    return "Free"
 
-def w_korridor_hohle_obstruction_check(gs: "GameState", pl: "PlayerState", w: "Way") -> str:
+def w_korridor_hoehle_obstruction_check(gs: "GameState") -> str:
     # TODO: implement callback
-    return ""
+    return "Free"
