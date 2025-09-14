@@ -5,6 +5,7 @@ from typing import Callable, Union, Any, Optional
 #
 # Objects which can appear in the game. Special objects like doors etc are derived from this object
 #
+
 class GameObject:
     def __init__(self, name, examine, help_text="", fixed=False, hidden=False, callnames=None, apply_f=None, reveal_f=None, take_f=None, prompt_f=None):
         from PlayerState import PlayerState
