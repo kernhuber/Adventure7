@@ -1,0 +1,742 @@
+[
+  {
+    "book": {
+      "abstract": "Erforschung der Quantenverschränkung als Basis für schamanische Reisen in Paralleluniversen. Mit vielen Abbildungen!",
+      "authors": "Prof. Dr. Dr. h.c. Franz Zunder (Franzl), Dr. Esmeralda Fluppe",
+      "release_date": "1983",
+      "release_loc": "Oxford",
+      "released_by": "Verlag für Transdimensionale Physik",
+      "title": "Quanten-Schamanismus: Ein interdimensionales Manifest"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Entdeckung versteckter Botschaften in den Pyramiden, die auf außerirdische Technologie und Dimensionsportale hinweisen.",
+      "authors": "Dr. Ing. Helga Knall (Helga),  Rainer Wurm",
+      "release_date": "1978",
+      "release_loc": "Cambridge",
+      "released_by": "Institut für Archastronomische Forschung",
+      "title": "Die geheime Geometrie der Maya-Pyramiden und ihre Verbindung zu Außerirdischen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Anwendung alchemistischer Prinzipien auf die Informatik, zur Erzeugung von künstlicher Intelligenz und zur Öffnung von Portalen.",
+      "authors": "Prof. Dr. Albrecht  Albrechtsson",
+      "release_date": "1688",
+      "release_loc": "Heidelberg",
+      "released_by": "Verlag für Alchemistische Informatik",
+      "title": "Alchemistische Algorithmen: Die Transmutation von Bits und Bytes"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Vorhersage von günstigen Zeitpunkten für das Öffnen interdimensionaler Portale anhand astrologischer Berechnungen.",
+      "authors": "Dr.  Waldemar Sternenstaub (Waldi)",
+      "release_date": "1982",
+      "release_loc": "Berlin",
+      "released_by": "Institut für Astrologische Quantenphysik",
+      "title": "Astrologische Algorithmen zur Vorhersage von interdimensionalen Ereignissen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Entschlüsselung der geheimen Symbole der Illuminaten, die zur Aktivierung von Portalen in andere Dimensionen führen.",
+      "authors": "Gustav (Gustl)  Geheimniskrämer",
+      "release_date": "1789",
+      "release_loc": "München",
+      "released_by": "Geheimer Illuminaten-Verlag",
+      "title": "Geheime Symbole der Illuminaten: Ein Schlüssel zur Aktivierung von Dimensionsportalen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Beschreibung von Experimenten zum Klonen von Dinosauriern und zur Erschaffung von interdimensionalen Kreaturen.",
+      "authors": "Prof. Dr. Dr.  Theodor  T-Rex (Theo), Dr.  Ursula  Urzeit",
+      "release_date": "1985",
+      "release_loc": "Oxford",
+      "released_by": "Institut für Biologische  Interdimensionalität",
+      "title": "Die Biologie des Unmöglichen: Klonen von Dinosauriern und interdimensionale Wesen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Kombination von Zauberformeln und Computerprogrammen für den sicheren Zugang zu anderen Dimensionen. Mit vielen Beispielen.",
+      "authors": "Dr.  Magda  Magierin (Magda)",
+      "release_date": "1980",
+      "release_loc": "Cambridge",
+      "released_by": "Institut für Magische Informatik",
+      "title": "Zauberformeln und Computerprogramme: Ein Handbuch für interdimensionale Reisende"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Erforschung der geometrischen Eigenschaften höherdimensionaler Räume, und deren Anwendung auf Raumfahrt und interdimensionale Reisen.",
+      "authors": "Prof. Dr.  Kurt  Kubik (Kubi)",
+      "release_date": "1979",
+      "release_loc": "Heidelberg",
+      "released_by": "Institut für Hypergeometrische Physik",
+      "title": "Geometrie der anderen Dimensionen: Eine Einführung in die Hyperraumnavigation"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Synthese von speziellen Chemikalien, die für die Energiegewinnung für interdimensionale Reisen benötigt werden.",
+      "authors": "Dr.  Berta  Benzol (Berti)",
+      "release_date": "1984",
+      "release_loc": "Berlin",
+      "released_by": "Institut für Chemische  Transdimensionalität",
+      "title": "Chemische Transmutationen: Die Herstellung von interdimensionalem Treibstoff"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Entdeckung der versteckten Bedeutung der ägyptischen Hieroglyphen und ihrer Bedeutung für Reisen zu anderen Sternen.",
+      "authors": "Dr.  Cleopatra  Cleopatra (Cleopatra)",
+      "release_date": "1981",
+      "release_loc": "München",
+      "released_by": "Institut für Ägyptologische Astrophysik",
+      "title": "Geheimnisse der ägyptischen Hieroglyphen: Schlüssel zu den Sternen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Wissenschaftliche Erforschung von Geistern und Dämonen und deren Interaktion mit der physischen Welt. Mit vielen Experimenten!",
+      "authors": "Prof. Dr.  Hans  Geist (Hansi)",
+      "release_date": "1986",
+      "release_loc": "Oxford",
+      "released_by": "Institut für Übersinnliche Physik",
+      "title": "Die Physik des Übersinnlichen: Experimente mit Geistern und Dämonen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Beschreibung alter Rituale zur Beschwörung von Geistern und Dämonen und zur Öffnung interdimensionaler Portale.",
+      "authors": "Dr.  Moritz  Mysterium (Mörli)",
+      "release_date": "1977",
+      "release_loc": "Cambridge",
+      "released_by": "Institut für Vergessene Rituale",
+      "title": "Das Lexikon der vergessenen Rituale: Beschwörungen und interdimensionale Reisen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Entdeckung harmonischer Beziehungen zwischen Numerologie und Quantenphysik für das Verständnis der Dimensionalität.",
+      "authors": "Prof. Dr.  Zaida  Zahlenzauberin (Zaida)",
+      "release_date": "1987",
+      "release_loc": "Heidelberg",
+      "released_by": "Institut für Numerologische Quantenphysik",
+      "title": "Numerologie und Quantenphysik: Die harmonische Schwingung der Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Anwendung astronomischer Kenntnisse auf die Theorie der Wurmlöcher und deren Nutzung für interstellaren und interdimensionalen Reisen.",
+      "authors": "Dr.  Stella  Sternenhimmel (Steffi)",
+      "release_date": "1988",
+      "release_loc": "Berlin",
+      "released_by": "Institut für Astronomische Wurmlöcher",
+      "title": "Die Astronomie des Unmöglichen: Reisen durch Wurmlöcher"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Untersuchung von geologischen Anomalien als Indizien für Eingriffe von außerirdischen oder interdimensionalen Wesen.",
+      "authors": "Prof. Dr.  Karl  Kluft (Karli)",
+      "release_date": "1976",
+      "release_loc": "München",
+      "released_by": "Institut für Geologische Anomalien",
+      "title": "Geologische Anomalien: Hinweise auf interdimensionale Eingriffe"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Forschung über die Kommunikation mit Verstorbenen und ihre Beziehung zu anderen Dimensionen.",
+      "authors": "Dr.  Anna  Ahnenforscherin (Anni)",
+      "release_date": "1975",
+      "release_loc": "Oxford",
+      "released_by": "Institut für Anthropologische  Kommunikation",
+      "title": "Die Anthropologie des Jenseits: Kommunikation mit Verstorbenen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Psychologische Aspekte der Begegnung mit anderen Versionen des eigenen Selbst in Parallelwelten.",
+      "authors": "Prof. Dr.  Robert  Realität (Robbi)",
+      "release_date": "1989",
+      "release_loc": "Cambridge",
+      "released_by": "Institut für Psychologische Parallelwelten",
+      "title": "Psychologie der Parallelwelten: Die Begegnung mit anderen Ichs"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Untersuchung von sozialen Strukturen und Gesellschaften in anderen Dimensionen.",
+      "authors": "Dr.  Sophie  Soziologin (Soph)",
+      "release_date": "1990",
+      "release_loc": "Heidelberg",
+      "released_by": "Institut für Soziologische  Dimensionen",
+      "title": "Die Soziologie des Übernatürlichen: Gesellschaften in anderen Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Philosophische Abhandlung über das Unendliche und die Grenzen des Universums, unter Berücksichtigung anderer Dimensionen.",
+      "authors": "Prof. Dr.  Wilhelm  Weisheit (Willi)",
+      "release_date": "1974",
+      "release_loc": "Berlin",
+      "released_by": "Institut für Philosophische  Unendlichkeit",
+      "title": "Die Philosophie der Unendlichkeit: Die Grenzen des Universums"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Theologische Betrachtung der Existenz Gottes in anderen Dimensionen.",
+      "authors": "Dr.  Thea  Theologie (Thea)",
+      "release_date": "1991",
+      "release_loc": "München",
+      "released_by": "Institut für Theologische  Paralleluniversen",
+      "title": "Die Theologie der Paralleluniversen: Gott in anderen Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Chronik der interdimensionalen Reisen und Begegnungen mit anderen Welten.",
+      "authors": "Prof. Dr.  Franziska  Zeitreisende (Franzi)",
+      "release_date": "1973",
+      "release_loc": "Oxford",
+      "released_by": "Institut für Historische  Interdimensionalität",
+      "title": "Die Geschichte der interdimensionalen Reisen: Eine Chronik"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Umweltfragen in anderen Dimensionen und die Bedeutung des interdimensionalen Umweltschutzes.",
+      "authors": "Dr.  Felix  Felsenkletterer (Felix)",
+      "release_date": "1992",
+      "release_loc": "Cambridge",
+      "released_by": "Institut für Ökologische Parallelwelten",
+      "title": "Die Ökologie der Parallelwelten: Umweltschutz in anderen Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Einführung in die verschiedenen Methoden der Kommunikation mit anderen Dimensionen.",
+      "authors": "Prof. Dr.  Johanna  Kunstmalerin (Jo)",
+      "release_date": "1972",
+      "release_loc": "Heidelberg",
+      "released_by": "Institut für Interdimensionale  Kommunikation",
+      "title": "Die Kunst der interdimensionalen Kommunikation: Eine Einführung"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Sammlung von Geschichten aus verschiedenen Parallelwelten.",
+      "authors": "Dr.  Max  Märchenerzähler (Maxi)",
+      "release_date": "1993",
+      "release_loc": "Berlin",
+      "released_by": "Institut für Literarische  Parallelwelten",
+      "title": "Die Literatur der Parallelwelten: Geschichten aus anderen Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Erforschung der musikalischen Eigenschaften anderer Dimensionen.",
+      "authors": "Prof. Dr.  Wolfgang  Wunderton (Wolfi)",
+      "release_date": "1971",
+      "release_loc": "München",
+      "released_by": "Institut für Musikalische  Sphären",
+      "title": "Die Musik der Sphären: Harmonien anderer Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Rezepte und kulinarische Tipps aus verschiedenen Parallelwelten.",
+      "authors": "Dr.  Greta  Gourmet (Greti)",
+      "release_date": "1994",
+      "release_loc": "Oxford",
+      "released_by": "Institut für Kulinarische  Parallelwelten",
+      "title": "Die kulinarischen Geheimnisse anderer Dimensionen: Rezepte"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Untersuchung der rechtlichen Systeme anderer Dimensionen.",
+      "authors": "Prof. Dr.  Jürgen  Jurist (Jürgi)",
+      "release_date": "1970",
+      "release_loc": "Cambridge",
+      "released_by": "Institut für Juristische  Paralleluniversen",
+      "title": "Die Rechtswissenschaften der Paralleluniversen: Gesetze anderer Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Erforschung wirtschaftlicher Aspekte des Handels zwischen verschiedenen Dimensionen.",
+      "authors": "Dr.  Peter  Pionier (Pete)",
+      "release_date": "1995",
+      "release_loc": "Heidelberg",
+      "released_by": "Institut für Wirtschaftliche  Parallelwelten",
+      "title": "Die Wirtschaft der Parallelwelten: Handel zwischen den Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Analyse politischer Systeme in anderen Dimensionen.",
+      "authors": "Prof. Dr.  Erika  Expertin (Eri)",
+      "release_date": "1969",
+      "release_loc": "Berlin",
+      "released_by": "Institut für Politische  Paralleluniversen",
+      "title": "Die Politik der Paralleluniversen: Regierungen anderer Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Untersuchung von Erziehungsmethoden in verschiedenen Parallelwelten.",
+      "authors": "Dr.  Klaus  Klassenlehrer (Klaus)",
+      "release_date": "1996",
+      "release_loc": "München",
+      "released_by": "Institut für Pädagogische  Parallelwelten",
+      "title": "Die Pädagogik der Parallelwelten: Erziehung in anderen Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Erforschung interdimensionaler Heilmethoden.",
+      "authors": "Prof. Dr.  Hildegard  Heilerin (Hilde)",
+      "release_date": "1968",
+      "release_loc": "Oxford",
+      "released_by": "Institut für Medizinische  Parallelwelten",
+      "title": "Die Medizin der anderen Dimensionen: Heilung durch interdimensionale Kräfte"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Analyse technischer Erfindungen aus verschiedenen Parallelwelten.",
+      "authors": "Dr.  Thomas  Techniker (Tom)",
+      "release_date": "1997",
+      "release_loc": "Cambridge",
+      "released_by": "Institut für Technologische  Paralleluniversen",
+      "title": "Die Technologie der Paralleluniversen: Erfindungen anderer Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Untersuchung verschiedener Religionen in anderen Dimensionen.",
+      "authors": "Prof. Dr.  Sigrid  Seherin (Siggi)",
+      "release_date": "1967",
+      "release_loc": "Heidelberg",
+      "released_by": "Institut für Religiöse  Parallelwelten",
+      "title": "Die Religionen der Parallelwelten: Götter und Kulte anderer Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Beschreibung von Landschaften und Geographie verschiedener Parallelwelten.",
+      "authors": "Dr.  Anton  Abenteurer (Toni)",
+      "release_date": "1998",
+      "release_loc": "Berlin",
+      "released_by": "Institut für Geographische  Parallelwelten",
+      "title": "Die Geographie der Parallelwelten: Landschaften anderer Dimensionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Eine umfassende Geschichte der Magie und ihrer Entwicklung im Laufe der Geschichte.",
+      "authors": "Prof. Dr.  Richard  Ritualist (Richie)",
+      "release_date": "1966",
+      "release_loc": "München",
+      "released_by": "Institut für Historische Magie",
+      "title": "Die Geschichte der Magie: Von den alten Mysterien zu den modernen Wissenschaften"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Handbuch, das den Lesern die Techniken und Methoden des Wahrsagens vermittelt.",
+      "authors": "Dr.  Auguste  Wahrsagerin (Augi)",
+      "release_date": "1999",
+      "release_loc": "Oxford",
+      "released_by": "Institut für Wahrsagekunst",
+      "title": "Die Kunst des Wahrsagens: Ein Leitfaden für Anfänger und Fortgeschrittene"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Eine Erforschung der Psychologie der Träume und ihrer Interpretation.",
+      "authors": "Prof. Dr.  Alfred  Träumedeuter (Alfi)",
+      "release_date": "1965",
+      "release_loc": "Cambridge",
+      "released_by": "Institut für Traumforschung",
+      "title": "Die Psychologie der Träume: Interpretationen und ihre Bedeutung"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Eine Sammlung von philosophischen Gedanken und Reflexionen über das Leben.",
+      "authors": "Dr.  Bernhard  Philosoph (Berni)",
+      "release_date": "2000",
+      "release_loc": "Heidelberg",
+      "released_by": "Institut für Lebensphilosophie",
+      "title": "Die Philosophie des Lebens: Ein Leitfaden für ein glückliches Leben"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Eine Einführung in die Soziologie und das soziale Leben.",
+      "authors": "Prof. Dr.  Clara  Soziologin (Clari)",
+      "release_date": "1964",
+      "release_loc": "Berlin",
+      "released_by": "Institut für Sozialwissenschaften",
+      "title": "Die Soziologie der Gesellschaft: Ein Leitfaden für das soziale Leben"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Eine umfassende Geschichte der Religionen von den Anfängen bis zur Gegenwart.",
+      "authors": "Dr.  Dieter  Theologe (Didi)",
+      "release_date": "2001",
+      "release_loc": "München",
+      "released_by": "Institut für Religionsgeschichte",
+      "title": "Die Geschichte der Religionen: Von den Anfängen bis zur Gegenwart"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Eine Einführung in die Ökologie und den Umweltschutz.",
+      "authors": "Prof. Dr.  Emil  Ökologe (Emi)",
+      "release_date": "1963",
+      "release_loc": "Oxford",
+      "released_by": "Institut für Ökologie",
+      "title": "Die Ökologie der Natur: Ein Leitfaden für den Umweltschutz"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Handbuch für erfolgreiche Kommunikation.",
+      "authors": "Dr.  Franz  Kommunikationswissenschaftler (Franzi)",
+      "release_date": "2002",
+      "release_loc": "Cambridge",
+      "released_by": "Institut für Kommunikationswissenschaft",
+      "title": "Die Kunst der Kommunikation: Ein Leitfaden für erfolgreiche Kommunikation"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Überblick über die Weltliteratur.",
+      "authors": "Prof. Dr.  Gustav  Literaturwissenschaftler (Gustl)",
+      "release_date": "1962",
+      "release_loc": "Heidelberg",
+      "released_by": "Institut für Literaturwissenschaft",
+      "title": "Die Literatur der Welt: Ein Überblick über die Weltliteratur"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Überblick über die Weltmusik.",
+      "authors": "Dr.  Heinrich  Musikwissenschaftler (Heini)",
+      "release_date": "2003",
+      "release_loc": "Berlin",
+      "released_by": "Institut für Musikwissenschaft",
+      "title": "Die Musik der Welt: Ein Überblick über die Weltmusik"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein internationales Kochbuch.",
+      "authors": "Prof. Dr.  Ida  Köchin (Idi)",
+      "release_date": "1961",
+      "release_loc": "München",
+      "released_by": "Institut für Kochkunst",
+      "title": "Die kulinarischen Köstlichkeiten der Welt: Ein Kochbuch"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Überblick über die Rechtsordnungen der Welt.",
+      "authors": "Dr.  Jakob  Jurist (Jaki)",
+      "release_date": "2004",
+      "release_loc": "Oxford",
+      "released_by": "Institut für Rechtswissenschaften",
+      "title": "Die Rechtswissenschaften der Welt: Ein Überblick über die Rechtsordnungen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Überblick über die Weltwirtschaft.",
+      "authors": "Prof. Dr.  Karl  Ökonom (Karli)",
+      "release_date": "1960",
+      "release_loc": "Cambridge",
+      "released_by": "Institut für Wirtschaftswissenschaften",
+      "title": "Die Wirtschaft der Welt: Ein Überblick über die Weltwirtschaft"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Überblick über die Weltpolitik.",
+      "authors": "Dr.  Ludwig  Politologe (Ludi)",
+      "release_date": "2005",
+      "release_loc": "Heidelberg",
+      "released_by": "Institut für Politikwissenschaften",
+      "title": "Die Politik der Welt: Ein Überblick über die Weltpolitik"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Überblick über die Pädagogik.",
+      "authors": "Prof. Dr.  Maria  Pädagogin (Mari)",
+      "release_date": "1959",
+      "release_loc": "Berlin",
+      "released_by": "Institut für Pädagogik",
+      "title": "Die Pädagogik der Welt: Ein Überblick über die Pädagogik"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Überblick über die Medizin.",
+      "authors": "Dr.  Norbert  Mediziner (Norbi)",
+      "release_date": "2006",
+      "release_loc": "München",
+      "released_by": "Institut für Medizin",
+      "title": "Die Medizin der Welt: Ein Überblick über die Medizin"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Überblick über die Technologie.",
+      "authors": "Prof. Dr.  Otto  Ingenieur (Otti)",
+      "release_date": "1958",
+      "release_loc": "Oxford",
+      "released_by": "Institut für Ingenieurwesen",
+      "title": "Die Technologie der Welt: Ein Überblick über die Technologie"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Überblick über die Religionen.",
+      "authors": "Dr.  Paul  Theologe (Pauli)",
+      "release_date": "2007",
+      "release_loc": "Cambridge",
+      "released_by": "Institut für Theologie",
+      "title": "Die Religionen der Welt: Ein Überblick über die Religionen"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Überblick über die Geographie.",
+      "authors": "Prof. Dr.  Quentin  Geograph (Quent)",
+      "release_date": "1957",
+      "release_loc": "Heidelberg",
+      "released_by": "Institut für Geographie",
+      "title": "Die Geographie der Welt: Ein Überblick über die Geographie"
+    }
+  },
+  {
+    "book": {
+      "abstract": "Ein Überblick über die Geschichte der Menschheit.",
+      "authors": "Dr.  Richard  Historiker (Rich)",
+      "release_date": "2008",
+      "release_loc": "Berlin",
+      "released_by": "Institut für Geschichte",
+      "title": "Die Geschichte der Menschheit: Ein Überblick über die Geschichte"
+    }
+  },
+  {
+    "book": {
+      "title": "Quantenwirbel und Ätherströme",
+      "authors": "Prof. Dr. Magnus Feldkamp, Dr. Aurelia Stern",
+      "abstract": "Verbindet Quantenmechanik mit mittelalterlichen Theorien zum Äther.",
+      "release_loc": "Heidelberg",
+      "release_date": "1979",
+      "released_by": "Institut für Grenzphysik Verlag"
+    }
+  },
+  {
+    "book": {
+      "title": "Algorithmen der Unendlichkeit",
+      "authors": "Dr. Konrad Blum, Ing. Harald Rechner",
+      "abstract": "Mathematische Formeln zur Berechnung endloser Zahlenfolgen für magische Zwecke.",
+      "release_loc": "Zürich",
+      "release_date": "1981",
+      "released_by": "Mathematica Universalis Press"
+    }
+  },
+  {
+    "book": {
+      "title": "Astrochemie der Dämonen",
+      "authors": "Dr. Ignatius Rauch, Prof. Dr. Silvia Mondlicht",
+      "abstract": "Chemische Formeln zur Beschwörung von Sternengeistern.",
+      "release_loc": "Cambridge",
+      "release_date": "1967",
+      "released_by": "Cosmic Science Publishers"
+    }
+  },
+  {
+    "book": {
+      "title": "Die kybernetische Beschwörung",
+      "authors": "Dipl.-Inf. Wolfgang Netz, Dr. Elvira Code",
+      "abstract": "Ein Computerprogramm zur Kommunikation mit jenseitigen Entitäten.",
+      "release_loc": "Stanford",
+      "release_date": "1983",
+      "released_by": "Cybernetic Research Press"
+    }
+  },
+  {
+    "book": {
+      "title": "Magnetfelder und Runenkreise",
+      "authors": "Dr. Rune (Rudi) Steiner",
+      "abstract": "Verknüpft geomantische Runen mit modernen Feldtheorien.",
+      "release_loc": "Göttingen",
+      "release_date": "1958",
+      "released_by": "RunenFeld Verlag"
+    }
+  },
+  {
+    "book": {
+      "title": "Kosmische Mathematik der Engel",
+      "authors": "Prof. Dr. Hildegard Weiss",
+      "abstract": "Versucht, Engelserscheinungen mathematisch zu modellieren.",
+      "release_loc": "Oxford",
+      "release_date": "1974",
+      "released_by": "Celestial Math Press"
+    }
+  },
+  {
+    "book": {
+      "title": "Die alchemische Thermodynamik",
+      "authors": "Meister Aurelius von Prag",
+      "abstract": "Mittelalterliche Rezepte treffen auf moderne Wärmetheorie.",
+      "release_loc": "Prag",
+      "release_date": "1589",
+      "released_by": "Scriptorium Alchemicum"
+    }
+  },
+  {
+    "book": {
+      "title": "Elektrische Portale ins Jenseits",
+      "authors": "Dr. Fritz Strom, Ing. Paula Spannung",
+      "abstract": "Theorien über Stromkreise, die andere Welten öffnen.",
+      "release_loc": "München",
+      "release_date": "1977",
+      "released_by": "ElektroVision Verlag"
+    }
+  },
+  {
+    "book": {
+      "title": "Geographien der Traumdimension",
+      "authors": "Dr. Selina Traum, Prof. Dr. Otto Welt",
+      "abstract": "Kartiert unbekannte Räume im Unterbewusstsein.",
+      "release_loc": "Paris",
+      "release_date": "1969",
+      "released_by": "Institut Cartographie Mystique"
+    }
+  },
+  {
+    "book": {
+      "title": "Dämonenlogik und Boolesche Algebra",
+      "authors": "Prof. Dr. Karl Schwarz, Dr. Viola Hex",
+      "abstract": "Vergleicht Wahrheitswerte mit dämonischen Ja/Nein-Beschwörungen.",
+      "release_loc": "Berlin",
+      "release_date": "1982",
+      "released_by": "Logica Obscura Verlag"
+    }
+  },
+  {
+    "book": {
+      "title": "Sternenschlüssel zur vierten Dimension",
+      "authors": "Dr. Astrid Himmel, Kapitän (a.D.) Horst Galaxis",
+      "abstract": "Anleitung zur Navigation zwischen Dimensionen.",
+      "release_loc": "Cambridge",
+      "release_date": "1933",
+      "released_by": "Astral Navigation Press"
+    }
+  },
+  {
+    "book": {
+      "title": "Biologie des Unsterblichen Wurms",
+      "authors": "Prof. Dr. Helmut Kriech",
+      "abstract": "Studien eines angeblich ewigen Ringelwurms.",
+      "release_loc": "Kiel",
+      "release_date": "1952",
+      "released_by": "Marine Biology Mystica"
+    }
+  },
+  {
+    "book": {
+      "title": "Die harmonische Theorie der Katastrophen",
+      "authors": "Dr. Boris Klang",
+      "abstract": "Kombiniert Musiktheorie mit mathematischer Chaosforschung.",
+      "release_loc": "Wien",
+      "release_date": "1971",
+      "released_by": "Akustik Chaos Verlag"
+    }
+  },
+  {
+    "book": {
+      "title": "Quantenastrologie für Fortgeschrittene",
+      "authors": "Prof. Dr. Dr. h.c. Cornelius Zeitgeist",
+      "abstract": "Sternzeichen werden durch Quantenfluktuationen erklärt.",
+      "release_loc": "Basel",
+      "release_date": "1978",
+      "released_by": "Quantum Zodiac Press"
+    }
+  },
+  {
+    "book": {
+      "title": "Rituale der vergessenen Algorithmen",
+      "authors": "Dr. Mathilda Schrieb, Prof. Dr. Leonhard Script",
+      "abstract": "Entschlüsselt uralte Programmiergebete.",
+      "release_loc": "Stockholm",
+      "release_date": "1965",
+      "released_by": "Algorithmus Antiqua Verlag"
+    }
+  },
+  {
+    "book": {
+      "title": "Elektronen und Engelshierarchien",
+      "authors": "Dr. Clemens Lichtleiter",
+      "abstract": "Vergleicht subatomare Teilchen mit Engelsordnungen.",
+      "release_loc": "Rom",
+      "release_date": "1949",
+      "released_by": "Theologica Physica Editio"
+    }
+  },
+  {
+    "book": {
+      "title": "Das verbotene Handbuch der Geomantie",
+      "authors": "Magister Cornelius Sand",
+      "abstract": "Zeichnet Landkarten, die Portale aktivieren können.",
+      "release_loc": "Freiburg",
+      "release_date": "1612",
+      "released_by": "Arcana Geographica"
+    }
+  },
+  {
+    "book": {
+      "title": "Kybernetische Dämonologie",
+      "authors": "Prof. Dr. Henning Byte, Dr. Ursula Systema",
+      "abstract": "Verknüpft Dämonenlehren mit Rückkopplungsschleifen.",
+      "release_loc": "Boston",
+      "release_date": "1980",
+      "released_by": "CyberOccult Research"
+    }
+  },
+  {
+    "book": {
+      "title": "Astrale Botanik",
+      "authors": "Dr. Flora Sternenwiese",
+      "abstract": "Pflanzen, die angeblich nur im Traum wachsen.",
+      "release_loc": "Leiden",
+      "release_date": "1937",
+      "released_by": "Botanica Astralis"
+    }
+  },
+  {
+    "book": {
+      "title": "Die okkulte Relativität",
+      "authors": "Prof. Dr. Albert Nebel",
+      "abstract": "Wendet Einsteins Relativität auf Geisterreisen an.",
+      "release_loc": "Zürich",
+      "release_date": "1955",
+      "released_by": "Occulta Scientia Verlag"
+    }
+  }
+]
