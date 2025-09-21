@@ -39,11 +39,11 @@ def w_schuppen_dach_f(gs: GameState):
 
 # Quelle (Stage)   : GameObstructionCheckFunctions.py
 
-# Enthalten: 4 fehlende Funktion(en): w_ubahn2_u_bahnschacht_obstruction_check, w_ubahnschacht_ubahn2_obstruction_check, w_korridor_hohle_obstruction_check, w_hohle_korridor_obstruction_check
+# Enthalten: 4 fehlende Funktion(en): w_ubahn2_ubahnschacht_obstruction_check, w_ubahnschacht_ubahn2_obstruction_check, w_korridor_hohle_obstruction_check, w_hohle_korridor_obstruction_check
 
 
 
-def w_ubahn2_u_bahnschacht_obstruction_check(gs: "GameState") -> str:
+def w_ubahn2_ubahnschacht_obstruction_check(gs: "GameState") -> str:
     # TODO: implement callback
     return "Free"
 
