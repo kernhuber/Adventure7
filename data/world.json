@@ -252,7 +252,7 @@
         "Kontrollraum"
       ],
       "ways": [
-        "w_kontrollraum_ubahn_2"
+        "w_kontrollraum_ubahn2"
       ],
       "objects": []
     },
@@ -613,32 +613,33 @@
       "destination": "p_ubahn2",
       "text_direction": "zu U-Bahn-2",
       "description": "Ein geheimer Weg in den Untergrund",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "visible": "false",
+      "obstruction_check": "GameObstructionCheckFunctions.w_solaranlage_ubahn2_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_solaranlage_ubahn2_prompt_f"
     },
     "w_ubahn2_solaranlage": {
       "source": "p_ubahn2",
       "destination": "p_solaranlage",
       "text_direction": "zu Solaranlage",
       "description": "Ein geheimer Weg zur Oberfläche",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn2_solaranlage_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_ubahn2_solaranlage_prompt_f"
     },
-    "w_ubahn_2_kontrollraum": {
+    "w_ubahn2_kontrollraum": {
       "source": "p_ubahn2",
       "destination": "p_kontrollraum",
       "text_direction": "zu Kontrollraum",
       "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn2_kontrollraum_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_ubahn2_kontrollraum_prompt_f"
     },
-    "w_kontrollraum_ubahn_2": {
+    "w_kontrollraum_ubahn2": {
       "source": "p_kontrollraum",
       "destination": "p_ubahn2",
       "text_direction": "zu U-Bahn-2",
       "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "obstruction_check": "GameObstructionCheckFunctions.w_kontrollraum_ubahn2_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_kontrollraum_ubahn2_prompt_f"
     },
     "w_ubahn2_ubahnschacht": {
       "source": "p_ubahn2",
@@ -669,8 +670,8 @@
       "destination": "p_korridor",
       "text_direction": "zu Korridor",
       "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn_schacht_korridor_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_ubahn_schacht_korridor_prompt_f"
     },
     "w_hoehle_korridor": {
       "source": "p_hoehle",
@@ -693,16 +694,16 @@
       "destination": "p_korridor",
       "text_direction": "zu Korridor",
       "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "obstruction_check": "GameObstructionCheckFunctions.w_labor_korridor_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_labor_korridor_prompt_f"
     },
     "w_korridor_labor": {
       "source": "p_korridor",
       "destination": "p_labor",
       "text_direction": "zu Labor",
       "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "obstruction_check": "GameObstructionCheckFunctions.w_korridor_labor_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_korridor_labor_prompt_f"
     },
     "w_bibliothek_korridor": {
       "source": "p_bibliothek",
@@ -717,40 +718,40 @@
       "destination": "p_bibliothek",
       "text_direction": "zu Bibliothek",
       "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "obstruction_check": "GameObstructionCheckFunctions.w_korridor_bibliothek_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_korridor_bibliothek_prompt_f"
     },
     "w_korridor_besenkammer": {
       "source": "p_korridor",
       "destination": "p_besenkammer",
       "text_direction": "zu Besenkammer",
       "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "obstruction_check": "GameObstructionCheckFunctions.w_korridor_besenkammer_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_korridor_besenkammer_prompt_f"
     },
     "w_besenkammer_korridor": {
       "source": "p_besenkammer",
       "destination": "p_korridor",
       "text_direction": "zu Korridor",
       "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "obstruction_check": "GameObstructionCheckFunctions.w_besenkammer_korridor_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_besenkammer_korridor_prompt_f"
     },
     "w_generatorraum_labor": {
       "source": "p_generatorraum",
       "destination": "p_labor",
       "text_direction": "zu Labor",
       "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "obstruction_check": "GameObstructionCheckFunctions.w_generatorraum_labor_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_generatorraum_labor_prompt_f"
     },
     "w_labor_generatorraum": {
       "source": "p_labor",
       "destination": "p_generatorraum",
       "text_direction": "zu Generatorraum",
       "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "obstruction_check": "GameObstructionCheckFunctions.w_labor_generatorraum_obstruction_check",
+      "way_prompt_f": "WayPrompts.w_labor_generatorraum_prompt_f"
     }
   },
   "object_defs": {

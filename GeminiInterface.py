@@ -117,10 +117,11 @@ Die Ortsbeschreibung:
 """
         for w in pl.location.ways:
             if w.visible:
-                r = r+f"- {w.destination.callnames[0]}"
                 f = w.obstruction_check(gs)
                 if f != "Free":
-                    r=r+f" (Spezielle Information NUR FÜR DIESEN WEG: {f})"
+                    r=r+f" - {f})"
+                else:
+                    r=r+f"- {w.destination.callnames[0]}"
                 r = r+"\n"
 
         dog = None

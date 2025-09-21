@@ -61,3 +61,57 @@ def w_hoehle_korridor_obstruction_check(gs: "GameState") -> str:
 def w_korridor_hoehle_obstruction_check(gs: "GameState") -> str:
     # TODO:
     return ""
+
+def w_solaranlage_ubahn2_obstruction_check(gs: "GameState") -> str:
+    if _F(gs).korridor_offen:
+        return "Free"
+    else:
+        return "Die Falltür ist fest verschlossen. Wohin sie nur führen mag? Und wie öffnet man sie?"
+
+def w_ubahn2_solaranlage_obstruction_check(gs: "GameState") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_ubahn2_kontrollraum_obstruction_check(gs: "GameState") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_kontrollraum_ubahn2_obstruction_check(gs: "GameState") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_ubahn2_ubahnschacht_obstruction_check(gs: "GameState") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_ubahn_schacht_korridor_obstruction_check(gs: "GameState") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_labor_korridor_obstruction_check(gs: "GameState") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_korridor_labor_obstruction_check(gs: "GameState") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_korridor_bibliothek_obstruction_check(gs: "GameState") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_korridor_besenkammer_obstruction_check(gs: "GameState") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_besenkammer_korridor_obstruction_check(gs: "GameState") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_generatorraum_labor_obstruction_check(gs: "GameState") -> str:
+    # TODO: implement callback
+    return ""
+
+def w_labor_generatorraum_obstruction_check(gs: "GameState") -> str:
+    # TODO: implement callback
+    return ""
