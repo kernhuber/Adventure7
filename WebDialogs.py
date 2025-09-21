@@ -2,10 +2,14 @@
 This file contains class WebDialogs, which calls individual
 Dialogs on the Web interface and returns their return values
 """
-
+from __future__ import annotations
 import json
 import re
 import random
+import PlayerState
+import NPCZombieState
+import GameState
+
 #from websockets.legacy.server import WebSocketServerProtocol
 
 from Utils import dl, dprint, dpprint
@@ -135,3 +139,36 @@ class WebDialogs:
             dprint(dl.WEBGUI,"Exeption executing do_minigame. Exception details:")
             dpprint(dl.WEBGUI,e)
             return "TIE"
+
+    # ============== Zombie/Player-Interaction ==============
+
+    async def do_zombie_player_interaction(self,gs, pl):
+        """
+        pl: Player Object which started the conversation
+        """
+
+        if type(pl) is NPCZombieState:
+            w = 1
+            zombie = pl
+            players = [p for p in gs.players if type(p) is PlayerState]
+            if not players:
+                return None
+            player = players[0]
+
+        elif type(pl) is PlayerState:
+            w = 0
+            player = pl
+            zombies = [p for p in gs.players if type(p) is NPCZombieState]
+            if not zombies:
+                return None
+            zombie = zombies[0]
+
+        else:
+            # Weder Player noch Zombie -> uninteressant
+            return None
+
+        if zombie.location != player.location:
+            return None
+
+
+        return "True"
