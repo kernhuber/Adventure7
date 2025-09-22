@@ -608,7 +608,7 @@ class WebAdventureServer:
                 return
 
             # Schritt 3: Verarbeite User Input
-            if user_input.lower() in ["quit", "inventory", "dogstate", "nichts", "context", "toggle_layout","pinpad","minigame"]:
+            if user_input.lower() in ["quit", "inventory", "dogstate", "nichts", "context", "toggle_layout","pinpad","minigame","zombie_chat"]:
                 # Direkte Commands ohne LLM-Parsing
 
                 if user_input.lower().startswith("minigame"):
@@ -619,6 +619,10 @@ class WebAdventureServer:
                             "args": {"why": f"Minigame-Result ergab: {minigame_result}"}
                         }
                     })
+                elif user_input.lower().startswith("zombie_chat"):
+                    gs = session["game"]
+                    pl = next(p for p in gs.players if type(p) is PlayerState)
+                    zombie_chat_result = await self.wd.do_zombie_chat(gs,pl)
                 else:
                     session["cmd_q"].append({'function_call': {'name': user_input.lower(), 'args': {}}})
             else:

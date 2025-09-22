@@ -1,5 +1,6 @@
 """ Zombie NPC Player """
-from GameState import GameState
+from __future__ import annotations
+#from GameState import GameState
 from PlayerState import PlayerState
 
 class NPCZombieState(PlayerState):

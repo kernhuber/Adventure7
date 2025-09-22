@@ -88,6 +88,11 @@ function zombie_chat(ws, initialMessage = null) {
     function closeChat() {
         console.log('🧟 Zombie Chat wird beendet');
 
+        // Sende closeChat-Nachricht an Server
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ closeChat: true }));
+        }
+
         // WebSocket Listener entfernen
         ws.removeEventListener('message', handleWebSocketMessage);
 

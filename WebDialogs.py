@@ -142,33 +142,66 @@ class WebDialogs:
 
     # ============== Zombie/Player-Interaction ==============
 
-    async def do_zombie_player_interaction(self,gs, pl):
+    async def do_zombie_chat(self,gs, pl):
         """
         pl: Player Object which started the conversation
         """
 
-        if type(pl) is NPCZombieState:
-            w = 1
-            zombie = pl
-            players = [p for p in gs.players if type(p) is PlayerState]
-            if not players:
-                return None
-            player = players[0]
+        # if type(pl) is NPCZombieState.NPCZombieState:
+        #     w = 1
+        #     zombie = pl
+        #     players = [p for p in gs.players if type(p) is PlayerState.PlayerState]
+        #     if not players:
+        #         return None
+        #     player = players[0]
+        #
+        # elif type(pl) is PlayerState.PlayerState:
+        #     w = 0
+        #     player = pl
+        #     zombies = [p for p in gs.players if type(p) is NPCZombieState.NPCZombieState]
+        #     if not zombies:
+        #         return None
+        #     zombie = zombies[0]
+        #
+        # else:
+        #     # Weder Player noch Zombie -> uninteressant
+        #     return None
+        #
+        # if zombie.location != player.location:
+        #     return None
 
-        elif type(pl) is PlayerState:
-            w = 0
-            player = pl
-            zombies = [p for p in gs.players if type(p) is NPCZombieState]
-            if not zombies:
-                return None
-            zombie = zombies[0]
+        #
+        # Instruct web ui to enter chat mode
+        #
+        # await self.ws.send()
+        start_chat_message = {
+            "type": "zombie_chat",
+            "firstmsg": "Hallo Spieler!",  # NEU!!
+        }
+        #
+        # An das GUI senden, wo es dann (in JavaScript) weiterverarbeitet wird
+        #
+        chat_running = True
+        zahler = 1
+        await self.ws.send(json.dumps(start_chat_message))
+        while chat_running:
+            async for m in self.ws:
+                data = json.loads(m)
+                closeChat = data.get('closeChat',None)
+                if closeChat:
+                    chat_running = False
+                    break
+                else:
+                    chat = data.get("zombiechat",None)
+                    if chat:
+                        chat_running = True
+                    await self.ws.send(json.dumps({"zombiemessage":f"GRRRAAAR!! ({zahler}) Ich bin der Zombie!"}))
+                    zahler += 1
 
-        else:
-            # Weder Player noch Zombie -> uninteressant
-            return None
+        #
+        # await self.ws.send(...), dann ws auswerten (for m in ws: msg = json.loads(m), m enthält die message
+        #
 
-        if zombie.location != player.location:
-            return None
 
 
         return "True"

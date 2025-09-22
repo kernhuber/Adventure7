@@ -125,6 +125,10 @@ class AdventureBackend {
                     }
                 });
                 break;
+            case 'zombie_chat':
+                const firstmsg = data.firstmsg;
+                zombie_chat(this.ws,firstmsg);
+                break;
             case 'playername':
                 askPlayerName().then(playerName => {
                     console.log(`Spielername: ${playerName}`);
