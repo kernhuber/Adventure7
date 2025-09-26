@@ -179,6 +179,7 @@ class WebDialogs:
         # An das GUI senden, wo es dann (in JavaScript) weiterverarbeitet wird
         #
         chat_running = True
+        last_chat=None
         zahler = 1
         await self.ws.send(json.dumps(start_chat_message))
         while chat_running:
@@ -187,11 +188,13 @@ class WebDialogs:
                 closeChat = data.get('closeChat',None)
                 if closeChat:
                     chat_running = False
+                    whom.end_chat(gs.llm,last_chat)
                     break
                 else:
                     chat = data.get("zombiechat",None)
                     if chat:
-                        r = whom.chat(chat)
+                        r = whom.chat(gs.llm,chat)
+                        last_chat = chat
                     await self.ws.send(json.dumps({"zombiemessage":r}))
                     zahler += 1
 

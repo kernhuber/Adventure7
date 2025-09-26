@@ -1,9 +1,12 @@
+from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Optional
 from Place import Place
 from collections import deque
 from SysTest import SysTest
 from Utils import dpprint, dprint, dl, return_do_nothing, json_cmd_simple
+
+#from GeminiInterface import GeminiInterface
 
 
 #from GameState import GameState
@@ -31,7 +34,7 @@ class PlayerState:
     # the game
     #
 
-    def chat(self, messages):
+    def chat(self, llm, messages):
         pass
 
     def end_chat(self):

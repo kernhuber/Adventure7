@@ -193,6 +193,29 @@ Die Ortsbeschreibung:
                 # Wenn der Text sehr kurz ist und kein Leerzeichen enthält (z.B. nur ein Wort oder Fragment)
                 return text.strip() + "..."  # Füge Ellipsen direkt an
 
+    def simple_message(self,message, maxtokens=80):
+        #
+        # Send a message to the LLM and return the answer
+        #
+        try:
+            dprint(dl.LLM, f"GeminiInterface.simple_message: sending message: {message}")
+            response = self.gemini_text_model.generate_content(message,
+                                                               generation_config = genai.types.GenerationConfig(
+                                                                       max_output_tokens=maxtokens  # Beispiel: Maximal 200 Tokens für Szenenbeschreibungen
+                                                                                                                )
+                                                               )
+
+            self.tokens = self.tokens + response.usage_metadata.total_token_count
+            self.numcalls = self.numcalls + 1
+            self.token_details.append(response.usage_metadata.total_token_count)
+            r = self.clean_truncated_sentence(response.text)
+            return r
+        except Exception as e:
+            # Wenn die LLM-Interaktion nicht funktioniert hat, gebe den Prompt zurück
+            dprint(dl.LLM,f"GeminiInterface.simple_message: Exception! {e}")
+            traceback.print_exc()  # gibt den kompletten Stacktrace auf stderr aus
+            return message
+
     def narrate(self, gs:GameState, pl) -> str:
         #
         # Generate narration only for human players. NPCs don't need that

@@ -33,6 +33,7 @@ class NPCDogState(PlayerState):
     growl: int = 0
     dog_state: DogState = DogState.START
     dog_state_message: str = "Der Hund tut nichts"
+    last_chat: str = "Es ist heiss in der Wüste und ich habe hunger. Ausserdem bin ich genervt."
     command_after_fight: str = None
 
     next_loc : Deque[Place] = field(default_factory=deque) # Doggo seeks out place where player has been
@@ -465,12 +466,58 @@ Beschreibung des Hundes
 
         return json_cmd_simple("minigame",selected_game)
 
-    def chat(self, messages):
-        return random.choice(["Schnüffel!","Schlabber!","Schlabbschlabb","Grrr!","Wuff!","Waff!","Fiep!","Winsel!","Jaul!"])
 
-    #
-    # def end_chat(self): ...
-    #
+
+
+    def chat(self, llm, messages):
+        prompt = f"""
+        
+        Du bist ein Hund in einem Adventure-Spiel, welches mitten in der Wüste an einem eigenartigen
+        Ort spielt. Es stehen Gegenstände herum, deren Sinn du nicht verstehst. Du verkörperst als Hund einen
+        ziemlich durchgeknallten, latent aggressiven Charakter. Du bist sehr hungrig.
+        Du unterhältst dich mit dem Spieler. Du wirst den Spieler in ein paar Spielzügen angreifen, und möglicherweise
+        töten und fressen, wenn du im Kampf gewinnst. Die Hitze ist mörderisch, und du bist genervt. 
+        
+        Aus früheren Gesprächen mit dem Spieler hast Du dir folgendes gemerkt:
+        
+        {self.last_chat}
+        
+        Folgendes Gespräch hat zwischen Dir und dem Spieler bereits stattgefunden:
+        
+        ----------
+        
+        {messages}
+        
+        ----------
+        
+        Hierbei sind die Aussagen im Dialog von Dir mit "zombiemessage" gekennzeichnet, die des Spielers mit "playermessage".
+        Antworte dem Spieler in einem kurzen Satz:
+        - das Ganze soll lustig wirken, wie in einer Horror-Komödie
+        - Rede den Spieler mit "Du" an. Du weisst nicht, ob es ein Mann oder eine Frau ist
+        - Du kannst auch Hunde-Laute in Deine Antwort einbauen
+        - Du kannst Dich auf alle Nachrichten in dem Dialog beziehen!
+        
+        """
+        r = llm.simple_message(prompt,80)
+        return r
+
+
+    def end_chat(self,llm, messages):
+        r = llm.simple_message(f"""
+        Extrahiere aus folgendem Dialog die wesentlichen Punkte. Konzentriere dich dabei auf
+        Stimmungen und lustige Details. Du wirst Deine Zusammenfassung später verwenden, um 
+        den durchgeknallten Charakter eines Hundes in einem Adventure-Spiel zu spielen. Gebe NUR
+        die Zusammenfassung aus, keine EInleitenden Worte.
+        
+        Hier der Dialog:
+        {messages}
+        
+        Und hier deine vorige Zusammenfassung:
+        {self.last_chat}
+""", 400)
+        self.last_chat=r
+        dprint(dl.NPCPLAYERSTATE,f"-----------------------\nDialog mit dem Hund:\n{messages}")
+        dprint(dl.NPCPLAYERSTATE,f"Neue Zusammenfassung:\n{r}\n----------------------------\n")
 
     def process_fight_result_safe(self, gs:GameState, fight_result):
         """

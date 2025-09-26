@@ -14,6 +14,9 @@ class LLMClientGemini(LLMClient):
     def clean_truncated_sentence(self, text: str) -> str:
         return self._impl.clean_truncated_sentence(text)
 
+    def simple_message(self, text: str, maxtokens: int) -> str:
+        return self._impl.simple_message(text)
+
     def narrate(self, gs: Any, pl: Any) -> str:
         return self._impl.narrate(gs, pl)
 
