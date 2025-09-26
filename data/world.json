@@ -131,7 +131,7 @@
         "w_start_schuppen"
       ],
       "objects": [
-        ""
+        "o_fahrrad"
       ]
     },
     "p_ubahn": {
@@ -165,7 +165,7 @@
       "ways": [
         "w_ubahn2_wagen",
         "w_ubahn2_solaranlage",
-        "w_ubahn_2_kontrollraum",
+        "w_ubahn2_kontrollraum",
         "w_ubahn2_ubahnschacht"
       ],
       "objects": [

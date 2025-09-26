@@ -375,6 +375,7 @@ class WebAdventureServer:
 
         except Exception as e:
             dprint(dl.WEBGUI, f"❌ Fehler beim Serialisieren: {e}")
+            traceback.print_exc()  # gibt den kompletten Stacktrace auf stderr aus
             return self.create_demo_game_state()
 
     async def unregister_client(self, websocket):

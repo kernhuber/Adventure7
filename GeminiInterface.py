@@ -7,8 +7,10 @@ import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
 from pprint import pprint
 from Utils import dprint, dpprint, dl, ddiff
 from google.api_core import retry
+from google.api_core import exceptions as gexc
 import os
 from dotenv import load_dotenv
+import traceback
 
 # Konfiguration der Gemini API mit deinem API-Schlüssel
 # Es wird dringend empfohlen, den API-Schlüssel nicht direkt im Code zu speichern!
@@ -28,7 +30,8 @@ class GeminiInterface:
             self.cache[room] = {"prompt":prompt,"narration":narration}
 
         def invalidate(self,room:str):
-            del self.cache[room]
+            if room in self.cache:
+                del self.cache[room]
 
         def get(self, room:str, prompt:str):
             if room in self.cache:
@@ -49,16 +52,16 @@ class GeminiInterface:
         genai.configure(api_key=apikey)
         #
         # Retry-Mechanismus
-        #
-        is_retriable = lambda e: (isinstance(e, genai.errors.APIError) and e.code in {429, 503})
+        # Wiederholen bei typischen transienten Fehlern (429: ResourceExhausted, 503: ServiceUnavailable, 504: DeadlineExceeded)
+        is_retriable = lambda e: isinstance(e, (gexc.ResourceExhausted, gexc.ServiceUnavailable, gexc.DeadlineExceeded))
         genai.GenerativeModel.generate_content = retry.Retry(
             predicate=is_retriable
         )(genai.GenerativeModel.generate_content)
 
 # Globale Model-Instanzen, die wir wiederverwenden können
 # Wir könnten verschiedene Modelle für verschiedene Aufgaben nutzen, z.B. Flash für schnelle Parser, Pro für Reasoning
-        self.gemini_text_model = genai.GenerativeModel('gemini-1.5-flash') # Gut für schnelle Textgenerierung/Parsing
-        self.gemini_reasoning_model = genai.GenerativeModel('gemini-1.5-pro') # Gut für komplexes Reasoning des NPC
+        self.gemini_text_model = genai.GenerativeModel('gemini-2.0-flash-lite') # Gut für schnelle Textgenerierung/Parsing
+        self.gemini_reasoning_model = genai.GenerativeModel('gemini-2.0-flash') # Gut für komplexes Reasoning des NPC
         self.txt_prev_description = {}
         self.tokens = 0
         self.numcalls = 0
@@ -224,6 +227,7 @@ Die Ortsbeschreibung:
             # Wenn die LLM-Interaktion nicht funktioniert hat, gebe den Prompt zurück
             print("Exception!!")
             pprint(e) #
+            traceback.print_exc()  # gibt den kompletten Stacktrace auf stderr aus
             self.narration_cache.invalidate(room)
             return prompt
 
