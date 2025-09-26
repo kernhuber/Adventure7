@@ -35,6 +35,34 @@ def w_schuppen_dach_f(gs: GameState):
     else:
         return "Da ist gar kein Dach mehr - das hat jemand weggesprengt! "# --- missing_functions Output ---
 
+
+def w_wagen_ubahn1_f(gs: GameState):
+    if not _F(gs).wagen_ubahn2:
+        return "Free"
+    else:
+        return "Du kannst von hier nicht auf den ersten Bahnsteig gehen"
+
+
+def w_ubahn1_wagenf(gs: GameState):
+    if not _F(gs).wagen_ubahn2:
+        return "Free"
+    else:
+        return "Hier ist kein Wagen mehr!"
+
+
+def w_wagen_ubahn2_f(gs: GameState):
+    if _F(gs).wagen_ubahn2:
+        return "Free"
+    else:
+        return "Du kannst von hier nicht auf den zweiten Bahnsteig gehen"
+
+
+def w_ubahn2_wagenf(gs: GameState):
+    if _F(gs).wagen_ubahn2:
+        return "Free"
+    else:
+        return "Hier ist kein Wagen mehr!"
+
 # Quelle (Original): ../GameObstructionCheckFunctions.py
 
 # Quelle (Stage)   : GameObstructionCheckFunctions.py

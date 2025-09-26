@@ -141,7 +141,7 @@ class GameFlags:
     leiter: bool = False
     hebel: bool = False
     geheimzahl: str = "0000"
-    ubahn_in_otherstation: bool = False
+    wagen_ubahn2: bool = False
     felsen: bool = True
     hauptschalter: bool = False
     dach: bool = True

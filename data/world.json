@@ -501,7 +501,7 @@
       "destination": "p_wagen",
       "text_direction": "in den U-Bahnwagen",
       "description": "",
-      "obstruction_check": null,
+      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn2_wagen_f",
       "way_prompt_f": null
     },
     "w_ubahn_wagen": {
@@ -509,7 +509,7 @@
       "destination": "p_wagen",
       "text_direction": "in den U-Bahnwagen hinein",
       "description": "",
-      "obstruction_check": null,
+      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn_wagen_f",
       "way_prompt_f": null
     },
     "w_ubahn_warenautomat": {
@@ -525,7 +525,7 @@
       "destination": "p_ubahn",
       "text_direction": "auf den Bahnsteig der U-Bahn",
       "description": "",
-      "obstruction_check": null,
+      "obstruction_check": "GameObstructionCheckFunctions.w_wagen_ubahn_f",
       "way_prompt_f": null
     },
     "w_wagen_ubahn2": {
@@ -533,7 +533,7 @@
       "destination": "p_ubahn2",
       "text_direction": "zur zweiten Haltestelle",
       "description": "",
-      "obstruction_check": null,
+      "obstruction_check": "GameObstructionCheckFunctions.w_wagen_ubahn2_f",
       "way_prompt_f": null
     },
     "w_warenautomat_felsen": {

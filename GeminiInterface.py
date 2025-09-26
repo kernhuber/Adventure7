@@ -212,7 +212,7 @@ Die Ortsbeschreibung:
             dprint(dl.LLM, f"GeminiInterface.narrate: generating new narration for room {pl.location.name}")
             response = self.gemini_text_model.generate_content(prompt,
                                                                generation_config = genai.types.GenerationConfig(
-                                                                       max_output_tokens=200  # Beispiel: Maximal 200 Tokens für Szenenbeschreibungen
+                                                                       max_output_tokens=300  # Beispiel: Maximal 200 Tokens für Szenenbeschreibungen
                                                                                                                 )
                                                                )
 

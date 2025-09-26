@@ -54,15 +54,15 @@ def o_tuerschliesser_apply_f(gs: GameState, pl: PlayerState=None, what: GameObje
     if pl.location != gs.places["p_wagen"]:
         return "Hier ist kein Türschließer"
 
-    if _F(gs).ubahn_in_otherstation:
-        gs.ubahn_in_otherstation = False
+    if _F(gs).wagen_ubahn2:
+        _F(gs).wagen_ubahn2 = False
         gs.ways["w_wagen_ubahn"].visible = True
         gs.ways["w_wagen_ubahn2"].visible = False
         gs.ways["w_ubahn_wagen"].visible = True
         gs.ways["w_ubahn2_wagen"].visible = False
         return "Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und fährt zurück zum ersten Bahnsteig. Die Tür öffnet sich wieder."
     else:
-        gs.ubahn_in_otherstation = True
+        _F(gs).wagen_ubahn2 = True
         gs.ways["w_wagen_ubahn"].visible = False
         gs.ways["w_wagen_ubahn2"].visible = True
         gs.ways["w_ubahn_wagen"].visible = False
@@ -306,8 +306,6 @@ def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=Non
             }
         })
         return "Warte auf Eingabe..."
-
-
 
 
 def o_pinsel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
