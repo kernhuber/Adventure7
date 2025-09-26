@@ -623,7 +623,7 @@ class WebAdventureServer:
                 elif user_input.lower().startswith("zombie_chat"):
                     gs = session["game"]
                     pl = next(p for p in gs.players if type(p) is PlayerState)
-                    zombie_chat_result = await self.wd.do_zombie_chat(gs,pl)
+                    zombie_chat_result = await self.wd.do_chat(gs, pl, "Zombie")
                 else:
                     session["cmd_q"].append({'function_call': {'name': user_input.lower(), 'args': {}}})
             else:
@@ -835,7 +835,16 @@ class WebAdventureServer:
 
                     # Echte Game-Engine
                     if not game.game_over:
-                        result = game.verb_execute_json(player, command_dict)
+                        #
+                        # Intercept async commands "interaktion" and "interagiere" (Himmel ist das umständlich!!)
+                        #
+                        if command_dict["function_call"].get("command") in ["interaktion", "interagiere"]:
+                            who = player.name
+                            whom = command_dict["function_call"]["args"]["who"]
+                            firstmessage = command_dict["function_call"]["args"]["firstmessage"]
+                            result = await game.async_verb_interact(player, session_id, whom, firstmessage)
+                        else:
+                            result = game.verb_execute_json(player, command_dict, session_id)
                     #
                     # game_over kann durch Verdursten oder durch irgendwelche Aktionen bei verb_execute kommen
                     #
@@ -973,7 +982,13 @@ class WebAdventureServer:
 
                     if npc_input and command != "nichts":
                         if command != "minigame":
-                            npc_result = game.verb_execute_json(npc, npc_input)
+                            if command  in ["interaktion", "interagiere"]:
+
+                                whom = npc_input["function_call"]["args"]["who"]
+                                firstmessage = npc_input["function_call"]["args"]["firstmessage"]
+                                npc_result = await game.async_verb_interact(npc, session_id, whom, firstmessage)
+                            else:
+                                npc_result = game.verb_execute_json(npc, npc_input, session_id)
                             if npc_result and npc_result.strip():
                                 npc_actions.append(json_cmd_simple("dog_message",f"**{npc.name}:** {npc_result}"))
                         else:

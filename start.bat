@@ -1,7 +1,7 @@
 @echo off
 REM Git-Repository aktualisieren
 git pull
-git checkout Adventure9-Zombie-EnhancedUI
+git checkout Adventure10-2025-09-15
 
 REM Virtualenv prüfen und ggf. erstellen
 if not exist venv (

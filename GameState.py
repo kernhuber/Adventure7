@@ -688,9 +688,10 @@ class GameState:
         """Access to the structured flags container (in addition to legacy attributes)."""
         return self._flags
 
-    def verb_execute_json(self, pl: PlayerState, command_dict: dict) -> str:
+    def verb_execute_json(self, pl: PlayerState, command_dict: dict, session_id=None) -> str:
         """ Instead of a string (see verb_execute) cmd is a dictionary as was returned by the LLM as structured
             return to LLM user input"""
+        # self.cur_session_id = session_id
         if "function_call" not in command_dict:
             return "Interner Fehler: Ungültiges Befehlsformat."
 
@@ -718,26 +719,27 @@ class GameState:
             "dogstate": (self.verb_dogstate,0),
             "quit": (self.verb_quit,0),
             "nichts": (self.verb_noop,0),
-            "interaktion": (self.verb_interact,2),
+            #"interagiere": (self.verb_interact,2),
+            #"interaktion": (self.verb_interact, 2),
             "zurueckweisen": (self.verb_reject,1),
             "zurückweisen": (self.verb_reject, 1),
             "unbekannt": (self.verb_unknown,0),
             "json_write": (self.verb_json_write,0)
         }
         verb,numargs = vtab.get(func_name,(None,None))
-        r=verb(pl,**args)
+        r=verb(pl,session_id, **args)
         return r
 
 
 
 
-    def verb_unknown(self, pl: PlayerState):
+    def verb_unknown(self, pl: PlayerState, session_id=None):
         from pprint import pprint
         print("LLM did not understand input correctly. Current Player atomic command queue:")
         pprint(pl.cmd_q)
         return "nichts"
 
-    def verb_dogstate(self, pl: PlayerState):
+    def verb_dogstate(self, pl: PlayerState, session_id=None):
         from NPCDogState import NPCDogState
         from pprint import pprint
         dgf = None
@@ -751,7 +753,34 @@ class GameState:
             pprint(dgf,depth=2)
             return "nichts"
 
-    def verb_apply(self, pl: PlayerState, what, towhat=None):
+
+
+    async def async_verb_interact(self, pl: PlayerState, session_id, who, firstmessage=""):
+        #
+        # Check if there is a npc named who, and if (s)he is in the same location as pl
+        # This verb is called
+        #
+        import asyncio
+        pl_who = next((p for p in self.players if p.name == who), None)
+        if not pl_who:
+            return f"{who}? Kenne ich nicht"
+
+        if pl_who == pl:
+            return "Selbstgespräche werden hier lieber nicht geführt."
+
+        if pl.location != pl_who.location:
+            return f"{who} ist nicht hier."
+
+        if session_id in self.web_sessions:
+            if "WebDialogs" in self.web_sessions[session_id]:
+                wd: object = self.web_sessions[session_id]["WebDialogs"]
+                #await wd.do_chat(self, pl, pl_who, firstmessage)
+                #asyncio.run(wd.do_chat(self, pl, pl_who, firstmessage))
+                await wd.do_chat(self, pl, pl_who, firstmessage)
+        return "nichts"
+
+
+    def verb_apply(self, pl: PlayerState, session_id, what, towhat=None):
 
         r="Nichts anzuwenden"
         if what is None:
@@ -784,7 +813,7 @@ class GameState:
 
         return r
 
-    def verb_take(self, pl: PlayerState, whato):
+    def verb_take(self, pl: PlayerState, session_id, whato):
         what = self.obj_name_from_friendly_name(whato)
         loc = pl.location
         # obj = loc.place_objects.get(what) - egal
@@ -807,7 +836,7 @@ class GameState:
                 r = f"Du kannst {what} nicht aufnehmen"
         return r
 
-    def verb_drop(self, pl: PlayerState, whato):
+    def verb_drop(self, pl: PlayerState, session_id, whato):
         what = self.obj_name_from_friendly_name(whato)
         if what is None:
             return "Sowas kenne ich nicht"
@@ -828,7 +857,7 @@ class GameState:
 
         return r
 
-    def verb_lookaround_old(self, pl: PlayerState):
+    def verb_lookaround_old(self, pl: PlayerState, session_id):
         loc = pl.location
         retstr = f"""**Ort: {pl.location.name}**
 {pl.location.place_prompt_f(self,pl) if pl.location.place_prompt_f else pl.location.place_prompt}
@@ -862,17 +891,17 @@ Am Ort sind folgende Objekte zu sehen:"""
                 retstr = retstr + f'- {w.destination.callnames[0]} ({w.destination.name})\n'
         return retstr
 
-    def verb_lookaround_llm(self, pl: PlayerState):
+    def verb_lookaround_llm(self, pl: PlayerState, session_id):
 
         rval = self.llm.generate_scene_description(self.compile_current_game_context(pl))
         return rval
 
-    def verb_lookaround(self, pl: PlayerState):
+    def verb_lookaround(self, pl: PlayerState, session_id):
         r=self.llm.narrate(self,pl)
         return r
 
 
-    def verb_help(self, pl: PlayerState):
+    def verb_help(self, pl: PlayerState, session_id):
         rval = """
     Du musst Dein Fahrrad reparieren, um rechtzeitig den Umschlag, den Du 
     hoffentlich noch bei dir hast, an sein Ziel zu bringen. Sonst geht die 
@@ -902,7 +931,7 @@ Am Ort sind folgende Objekte zu sehen:"""
         """
         return rval
 
-    def verb_walk(self, pl: PlayerState, direction: str):
+    def verb_walk(self, pl: PlayerState, session_id, direction: str):
         #
         # Player walks into "direction" (either name of way or name of destination)
         #
@@ -931,7 +960,7 @@ Am Ort sind folgende Objekte zu sehen:"""
         r = f"{pl.name} ist nun hier: {pl.location.callnames[0]} "
         return r
 
-    def verb_examine(self, pl: PlayerState, what: str):
+    def verb_examine(self, pl: PlayerState, session_id, what: str):
         #
         # Does an object with that name exist in the users inventory or in the current location?
         # if so, return its examine string, if not, return failure ("No such thing here")
@@ -990,7 +1019,7 @@ Am Ort sind folgende Objekte zu sehen:"""
             retstr = f'{what_found} - sowas gibt es hier nicht!'
         return retstr
 
-    def verb_llm(self, pl:PlayerState):
+    def verb_llm(self, pl:PlayerState, session_id):
         from pprint import pprint
         from rich.prompt import Prompt
         user_input = ""
@@ -1008,17 +1037,17 @@ Am Ort sind folgende Objekte zu sehen:"""
         pprint(gi)
         return "nichts"
 
-    def verb_kill(self, pl: PlayerState, whom):
+    def verb_kill(self, pl: PlayerState, session_id, whom):
         self.game_over = True
         return f"{pl.name} tötet {whom} in heldischem Kampf"
 
-    def verb_inventory(self, pl: PlayerState):
+    def verb_inventory(self, pl: PlayerState, session_id):
         tw_print("**Du trägst bei dir:**")
         for i in pl.get_inventory():
             tw_print(f'- "{i.name}" --> {i.examine}')
         return "nichts"
 
-    def verb_context(self, pl: PlayerState):
+    def verb_context(self, pl: PlayerState, session_id):
         """ERWEITERTE Kontext-Ausgabe mit Web-Interface Info"""
         from pprint import pprint
 
@@ -1031,32 +1060,33 @@ Am Ort sind folgende Objekte zu sehen:"""
             print("\n=== WEB-INTERFACE STATUS ===")
             self.debug_web_status()
 
-    def verb_quit(self, pl: PlayerState):
+    def verb_quit(self, pl: PlayerState, session_id):
         self.game_over  = True
         return f"{pl.name} beendet das Spiel."
 
-    def verb_noop(self, pl: PlayerState):
+    def verb_noop(self, pl: PlayerState, session_id):
         if type(pl) is PlayerState:
             return "Du tust nichts"
         else:
             return ""
 
-    def verb_interact(self, pl: PlayerState, whom, input):
-        return f'{pl.name} an {whom}:  "{input}"'
+    #def verb_interact(self, pl: PlayerState, whom, input):
+    #    return f'{pl.name} an {whom}:  "{input}"'
 
-    def verb_reject(self, pl: PlayerState, why)->str:
+    def verb_reject(self, pl: PlayerState, session_id, why)->str:
         """ LLM rejects to do something because it did not understand user input and provides explanation in "why" """
         return f'***Nachricht von der Spielleitung:*** {why}'
 
 
-    def verb_attack(self, pl: PlayerState, whom="")->str:
+    def verb_attack(self, pl: PlayerState, session_id, whom="")->str:
         """ Player attacks dog which needs to be in the same place as Player"""
         from NPCDogState import NPCDogState
-        dog = None
-        for d in self.players:
-            if type(d) is NPCDogState:
-                dog = d
-                break
+        dog = next(d for d in self.players if type(d) is NPCDogState)
+        #dog = None
+        #for d in self.players:
+        #    if type(d) is NPCDogState:
+        #        dog = d
+        #        break
         if dog is None:
             return "Es gibt gar keinen Hund mehr im Spiel"
 
@@ -1068,7 +1098,7 @@ Am Ort sind folgende Objekte zu sehen:"""
             return ""
             #return f"(Angriff auf den Hund abgeschlossen)"
 
-    def verb_json_write(self,pl:PlayerState) -> str:
+    def verb_json_write(self,pl:PlayerState, session_id) -> str:
         """
         Write structures as JSON
         :param pl:
@@ -1081,7 +1111,7 @@ Am Ort sind folgende Objekte zu sehen:"""
 
 
     # Zusätzlich: Neuer Befehl für Layout-Wechsel
-    def verb_layout(gs, pl: PlayerState) -> str:
+    def verb_layout(gs, pl: PlayerState, session_id) -> str:
         """Wechsle Layout-Modus"""
         # Diese Funktion würde in GameState hinzugefügt
         return "layout_toggle"  # Spezieller Return-Code

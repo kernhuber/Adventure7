@@ -1,6 +1,6 @@
 // zombie_chat.js - Zombie Dialog System für Adventure Game
 
-function zombie_chat(ws, initialMessage = null) {
+function zombie_chat(ws, who, whom, initialMessage = null) {
     console.log('🧟 Zombie Chat wird gestartet...');
 
     // Chat-Array für die Konversation
@@ -12,7 +12,7 @@ function zombie_chat(ws, initialMessage = null) {
     }
 
     // Erstelle das Chat-Overlay
-    const overlay = createChatOverlay();
+    const overlay = createChatOverlay(who, whom);
     document.body.appendChild(overlay);
 
     // Referenzen zu wichtigen Elementen
@@ -128,13 +128,13 @@ function zombie_chat(ws, initialMessage = null) {
     }
 
     // Funktion zum Erstellen des Chat-Overlays
-    function createChatOverlay() {
+    function createChatOverlay(who, whom) {
         const overlay = document.createElement('div');
         overlay.id = 'zombie-chat-overlay';
         overlay.innerHTML = `
             <div id="zombie-chat-container">
                 <div id="zombie-chat-header">
-                    <span id="zombie-chat-title">Gespräch mit dem Zombie</span>
+                    <span id="zombie-chat-title">Gespräch zwischen ${who} und ${whom}</span>
                     <button id="zombie-chat-close" aria-label="Chat schließen">×</button>
                 </div>
                 <div id="zombie-chat-messages"></div>

@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from collections import deque
 from typing import List, Deque, Any
 from enum import Enum, auto
+import random
 from Utils import tw_print, dprint, dl, json_cmd_simple, return_do_nothing
 
 class DogState(Enum):
@@ -464,6 +465,12 @@ Beschreibung des Hundes
 
         return json_cmd_simple("minigame",selected_game)
 
+    def chat(self, messages):
+        return random.choice(["Schnüffel!","Schlabber!","Schlabbschlabb","Grrr!","Wuff!","Waff!","Fiep!","Winsel!","Jaul!"])
+
+    #
+    # def end_chat(self): ...
+    #
 
     def process_fight_result_safe(self, gs:GameState, fight_result):
         """

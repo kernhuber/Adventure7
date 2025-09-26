@@ -25,8 +25,17 @@ class PlayerState:
     cmd_q: deque = field(default_factory = deque)
     systest: SysTest = field(default_factory = SysTest)
 
+    #
+    # chat function only so that the interface is there for classes deriving from PlayerState. The function
+    # is used in the interact environment, where Dog and Zombie are requested to chat with the player during
+    # the game
+    #
 
+    def chat(self, messages):
+        pass
 
+    def end_chat(self):
+        pass
 
     def add_to_inventory(self, a: GameObject):
         if a not in self.inventory:

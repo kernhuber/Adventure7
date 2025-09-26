@@ -96,6 +96,7 @@ def ddiff(l:dl, a, b):
         ADV_LOGGER.ddiff(l,a,b)
 
 game_known_tokens = ["anwenden",
+                    "interagiere",
                     "nimm",
                     "ablegen",
                     "untersuche",
@@ -156,7 +157,11 @@ def json_cmd_simple(cmd_in:str, arg1:str=None, arg2:str=None):
                     "what":arg1,
                     "towhat":arg2 if arg2 else None,
                 }
-
+            case "interagiere":
+                args = {
+                    "who":arg1,
+                    "firstmessage":arg2 if arg2 else "",
+                }
             case "nimm":
                 args = {
                     "whato":arg1
@@ -199,8 +204,8 @@ def json_cmd_simple(cmd_in:str, arg1:str=None, arg2:str=None):
                 args = {}
             case "interaktion":
                 args = {
-                    "whom":arg1,
-                    "input":arg2 if arg2 else None,
+                    "who":arg1,
+                    "firstmessage":arg2 if arg2 else None,
                 }
             case "zurueckweisen":
                 args = {

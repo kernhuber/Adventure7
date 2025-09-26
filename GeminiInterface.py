@@ -586,7 +586,26 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                         "required": ["what"]
                     }
         )
-
+        t_interagieren = FunctionDeclaration(
+                    name="interagieren",
+                    description="Starte ein Gespräch mit einem Charakter, optional mit einer ersten Nachricht.",
+                    parameters={
+                        "type": "object",
+                        "properties": {
+                            "who": {
+                                "type": "string",
+                                "description": "Der Name eines Characters, der angesprochen wird.",
+                                "enum": available_target_player_ids # <-- Dynamisch gefüllt
+                            },
+                            "firstmessage": {
+                                "type": "STRING",
+                                "description": "eine optionale erste Nachricht, mit der das Gespräch eröffnet wird",
+                                # "enum": available_object_ids  # <-- Dynamisch gefüllt
+                            }
+                        },
+                        "required": ["who"]
+                    }
+        )
         t_nimm = FunctionDeclaration(
                     name="nimm",
                     description="Nimm ein Objekt in das Spielerinventar auf.",
@@ -709,7 +728,7 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
                     }
             )
 
-        tools = [t_gehen, t_nimm, t_anwenden, t_ablegen, t_umsehen, t_angreifen, t_untersuche, t_rest, t_zurueckweisen, t_nichts, t_quit, t_hilfe]
+        tools = [t_gehen, t_nimm, t_anwenden, t_interagieren, t_ablegen, t_umsehen, t_angreifen, t_untersuche, t_rest, t_zurueckweisen, t_nichts, t_quit, t_hilfe]
         # r = self.validate_gemini_tools_schema(tools)
         # dpprint(dl.LLM_PROMPT, r)
         # Der Prompt-String selbst braucht jetzt nicht mehr die Listen der IDs und Callnames,
@@ -821,12 +840,21 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
             {{"function_call": {{"name": "zurueckweisen", "args": {{"why": "Sei mir nicht böse - aber das habe ich wirklich nicht verstanden.(tlhIngan Hol Dajatlhʼaʼ?)"}}}}}}
             ```
             
-
+        Beispiele für 'interagieren'-Befehle:
+            "Sprich mit dem Hund" oder "rede mit dem Hund" oder wird zu:
+            ```json
+            {{"function_call": {{"name": "interagieren", "args": {{"who": "Hund"}}}}}}
+            ```
             
-            **Spielereingabe: "{user_input}"**
+            "sage 'hallo!' zu Chris" oder "schreie Chris an: 'hallo!'" wird zu:
+            ```json
+            {{"function_call": {{"name": "interagieren", "args": {{"who": "Chris", "firstmessage":"hallo!"}}}}}}
+            ```
+            
+        **Spielereingabe: "{user_input}"**
 
-            Generiere nur das JSON-Array der Funktionsaufrufe.
-            """
+        Generiere nur das JSON-Array der Funktionsaufrufe.
+        """
 
         try:
             import google.generativeai as genai
@@ -900,6 +928,7 @@ Gib nur das JSON-Array der Befehle aus, ohne zusätzlichen Text.
             dpprint(dl.LLM,tools)
 
             # Bei einem Fehler geben wir einen 'zurueckweisen'-Befehl als Dictionary zurück
+            traceback.print_exc()
             return [{"function_call": {"name": "zurueckweisen", "args": {
                 "why": "Ein unerwarteter interner Fehler ist aufgetreten. Bitte versuche es anders."}}}]
 

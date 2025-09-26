@@ -142,41 +142,38 @@ class WebDialogs:
 
     # ============== Zombie/Player-Interaction ==============
 
-    async def do_zombie_chat(self,gs, pl):
+    async def do_chat(self, gs, pl, whom, firstmessage=""):
         """
-        pl: Player Object which started the conversation
+        pl: Player Object which started the conversation (actually not needed)
+        who: Player Object which is addressed in the conversation
+
+        We assume, that any validity checks (for example pl and who in the same location) have
+        already taken place
+
         """
+        if type(pl) is not PlayerState:
+            #
+            # Check if second parameter is a human real player
+            #
 
-        # if type(pl) is NPCZombieState.NPCZombieState:
-        #     w = 1
-        #     zombie = pl
-        #     players = [p for p in gs.players if type(p) is PlayerState.PlayerState]
-        #     if not players:
-        #         return None
-        #     player = players[0]
-        #
-        # elif type(pl) is PlayerState.PlayerState:
-        #     w = 0
-        #     player = pl
-        #     zombies = [p for p in gs.players if type(p) is NPCZombieState.NPCZombieState]
-        #     if not zombies:
-        #         return None
-        #     zombie = zombies[0]
-        #
-        # else:
-        #     # Weder Player noch Zombie -> uninteressant
-        #     return None
-        #
-        # if zombie.location != player.location:
-        #     return None
+            if type(whom) is not PlayerState.PlayerState:
+                return
+            #
+            # Swap players
+            #
 
-        #
-        # Instruct web ui to enter chat mode
-        #
-        # await self.ws.send()
+            t = whom
+            whom = pl
+            pl = t
+
+        n1 = whom.name
+        n2 = pl.name
+
         start_chat_message = {
             "type": "zombie_chat",
-            "firstmsg": "Hallo Spieler!",  # NEU!!
+            "who": n1,
+            "whom": n2,
+            "firstmsg": firstmessage,  # NEU!!
         }
         #
         # An das GUI senden, wo es dann (in JavaScript) weiterverarbeitet wird
@@ -194,8 +191,8 @@ class WebDialogs:
                 else:
                     chat = data.get("zombiechat",None)
                     if chat:
-                        chat_running = True
-                    await self.ws.send(json.dumps({"zombiemessage":f"GRRRAAAR!! ({zahler}) Ich bin der Zombie!"}))
+                        r = whom.chat(chat)
+                    await self.ws.send(json.dumps({"zombiemessage":r}))
                     zahler += 1
 
         #

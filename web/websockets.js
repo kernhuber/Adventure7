@@ -127,7 +127,9 @@ class AdventureBackend {
                 break;
             case 'zombie_chat':
                 const firstmsg = data.firstmsg;
-                zombie_chat(this.ws,firstmsg);
+                const who = data.who;
+                const whom = data.whom;
+                zombie_chat(this.ws,who, whom,firstmsg);
                 break;
             case 'playername':
                 askPlayerName().then(playerName => {
