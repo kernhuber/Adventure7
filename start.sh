@@ -1,6 +1,6 @@
 #!/bin/bash
 git pull
-git checkout Adventure10
+git checkout Adventure10-2025-09-15
 test -e ./venv || ( python3 -m venv ./venv; . ./venv/bin/activate; pip install -r requirements.txt )
 test -e ./.apikey && . ./.apikey
 clear
