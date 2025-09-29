@@ -1,6 +1,6 @@
 rich
 sympy
-google-generativeai
+google-genai
 regex
 websockets
 tornado

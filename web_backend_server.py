@@ -228,6 +228,7 @@ class WebAdventureServer:
 
             except Exception as e:
                 dprint(dl.WEBGUI, f"❌ Fehler beim echten GameState: {e}")
+                traceback.print_exc()
                 dprint(dl.WEBGUI, f"⚠️  Verwende Demo-Modus als Fallback")
                 game_state = self.create_demo_game_state()
                 self.game_sessions[session_id] = {
