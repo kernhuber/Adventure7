@@ -188,7 +188,8 @@ class WebDialogs:
                 closeChat = data.get('closeChat',None)
                 if closeChat:
                     chat_running = False
-                    whom.end_chat(gs.llm,last_chat)
+                    ls_chat = data.get('zombiechat', None)
+                    whom.end_chat(gs.llm,ls_chat if ls_chat else last_chat)
                     break
                 else:
                     chat = data.get("zombiechat",None)

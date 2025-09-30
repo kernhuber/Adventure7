@@ -90,7 +90,7 @@ function zombie_chat(ws, who, whom, initialMessage = null) {
 
         // Sende closeChat-Nachricht an Server
         if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ closeChat: true }));
+            ws.send(JSON.stringify({ closeChat: true, zombiechat: chatArray }));
         }
 
         // WebSocket Listener entfernen
