@@ -7,8 +7,8 @@ import os
 import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
 from pprint import pprint
 from Utils import dprint, dpprint, dl, ddiff
-from google.api_core import retry
-from google.api_core import exceptions as gexc
+#from google.api_core import retry
+#from google.api_core import exceptions as gexc
 import os
 from dotenv import load_dotenv
 import traceback
