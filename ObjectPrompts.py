@@ -567,12 +567,15 @@ Werbeplakat
 - Ein Werbeplakat, das eigentlich eine Tür ist
 - Es steht offen und gibt einen Gang frei
 - Auf dem Plakat ist Werbung für Unterhaltungstechnik aus den 80er Jahren (Videorekorder, Stereoanlagen, Heimcomputer)
+- In diesem Kontext kann man zum Werbeplakat auch Plakat, Tür, oder Plakattür sagen
+- Man kann es schliessen, zumachen, zuklappen oder ähnliches
 """
     else:
         return """
-Falltür
-=======
+Werbeplakat
+===========
 - Ein großes Werbeplakat
 - Auf dem Plakat ist Werbung für Unterhaltungstechnik aus den 80er Jahren (Videorekorder, Stereoanlagen, Heimcomputer)
-- Das Plakat hat Scharniere auf der linken Seite, und einen Griff auf der rechten Seite - könnte eine versteckte Tür sein!
+- Das Plakat hat Scharniere auf der linken Seite, und einen Griff auf der rechten Seite - könnte eine versteckte Tür sein?
+- Man kann an dem Plakat ziehen, es öffnen oder aufklappen oder ähnliches
     """
