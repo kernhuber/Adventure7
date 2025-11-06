@@ -1,6 +1,6 @@
 """ Zombie NPC Player """
 from __future__ import annotations
-#from GameState import GameState
+from GameState import GameState
 from PlayerState import PlayerState
 
 class NPCZombieState(PlayerState):
@@ -11,6 +11,48 @@ class NPCZombieState(PlayerState):
     def NPC_game_move(self, gs:GameState) -> {}:
         """ Zombie Player inputs its actions to the game engine with this method"""
         pass
+
+    def NPC_process_gs_results(self, gs:GameState, results) -> {}:
+        """ Handle the results of the game engine:
+        Have the LLM Create a new self.notes based on the prompt and the game engine returns
+        """
+
+    def compile_zombie_context(self, gs:GameState) -> {}:
+        """ Zombie Player context:
+            This function gathers the context from GameEngine in order to prepare the prompt for the zombie player.
+
+            Items of interest:
+            - Where is the zombie player?
+            - What objects are here?
+            - Where can he go from here?
+            - Who ist in the same location? Provide all "visible" data
+            - For all visible and non-obstructed neighbor places:
+              - Who is in that place?
+        """
+        pass
+
+    def compile_zombie_prompt(self, gs:GameState) -> str:
+        """ Zombie Player prompt:
+        This function gathers the prompt for the zombie player.
+
+        The prompt will be conveyed to the llm in order to produce a command for the game engine - the next
+        step for the zombie player.
+
+        The prompt shall contain:
+        - The overall "system" prompt for the zombie ("Du bist ein NPC in einem Adventure-Spiel...")
+        - The overall goal of the zombie player.
+        - The current context of the zombie player (compile_zombie_context() above)
+        - The strategy notes the zombie player generated in the last move
+        - The list of commands (tool calls) the zombie player can generate
+
+        In subsequent steps, this prompt will be sent to the LLM in order to generate one single command in
+        NPC_game_move. The game loop above will then execute the command and feed back the results to the
+        NPCZombieState object via NPC_process_gs_results()
+        """
+        prompt = ""
+        zcontext = self.compile_zombie_context(gs)
+
+        return prompt
 
     def game_engine_answer(self, gs:GameState, r:str):
         """
