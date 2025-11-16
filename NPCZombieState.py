@@ -1,6 +1,7 @@
 """ Zombie NPC Player """
 from __future__ import annotations
-from GameState import GameState
+# from GameState import GameState
+import GameState
 from PlayerState import PlayerState
 from Utils import json_cmd_simple
 
@@ -10,7 +11,7 @@ class NPCZombieState(PlayerState):
         self.notes = "Du bist verwirrt."
         self.gameengine_returns = ""
 
-    def NPC_game_move(self, gs:GameState) -> {}:
+    def NPC_game_move(self, gs:GameState.GameState) -> {}:
         """ Zombie Player inputs its actions to the game engine with this method
 
         The main game loop will call this function in order to get a single command it
@@ -21,7 +22,7 @@ class NPCZombieState(PlayerState):
         """
         return json_cmd_simple("nichts")
 
-    def NPC_process_gs_result(self, gs:GameState, results) -> {}:
+    def NPC_process_gs_result(self, gs:GameState.GameState, results) -> {}:
         """ Handle the results of the game engine:
         Have the LLM Create a new self.notes based on
         - the last prompt,
@@ -30,7 +31,7 @@ class NPCZombieState(PlayerState):
         """
         self.notes = "Neue Notizen hierhin!"
 
-    def compile_zombie_context(self, gs:GameState) -> {}:
+    def compile_zombie_context(self, gs:GameState.GameState) -> {}:
         """ Zombie Player context:
             This function gathers the context from GameEngine in order to prepare the prompt for the zombie player.
 
@@ -44,7 +45,7 @@ class NPCZombieState(PlayerState):
         """
         return {}
 
-    def compile_zombie_prompt(self, gs:GameState) -> str:
+    def compile_zombie_prompt(self, gs:GameState.GameState) -> str:
         """ Zombie Player prompt:
         This function gathers the prompt for the zombie player.
 
@@ -67,7 +68,7 @@ class NPCZombieState(PlayerState):
 
         return prompt
 
-    def game_engine_answer(self, gs:GameState, r:str):
+    def game_engine_answer(self, gs:GameState.GameState, r:str):
         """
         Zombie issues commands to game engine like any other player. The game engines
         answers are stored in the Zombie object so it can be processed in subsequent calls
