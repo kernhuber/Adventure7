@@ -848,7 +848,19 @@ Die Ortsbeschreibung:
             #dpprint(dl.LLM_PROMPT,tools)
             dprint(dl.LLM_PROMPT,"++++++++ END OF TOOLS Section ++++++++")
             dprint(dl.LLM, f"User input....: {user_input}")
-            #dprint(dl.LLM,f"LLM Raw Response: {response.text}")  # response.text kann auch leer sein, wenn nur tool_calls
+            # Debug: Log raw response details
+            dprint(dl.LLM, f"LLM response.function_calls: {response.function_calls}")
+            try:
+                dprint(dl.LLM, f"LLM response.text: {response.text}")
+            except Exception:
+                dprint(dl.LLM, "LLM response.text: <not available>")
+            dprint(dl.LLM, f"LLM response candidates count: {len(response.candidates) if response.candidates else 0}")
+            if response.candidates:
+                for ci, cand in enumerate(response.candidates):
+                    dprint(dl.LLM, f"  Candidate {ci} finish_reason: {cand.finish_reason}")
+                    if cand.content and cand.content.parts:
+                        for pi, part in enumerate(cand.content.parts):
+                            dprint(dl.LLM, f"  Candidate {ci} part {pi}: {part}")
 
             # Token-Nutzung aktualisieren
             self.tokens += response.usage_metadata.total_token_count
@@ -873,13 +885,25 @@ Die Ortsbeschreibung:
             elif response.text:
                 # FALL 2: Das Modell hat auf Anweisung des Prompts das JSON-Array in das 'response.text'-Feld geschrieben.
                 # Dies war Ihr alter, non-konformer, aber funktionierender Weg.
-                # Da Sie den JSON-Modus entfernt haben, ist die Chance höher, dass dies nur Text-Output ist,
-                # aber Sie können versuchen, es zu parsen:
+                # Das Modell wrappet die Antwort manchmal in Markdown-Code-Fences (```json ... ```),
+                # die wir vor dem Parsen entfernen müssen.
+                raw_text = response.text.strip()
+                # Markdown-Code-Fences entfernen
+                if raw_text.startswith("```"):
+                    # Erste Zeile (```json oder ```) entfernen
+                    first_newline = raw_text.find("\n")
+                    if first_newline != -1:
+                        raw_text = raw_text[first_newline + 1:]
+                    # Schließende ``` entfernen
+                    if raw_text.rstrip().endswith("```"):
+                        raw_text = raw_text.rstrip()[:-3].rstrip()
+                    dprint(dl.LLM, f"Markdown-Fences entfernt, bereinigter Text: {raw_text[:200]}")
                 try:
-                    commands = json.loads(response.text)
+                    commands = json.loads(raw_text)
                     if isinstance(commands, list):
                         return commands
                 except json.JSONDecodeError:
+                    dprint(dl.LLM, f"JSON parse failed for text: {raw_text[:200]}")
                     pass  # Wenn Parsing fehlschlägt, weiter zum Fallback
 
             # Fallback (z.B. wenn response.text kein gültiges JSON war)

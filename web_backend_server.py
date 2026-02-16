@@ -861,10 +861,10 @@ class WebAdventureServer:
                         #
                         # Intercept async commands "interaktion" and "interagiere" (Himmel ist das umständlich!!)
                         #
-                        if command_dict["function_call"].get("command") in ["interaktion", "interagiere"]:
+                        if func_name in ["interaktion", "interagiere", "interagieren"]:
                             who = player.name
-                            whom = command_dict["function_call"]["args"]["who"]
-                            firstmessage = command_dict["function_call"]["args"]["firstmessage"]
+                            whom = command_dict["function_call"]["args"].get("who", "")
+                            firstmessage = command_dict["function_call"]["args"].get("firstmessage", "")
                             result = await game.async_verb_interact(player, session_id, whom, firstmessage)
                         else:
                             result = game.verb_execute_json(player, command_dict, session_id)
@@ -1007,7 +1007,7 @@ class WebAdventureServer:
 
                     if npc_input and command != "nichts":
                         if command != "minigame":
-                            if command  in ["interaktion", "interagiere"]:
+                            if command  in ["interaktion", "interagiere", "interagieren"]:
 
                                 whom = npc_input["function_call"]["args"]["who"]
                                 firstmessage = npc_input["function_call"]["args"]["firstmessage"]
@@ -1029,7 +1029,7 @@ class WebAdventureServer:
                     args = npc_input.get("function_call", {}).get("args", {})
 
                     if npc_input and command != "nichts":
-                        if command in ["interaktion", "interagiere"]:
+                        if command in ["interaktion", "interagiere", "interagieren"]:
                             whom = args.get("who", "")
                             firstmessage = args.get("firstmessage", "")
                             npc_result = await game.async_verb_interact(npc, session_id, whom, firstmessage)

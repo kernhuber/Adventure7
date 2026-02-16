@@ -151,15 +151,16 @@ class WebDialogs:
         already taken place
 
         """
-        if type(pl) is not PlayerState:
+        if not isinstance(pl, PlayerState.PlayerState) or hasattr(pl, 'zombie_state') or hasattr(pl, 'dog_state'):
             #
-            # Check if second parameter is a human real player
+            # pl is not a human player - check if whom is, then swap
             #
 
-            if type(whom) is not PlayerState.PlayerState:
+            if not isinstance(whom, PlayerState.PlayerState) or hasattr(whom, 'zombie_state') or hasattr(whom, 'dog_state'):
+                # Neither is a human player - can't do web chat
                 return
             #
-            # Swap players
+            # Swap so pl is always the human player (who has the WebSocket)
             #
 
             t = whom
