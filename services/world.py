@@ -70,6 +70,15 @@ class ContextBuilder:
                 narration_details["Achtung"] = dog_description
                 all_object_ids_in_context.append(dog_pl.name)
 
+        # Zombie (NPC) – lokaler Import vermeidet Zyklen
+        from NPCZombieState import NPCZombieState
+        zombie_pl = next((p for p in gs.players if isinstance(p, NPCZombieState)), None)
+        if zombie_pl:
+            zombie_description = zombie_pl.zombie_prompt(gs, pl)
+            if zombie_description:
+                narration_details["Zombie-Warnung"] = zombie_description
+                all_object_ids_in_context.append(zombie_pl.name)
+
         context_data["narration_details"] = narration_details
         context_data["available_object_ids"] = list(set(all_object_ids_in_context))
         context_data["available_place_ids"] = list(set(all_place_ids_for_navigation))
@@ -124,6 +133,14 @@ class ContextBuilder:
             if dp:
                 details["Achtung"] = dp
 
+        # Zombie (optional) – lokaler Import vermeidet Zyklen
+        from NPCZombieState import NPCZombieState
+        zombie_pl = next((p for p in gs.players if isinstance(p, NPCZombieState)), None)
+        if zombie_pl:
+            zp = zombie_pl.zombie_prompt(gs, pl)
+            if zp:
+                details["Zombie-Warnung"] = zp
+
         rval["Aktueller Ort"] = details
         return rval
 
@@ -156,6 +173,13 @@ class GameFlags:
     game_won: bool = False
     time: int = 0
     debug_mode: bool = False
+    zombie_awake: bool = False
+    zombie_cooperative: bool = False
+    schalter_kontrollraum: bool = False
+    schalter_generatorraum: bool = False
+    schalter_kontrollraum_timer: int = 0
+    schalter_generatorraum_timer: int = 0
+    umschlag_geheimbotschaft: bool = False
 
 
 class WorldModel:

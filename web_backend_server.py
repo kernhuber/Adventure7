@@ -285,6 +285,7 @@ class WebAdventureServer:
     def serialize_real_game_state(self, game, session_id=None):
         """Konvertiere echtes GameState zu JSON-Format"""
         from NPCDogState import NPCDogState
+        from NPCZombieState import NPCZombieState
         try:
             player = game.players[0] if game.players else None
             if not player:
@@ -350,9 +351,22 @@ class WebAdventureServer:
                     }
                 except:
                     pass
-            #
-            #
-            #
+            # Zombie-Informationen
+            zombie_info = {
+                "location": "Unbekannt",
+                "state": "Kein Zombie im Spiel"
+            }
+            zombie = next((z for z in game.players if isinstance(z, NPCZombieState)), None)
+            if zombie:
+                try:
+                    zombie_location = getattr(zombie.location, 'callnames', ['Unbekannt'])
+                    zombie_info = {
+                        "location": zombie_location[0] if zombie_location else 'Unbekannt',
+                        "state": getattr(zombie, 'zombie_state_message', 'Der Zombie tut nichts')
+                    }
+                except:
+                    pass
+
             return {
                 "round": getattr(game, 'time', 1),
                 "game_over": getattr(game, 'game_over', False),
@@ -366,6 +380,7 @@ class WebAdventureServer:
                                   for item in getattr(player, 'inventory', [])]
                 },
                 "dog": dog_info,
+                "zombie": zombie_info,
                 "environment": {
                     "objects": visible_objects,
                     "ways": available_ways,
@@ -762,6 +777,13 @@ class WebAdventureServer:
                                     "message":args["message"]
                                 }
                             )
+                        case "zombie_message":
+                            filtered_actions.append(
+                                {
+                                    "command": f_call,
+                                    "message": args["message"]
+                                }
+                            )
                         case _:
                             # Andere NPC-Aktionen
                             filtered_actions.append({})
@@ -966,6 +988,8 @@ class WebAdventureServer:
             npc_actions = []
             players_to_remove = []  # Für Spieler die durch Explosion eliminiert werden
 
+            from NPCZombieState import NPCZombieState
+
             for npc in game.players:
                 if isinstance(npc, NPCDogState):
                     # Normaler NPC (Hund)
@@ -997,6 +1021,39 @@ class WebAdventureServer:
                             # Initiate Minigame in web GUI
                             #
                             npc_actions.append(npc_input)
+
+                elif isinstance(npc, NPCZombieState):
+                    # Zombie NPC
+                    npc_input = npc.NPC_game_move(game)
+                    command = npc_input.get("function_call", {}).get("name", None)
+                    args = npc_input.get("function_call", {}).get("args", {})
+
+                    if npc_input and command != "nichts":
+                        if command in ["interaktion", "interagiere"]:
+                            whom = args.get("who", "")
+                            firstmessage = args.get("firstmessage", "")
+                            npc_result = await game.async_verb_interact(npc, session_id, whom, firstmessage)
+                        elif command == "zombie_message":
+                            # Direct message, no game engine processing needed
+                            npc_result = args.get("message", "")
+                        else:
+                            npc_result = game.verb_execute_json(npc, npc_input, session_id)
+
+                        npc.game_engine_answer(game, npc_result)
+
+                        if npc_result and npc_result.strip():
+                            npc_actions.append(json_cmd_simple("zombie_message", f"**{npc.name}:** {npc_result}"))
+
+                    # Switch timer countdown
+                    f = game.get_flags()
+                    if f.schalter_kontrollraum_timer > 0:
+                        f.schalter_kontrollraum_timer -= 1
+                        if f.schalter_kontrollraum_timer <= 0 and not f.zombie_cooperative:
+                            f.schalter_kontrollraum = False
+                    if f.schalter_generatorraum_timer > 0:
+                        f.schalter_generatorraum_timer -= 1
+                        if f.schalter_generatorraum_timer <= 0 and not f.zombie_cooperative:
+                            f.schalter_generatorraum = False
 
                 elif EXPLOSION_AVAILABLE and isinstance(npc, ExplosionState):
                     # Explosion-NPC - VEREINFACHT

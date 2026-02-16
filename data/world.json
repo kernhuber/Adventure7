@@ -254,7 +254,9 @@
       "ways": [
         "w_kontrollraum_ubahn2"
       ],
-      "objects": []
+      "objects": [
+        "o_schalter_kontrollraum"
+      ]
     },
     "p_ubahn_schacht": {
       "description": "EIn finsterer U-Bahn-Schacht",
@@ -320,7 +322,9 @@
       "ways": [
         "w_besenkammer_korridor"
       ],
-      "objects": []
+      "objects": [
+        "o_tinktur"
+      ]
     },
     "p_generatorraum": {
       "description": "",
@@ -332,7 +336,9 @@
       "ways": [
         "w_generatorraum_labor"
       ],
-      "objects": []
+      "objects": [
+        "o_schalter_generatorraum"
+      ]
     }
   },
   "way_defs": {
@@ -937,7 +943,7 @@
       "hidden": true,
       "apply_f": "GameApplyFunctions.o_geldboerse_apply_f",
       "reveal_f": "GameRevealFunctions.o_geldboerse_reveal_f",
-      "take_f": null,
+      "take_f": "GameTakeFunctions.o_geldboerse_take_f",
       "prompt_f": "ObjectPrompts.o_geldboerse_prompt_f"
     },
     "o_hauptschalter": {
@@ -1303,6 +1309,57 @@
       "reveal_f": null,
       "take_f": null,
       "prompt_f": "ObjectPrompts.o_werbeplakat_prompt_f"
+    },
+    "o_tinktur": {
+      "name": "o_tinktur",
+      "examine": "Eine kleine Flasche mit einer durchsichtigen Flüssigkeit. Das Etikett ist vergilbt und kaum noch lesbar - man kann nur noch 'Geheim...' entziffern.",
+      "help_text": "Vielleicht kann man damit verborgene Dinge sichtbar machen?",
+      "callnames": [
+        "Tinktur",
+        "Flasche",
+        "Geheimtinktur"
+      ],
+      "ownedby": "p_besenkammer",
+      "fixed": false,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_tinktur_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_tinktur_prompt_f"
+    },
+    "o_schalter_kontrollraum": {
+      "name": "o_schalter_kontrollraum",
+      "examine": "Ein großer, roter Schalter an der Wand. Darüber ein Schild: 'Notfall-Schalter 1/2 - Synchrone Aktivierung erforderlich'.",
+      "help_text": "Dieser Schalter scheint ein Gegenstück zu haben. Beide müssen gleichzeitig aktiviert werden.",
+      "callnames": [
+        "Kontrollraumschalter",
+        "Schalter",
+        "Notfallschalter"
+      ],
+      "ownedby": "p_kontrollraum",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_schalter_kontrollraum_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_schalter_kontrollraum_prompt_f"
+    },
+    "o_schalter_generatorraum": {
+      "name": "o_schalter_generatorraum",
+      "examine": "Ein großer, roter Schalter an der Wand. Darüber ein Schild: 'Notfall-Schalter 2/2 - Synchrone Aktivierung erforderlich'.",
+      "help_text": "Dieser Schalter scheint ein Gegenstück zu haben. Beide müssen gleichzeitig aktiviert werden.",
+      "callnames": [
+        "Generatorraumschalter",
+        "Schalter",
+        "Notfallschalter"
+      ],
+      "ownedby": "p_generatorraum",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "GameApplyFunctions.o_schalter_generatorraum_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "ObjectPrompts.o_schalter_generatorraum_prompt_f"
     }
   },
   "_editor": {

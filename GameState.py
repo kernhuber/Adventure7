@@ -240,6 +240,13 @@ class GameState:
         "game_won",
         "time",
         "debug_mode",
+        "zombie_awake",
+        "zombie_cooperative",
+        "schalter_kontrollraum",
+        "schalter_generatorraum",
+        "schalter_kontrollraum_timer",
+        "schalter_generatorraum_timer",
+        "umschlag_geheimbotschaft",
     }
 
     # Provide legacy attribute access to flags (read)
@@ -511,6 +518,13 @@ class GameState:
         self.flasche_voll = True           # Eine Grace Period von 20 Zügen, danach muss der Spieler den Wasserspender entdeckt haben
         self.game_over = False             # Na hoffentlich noch nicht so schnell!
         self.game_won = False              # Wenn true, hat der Spieler das Spiel gewonnen.
+        self.zombie_awake = False
+        self.zombie_cooperative = False
+        self.schalter_kontrollraum = False
+        self.schalter_generatorraum = False
+        self.schalter_kontrollraum_timer = 0
+        self.schalter_generatorraum_timer = 0
+        self.umschlag_geheimbotschaft = False
         # Mirror flags into a structured container (GameFlags) for future decoupling
         self._flags = GameFlags(
             schuppentuer=self.schuppentuer,
@@ -528,6 +542,13 @@ class GameState:
             game_won=self.game_won,
             time=self.time,
             debug_mode=self.debug_mode,
+            zombie_awake=self.zombie_awake,
+            zombie_cooperative=self.zombie_cooperative,
+            schalter_kontrollraum=self.schalter_kontrollraum,
+            schalter_generatorraum=self.schalter_generatorraum,
+            schalter_kontrollraum_timer=self.schalter_kontrollraum_timer,
+            schalter_generatorraum_timer=self.schalter_generatorraum_timer,
+            umschlag_geheimbotschaft=self.umschlag_geheimbotschaft,
         )
         #self.llm = GeminiInterface()       # Unser Sprachmodell
         # Prefer injected LLM; fallback to local GeminiInterface to avoid module-level import cycles

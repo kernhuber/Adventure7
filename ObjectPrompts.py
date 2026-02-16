@@ -559,6 +559,52 @@ Falltür
 - Es scheint keinen Weg zu geben, sie von hier zu öffnen
     """
 
+def o_tinktur_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    return """
+Tinktur
+=======
+- Eine kleine Flasche mit einer durchsichtigen Flüssigkeit
+- Das Etikett ist vergilbt und kaum noch lesbar
+- Man kann nur noch 'Geheim...' entziffern
+- Riecht leicht nach Zitrone und Chemikalien
+
+Anwendung
+=========
+- Die Tinktur kann auf Gegenstände angewandt werden, um verborgene Botschaften sichtbar zu machen
+- Beispiel: "Wende die Tinktur auf den Umschlag an" --> 'anwenden Tinktur Umschlag'
+"""
+
+
+def o_schalter_kontrollraum_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    r = """
+Notfall-Schalter (Kontrollraum)
+===============================
+- Ein großer, roter Schalter an der Wand
+- Darüber ein Schild: 'Notfall-Schalter 1/2 - Synchrone Aktivierung erforderlich'
+- Ein zweiter Schalter befindet sich offenbar in einem anderen Raum
+"""
+    if _F(gs).schalter_kontrollraum:
+        r += "- Der Schalter ist **aktiviert** und leuchtet grün\n"
+    else:
+        r += "- Der Schalter ist nicht aktiviert\n"
+    return r
+
+
+def o_schalter_generatorraum_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    r = """
+Notfall-Schalter (Generatorraum)
+================================
+- Ein großer, roter Schalter an der Wand
+- Darüber ein Schild: 'Notfall-Schalter 2/2 - Synchrone Aktivierung erforderlich'
+- Ein zweiter Schalter befindet sich offenbar in einem anderen Raum
+"""
+    if _F(gs).schalter_generatorraum:
+        r += "- Der Schalter ist **aktiviert** und leuchtet grün\n"
+    else:
+        r += "- Der Schalter ist nicht aktiviert\n"
+    return r
+
+
 def o_werbeplakat_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     if gs.werbeplakat_offen:
         return """ 

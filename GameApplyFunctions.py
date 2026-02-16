@@ -325,7 +325,24 @@ def o_fahrradkette_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject
         if gs.objects["o_umschlag"] in pl.inventory:
             gs.game_over = True
             gs.game_won = True
-            return "Du reparierst Dein Fahrrad, und schaffst es rechtzeitig, den Briefumschlag abzugeben. Du bist ein Held, rettest die Welt, und ***gewinnst das Spiel!***"
+            if _F(gs).zombie_cooperative:
+                return (
+                    "Du reparierst Dein Fahrrad mit der neuen Kette. "
+                    "Bevor du losfährst, hältst du inne. Der Zombie - Herbert Kronstein - "
+                    "hat seinen Frieden gefunden. Seine Erlösung hat auch dir den Weg frei gemacht. "
+                    "Du schwingst dich auf dein Fahrrad und schaffst es rechtzeitig, "
+                    "den Briefumschlag abzugeben. "
+                    "***Du bist ein wahrer Held! Du hast nicht nur die Welt gerettet, "
+                    "sondern auch eine verlorene Seele erlöst! Du gewinnst das Spiel!***"
+                )
+            else:
+                return (
+                    "Du reparierst Dein Fahrrad und schaffst es rechtzeitig, "
+                    "den Briefumschlag abzugeben. ***Du gewinnst das Spiel!*** "
+                    "Allerdings... irgendwo in der Tiefe der Anlage irrt noch immer "
+                    "ein untoter Geschäftsmann umher, gefangen zwischen Leben und Tod. "
+                    "Du hättest ihm helfen können. Ein bitterer Beigeschmack bleibt."
+                )
         else:
             return "Das wäre schön - aber wo hast du den Briefumschlag abgelegt? Den brauchst Du..."
     else:
@@ -358,6 +375,61 @@ def o_falltuer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = N
         return "Die Falltür fällt krachend in ihren Rahmen und ist nun wieder verschlossen!"
     else:
         return "Da kann man machen, was man will - dir Tür ist zu."
+
+def o_tinktur_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    if onwhat is not None and onwhat.name == "o_umschlag":
+        if _F(gs).umschlag_geheimbotschaft:
+            return "Die Geheimbotschaft auf dem Umschlag hast du bereits sichtbar gemacht."
+        _F(gs).umschlag_geheimbotschaft = True
+        gs.objects["o_umschlag"].examine = (
+            "Ein dicker grauer Umschlag. Durch die Tinktur ist eine geheime Botschaft sichtbar geworden: "
+            "'Zwei Schalter, zwei Räume - Kontrollraum und Generatorraum. "
+            "Nur wenn beide gleichzeitig aktiviert werden, öffnet sich der Weg zur Erlösung. "
+            "Einer allein kann es nicht schaffen.'"
+        )
+        return (
+            "Du träufelst die Tinktur vorsichtig auf den Umschlag. Langsam erscheinen unsichtbare Buchstaben "
+            "auf der Rückseite des Umschlags! Eine geheime Botschaft: "
+            "***'Zwei Schalter, zwei Räume - Kontrollraum und Generatorraum. "
+            "Nur wenn beide gleichzeitig aktiviert werden, öffnet sich der Weg zur Erlösung. "
+            "Einer allein kann es nicht schaffen.'***"
+        )
+    return "Worauf soll ich die Tinktur anwenden? Versuche es auf einem Gegenstand!"
+
+
+def o_schalter_kontrollraum_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    _F(gs).schalter_kontrollraum = True
+    _F(gs).schalter_kontrollraum_timer = 3
+    if _F(gs).schalter_generatorraum and _F(gs).schalter_generatorraum_timer > 0:
+        _F(gs).zombie_cooperative = True
+        return (
+            "Du aktivierst den Schalter - er leuchtet grün auf! "
+            "Ein tiefes Summen ertönt, und du spürst eine Vibration im Boden. "
+            "***Beide Schalter sind gleichzeitig aktiviert! Ein Mechanismus greift ineinander!***"
+        )
+    return (
+        "Du aktivierst den Schalter - er leuchtet grün auf. "
+        "Ein Schild zeigt an: 'Warte auf Schalter 2/2...' "
+        "Der zweite Schalter im Generatorraum muss ebenfalls aktiviert werden - und zwar schnell!"
+    )
+
+
+def o_schalter_generatorraum_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    _F(gs).schalter_generatorraum = True
+    _F(gs).schalter_generatorraum_timer = 3
+    if _F(gs).schalter_kontrollraum and _F(gs).schalter_kontrollraum_timer > 0:
+        _F(gs).zombie_cooperative = True
+        return (
+            "Du aktivierst den Schalter - er leuchtet grün auf! "
+            "Ein tiefes Summen ertönt, und du spürst eine Vibration im Boden. "
+            "***Beide Schalter sind gleichzeitig aktiviert! Ein Mechanismus greift ineinander!***"
+        )
+    return (
+        "Du aktivierst den Schalter - er leuchtet grün auf. "
+        "Ein Schild zeigt an: 'Warte auf Schalter 1/2...' "
+        "Der zweite Schalter im Kontrollraum muss ebenfalls aktiviert werden - und zwar schnell!"
+    )
+
 
 def o_werbeplakat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None, onwhat:GameObject=None) -> str:
     #

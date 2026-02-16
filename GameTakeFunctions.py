@@ -20,6 +20,50 @@ def o_leiter_take_f(gs: GameState, pl: PlayerState=None) -> str:
 def o_fahrradkette_take_f(gs: GameState, pl: PlayerState=None) -> str:
     return "Du hast die Fahrradkette gefunden! Damit kannst Du Dein Fahrrad reparieren!"
 
+def o_geldboerse_take_f(gs: GameState, pl: PlayerState=None) -> str:
+    """Picking up the wallet awakens the zombie."""
+    from NPCZombieState import NPCZombieState
+    from Utils import dprint, dl
+
+    if _F(gs).zombie_awake:
+        return "Du hast die Geldbörse aufgenommen."
+
+    _F(gs).zombie_awake = True
+
+    # Remove the skeleton from the cave
+    skelett = gs.objects.get("o_skelett")
+    if skelett:
+        if skelett in pl.location.place_objects:
+            pl.location.place_objects.remove(skelett)
+        del gs.objects["o_skelett"]
+
+    # Create zombie NPC at the player's current location
+    zombie = NPCZombieState(name="Zombie", location=pl.location)
+    dprint(dl.ZOMBIE, f"Zombie erwacht in {pl.location.name}!")
+
+    # Move EC card to zombie's inventory
+    ec_karte = gs.objects.get("o_ec_karte")
+    if ec_karte:
+        if ec_karte in pl.location.place_objects:
+            pl.location.place_objects.remove(ec_karte)
+        ec_karte.hidden = False
+        zombie.inventory.append(ec_karte)
+        ec_karte.ownedby = zombie
+
+    gs.players.append(zombie)
+
+    return (
+        "Du greifst nach der Geldbörse - und in diesem Moment geschieht etwas Unheimliches! "
+        "***Das Skelett beginnt sich zu bewegen!*** Knochen knacken, der Nadelstreifenanzug "
+        "raschelt, und langsam richtet sich die Gestalt auf. Wo eben noch leere Augenhöhlen "
+        "waren, glimmt nun ein schwaches, rötliches Licht. "
+        "Der Zombie steht vor dir, schwankend aber aufrecht. "
+        "In seiner knochigen Hand hält er eine EC-Karte. "
+        "Mit einer heiseren, krächzenden Stimme fragt er: "
+        "***'Suchst du etwa... die hier?'***"
+    )
+
+
 def o_blumentopf_take_f(gs: GameState, pl: PlayerState=None) -> str:
     f = ""
     schluessel = gs.objects["o_schluessel"]

@@ -190,6 +190,12 @@ class WebDialogs:
                     chat_running = False
                     ls_chat = data.get('zombiechat', None)
                     whom.end_chat(gs.llm,ls_chat if ls_chat else last_chat)
+                    # Log zombie state transition if applicable
+                    if hasattr(whom, 'zombie_state'):
+                        from NPCZombieState import ZombieState
+                        dprint(dl.WEBGUI, f"Zombie state after chat: {whom.zombie_state}")
+                        if whom.zombie_state == ZombieState.COOPERATING:
+                            dprint(dl.WEBGUI, "Zombie transitioned to COOPERATING after dialog!")
                     break
                 else:
                     chat = data.get("zombiechat",None)
