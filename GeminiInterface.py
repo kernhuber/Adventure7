@@ -143,6 +143,18 @@ Die Ortsbeschreibung:
                 break
         if dog:
             r = r + "\n" + dog.dog_prompt(gs,pl)
+
+        zombie = None
+        from NPCZombieState import NPCZombieState
+        for z in gs.players:
+            if isinstance(z, NPCZombieState):
+                zombie = z
+                break
+        if zombie:
+            zp = zombie.zombie_prompt(gs, pl)
+            if zp:
+                r = r + "\n" + zp
+
         if self.txt_prev_description.get(pl.location.name,None):
 
             r = r + f"""
@@ -154,7 +166,7 @@ Die Ortsbeschreibung:
  Generiere die Beschreibung der Situation ausschließlich aus den oben angegebenen
  Informationen, und greife auf die vorherige Beschreibung nur zurück, um Konsistenz
  zu wahren, was die Stimmung und die generelle Szenerie betrifft. Keinesfalls darfst
- Du Gegenstände, Objekte, Wege und Beschreibungen des Hundes aus der vorherigen
+ Du Gegenstände, Objekte, Wege und Beschreibungen des Hundes oder Zombies aus der vorherigen
  Beschreibung übernehmen, denn dies kann sich im Spielverlauf geändert haben. Diese
  Informationen dürfen ausschließlich nur aus den obigen Angaben genommen werden. Die
  

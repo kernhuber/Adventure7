@@ -20,13 +20,10 @@ def o_leiter_take_f(gs: GameState, pl: PlayerState=None) -> str:
 def o_fahrradkette_take_f(gs: GameState, pl: PlayerState=None) -> str:
     return "Du hast die Fahrradkette gefunden! Damit kannst Du Dein Fahrrad reparieren!"
 
-def o_geldboerse_take_f(gs: GameState, pl: PlayerState=None) -> str:
-    """Picking up the wallet awakens the zombie."""
+def _awaken_zombie(gs: GameState, pl: PlayerState) -> str:
+    """Shared zombie awakening logic for both examine and take."""
     from NPCZombieState import NPCZombieState
     from Utils import dprint, dl
-
-    if _F(gs).zombie_awake:
-        return "Du hast die Geldbörse aufgenommen."
 
     _F(gs).zombie_awake = True
 
@@ -46,6 +43,8 @@ def o_geldboerse_take_f(gs: GameState, pl: PlayerState=None) -> str:
     if ec_karte:
         if ec_karte in pl.location.place_objects:
             pl.location.place_objects.remove(ec_karte)
+        if ec_karte in pl.inventory:
+            pl.inventory.remove(ec_karte)
         ec_karte.hidden = False
         zombie.inventory.append(ec_karte)
         ec_karte.ownedby = zombie
@@ -53,7 +52,6 @@ def o_geldboerse_take_f(gs: GameState, pl: PlayerState=None) -> str:
     gs.players.append(zombie)
 
     return (
-        "Du greifst nach der Geldbörse - und in diesem Moment geschieht etwas Unheimliches! "
         "***Das Skelett beginnt sich zu bewegen!*** Knochen knacken, der Nadelstreifenanzug "
         "raschelt, und langsam richtet sich die Gestalt auf. Wo eben noch leere Augenhöhlen "
         "waren, glimmt nun ein schwaches, rötliches Licht. "
@@ -62,6 +60,14 @@ def o_geldboerse_take_f(gs: GameState, pl: PlayerState=None) -> str:
         "Mit einer heiseren, krächzenden Stimme fragt er: "
         "***'Suchst du etwa... die hier?'***"
     )
+
+
+def o_geldboerse_take_f(gs: GameState, pl: PlayerState=None) -> str:
+    """Taking the wallet awakens the zombie if not already awake."""
+    if _F(gs).zombie_awake:
+        return "Du hast die Geldbörse aufgenommen."
+    zombie_text = _awaken_zombie(gs, pl)
+    return "Du greifst nach der Geldbörse - und in diesem Moment geschieht etwas Unheimliches! " + zombie_text
 
 
 def o_blumentopf_take_f(gs: GameState, pl: PlayerState=None) -> str:

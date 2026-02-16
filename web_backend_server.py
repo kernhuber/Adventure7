@@ -142,6 +142,12 @@ class WebAdventureServer:
                 def list_directory(self, path):
                     self.send_error(403, "Verzeichnisauflistung nicht erlaubt")
                     return None
+                def end_headers(self):
+                    # Prevent browser caching of HTML/JS files during development
+                    self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                    self.send_header('Pragma', 'no-cache')
+                    self.send_header('Expires', '0')
+                    super().end_headers()
             try:
                 handler = partial(NoListingHandler, directory="web")
                 httpd = HTTPServer((self.host, self.http_port), handler)
@@ -362,7 +368,8 @@ class WebAdventureServer:
                     zombie_location = getattr(zombie.location, 'callnames', ['Unbekannt'])
                     zombie_info = {
                         "location": zombie_location[0] if zombie_location else 'Unbekannt',
-                        "state": getattr(zombie, 'zombie_state_message', 'Der Zombie tut nichts')
+                        "state": getattr(zombie, 'zombie_state_message', 'Der Zombie tut nichts'),
+                        "here": zombie.location == player.location if player else False
                     }
                 except:
                     pass

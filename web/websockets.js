@@ -450,6 +450,12 @@ function updateUI() {
         updateDogDanger()
         updateStatus()
         showPowerMain(gameState.power_main)
+        // Zombie overlay - inline definition as fallback if zombie_overlay.js not loaded
+        if (typeof showZombieOverlay === 'function') {
+            showZombieOverlay(gameState.zombie?.here || false);
+        } else {
+            _showZombieOverlayInline(gameState.zombie?.here || false);
+        }
 
     } catch (error) {
         console.error('❌ UI-Fehler:', error);
@@ -623,5 +629,27 @@ document.addEventListener('DOMContentLoaded', function() {
         if (input) input.focus();
     }, 1000);
 });
+
+// Inline zombie overlay (always available, no separate JS file needed)
+function _showZombieOverlayInline(visible) {
+    const ZOMBIE_ID = 'zombieOverlay';
+    let overlay = document.getElementById(ZOMBIE_ID);
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = ZOMBIE_ID;
+        overlay.style.cssText = 'position:fixed;top:0;right:125px;z-index:-1;width:125px;height:180px;pointer-events:none;';
+        const img = document.createElement('img');
+        img.id = ZOMBIE_ID + '_img';
+        img.src = 'zombie.png';
+        img.style.cssText = 'position:absolute;width:100%;height:100%;object-fit:contain;transition:opacity 0.5s ease;opacity:0;' +
+            '-webkit-mask-image:radial-gradient(ellipse at center,black 70%,transparent 100%);' +
+            'mask-image:radial-gradient(ellipse at center,black 70%,transparent 100%);' +
+            '-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;' +
+            '-webkit-mask-size:100% 100%;mask-size:100% 100%;';
+        overlay.appendChild(img);
+        document.body.appendChild(overlay);
+    }
+    document.getElementById(ZOMBIE_ID + '_img').style.opacity = visible ? '1' : '0';
+}
 
 console.log('✅ Script mit Mini-Game Support geladen');

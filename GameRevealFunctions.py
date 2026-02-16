@@ -38,21 +38,19 @@ def o_skelett_reveal_f(gs: "GameState", pl: "PlayerState" = None, what: "GameObj
 
 def o_geldboerse_reveal_f(gs: "GameState", pl: "PlayerState" = None, what: "GameObject" = None,
                           onwhat: "GameObject" = None) -> str:
-    o_ec_karte = gs.objects["o_ec_karte"]
-    o_geldboerse = gs.objects["o_geldboerse"]
-    if o_ec_karte.hidden:
-        o_ec_karte.hidden = False
-        o_ec_karte.ownedby = o_geldboerse.ownedby
-        from Place import Place
-        if isinstance(o_ec_karte.ownedby, Place):
-            o_ec_karte.ownedby.place_objects.append(o_ec_karte)
-        else:
-            o_ec_karte.ownedby.inventory.append(o_ec_karte)
+    from GameTakeFunctions import _awaken_zombie, _F
 
-        o_geldboerse.examine = "In dieser Geldbörse hast Du eine EC-Karte gefunden"
-        return "Fein! Hier ist eine EC-Karte! Die passt bestimmt in einen Geldautomaten!"
-    else:
-        return gs.objects["o_geldboerse"].examine
+    o_geldboerse = gs.objects["o_geldboerse"]
+
+    # If zombie is already awake, just return examine text
+    if _F(gs).zombie_awake:
+        return o_geldboerse.examine
+
+    # Examining the wallet awakens the zombie
+    zombie_text = _awaken_zombie(gs, pl)
+    o_geldboerse.examine = "Eine alte, abgewetzte Geldbörse. Sie ist leer."
+
+    return "Du öffnest die Geldbörse - und in diesem Moment geschieht etwas Unheimliches! " + zombie_text
 
 
 def o_muelleimer_reveal_f(gs: "GameState", pl: "PlayerState" = None, what: "GameObject" = None,

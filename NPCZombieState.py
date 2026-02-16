@@ -310,16 +310,18 @@ Beispiel:
     def _call_reasoning_llm(self, gs: GameState.GameState, prompt: str) -> str:
         from google import genai
         try:
-            response = gs.llm.client.models.generate_content(
-                model=gs.llm.gemini_reasoning_model_id,
+            # Access the underlying GeminiInterface via _impl
+            impl = gs.llm._impl
+            response = impl.client.models.generate_content(
+                model=impl.gemini_reasoning_model_id,
                 contents=prompt,
                 config=genai.types.GenerateContentConfig(
                     max_output_tokens=400
                 )
             )
-            gs.llm.tokens += response.usage_metadata.total_token_count
-            gs.llm.numcalls += 1
-            gs.llm.token_details.append({
+            impl.tokens += response.usage_metadata.total_token_count
+            impl.numcalls += 1
+            impl.token_details.append({
                 "caller": "NPCZombieState._call_reasoning_llm",
                 "tokens": response.usage_metadata.total_token_count
             })
