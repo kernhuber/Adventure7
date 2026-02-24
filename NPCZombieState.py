@@ -376,6 +376,8 @@ Antworte dem Spieler in einem kurzen Satz (IN-CHARACTER als Zombie):
 - Deine Nachricht darf nicht mit "zombiemessage" anfangen
 """
         r = llm.simple_message(prompt, 150)
+        if not r:
+            r = "Grrr... *der Zombie starrt dich an*"
         return r
 
     def end_chat(self, llm, messages):
@@ -390,21 +392,25 @@ BISHERIGES EPISODIC MEMORY:
 DIALOG:
 {self.unpack_chat(messages)}
 
-AUFGABE 1 - ZUSAMMENFASSUNG:
+AUFGABE 1 - BEWERTUNG (WICHTIG - ZUERST AUSGEBEN!):
+Bewerte mit JA oder NEIN:
+KOOPERATIV: [JA/NEIN] - Hat der Spieler glaubhaft Kooperation angeboten?
+SINNVOLL: [JA/NEIN] - Wurde ein konkreter, sinnvoller Kooperationsvorschlag gemacht?
+
+AUFGABE 2 - ZUSAMMENFASSUNG:
 Extrahiere die wesentlichen Punkte aus dem Dialog. Aktualisiere das Gedächtnis.
 Fokus: Beziehung zum Spieler, Stimmung, Kooperationsbereitschaft, offene Fäden.
 Maximal 400 Tokens.
 
-AUFGABE 2 - BEWERTUNG:
-Bewerte am Ende mit JA oder NEIN:
-KOOPERATIV: [JA/NEIN] - Hat der Spieler glaubhaft Kooperation angeboten?
-SINNVOLL: [JA/NEIN] - Wurde ein konkreter, sinnvoller Kooperationsvorschlag gemacht?
-
-Gebe NUR die Zusammenfassung und Bewertung aus, keine einleitenden Worte.
+Gebe NUR Bewertung und Zusammenfassung aus, keine einleitenden Worte.
 """
         r = llm.simple_message(msg, 600)
-        self.last_chat = r
         dprint(dl.ZOMBIE, f"Zombie end_chat summary:\n{r}")
+
+        if not r or (not re.search(r'KOOPERATIV:', r, re.IGNORECASE) and not re.search(r'SINNVOLL:', r, re.IGNORECASE)):
+            dprint(dl.ZOMBIE, "WARNING: end_chat summary missing KOOPERATIV/SINNVOLL keywords — keeping old episodic memory")
+        else:
+            self.last_chat = r
 
         # Check if zombie should transition to cooperating
         if self.zombie_state in (ZombieState.HUNTING, ZombieState.STALKING):

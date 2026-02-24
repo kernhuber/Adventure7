@@ -239,10 +239,9 @@ Die Ortsbeschreibung:
             r = self.clean_truncated_sentence(response.text)
             return r
         except Exception as e:
-            # Wenn die LLM-Interaktion nicht funktioniert hat, gebe den Prompt zurück
             dprint(dl.LLM,f"GeminiInterface.simple_message: Exception! {e}")
             traceback.print_exc()  # gibt den kompletten Stacktrace auf stderr aus
-            return message
+            return ""
 
     def narrate(self, gs:GameState, pl) -> str:
         #

@@ -840,10 +840,11 @@ class WebAdventureServer:
 
 
                 if player and hasattr(game, 'verb_execute_json'):
-                    # Durst-Logik - GENAU wie in Player_game_move
+                    # Durst-Logik - Zähler VOR der Aktion runterzählen
                     player.thirst_counter -= 1
                     thirst_message = ""
-                    # ⬇️ Deine neue Behandlung VOR dem allgemeinen Aufruf
+
+                    # ⬇️ Spezialbehandlung check_pinpad VOR dem allgemeinen Aufruf
                     if func_name == "check_pinpad":
                         hash = args.get("hash", "")
                         pin_result = await self.wd.ask_for_pin(hash)
@@ -853,6 +854,18 @@ class WebAdventureServer:
                             return "**Die Zahl stimmt!** Der Automat rattert und spuckt frische US-Dollar aus."
                         else:
                             return " --- Die Zahl ist falsch. ---"
+
+                    # Echte Game-Engine - Aktion ZUERST ausführen (z.B. Trinken setzt thirst_counter zurück)
+                    if not game.game_over:
+                        if func_name in ["interaktion", "interagiere", "interagieren"]:
+                            who = player.name
+                            whom = command_dict["function_call"]["args"].get("who", "")
+                            firstmessage = command_dict["function_call"]["args"].get("firstmessage", "")
+                            result = await game.async_verb_interact(player, session_id, whom, firstmessage)
+                        else:
+                            result = game.verb_execute_json(player, command_dict, session_id)
+
+                    # Durst-Warnung NACH der Aktion prüfen (so sieht man den Post-Aktion-Zustand)
                     if player.thirst_counter == 0:
                         game.game_over = True
                         thirst_message = "***Leider bist du verdurstet!***"
@@ -862,19 +875,6 @@ class WebAdventureServer:
                         thirst_message = "***Jetzt hast Du schon Durst. Du solltest dringend etwas zu Trinken suchen!***"
                     elif player.thirst_counter <= 5:
                         thirst_message = f"***Du hast jetzt richtig Durst! Es reicht noch für {player.thirst_counter} Spielrunden, dann verdurstest Du!***"
-
-                    # Echte Game-Engine
-                    if not game.game_over:
-                        #
-                        # Intercept async commands "interaktion" and "interagiere" (Himmel ist das umständlich!!)
-                        #
-                        if func_name in ["interaktion", "interagiere", "interagieren"]:
-                            who = player.name
-                            whom = command_dict["function_call"]["args"].get("who", "")
-                            firstmessage = command_dict["function_call"]["args"].get("firstmessage", "")
-                            result = await game.async_verb_interact(player, session_id, whom, firstmessage)
-                        else:
-                            result = game.verb_execute_json(player, command_dict, session_id)
                     #
                     # game_over kann durch Verdursten oder durch irgendwelche Aktionen bei verb_execute kommen
                     #
