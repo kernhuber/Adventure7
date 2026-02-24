@@ -748,6 +748,9 @@ class GameState:
             "json_write": (self.verb_json_write,0)
         }
         verb,numargs = vtab.get(func_name,(None,None))
+        if verb is None:
+            dprint(dl.GAMESTATE, f"verb_execute_json: Unknown verb '{func_name}' — not in vtab")
+            return f"Das Kommando '{func_name}' wurde nicht erkannt."
         r=verb(pl,session_id, **args)
         return r
 

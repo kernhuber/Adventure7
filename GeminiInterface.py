@@ -4,6 +4,7 @@ from GameState import GameState
 # import google.generativeai as genai
 from google import genai
 import os
+import time
 import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
 from pprint import pprint
 from Utils import dprint, dpprint, dl, ddiff
@@ -827,139 +828,149 @@ Die Ortsbeschreibung:
         Die **Definition und Semantik** der Befehle (gehe, anwenden, zurückweisen) wird durch die bereitgestellten Tools (`function_declarations`) gesteuert.
         """
 
-        try:
-            #import google.generativeai as genai
-            #from google.generativeai.types import GenerationConfig, Tool  # Füge Tool hinzu!
-            #from google.generativeai.client import get_default_retriever_client
+        for attempt in range(2):
+            try:
+                #import google.generativeai as genai
+                #from google.generativeai.types import GenerationConfig, Tool  # Füge Tool hinzu!
+                #from google.generativeai.client import get_default_retriever_client
 
-            # [NEU] Fassen Sie ALLE Konfigurationen (max_tokens, tools, tool_config) im 'config'-Objekt zusammen.
-            my_config = genai.types.GenerateContentConfig(
-                max_output_tokens=150,
+                # [NEU] Fassen Sie ALLE Konfigurationen (max_tokens, tools, tool_config) im 'config'-Objekt zusammen.
+                my_config = genai.types.GenerateContentConfig(
+                    max_output_tokens=150,
 
-                # [KORREKTUR]: Ersetzen Sie 'tools' durch 'function_declarations'!
-                tools = configured_tools,
-                tool_config=genai.types.ToolConfig(
-                    function_calling_config=genai.types.FunctionCallingConfig(
-                        mode="AUTO"
+                    # [KORREKTUR]: Ersetzen Sie 'tools' durch 'function_declarations'!
+                    tools = configured_tools,
+                    tool_config=genai.types.ToolConfig(
+                        function_calling_config=genai.types.FunctionCallingConfig(
+                            mode="AUTO"
+                        )
                     )
                 )
-            )
 
-            # [NEU] Aufruf über Client und Übergabe der Modell-ID
-            response = self.client.models.generate_content(
-                model=self.gemini_text_model_id, # <- Modell-ID
-                contents=prompt_str,
-                config=my_config # <- generation_config wird zu config
-            )
-
-
-            dprint(dl.LLM, "LLM-Info: ++++++++++++++")
-            dprint(dl.LLM_PROMPT,prompt_str)
-            dprint(dl.LLM_PROMPT,"+++++++ END OF PROMPT +++++++")
-            #dpprint(dl.LLM_PROMPT,tools)
-            dprint(dl.LLM_PROMPT,"++++++++ END OF TOOLS Section ++++++++")
-            dprint(dl.LLM, f"User input....: {user_input}")
-            # Debug: Log raw response details
-            dprint(dl.LLM, f"LLM response.function_calls: {response.function_calls}")
-            try:
-                dprint(dl.LLM, f"LLM response.text: {response.text}")
-            except Exception:
-                dprint(dl.LLM, "LLM response.text: <not available>")
-            dprint(dl.LLM, f"LLM response candidates count: {len(response.candidates) if response.candidates else 0}")
-            if response.candidates:
-                for ci, cand in enumerate(response.candidates):
-                    dprint(dl.LLM, f"  Candidate {ci} finish_reason: {cand.finish_reason}")
-                    if cand.content and cand.content.parts:
-                        for pi, part in enumerate(cand.content.parts):
-                            dprint(dl.LLM, f"  Candidate {ci} part {pi}: {part}")
-
-            # Token-Nutzung aktualisieren
-            self.tokens += response.usage_metadata.total_token_count
-            self.numcalls += 1
-            self.token_details.append(response.usage_metadata.total_token_count)
-
-            if response.function_calls:
-                # FALL 1: Das Modell hat das STANDARD-Function-Calling-Verhalten gezeigt.
-                # Dies ist die korrekte, konforme Art, Tool Calls zu empfangen.
-                # Sie müssen die f_call Objekte manuell in Ihr JSON-Format umwandeln (wie in meiner letzten Antwort beschrieben).
-
-                commands_list = []
-                for f_call in response.function_calls:
-                    commands_list.append({
-                        "function_call": {
-                            "name": f_call.name,
-                            "args": dict(f_call.args)
-                        }
-                    })
-                return commands_list
-
-            elif response.text:
-                # FALL 2: Das Modell hat auf Anweisung des Prompts das JSON-Array in das 'response.text'-Feld geschrieben.
-                # Dies war Ihr alter, non-konformer, aber funktionierender Weg.
-                # Das Modell wrappet die Antwort manchmal in Markdown-Code-Fences (```json ... ```),
-                # die wir vor dem Parsen entfernen müssen.
-                raw_text = response.text.strip()
-
-                # Detect Gemini Python-style responses like:
-                #   <ctrl42>call\nprint(default_api.anwenden(arg="value"))
-                #   default_api.gehen(direction="norden")
-                import re
-                python_api_match = re.search(
-                    r'default_api\.(\w+)\(([^)]*)\)', raw_text
+                # [NEU] Aufruf über Client und Übergabe der Modell-ID
+                response = self.client.models.generate_content(
+                    model=self.gemini_text_model_id, # <- Modell-ID
+                    contents=prompt_str,
+                    config=my_config # <- generation_config wird zu config
                 )
-                if python_api_match and ('default_api.' in raw_text or '<ctrl' in raw_text or 'print(' in raw_text):
-                    func_name = python_api_match.group(1)
-                    args_str = python_api_match.group(2)
-                    # Parse keyword arguments like: arg1="val1", arg2="val2"
-                    parsed_args = {}
-                    for kwarg_match in re.finditer(r'(\w+)\s*=\s*"([^"]*)"', args_str):
-                        parsed_args[kwarg_match.group(1)] = kwarg_match.group(2)
-                    dprint(dl.LLM, f"⚠️ Python-style Gemini response detected, extracted: {func_name}({parsed_args})")
-                    return [{"function_call": {"name": func_name, "args": parsed_args}}]
 
-                # Markdown-Code-Fences entfernen
-                if raw_text.startswith("```"):
-                    # Erste Zeile (```json oder ```) entfernen
-                    first_newline = raw_text.find("\n")
-                    if first_newline != -1:
-                        raw_text = raw_text[first_newline + 1:]
-                    # Schließende ``` entfernen
-                    if raw_text.rstrip().endswith("```"):
-                        raw_text = raw_text.rstrip()[:-3].rstrip()
-                    dprint(dl.LLM, f"Markdown-Fences entfernt, bereinigter Text: {raw_text[:200]}")
+
+                dprint(dl.LLM, "LLM-Info: ++++++++++++++")
+                dprint(dl.LLM_PROMPT,prompt_str)
+                dprint(dl.LLM_PROMPT,"+++++++ END OF PROMPT +++++++")
+                #dpprint(dl.LLM_PROMPT,tools)
+                dprint(dl.LLM_PROMPT,"++++++++ END OF TOOLS Section ++++++++")
+                dprint(dl.LLM, f"User input....: {user_input}")
+                # Debug: Log raw response details
+                dprint(dl.LLM, f"LLM response.function_calls: {response.function_calls}")
                 try:
-                    commands = json.loads(raw_text)
-                    if isinstance(commands, list):
-                        return commands
-                except json.JSONDecodeError:
-                    dprint(dl.LLM, f"JSON parse failed for text: {raw_text[:200]}")
-                    pass  # Wenn Parsing fehlschlägt, weiter zum Fallback
+                    dprint(dl.LLM, f"LLM response.text: {response.text}")
+                except Exception:
+                    dprint(dl.LLM, "LLM response.text: <not available>")
+                dprint(dl.LLM, f"LLM response candidates count: {len(response.candidates) if response.candidates else 0}")
+                if response.candidates:
+                    for ci, cand in enumerate(response.candidates):
+                        dprint(dl.LLM, f"  Candidate {ci} finish_reason: {cand.finish_reason}")
+                        if cand.content and cand.content.parts:
+                            for pi, part in enumerate(cand.content.parts):
+                                dprint(dl.LLM, f"  Candidate {ci} part {pi}: {part}")
 
-            # Fallback (z.B. wenn response.text kein gültiges JSON war)
-            return [{"function_call": {"name": "zurueckweisen", "args": {
-                "why": "Interne Befehlsstruktur konnte nicht interpretiert werden."}}}]
+                # Token-Nutzung aktualisieren
+                self.tokens += response.usage_metadata.total_token_count
+                self.numcalls += 1
+                self.token_details.append(response.usage_metadata.total_token_count)
+
+                if response.function_calls:
+                    # FALL 1: Das Modell hat das STANDARD-Function-Calling-Verhalten gezeigt.
+                    # Dies ist die korrekte, konforme Art, Tool Calls zu empfangen.
+                    # Sie müssen die f_call Objekte manuell in Ihr JSON-Format umwandeln (wie in meiner letzten Antwort beschrieben).
+
+                    commands_list = []
+                    for f_call in response.function_calls:
+                        commands_list.append({
+                            "function_call": {
+                                "name": f_call.name,
+                                "args": dict(f_call.args)
+                            }
+                        })
+                    return commands_list
+
+                elif response.text:
+                    # FALL 2: Das Modell hat auf Anweisung des Prompts das JSON-Array in das 'response.text'-Feld geschrieben.
+                    # Dies war Ihr alter, non-konformer, aber funktionierender Weg.
+                    # Das Modell wrappet die Antwort manchmal in Markdown-Code-Fences (```json ... ```),
+                    # die wir vor dem Parsen entfernen müssen.
+                    raw_text = response.text.strip()
+
+                    # Detect Gemini Python-style responses like:
+                    #   <ctrl42>call\nprint(default_api.anwenden(arg="value"))
+                    #   default_api.gehen(direction="norden")
+                    import re
+                    python_api_match = re.search(
+                        r'default_api\.(\w+)\(([^)]*)\)', raw_text
+                    )
+                    if python_api_match and ('default_api.' in raw_text or '<ctrl' in raw_text or 'print(' in raw_text):
+                        func_name = python_api_match.group(1)
+                        args_str = python_api_match.group(2)
+                        # Parse keyword arguments like: arg1="val1", arg2="val2"
+                        parsed_args = {}
+                        for kwarg_match in re.finditer(r'(\w+)\s*=\s*"([^"]*)"', args_str):
+                            parsed_args[kwarg_match.group(1)] = kwarg_match.group(2)
+                        dprint(dl.LLM, f"⚠️ Python-style Gemini response detected, extracted: {func_name}({parsed_args})")
+                        return [{"function_call": {"name": func_name, "args": parsed_args}}]
+
+                    # Markdown-Code-Fences entfernen
+                    if raw_text.startswith("```"):
+                        # Erste Zeile (```json oder ```) entfernen
+                        first_newline = raw_text.find("\n")
+                        if first_newline != -1:
+                            raw_text = raw_text[first_newline + 1:]
+                        # Schließende ``` entfernen
+                        if raw_text.rstrip().endswith("```"):
+                            raw_text = raw_text.rstrip()[:-3].rstrip()
+                        dprint(dl.LLM, f"Markdown-Fences entfernt, bereinigter Text: {raw_text[:200]}")
+                    try:
+                        commands = json.loads(raw_text)
+                        if isinstance(commands, list):
+                            return commands
+                    except json.JSONDecodeError as je:
+                        dprint(dl.LLM, f"JSON parse failed for text: {raw_text[:200]} — error: {je}")
+
+                # Fallback (z.B. wenn response.text kein gültiges JSON war)
+                if attempt == 0:
+                    dprint(dl.LLM, f"⚠️ Retry: API returned fallback response for '{user_input}', retrying in 1s (attempt {attempt+1}/2)")
+                    time.sleep(1)
+                    continue
+                return [{"function_call": {"name": "zurueckweisen", "args": {
+                    "why": "Interne Befehlsstruktur konnte nicht interpretiert werden."}}}]
 
 
-        except Exception as e:
-            # Hier fangen wir jegliche JSONDecodeError oder andere Exceptions ab
-            dprint(dl.LLM, f"********** Fehler beim Parsen der Benutzereingabe: {e} **********")
-            dprint(dl.LLM, f"User input: {user_input}")
-            # Versuche, die rohe Antwort des LLM zu loggen, auch wenn sie ungültiges JSON war
-            if 'response' in locals() and hasattr(response, 'text'):
-                dprint(dl.LLM, f"LLM Raw Response (possibly malformed): {response.text}")
-            if 'response' in locals():
-                dprint(dl.LLM, "response:")
-                dpprint(dl.LLM,response)
-            else:
-                dprint(dl.LLM,"LLM did not send a response")
-            dprint(dl.LLM, f"Prompt used: {prompt_str}")
-            #dprint(dl.LLM, "tools array:")
-            #dpprint(dl.LLM,tools)
+            except Exception as e:
+                # Hier fangen wir jegliche JSONDecodeError oder andere Exceptions ab
+                dprint(dl.LLM, f"********** Fehler beim Parsen der Benutzereingabe: {e} **********")
+                dprint(dl.LLM, f"User input: {user_input}")
+                # Versuche, die rohe Antwort des LLM zu loggen, auch wenn sie ungültiges JSON war
+                if 'response' in locals() and hasattr(response, 'text'):
+                    dprint(dl.LLM, f"LLM Raw Response (possibly malformed): {response.text}")
+                if 'response' in locals():
+                    dprint(dl.LLM, "response:")
+                    dpprint(dl.LLM,response)
+                else:
+                    dprint(dl.LLM,"LLM did not send a response")
+                dprint(dl.LLM, f"Prompt used: {prompt_str}")
+                #dprint(dl.LLM, "tools array:")
+                #dpprint(dl.LLM,tools)
 
-            # Bei einem Fehler geben wir einen 'zurueckweisen'-Befehl als Dictionary zurück
-            traceback.print_exc()
-            return [{"function_call": {"name": "zurueckweisen", "args": {
-                "why": "Ein unerwarteter interner Fehler ist aufgetreten. Bitte versuche es anders."}}}]
+                if attempt == 0:
+                    dprint(dl.LLM, f"⚠️ Retry: Exception during API call for '{user_input}', retrying in 1s (attempt {attempt+1}/2)")
+                    traceback.print_exc()
+                    time.sleep(1)
+                    continue
+
+                # Bei einem Fehler geben wir einen 'zurueckweisen'-Befehl als Dictionary zurück
+                traceback.print_exc()
+                return [{"function_call": {"name": "zurueckweisen", "args": {
+                    "why": "Ein unerwarteter interner Fehler ist aufgetreten. Bitte versuche es anders."}}}]
 
     def get_npc_action(self, game_state_for_npc: dict) -> dict:
         """
