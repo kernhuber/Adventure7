@@ -900,6 +900,24 @@ Die Ortsbeschreibung:
                 # Das Modell wrappet die Antwort manchmal in Markdown-Code-Fences (```json ... ```),
                 # die wir vor dem Parsen entfernen müssen.
                 raw_text = response.text.strip()
+
+                # Detect Gemini Python-style responses like:
+                #   <ctrl42>call\nprint(default_api.anwenden(arg="value"))
+                #   default_api.gehen(direction="norden")
+                import re
+                python_api_match = re.search(
+                    r'default_api\.(\w+)\(([^)]*)\)', raw_text
+                )
+                if python_api_match and ('default_api.' in raw_text or '<ctrl' in raw_text or 'print(' in raw_text):
+                    func_name = python_api_match.group(1)
+                    args_str = python_api_match.group(2)
+                    # Parse keyword arguments like: arg1="val1", arg2="val2"
+                    parsed_args = {}
+                    for kwarg_match in re.finditer(r'(\w+)\s*=\s*"([^"]*)"', args_str):
+                        parsed_args[kwarg_match.group(1)] = kwarg_match.group(2)
+                    dprint(dl.LLM, f"⚠️ Python-style Gemini response detected, extracted: {func_name}({parsed_args})")
+                    return [{"function_call": {"name": func_name, "args": parsed_args}}]
+
                 # Markdown-Code-Fences entfernen
                 if raw_text.startswith("```"):
                     # Erste Zeile (```json oder ```) entfernen

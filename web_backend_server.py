@@ -1051,17 +1051,6 @@ class WebAdventureServer:
                         if npc_result and npc_result.strip():
                             npc_actions.append(json_cmd_simple("zombie_message", f"**{npc.name}:** {npc_result}"))
 
-                    # Switch timer countdown
-                    f = game.get_flags()
-                    if f.schalter_kontrollraum_timer > 0:
-                        f.schalter_kontrollraum_timer -= 1
-                        if f.schalter_kontrollraum_timer <= 0 and not f.zombie_cooperative:
-                            f.schalter_kontrollraum = False
-                    if f.schalter_generatorraum_timer > 0:
-                        f.schalter_generatorraum_timer -= 1
-                        if f.schalter_generatorraum_timer <= 0 and not f.zombie_cooperative:
-                            f.schalter_generatorraum = False
-
                 elif EXPLOSION_AVAILABLE and isinstance(npc, ExplosionState):
                     # Explosion-NPC - VEREINFACHT
                     dprint(dl.WEBGUI, f"💥 Sammle Explosion: Timer={npc.kaboom_timer}")
@@ -1087,6 +1076,17 @@ class WebAdventureServer:
                     if npc.kaboom_timer <= 0:
                         dprint(dl.WEBGUI, "💥 Explosion ist abgelaufen - entferne ExplosionState")
                         players_to_remove.append(npc)
+
+            # Switch timer countdown — runs once per turn, after all NPCs have acted
+            f = game.get_flags()
+            if f.schalter_kontrollraum_timer > 0:
+                f.schalter_kontrollraum_timer -= 1
+                if f.schalter_kontrollraum_timer <= 0 and not f.zombie_cooperative:
+                    f.schalter_kontrollraum = False
+            if f.schalter_generatorraum_timer > 0:
+                f.schalter_generatorraum_timer -= 1
+                if f.schalter_generatorraum_timer <= 0 and not f.zombie_cooperative:
+                    f.schalter_generatorraum = False
 
             # Entferne abgelaufene Explosionen
             for player in players_to_remove:
