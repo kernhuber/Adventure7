@@ -97,9 +97,11 @@ class NPCZombieState(PlayerState):
         prompt = self.compile_zombie_prompt(gs)
         try:
             response_text = self._call_reasoning_llm(gs, prompt)
+            dprint(dl.ZOMBIE, f"Zombie raw LLM reasoning:\n{response_text}")
             command, new_notes = self.parse_llm_response(response_text)
             self.notes = new_notes
             self.move_cooldown = 1
+            dprint(dl.ZOMBIE, f"Zombie location: {self.location.name}")
             dprint(dl.ZOMBIE, f"Zombie LLM action: {command}")
             dprint(dl.ZOMBIE, f"Zombie notes: {self.notes[:100]}...")
             return command

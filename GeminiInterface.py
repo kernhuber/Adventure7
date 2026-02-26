@@ -282,12 +282,14 @@ Die Ortsbeschreibung:
             self.narration_cache.update(room=room,prompt=prompt, narration=r)
             return r
         except Exception as e:
-            # Wenn die LLM-Interaktion nicht funktioniert hat, gebe den Prompt zurück
             print("Exception!!")
-            pprint(e) #
-            traceback.print_exc()  # gibt den kompletten Stacktrace auf stderr aus
+            pprint(e)
+            traceback.print_exc()
             self.narration_cache.invalidate(room)
-            return prompt
+            prev = self.txt_prev_description.get(pl.location.name)
+            if prev:
+                return prev
+            return "Die Szenenbeschreibung ist vorübergehend nicht verfügbar."
 
 
 #     def generate_scene_description(self,scene_elements: dict) -> str:
@@ -942,7 +944,8 @@ Die Ortsbeschreibung:
                     time.sleep(1)
                     continue
                 return [{"function_call": {"name": "zurueckweisen", "args": {
-                    "why": "Interne Befehlsstruktur konnte nicht interpretiert werden."}}}]
+                    "why": "Interne Befehlsstruktur konnte nicht interpretiert werden.",
+                    "is_system_error": True}}}]
 
 
             except Exception as e:
@@ -970,7 +973,8 @@ Die Ortsbeschreibung:
                 # Bei einem Fehler geben wir einen 'zurueckweisen'-Befehl als Dictionary zurück
                 traceback.print_exc()
                 return [{"function_call": {"name": "zurueckweisen", "args": {
-                    "why": "Ein unerwarteter interner Fehler ist aufgetreten. Bitte versuche es anders."}}}]
+                    "why": "Ein unerwarteter interner Fehler ist aufgetreten. Bitte versuche es anders.",
+                    "is_system_error": True}}}]
 
     def get_npc_action(self, game_state_for_npc: dict) -> dict:
         """

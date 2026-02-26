@@ -200,16 +200,19 @@ class WebAdventureServer:
                 dprint(dl.WEBGUI, f"✅ Spieler erstellt: {player.name} in {player.location.name}")
 
                 # Versuche Hund hinzuzufügen
-                from Utils import GHOSTMODE
+                from Utils import GHOSTMODE, NODOG
                 if not GHOSTMODE:
-                    try:
-                        from NPCDogState import NPCDogState
-                        dog = NPCDogState(name="Hund", location=game.places["p_geldautomat"])
-                        game.players.append(dog)
-                        dprint(dl.WEBGUI, f"✅ Hund hinzugefügt: {dog.name} in {dog.location.name}")
-                        dprint(dl.WEBGUI, f"🎮 Spieler insgesamt: {len(game.players)}")
-                    except Exception as e:
-                        dprint(dl.WEBGUI, f"⚠️  Hund konnte nicht hinzugefügt werden: {e}")
+                    if not NODOG:
+                        try:
+                            from NPCDogState import NPCDogState
+                            dog = NPCDogState(name="Hund", location=game.places["p_geldautomat"])
+                            game.players.append(dog)
+                            dprint(dl.WEBGUI, f"✅ Hund hinzugefügt: {dog.name} in {dog.location.name}")
+                            dprint(dl.WEBGUI, f"🎮 Spieler insgesamt: {len(game.players)}")
+                        except Exception as e:
+                            dprint(dl.WEBGUI, f"⚠️  Hund konnte nicht hinzugefügt werden: {e}")
+                    else:
+                        dprint(dl.WEBGUI,"Kein Hund hinzugefügt - NODOG Flag gesetzt")
                 else:
                     dprint(dl.WEBGUI,"Kein Hund hinzugefügt - GHOSTMODE")
 
@@ -716,7 +719,9 @@ class WebAdventureServer:
             "command": raw_command,
             "executed_command": command_to_execute['function_call']['name'],
             "results": [
-                {"command": command_to_execute['function_call']['name'], "result": result, "is_game_move": True}],
+                {"command": command_to_execute['function_call']['name'], "result": result,
+                 "is_game_move": not (command_to_execute['function_call']['name'] == "zurueckweisen"
+                                      and command_to_execute['function_call'].get('args', {}).get('is_system_error', False))}],
             "game_state": session["state"],
             "pending_commands": len(session["cmd_q"]),  # Debug info
             "has_pending_input": session["pending_llm_input"] is not None,  # Debug info
@@ -839,9 +844,12 @@ class WebAdventureServer:
 
 
 
+                is_system_error = (func_name == "zurueckweisen" and args.get("is_system_error", False))
+
                 if player and hasattr(game, 'verb_execute_json'):
-                    # Durst-Logik - Zähler VOR der Aktion runterzählen
-                    player.thirst_counter -= 1
+                    # Durst-Logik - Zähler VOR der Aktion runterzählen (nur bei echten Spielzügen)
+                    if not is_system_error:
+                        player.thirst_counter -= 1
                     thirst_message = ""
 
                     # ⬇️ Spezialbehandlung check_pinpad VOR dem allgemeinen Aufruf
@@ -894,7 +902,7 @@ class WebAdventureServer:
                     if thirst_message:
                         result = f"{result}\n\n{thirst_message}"
 
-                    if hasattr(game, 'time'):
+                    if hasattr(game, 'time') and not is_system_error:
                         game.time += 1
 
                     # Update game state - MIT Narration nur bei Bedarf
