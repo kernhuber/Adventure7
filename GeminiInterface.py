@@ -750,8 +750,8 @@ Die Ortsbeschreibung:
 
             ```json
             [
-              {{"function_call": {{"name": "untersuche", "args": {{"what": "p_schuppen"}}}}}},
-              {{"function_call": {{"name": "rest", "args": {{"remaining_input": "Schließe den Schuppen mit dem Schlüssel auf und sieh dich um"}}}}}},
+              {{"function_call": {{"name": "untersuche", "args": {{"what": "o_skelett"}}}}}},
+              {{"function_call": {{"name": "rest", "args": {{"remaining_input": "nimm die geldbörse"}}}}}},
             ]
             ```
 *(Grund: Die Geldbörse wird erst nach der Untersuchung des Skeletts enthüllt/sichtbar, daher ist "nimm" erst danach sinnvoll.)*
@@ -762,21 +762,21 @@ Die Ortsbeschreibung:
         "gehe zum Schuppen und schließe ihn mit dem Schlüssel auf, dann sieh dich um" wird zu:
             ```json
             [
-              {{"function_call": {{"name": "gehe", "args": {{"ziel_ort": "p_schuppen"}}}}}},
+              {{"function_call": {{"name": "gehe", "args": {{"direction": "p_schuppen"}}}}}},
               {{"function_call": {{"name": "rest", "args": {{"remaining_input": "Schließe den Schuppen mit dem Schlüssel auf und sieh dich um"}}}}}},
             ]
             ```
         "springe vom Dach und laufe zum Geldautomaten"
             ```json
             [
-              {{"function_call": {{"name": "gehe", "args": {{"ziel_ort": "o_skelett"}}}}}},
+              {{"function_call": {{"name": "gehe", "args": {{"direction": "p_schuppen"}}}}}},
               {{"function_call": {{"name": "rest", "args": {{"remaining_input": "laufe zum Geldautomaten"}}}}}},
             ]
             ```
         "steige auf das Dach, betätige dort den Hebel, und klettere wieder herunter"    
              ```json
             [
-              {{"function_call": {{"name": "gehe", "args": {{"ziel_ort": "p_dach"}}}}}},
+              {{"function_call": {{"name": "gehe", "args": {{"direction": "p_dach"}}}}}},
               {{"function_call": {{"name": "rest", "args": {{"remaining_input": "betätige den Hebel, und klettere wieder herunter"}}}}}},
             ]
             ```
