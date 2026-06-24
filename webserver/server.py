@@ -8,7 +8,7 @@ import sys
 import os
 from pathlib import Path
 import random
-from typing import Dict, Set
+from typing import Set
 from collections import deque
 
 from webserver.http_server import start_http_server
@@ -18,6 +18,7 @@ from webserver.demo import (
     process_demo_command_execution,
     process_simple_command_execution,
 )
+from webserver.session import SessionManager
 
 from tornado import websocket
 
@@ -72,7 +73,7 @@ class WebAdventureServer:
         self.http_port = http_port
 
         # Game instances per session
-        self.game_sessions: Dict[str, dict] = {}
+        self.game_sessions = SessionManager()
         self.connected_clients: Set = set()
 
         # Start HTTP server for static files; remember the port actually bound.
@@ -94,11 +95,11 @@ class WebAdventureServer:
 
                 # NEUE: Registriere Web-Session im GameState
                 game.register_web_session(session_id, websocket)
-                self.wd = game.web_sessions[session_id]["WebDialogs"]
+                wd = game.web_sessions[session_id]["WebDialogs"]
                 dprint(dl.WEBGUI, f"✅ GameState erstellt")
 
                 # Spieler erstellen
-                pname = await self.wd.ask_for_playername()
+                pname = await wd.ask_for_playername()
                 player = PlayerState(pname, game.places["p_start"])
                 player.session_id = session_id  # 👈 Spieler bekommt seine Session-ID
                 game.players.append(player)
@@ -130,35 +131,39 @@ class WebAdventureServer:
                 # Konvertiere zu serialisierbarem Format - MIT initialer Narration
                 game_state = serialize_real_game_state(game, session_id=session_id)
 
-                # Session mit Command-Queue und Pending-Input erstellen
-                self.game_sessions[session_id] = {
+                # Session mit Command-Queue und Pending-Input erstellen.
+                # WebDialogs und Scene-Cache gehören zur Session (früher fälschlich
+                # serverweit in self.wd / self._session_scene_cache gehalten, was
+                # zwischen gleichzeitigen Clients überschrieben wurde).
+                session = {
                     "type": "real",
                     "game": game,
                     "state": game_state,
                     "cmd_q": deque(),  # Command queue wie in PlayerState
                     "pending_llm_input": None,  # Pending input wie in PlayerState
-                    "minigame_active": False  # NEUE: Mini-Game Status
+                    "minigame_active": False,  # NEUE: Mini-Game Status
+                    "web_dialogs": wd,
+                    "scene_cache": game_state.get("scene_description", ""),
                 }
-                game.cmd_q = self.game_sessions[session_id]["cmd_q"]
-
-                # Initialisiere Scene-Cache für diese Session
-                if not hasattr(self, '_session_scene_cache'):
-                    self._session_scene_cache = {}
-                self._session_scene_cache[session_id] = game_state.get("scene_description", "")
+                self.game_sessions[session_id] = session
+                game.cmd_q = session["cmd_q"]
 
             except Exception as e:
                 dprint(dl.WEBGUI, f"❌ Fehler beim echten GameState: {e}")
                 traceback.print_exc()
                 dprint(dl.WEBGUI, f"⚠️  Verwende Demo-Modus als Fallback")
                 game_state = create_demo_game_state()
+                # Kein game.cmd_q hier: das echte GameState ist evtl. gar nicht
+                # zustande gekommen ('game' kann in diesem except undefiniert sein).
                 self.game_sessions[session_id] = {
                     "type": "demo",
                     "state": game_state,
                     "cmd_q": deque(),
                     "pending_llm_input": None,
-                    "minigame_active": False
+                    "minigame_active": False,
+                    "web_dialogs": None,
+                    "scene_cache": game_state.get("scene_description", ""),
                 }
-                game.cmd_q = self.game_sessions[session_id]["cmd_q"]
         else:
             # Demo-Modus
             dprint(dl.WEBGUI, f"📱 Erstelle Demo-GameState...")
@@ -168,7 +173,9 @@ class WebAdventureServer:
                 "state": game_state,
                 "cmd_q": deque(),
                 "pending_llm_input": None,
-                "minigame_active": False
+                "minigame_active": False,
+                "web_dialogs": None,
+                "scene_cache": game_state.get("scene_description", ""),
             }
 
 
@@ -187,11 +194,6 @@ class WebAdventureServer:
             if session["type"] == "real" and "game" in session:
                 session["game"].unregister_web_session(session_id)
             del self.game_sessions[session_id]
-
-        # Bereinige auch Scene-Cache für diese Session
-        if hasattr(self, '_session_scene_cache') and session_id in self._session_scene_cache:
-            del self._session_scene_cache[session_id]
-            dprint(dl.WEBGUI, f"🧹 Scene-Cache für Session {session_id} bereinigt")
 
         dprint(dl.WEBGUI, f"👋 Client {session_id} getrennt")
 
@@ -246,7 +248,7 @@ class WebAdventureServer:
                     """
                     game = session["game"]
                     # await self.do_game_over(session_id, game.game_won, txt)
-                    await self.wd.do_game_over(game.game_won, txt)
+                    await session["web_dialogs"].do_game_over(game.game_won, txt)
 
                 dog_fight_result = dog_result_map.get(result, DogFight.TIE)
 
@@ -411,7 +413,7 @@ class WebAdventureServer:
                 # Direkte Commands ohne LLM-Parsing
 
                 if user_input.lower().startswith("minigame"):
-                    minigame_result = await self.wd.do_minigame()
+                    minigame_result = await session["web_dialogs"].do_minigame()
                     session["cmd_q"].append({
                         "function_call": {
                             "name": "zurueckweisen",
@@ -421,7 +423,7 @@ class WebAdventureServer:
                 elif user_input.lower().startswith("zombie_chat"):
                     gs = session["game"]
                     pl = next(p for p in gs.players if type(p) is PlayerState)
-                    zombie_chat_result = await self.wd.do_chat(gs, pl, "Zombie")
+                    zombie_chat_result = await session["web_dialogs"].do_chat(gs, pl, "Zombie")
                 else:
                     session["cmd_q"].append({'function_call': {'name': user_input.lower(), 'args': {}}})
             else:
@@ -526,7 +528,7 @@ class WebAdventureServer:
                             dprint(dl.WEBGUI, f"🎮 Mini-Game Trigger erkannt!")
 
                             # Starte Mini-Game
-                            result = await self.wd.do_minigame()
+                            result = await session["web_dialogs"].do_minigame()
                             #
                             # Find Dog in Players in current session
                             #
@@ -590,7 +592,7 @@ class WebAdventureServer:
                 if explosion_happened:
                     if game.check_game_over():
                         game.game_over = True
-                        await self.wd.do_game_over(False,txt_final_lost_text)
+                        await session["web_dialogs"].do_game_over(False,txt_final_lost_text)
 
         # Schritt 7: Wenn noch Commands in Queue oder Pending Input vorhanden, sofort weiter verarbeiten
         if session["cmd_q"] or session["pending_llm_input"]:
@@ -627,7 +629,7 @@ class WebAdventureServer:
                     # ⬇️ Spezialbehandlung check_pinpad VOR dem allgemeinen Aufruf
                     if func_name == "check_pinpad":
                         hash = args.get("hash", "")
-                        pin_result = await self.wd.ask_for_pin(hash)
+                        pin_result = await session["web_dialogs"].ask_for_pin(hash)
 
                         if pin_result == "OK":
                             game.objects["o_geld_dollar"].hidden = False
@@ -668,7 +670,7 @@ class WebAdventureServer:
 """
 
                         # await self.do_game_over(session_id,game.game_won,txt)
-                        await self.wd.do_game_over(game.game_won, txt)
+                        await session["web_dialogs"].do_game_over(game.game_won, txt)
 
                     # Füge Durst-Nachricht hinzu, falls vorhanden
                     if thirst_message:
