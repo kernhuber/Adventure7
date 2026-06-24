@@ -45,25 +45,8 @@ except ImportError:
     dprint(dl.WEBGUI, "Installiere es mit: pip install websockets")
     exit(1)
 
-# Prüfe ob Game-Module verfügbar sind
-try:
-    from GameState import GameState
-    from PlayerState import PlayerState
-
-    GAME_MODULES_AVAILABLE = True
-    dprint(dl.WEBGUI, "✅ Game-Module erfolgreich importiert")
-except ImportError as e:
-    dprint(dl.WEBGUI, f"⚠️  Game-Module nicht verfügbar: {e}")
-    dprint(dl.WEBGUI, "⚠️  Verwende Demo-Modus")
-    GAME_MODULES_AVAILABLE = False
-
-#
-# PyInstaller-Mode?
-#
-    if hasattr(sys, '_MEIPASS'):
-        # Im PyInstaller-Betrieb
-        base_path = sys._MEIPASS
-        os.chdir(base_path)
+# Game-Module (oder Demo-Fallback) zentral aus game_modules beziehen
+from webserver.game_modules import GAME_MODULES_AVAILABLE, GameState, PlayerState
 
 
 class WebAdventureServer:
@@ -920,51 +903,6 @@ class WebAdventureServer:
             asyncio.run(self.start_websocket_server())
         except KeyboardInterrupt:
             dprint(dl.WEBGUI, f"\n👋 Server beendet")
-
-    import re
-
-    def clean_game_over_text(self,text):
-        import re
-        """Bereinigt Text für optimale Darstellung im Game-Over-Screen"""
-        # 1. Normalisiere Zeilenenumbrüche
-        text = text.replace('\r\n', '\n').replace('\r', '\n')
-
-        # 2. Entferne Leerzeichen am Zeilenanfang/-ende jeder Zeile
-        lines = [line.strip() for line in text.split('\n')]
-        text = '\n'.join(lines)
-
-        # 3. Reduziere mehrfache Leerzeilen auf maximal eine
-        #text = re.sub(r'\n\s*\n\s*\n+', '\n\n', text)
-
-        # 4. Entferne führende/trailing Leerzeilen
-        text = text.strip()
-
-        return text
-
-    async def do_game_over(self, session_id, won:bool, text:str):
-        dprint(dl.WEBGUI,"Ending game with explicit command")
-        text = self.clean_game_over_text(text)
-        try:
-            # WebSocket aus der Session holen
-            if session_id in self.game_sessions:
-                session = self.game_sessions[session_id]
-                if session["type"] == "real" and "game" in session:
-                    game = session["game"]
-                    # WebSocket aus game.web_sessions holen (falls registriert)
-                    if hasattr(game, 'web_sessions') and session_id in game.web_sessions:
-                        websocket = game.web_sessions[session_id]["websocket"]
-                        await websocket.send(json.dumps({"type": "game_over", "text": text, "won": won}))
-                        dprint(dl.WEBGUI,"Sent game_over message to client")
-                        return
-
-            dprint(dl.WEBGUI, "❌ WebSocket für Game-Over nicht gefunden")
-        except Exception as e:
-            dpprint(dl.WEBGUI,e)
-
-
-
-
-
 
 
 def run_working_adventure():
