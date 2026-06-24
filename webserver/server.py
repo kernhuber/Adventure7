@@ -12,6 +12,12 @@ from typing import Dict, Set
 from collections import deque
 
 from webserver.http_server import start_http_server
+from webserver.serialization import serialize_real_game_state
+from webserver.demo import (
+    create_demo_game_state,
+    process_demo_command_execution,
+    process_simple_command_execution,
+)
 
 from tornado import websocket
 
@@ -122,7 +128,7 @@ class WebAdventureServer:
                     dprint(dl.WEBGUI,"Kein Hund hinzugefügt - GHOSTMODE")
 
                 # Konvertiere zu serialisierbarem Format - MIT initialer Narration
-                game_state = self.serialize_real_game_state(game, session_id=session_id)
+                game_state = serialize_real_game_state(game, session_id=session_id)
 
                 # Session mit Command-Queue und Pending-Input erstellen
                 self.game_sessions[session_id] = {
@@ -144,7 +150,7 @@ class WebAdventureServer:
                 dprint(dl.WEBGUI, f"❌ Fehler beim echten GameState: {e}")
                 traceback.print_exc()
                 dprint(dl.WEBGUI, f"⚠️  Verwende Demo-Modus als Fallback")
-                game_state = self.create_demo_game_state()
+                game_state = create_demo_game_state()
                 self.game_sessions[session_id] = {
                     "type": "demo",
                     "state": game_state,
@@ -156,7 +162,7 @@ class WebAdventureServer:
         else:
             # Demo-Modus
             dprint(dl.WEBGUI, f"📱 Erstelle Demo-GameState...")
-            game_state = self.create_demo_game_state()
+            game_state = create_demo_game_state()
             self.game_sessions[session_id] = {
                 "type": "demo",
                 "state": game_state,
@@ -169,145 +175,6 @@ class WebAdventureServer:
         # Sende initialen Zustand
         await self.send_game_state(websocket, self.game_sessions[session_id]["state"])
         dprint(dl.WEBGUI, f"✅ Client {session_id} initialisiert ({self.game_sessions[session_id]['type']} Modus)")
-
-    def create_demo_game_state(self):
-        """Erstelle Demo-GameState ohne echte Game-Module"""
-        return {
-            "round": 1,
-            "game_over": False,
-            "game_won": False,
-            "player": {
-                "name": "WebPlayer",
-                "location": "Wüsten-Start",
-                "thirst": 40,
-                "inventory": ["Briefumschlag"]
-            },
-            "dog": {
-                "location": "Geldautomat",
-                "state": "Der Hund tut nichts... (Demo)"
-            },
-            "environment": {
-                "objects": ["Kaputtes Fahrrad"],
-                "ways": ["Zum Schuppen", "Zum Warenautomat", "Zum Geldautomat"],
-                "blockedWays": []
-            },
-            "scene_description": """Du befindest dich in einer endlosen Wüste. Die Sonne brennt erbarmungslos herab. 
-            Dein Fahrrad liegt kaputt neben dir - die Kette ist gerissen. Du musst einen Weg finden, 
-            das Fahrrad zu reparieren und deinen wichtigen Briefumschlag rechtzeitig abzuliefern."""
-        }
-
-    def serialize_real_game_state(self, game, session_id=None):
-        """Konvertiere echtes GameState zu JSON-Format"""
-        from NPCDogState import NPCDogState
-        from NPCZombieState import NPCZombieState
-        try:
-            player = game.players[0] if game.players else None
-            if not player:
-                return self.create_demo_game_state()
-
-            # Finde Hund (kann None sein falls Hund eliminiert wurde)
-            dog = next((d for d in game.players if type(d) is NPCDogState), None)
-
-            # Sichere Zugriffe
-            current_location = getattr(player, 'location', None)
-            if not current_location:
-                return self.create_demo_game_state()
-
-            # Objekte
-            visible_objects = []
-            try:
-                for obj in getattr(current_location, 'place_objects', []):
-                    if not getattr(obj, 'hidden', True):
-                        callnames = getattr(obj, 'callnames', ['Unbekanntes Objekt'])
-                        if callnames:
-                            visible_objects.append(callnames[0])
-            except:
-                pass
-
-            # Wege
-            available_ways = []
-            blocked_ways = []
-            try:
-                for way in getattr(current_location, 'ways', []):
-                    if getattr(way, 'visible', True):
-                        try:
-                            obstruction = way.obstruction_check(game) if hasattr(way, 'obstruction_check') else "Free"
-                            destination = getattr(way, 'destination', None)
-                            if destination:
-                                dest_name = getattr(destination, 'callnames', ['Unbekanntes Ziel'])
-                                dest_name = dest_name[0] if dest_name else 'Unbekanntes Ziel'
-
-                                if obstruction == "Free":
-                                    available_ways.append(dest_name)
-                                else:
-                                    blocked_ways.append(f"{dest_name} ({obstruction})")
-                        except:
-                            pass
-            except:
-                pass
-
-            # Szenenbeschreibung - NUR wenn explizit angefordert
-
-            scene_description = game.llm.narrate(game, player)
-
-
-            # Hund-Informationen
-            dog_info = {
-                "location": "Unbekannt",
-                "state": "Kein Hund im Spiel"
-            }
-            if dog:
-                try:
-                    dog_location = getattr(dog.location, 'callnames', ['Unbekannt'])
-                    dog_info = {
-                        "location": dog_location[0] if dog_location else 'Unbekannt',
-                        "state": getattr(dog, 'dog_state_message', 'Der Hund tut nichts')
-                    }
-                except:
-                    pass
-            # Zombie-Informationen
-            zombie_info = {
-                "location": "Unbekannt",
-                "state": "Kein Zombie im Spiel"
-            }
-            zombie = next((z for z in game.players if isinstance(z, NPCZombieState)), None)
-            if zombie:
-                try:
-                    zombie_location = getattr(zombie.location, 'callnames', ['Unbekannt'])
-                    zombie_info = {
-                        "location": zombie_location[0] if zombie_location else 'Unbekannt',
-                        "state": getattr(zombie, 'zombie_state_message', 'Der Zombie tut nichts'),
-                        "here": zombie.location == player.location if player else False
-                    }
-                except:
-                    pass
-
-            return {
-                "round": getattr(game, 'time', 1),
-                "game_over": getattr(game, 'game_over', False),
-                "game_won": getattr(game, 'game_won', False),
-                "power_main": getattr(game, 'hauptschalter', False),
-                "player": {
-                    "name": getattr(player, 'name', player.name),
-                    "location": getattr(current_location, 'callnames', ['Unbekannt'])[0],
-                    "thirst": getattr(player, 'thirst_counter', 40),
-                    "inventory": [getattr(item, 'callnames', ['Unbekanntes Item'])[0]
-                                  for item in getattr(player, 'inventory', [])]
-                },
-                "dog": dog_info,
-                "zombie": zombie_info,
-                "environment": {
-                    "objects": visible_objects,
-                    "ways": available_ways,
-                    "blockedWays": blocked_ways
-                },
-                "scene_description": scene_description
-            }
-
-        except Exception as e:
-            dprint(dl.WEBGUI, f"❌ Fehler beim Serialisieren: {e}")
-            traceback.print_exc()  # gibt den kompletten Stacktrace auf stderr aus
-            return self.create_demo_game_state()
 
     async def unregister_client(self, websocket):
         """Client-Verbindung beenden"""
@@ -405,7 +272,7 @@ class WebAdventureServer:
                     "type": "minigame_complete",
                     "result": result,
                     "message": fight_message,
-                    "game_state": self.serialize_real_game_state(game, session_id=session_id)
+                    "game_state": serialize_real_game_state(game, session_id=session_id)
                 }
 
                 await websocket.send(json.dumps(response))
@@ -811,7 +678,7 @@ class WebAdventureServer:
                         game.time += 1
 
                     # Update game state - MIT Narration nur bei Bedarf
-                    session["state"] = self.serialize_real_game_state(game,
+                    session["state"] = serialize_real_game_state(game,
                                                                       session_id=session_id)
 
                     # NPC-Züge sammeln (NICHT senden!) - die werden später in handle_command gesendet
@@ -825,7 +692,7 @@ class WebAdventureServer:
 
                     return result
                 else:
-                    return self.process_simple_command_execution(command_dict)
+                    return process_simple_command_execution(command_dict)
             else:
                 # Demo-Modus - auch hier Durst simulieren
                 if "player" in session["state"] and "thirst" in session["state"]["player"]:
@@ -847,7 +714,7 @@ class WebAdventureServer:
                 func_name = command_dict.get('function_call', {}).get('name', 'unknown')
                 args = command_dict.get('function_call', {}).get('args', {})
 
-                result = self.process_demo_command_execution(session["state"], func_name, args)
+                result = process_demo_command_execution(session["state"], func_name, args)
 
                 # Füge Durst-Nachricht hinzu, falls vorhanden
                 if thirst_message:
@@ -858,39 +725,6 @@ class WebAdventureServer:
         except Exception as e:
             dprint(dl.WEBGUI, f"❌ Fehler beim Ausführen von Command: {e}")
             return f"Fehler: {str(e)}"
-
-    def process_simple_command_execution(self, command_dict):
-        """Einfache Command-Ausführung ohne vollständige Game-Engine"""
-        func_name = command_dict.get('function_call', {}).get('name', 'unknown')
-        return f"Kommando '{func_name}' erkannt (vereinfachter Modus)"
-
-    def process_demo_command_execution(self, game_state, func_name, args):
-        """Demo-Command-Ausführung"""
-        if func_name == "hilfe":
-            return "**Demo-Modus aktiv** - Verfügbare Kommandos: hilfe, umsehen, gehe, nimm, untersuche"
-        elif func_name == "umsehen":
-            return "Du blickst umher. Die Wüstensonne brennt erbarmungslos."
-        elif func_name == "gehe":
-            direction = args.get('direction', 'unbekannt')
-            if "schuppen" in direction.lower():
-                game_state["player"]["location"] = "Schuppen"
-                game_state["environment"]["objects"] = ["Blumentopf", "Stuhl"]
-                game_state["environment"]["ways"] = ["Zurück zum Start"]
-                game_state["scene_description"] = "Du stehst vor einem alten Holzschuppen."
-                return "Du gehst zum Schuppen."
-            elif "start" in direction.lower():
-                game_state["player"]["location"] = "Wüsten-Start"
-                game_state["environment"]["objects"] = ["Kaputtes Fahrrad"]
-                game_state["environment"]["ways"] = ["Zum Schuppen", "Zum Warenautomat", "Zum Geldautomat"]
-                game_state["scene_description"] = "Du bist zurück am Startpunkt."
-                return "Du kehrst zum Start zurück."
-            else:
-                return f"Du gehst zu: {direction}"
-        elif func_name == "zurueckweisen":
-            why = args.get('why', 'Unbekannter Grund')
-            return f"***{why}***"
-        else:
-            return f"Demo-Kommando '{func_name}' ausgeführt"
 
     async def collect_npc_actions(self, game, session_id=None):
         """Sammle NPC-Aktionen OHNE sie zu senden - für später in handle_command"""
@@ -1009,7 +843,7 @@ class WebAdventureServer:
             # Update game state nach NPC-Aktionen - OHNE Narration (da schon gemacht)
             if session_id and hasattr(self, 'game_sessions') and session_id in self.game_sessions:
                 session = self.game_sessions[session_id]
-                session["state"] = self.serialize_real_game_state(game, session_id=session_id)
+                session["state"] = serialize_real_game_state(game, session_id=session_id)
 
             return npc_actions
 
