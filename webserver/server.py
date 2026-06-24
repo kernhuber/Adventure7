@@ -2,16 +2,16 @@
 # Formerly web_backend_server.py; relocated into the webserver/ package (Step 1 refactor).
 import asyncio
 import json
-import threading
 import webbrowser
 import time
 import sys
 import os
 from pathlib import Path
 import random
-from http.server import HTTPServer, SimpleHTTPRequestHandler
 from typing import Dict, Set
 from collections import deque
+
+from webserver.http_server import start_http_server
 
 from tornado import websocket
 
@@ -69,46 +69,8 @@ class WebAdventureServer:
         self.game_sessions: Dict[str, dict] = {}
         self.connected_clients: Set = set()
 
-        # Start HTTP server for static files
-        self.start_http_server()
-
-    def start_http_server(self):
-        """Starte HTTP-Server für HTML/CSS/JS Files"""
-
-        def run_http_server():
-            from functools import partial
-            #
-            # No Directory Listing
-            #
-
-            class NoListingHandler(SimpleHTTPRequestHandler):
-                def list_directory(self, path):
-                    self.send_error(403, "Verzeichnisauflistung nicht erlaubt")
-                    return None
-                def end_headers(self):
-                    # Prevent browser caching of HTML/JS files during development
-                    self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
-                    self.send_header('Pragma', 'no-cache')
-                    self.send_header('Expires', '0')
-                    super().end_headers()
-            try:
-                handler = partial(NoListingHandler, directory="web")
-                httpd = HTTPServer((self.host, self.http_port), handler)
-                dprint(dl.WEBGUI, f"📄 HTTP Server bereit auf http://{self.host}:{self.http_port}")
-                httpd.serve_forever()
-            except OSError as e:
-                if e.errno == 48:  # Address already in use
-                    dprint(dl.WEBGUI, f"⚠️  Port {self.http_port} ist bereits belegt. Verwende anderen Port.")
-                    self.http_port += 1
-                    self.start_http_server()
-                else:
-                    dprint(dl.WEBGUI, f"❌ HTTP Server Fehler: {e}")
-            except Exception as e:
-                dprint(dl.WEBGUI, f"❌ Unerwarteter HTTP Server Fehler: {e}")
-
-        http_thread = threading.Thread(target=run_http_server, daemon=True)
-        http_thread.start()
-        time.sleep(0.5)
+        # Start HTTP server for static files; remember the port actually bound.
+        self.http_port = start_http_server(self.host, self.http_port)
 
     async def register_client(self, websocket):
         """Registriere neuen Client"""
