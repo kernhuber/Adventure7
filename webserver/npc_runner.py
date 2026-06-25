@@ -119,7 +119,11 @@ class NPCRunnerMixin:
         The NPC-turn rules now live in GameState.run_npc_turns (Step 3.2); this wrapper
         keeps the web-layer concerns: error handling and updating session["state"]."""
         try:
-            npc_actions = await game.run_npc_turns(session_id)
+            # Inject this session's dialogs (PlayerDialogs port) for NPC interactions.
+            dialogs = None
+            if session_id and session_id in self.game_sessions:
+                dialogs = self.game_sessions[session_id].get("web_dialogs")
+            npc_actions = await game.run_npc_turns(session_id, dialogs=dialogs)
             # Update game state nach NPC-Aktionen - OHNE Narration (da schon gemacht)
             if session_id and hasattr(self, 'game_sessions') and session_id in self.game_sessions:
                 session = self.game_sessions[session_id]

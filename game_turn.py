@@ -30,11 +30,11 @@ class GameTurnMixin:
             if f.schalter_generatorraum_timer <= 0 and not f.zombie_cooperative:
                 f.schalter_generatorraum = False
 
-    async def run_npc_turns(self, session_id=None):
+    async def run_npc_turns(self, session_id=None, dialogs=None):
         """Run one move for each NPC (dog / zombie / explosion), tick the switch
         timers, and remove expired explosions. Returns the list of NPC action dicts
-        for the caller to render. Moved verbatim from the web layer
-        (webserver/npc_runner.collect_npc_actions) in Step 3.2."""
+        for the caller to render. ``dialogs`` (PlayerDialogs) is forwarded to NPC
+        interactions. Moved from the web layer (collect_npc_actions) in Step 3.2."""
         from NPCDogState import NPCDogState
         from Utils import json_cmd_simple
         # Versuche auch ExplosionState zu importieren
@@ -71,7 +71,7 @@ class GameTurnMixin:
 
                             whom = npc_input["function_call"]["args"]["who"]
                             firstmessage = npc_input["function_call"]["args"]["firstmessage"]
-                            npc_result = await self.async_verb_interact(npc, session_id, whom, firstmessage)
+                            npc_result = await self.async_verb_interact(npc, session_id, whom, firstmessage, dialogs=dialogs)
                         else:
                             npc_result = self.verb_execute_json(npc, npc_input, session_id)
                         if npc_result and npc_result.strip():

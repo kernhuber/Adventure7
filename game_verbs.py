@@ -6,10 +6,11 @@ mixin so the method bodies stay byte-for-byte identical; GameState inherits it.
 
 Relies on the host class (GameState) for: world access (objects/places/ways,
 obj_name_from_friendly_name, find_shortest_path), flags (gs.<flag>), players, llm,
-compile_current_game_context*, get_flags, check_game_over, and the web-session
-state (web_sessions / cmd_q) used by async_verb_interact. NPCDogState / pprint /
-WebDialogs / asyncio are imported locally inside the methods (kept that way to
-avoid an import cycle with GameState).
+compile_current_game_context*, get_flags, check_game_over. Interactive dialogs are
+injected via the PlayerDialogs port (async_verb_interact's ``dialogs`` argument), so
+the engine no longer reaches into web_sessions. NPCDogState / pprint / asyncio are
+imported locally inside the methods (kept that way to avoid an import cycle with
+GameState).
 """
 from __future__ import annotations
 import json
@@ -89,7 +90,7 @@ class GameVerbsMixin:
 
 
 
-    async def async_verb_interact(self, pl: PlayerState, session_id, who, firstmessage=""):
+    async def async_verb_interact(self, pl: PlayerState, session_id, who, firstmessage="", dialogs=None):
         #
         # Check if there is a npc named who, and if (s)he is in the same location as pl
         # This verb is called
@@ -105,12 +106,10 @@ class GameVerbsMixin:
         if pl.location != pl_who.location:
             return f"{who} ist nicht hier."
 
-        if session_id in self.web_sessions:
-            if "WebDialogs" in self.web_sessions[session_id]:
-                wd: object = self.web_sessions[session_id]["WebDialogs"]
-                #await wd.do_chat(self, pl, pl_who, firstmessage)
-                #asyncio.run(wd.do_chat(self, pl, pl_who, firstmessage))
-                await wd.do_chat(self, pl, pl_who, firstmessage)
+        # Dialogs (PlayerDialogs port) are injected by the caller; the engine no
+        # longer looks up WebDialogs via web_sessions.
+        if dialogs is not None:
+            await dialogs.do_chat(self, pl, pl_who, firstmessage)
         return "nichts"
 
 
@@ -450,8 +449,3 @@ Am Ort sind folgende Objekte zu sehen:"""
         # Diese Funktion würde in GameState hinzugefügt
         return "layout_toggle"  # Spezieller Return-Code
 
-    #
-    # Additional code for web based mini games
-    #
-
-    from WebDialogs import WebDialogs

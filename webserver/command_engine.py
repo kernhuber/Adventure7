@@ -360,7 +360,7 @@ class CommandEngineMixin:
                             who = player.name
                             whom = command_dict["function_call"]["args"].get("who", "")
                             firstmessage = command_dict["function_call"]["args"].get("firstmessage", "")
-                            result = await game.async_verb_interact(player, session_id, whom, firstmessage)
+                            result = await game.async_verb_interact(player, session_id, whom, firstmessage, dialogs=session["web_dialogs"])
                         else:
                             result = game.verb_execute_json(player, command_dict, session_id)
 
