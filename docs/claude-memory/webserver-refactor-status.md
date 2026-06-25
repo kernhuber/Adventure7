@@ -57,9 +57,15 @@ is_system_error=True. (3) GeminiInterface.simple_message retries 503/429/504 wit
 backoff. Confirmed by playthrough that the 2 issues were external Gemini behavior
 (fallback tool-call + 503), not refactor regressions.
 
+**Narration cache fix (DONE 2026-06-25, commit 9b4e47b):** the cache was keyed on the
+full prompt, which embedded txt_prev_description (its own past output) -> always missed
+-> regenerated every serialize (~8 LLM calls/session). Now keyed on the STABLE scene
+prompt; gen_narration_prompt dropped the "Vorherige Beschreibung" block (moved to
+_prev_description_addendum, appended only for generation). Regenerates only on real
+scene change. Saves tokens + reduces 503s.
+
 **Optional later:** typed GameSession dataclass; retire flag-mirror shim; remove dead
-verbs (verb_lookaround_old/llm) + emit_* dev helpers; reduce redundant narrate calls
-(serialize_real_game_state narrates each call, ~8x/session).
+verbs (verb_lookaround_old/llm) + emit_* dev helpers.
 
 **Why:** the user explicitly wants to refactor GameState too.
 **How to apply:** agreed ordering is to refactor GameState *before* migrating

@@ -69,10 +69,12 @@ web-session registry out of the engine.
 End state: `GameState` is GUI-free and depends only on the `PlayerDialogs` protocol.
 `PlayerState.cmd_q` is a separate legacy-CLI field and was not involved.
 
-## 4. Follow-up robustness fixes (commit `51aa914`)
+## 4. Follow-up robustness & performance fixes
 
 Prompted by a playthrough (a malformed Gemini tool-call crashed a move once; a
-dog-chat hung on a 503 high-demand error):
+dog-chat hung on a 503 high-demand error).
+
+**Robustness (commit `51aa914`):**
 
 1. **Dispatch hardening** (`verb_execute_json`): a malformed/unknown LLM tool-call
    (e.g. `gehe` without `direction`) no longer raises a raw `TypeError` to the
@@ -86,6 +88,17 @@ dog-chat hung on a 503 high-demand error):
    with `is_system_error=True`.
 3. **Transient-error retry on the chat path** (`GeminiInterface.simple_message`):
    retry 503 / 429 / 504 with a short backoff (1s, 2s) instead of returning empty.
+
+**Performance — narration cache fix (commit `9b4e47b`):** the narration cache was
+keyed on the full prompt, but `gen_narration_prompt` embedded
+`txt_prev_description[room]` — the previous narration it had just produced — so every
+generation changed the key and the cache **always missed** for the same room.
+Narration was regenerated on every `serialize_real_game_state` call (~8 LLM
+calls/session), wasting tokens and increasing 503 exposure. Fix: cache on the
+**stable scene prompt** only (place / objects / ways / dog / zombie); the previous
+description moved to `_prev_description_addendum()`, appended for generation (style
+continuity) but excluded from the key. Narration now regenerates only when the scene
+actually changes; repeated same-scene serializes hit the cache.
 
 ## 5. Optional later cleanups (not scheduled)
 
