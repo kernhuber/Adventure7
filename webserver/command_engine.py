@@ -340,8 +340,7 @@ class CommandEngineMixin:
 
                 if player and hasattr(game, 'verb_execute_json'):
                     # Durst-Logik - Zähler VOR der Aktion runterzählen (nur bei echten Spielzügen)
-                    if not is_system_error:
-                        player.thirst_counter -= 1
+                    game.consume_thirst(player, is_system_error)
                     thirst_message = ""
 
                     # ⬇️ Spezialbehandlung check_pinpad VOR dem allgemeinen Aufruf
@@ -365,16 +364,9 @@ class CommandEngineMixin:
                         else:
                             result = game.verb_execute_json(player, command_dict, session_id)
 
-                    # Durst-Warnung NACH der Aktion prüfen (so sieht man den Post-Aktion-Zustand)
-                    if player.thirst_counter == 0:
-                        game.game_over = True
-                        thirst_message = "***Leider bist du verdurstet!***"
-                    elif player.thirst_counter == 20:
-                        thirst_message = "***Du hast Gottseidank noch keinen wirklichen Durst. Nur ein wenig. Ein wenig Durst hast du schon.***"
-                    elif player.thirst_counter == 10:
-                        thirst_message = "***Jetzt hast Du schon Durst. Du solltest dringend etwas zu Trinken suchen!***"
-                    elif player.thirst_counter <= 5:
-                        thirst_message = f"***Du hast jetzt richtig Durst! Es reicht noch für {player.thirst_counter} Spielrunden, dann verdurstest Du!***"
+                    # Durst-Warnung NACH der Aktion prüfen (so sieht man den Post-Aktion-Zustand).
+                    # Engine entscheidet game_over (Verdursten) und liefert die Nachricht.
+                    thirst_message = game.evaluate_thirst(player)
                     #
                     # game_over kann durch Verdursten oder durch irgendwelche Aktionen bei verb_execute kommen
                     #
@@ -394,8 +386,7 @@ class CommandEngineMixin:
                     if thirst_message:
                         result = f"{result}\n\n{thirst_message}"
 
-                    if hasattr(game, 'time') and not is_system_error:
-                        game.time += 1
+                    game.advance_time(is_system_error)
 
                     # Update game state - MIT Narration nur bei Bedarf
                     session["state"] = serialize_real_game_state(game,

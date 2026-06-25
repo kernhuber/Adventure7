@@ -139,3 +139,31 @@ class GameTurnMixin:
                 self.players.remove(player)
                 dprint(dl.WEBGUI, f"🗑️  {player.name} aus Spielerliste entfernt")
         return npc_actions
+
+    def consume_thirst(self, player, is_system_error=False):
+        """Spend one unit of thirst for a real move; system errors don't cost thirst.
+
+        Called *before* the player's action executes (e.g. drinking resets the
+        counter afterwards). Mirrors the pre-action decrement from the web layer.
+        """
+        if not is_system_error:
+            player.thirst_counter -= 1
+
+    def evaluate_thirst(self, player) -> str:
+        """After an action, return the thirst warning for the player's current level
+        and set game_over if they have run out of water. Returns "" if no message."""
+        if player.thirst_counter == 0:
+            self.game_over = True
+            return "***Leider bist du verdurstet!***"
+        elif player.thirst_counter == 20:
+            return "***Du hast Gottseidank noch keinen wirklichen Durst. Nur ein wenig. Ein wenig Durst hast du schon.***"
+        elif player.thirst_counter == 10:
+            return "***Jetzt hast Du schon Durst. Du solltest dringend etwas zu Trinken suchen!***"
+        elif player.thirst_counter <= 5:
+            return f"***Du hast jetzt richtig Durst! Es reicht noch für {player.thirst_counter} Spielrunden, dann verdurstest Du!***"
+        return ""
+
+    def advance_time(self, is_system_error=False):
+        """Advance the game clock by one turn; system errors don't advance time."""
+        if not is_system_error:
+            self.time += 1
