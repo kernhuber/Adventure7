@@ -208,12 +208,12 @@ mini-game and zombie-chat (they touch the per-session `web_dialogs`) and a
   `services/world_loader.py` (`WorldLoader`) and `game_verbs.py` (`GameVerbsMixin`);
   `GameState.py` 1234 → 481 lines. See
   `docs/REFACTORING-2026-06-25-gamestate.md`.
-- **Step 3 — move game rules out of the web layer into the engine (not started):**
-  `collect_npc_actions`, the per-turn switch-timer countdown, and the thirst /
-  turn-advance / game-over logic currently in `execute_single_command` belong in
-  `GameState`/`PlayerState` (cf. the `Todo` note about `user_input()` having
-  migrated out of `PlayerState`). Step 3 also picks up moving the web-session
-  registry out of `GameState` (deferred from Step 2).
+- **Step 3 — move game rules out of the web layer into the engine: part 1 DONE
+  (2026-06-25).** `run_npc_turns`, the switch-timer countdown, and the thirst /
+  turn-advance / game-over logic now live in `game_turn.py` (`GameTurnMixin`). See
+  `docs/REFACTORING-2026-06-25-step3-engine-rules.md`. **Step 3.4** (not started)
+  moves the web-session registry out of `GameState` and introduces a
+  `PlayerDialogs` port.
 - **Web-layer polish (optional):** convert sessions to a typed `GameSession`
   dataclass (see §5.4); optionally move `register`/`unregister` logic fully into
   `SessionManager`.

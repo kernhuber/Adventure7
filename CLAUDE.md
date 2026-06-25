@@ -72,9 +72,12 @@ stub (`GameState(llm=object())`) to construct it without an API key for tests.
 
 ## Status & next steps
 
-Step 1 (web-layer split) and Step 2 (`GameState` decomposition) are **done**.
-**Step 3** (not started): move game rules (NPC turns, switch-timer, thirst/turn/
-game-over) from the web layer into the engine, and move the web-session registry
-out of `GameState`. Optional later: typed `GameSession` dataclass; retire the
-flag-mirror shim. Details: `docs/REFACTORING-2026-06-24-webserver.md` (Step 1) and
-`docs/REFACTORING-2026-06-25-gamestate.md` (Step 2).
+Step 1 (web-layer split), Step 2 (`GameState` decomposition), and **Step 3 part 1**
+(game rules → engine: switch-timer, NPC turns, thirst/turn — now in `game_turn.py`
+`GameTurnMixin`) are **done**. **Step 3.4** (not started): introduce a
+`PlayerDialogs` port, inject dialogs into `async_verb_interact` instead of reaching
+into `web_sessions`, and move the web-session registry out of `GameState` into the
+webserver `SessionManager`. Optional later: typed `GameSession` dataclass; retire
+the flag-mirror shim. Details: `docs/REFACTORING-2026-06-24-webserver.md` (Step 1),
+`docs/REFACTORING-2026-06-25-gamestate.md` (Step 2),
+`docs/REFACTORING-2026-06-25-step3-engine-rules.md` (Step 3).

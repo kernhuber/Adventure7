@@ -29,11 +29,23 @@ with a stub LLM (no API key) + dispatching LLM-free verbs. Scope decisions: keep
 flag-mirror shim; defer the web-session registry to Step 3. Browser play-through with
 the real API key still recommended to confirm LLM-driven verbs.
 
-**Step 3 (NOT STARTED):** move game rules out of the web layer into the engine
-(`collect_npc_actions`, switch-timer countdown, thirst/turn/game-over logic from
-`execute_single_command`); and move the web-session registry OUT of GameState
-(register/unregister/minigame-session, web_sessions/cmd_q) toward the webserver
-SessionManager. These share the engine<->web boundary.
+**Step 3 part 1 (DONE 2026-06-25, commits ab45e2b, 28b2b20, fadf1eb):** game rules
+moved into the engine via new `game_turn.py` `GameTurnMixin`
+(`class GameState(GameVerbsMixin, GameTurnMixin)`). 3.1 `tick_switch_timers`;
+3.2 `run_npc_turns(session_id)` (NPC loop moved verbatim; `collect_npc_actions` now a
+thin web wrapper); 3.3 `consume_thirst`/`evaluate_thirst`/`advance_time`. Web layer
+keeps dialogs, game-over presentation, serialization. Verified headless + browser
+playthrough (explosion/felsen, hauptschalter, zombie). Doc:
+`docs/REFACTORING-2026-06-25-step3-engine-rules.md`.
+
+**Step 3.4 (NOT STARTED):** introduce a `PlayerDialogs` Protocol
+(services/interfaces.py); inject `dialogs` into `async_verb_interact` instead of
+`self.web_sessions[sid]["WebDialogs"]`; move the web-session registry
+(register/unregister/minigame-session, web_sessions/active_minigames/cmd_q,
+get_session_id_for_player, debug_web_status) OUT of GameState into the webserver
+SessionManager; drop the engine's `from WebDialogs import`. Changes method bodies +
+~6 files -> higher risk, validate with live playthrough. NB PlayerState.cmd_q is a
+separate legacy-CLI field, not part of this move.
 
 **Why:** the user explicitly wants to refactor GameState too.
 **How to apply:** agreed ordering is to refactor GameState *before* migrating
