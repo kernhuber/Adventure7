@@ -804,7 +804,7 @@ def _func_to_string(fn, module_map):
 def _export_world_to_json(place_defs, way_defs, object_defs, module_map, path="data/world_bootstrap.json"):
     """
     Export the in-memory definition dicts (place_defs / way_defs / object_defs) to a JSON file.
-    Callbacks are converted to "Module.func" strings compatible with GameState._maybe_load_world_from_json().
+    Callbacks are converted to "Module.func" strings compatible with services.world_loader.WorldLoader.load().
     """
 
     def convert_places(src):
