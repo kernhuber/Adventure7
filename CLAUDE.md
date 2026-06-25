@@ -79,8 +79,11 @@ Follow-up robustness fixes are in: malformed tool-calls fail soft, system errors
 longer cost a round (NPC turns gated on `not is_system_error`), and the chat path
 retries 503s.
 
-Optional later cleanups: typed `GameSession` dataclass; retire the flag-mirror shim;
-remove dead verbs / `emit_*` dev helpers. Details:
-`docs/REFACTORING-2026-06-24-webserver.md` (Step 1),
+Future work is tracked in `docs/BACKLOG.md` — **next after the pause: unify file
+naming to snake_case** (modules snake_case, classes stay PascalCase; mind the
+`world.json`/`module_map` callback strings). Also noted there: an optional CLI
+front-end (now feasible since the engine is GUI-free) and low-priority cleanups
+(typed `GameSession`, retire the flag-mirror shim, remove dead verbs/`emit_*`).
+Refactor history: `docs/REFACTORING-2026-06-24-webserver.md` (Step 1),
 `docs/REFACTORING-2026-06-25-gamestate.md` (Step 2),
-`docs/REFACTORING-2026-06-25-step3-engine-rules.md` (Step 3 + robustness).
+`docs/REFACTORING-2026-06-25-step3-engine-rules.md` (Step 3 + robustness/perf).
