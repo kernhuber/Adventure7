@@ -23,8 +23,13 @@ class GameVerbsMixin:
     def verb_execute_json(self, pl: PlayerState, command_dict: dict, session_id=None) -> str:
         """ Instead of a string (see verb_execute) cmd is a dictionary as was returned by the LLM as structured
             return to LLM user input"""
+        # Reset per call; set True below if the command cannot be dispatched
+        # (malformed LLM tool-call / unknown verb). Callers read this so a failed
+        # command is not counted as a real game turn.
+        self.last_command_was_system_error = False
         # self.cur_session_id = session_id
         if "function_call" not in command_dict:
+            self.last_command_was_system_error = True
             return "Interner Fehler: Ungültiges Befehlsformat."
 
         dpprint(dl.GAMESTATE,command_dict)
@@ -61,8 +66,17 @@ class GameVerbsMixin:
         verb,numargs = vtab.get(func_name,(None,None))
         if verb is None:
             dprint(dl.GAMESTATE, f"verb_execute_json: Unknown verb '{func_name}' — not in vtab")
+            self.last_command_was_system_error = True
             return f"Das Kommando '{func_name}' wurde nicht erkannt."
-        r=verb(pl,session_id, **args)
+        try:
+            r = verb(pl, session_id, **args)
+        except TypeError as e:
+            # Malformed LLM tool-call (e.g. missing/extra args). Fail soft: log it,
+            # return a clean rejection, and flag it as a system error so it does not
+            # cost the player a turn. The full error is logged for debugging.
+            dprint(dl.GAMESTATE, f"verb_execute_json: ungültiger Tool-Call '{func_name}' (args={args}): {e}")
+            self.last_command_was_system_error = True
+            return "Das habe ich leider nicht richtig verstanden – bitte formuliere es anders."
         return r
 
 

@@ -181,11 +181,11 @@ class CommandEngineMixin:
                         else:
                             dprint(dl.WEBGUI, "⚠️  LLM nicht verfügbar, verwende fallback")
                             session["cmd_q"].append(
-                                {'function_call': {'name': 'zurueckweisen', 'args': {'why': 'LLM nicht verfügbar'}}})
+                                {'function_call': {'name': 'zurueckweisen', 'args': {'why': 'LLM nicht verfügbar', 'is_system_error': True}}})
                     except Exception as e:
                         dprint(dl.WEBGUI, f"❌ Fehler beim LLM-Parsing: {e}")
                         session["cmd_q"].append(
-                            {'function_call': {'name': 'zurueckweisen', 'args': {'why': f'LLM-Fehler: {str(e)}'}}})
+                            {'function_call': {'name': 'zurueckweisen', 'args': {'why': f'LLM-Fehler: {str(e)}', 'is_system_error': True}}})
                 else:
                     # Demo-Modus
                     session["cmd_q"].append(
@@ -363,6 +363,12 @@ class CommandEngineMixin:
                             result = await game.async_verb_interact(player, session_id, whom, firstmessage, dialogs=session["web_dialogs"])
                         else:
                             result = game.verb_execute_json(player, command_dict, session_id)
+                            # A malformed/unrecognized tool-call must not cost a turn:
+                            # refund the pre-action thirst and treat it as a system error
+                            # so the round does not advance (bomb timer, dog, switches).
+                            if getattr(game, "last_command_was_system_error", False) and not is_system_error:
+                                player.thirst_counter += 1
+                                is_system_error = True
 
                     # Durst-Warnung NACH der Aktion prüfen (so sieht man den Post-Aktion-Zustand).
                     # Engine entscheidet game_over (Verdursten) und liefert die Nachricht.
@@ -392,14 +398,17 @@ class CommandEngineMixin:
                     session["state"] = serialize_real_game_state(game,
                                                                       session_id=session_id)
 
-                    # NPC-Züge sammeln (NICHT senden!) - die werden später in handle_command gesendet
+                    # NPC-Züge sammeln (NICHT senden!) - die werden später in handle_command gesendet.
+                    # NUR bei echten Spielzügen: bei einem Systemfehler darf die Runde NICHT
+                    # voranschreiten, da Bombentimer, Hund und Schalter rundengesteuert sind.
                     npc_actions = []
-                    try:
-                        npc_actions = await self.collect_npc_actions(game, session_id)
-                        # Speichere NPC-Actions in der Session für handle_command
-                        session["pending_npc_actions"] = npc_actions
-                    except Exception as e:
-                        dprint(dl.WEBGUI, f"⚠️  NPC-Fehler: {e}")
+                    if not is_system_error:
+                        try:
+                            npc_actions = await self.collect_npc_actions(game, session_id)
+                            # Speichere NPC-Actions in der Session für handle_command
+                            session["pending_npc_actions"] = npc_actions
+                        except Exception as e:
+                            dprint(dl.WEBGUI, f"⚠️  NPC-Fehler: {e}")
 
                     return result
                 else:

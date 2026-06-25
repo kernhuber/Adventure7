@@ -216,33 +216,40 @@ Die Ortsbeschreibung:
 
     def simple_message(self,message, maxtokens=80):
         #
-        # Send a message to the LLM and return the answer
+        # Send a message to the LLM and return the answer.
+        # Retries transient server errors (503 UNAVAILABLE / 429 / 504) with a short
+        # backoff before giving up, so demand spikes don't surface as a "hang".
         #
-        try:
-            dprint(dl.LLM, f"GeminiInterface.simple_message: sending message: {message}")
-            #response = self.gemini_text_model.generate_content(message,
-            #                                                   generation_config = genai.types.GenerationConfig(
-            #                                                           max_output_tokens=maxtokens  # Beispiel: Maximal 200 Tokens für Szenenbeschreibungen
-            #                                                                                                    )
-            #                                                   )
-            response = self.client.models.generate_content(
-                model=self.gemini_text_model_id,  # <- Modell-ID
-                contents=message,
-                config=genai.types.GenerateContentConfig(
-                    # <- genai.types.GenerationConfig wird zu genai.types.GenerateContentConfig
-                    max_output_tokens=maxtokens
+        max_attempts = 3
+        for attempt in range(max_attempts):
+            try:
+                dprint(dl.LLM, f"GeminiInterface.simple_message: sending message: {message}")
+                response = self.client.models.generate_content(
+                    model=self.gemini_text_model_id,  # <- Modell-ID
+                    contents=message,
+                    config=genai.types.GenerateContentConfig(
+                        max_output_tokens=maxtokens
+                    )
                 )
-            )
 
-            self.tokens = self.tokens + response.usage_metadata.total_token_count
-            self.numcalls = self.numcalls + 1
-            self.token_details.append(response.usage_metadata.total_token_count)
-            r = self.clean_truncated_sentence(response.text)
-            return r
-        except Exception as e:
-            dprint(dl.LLM,f"GeminiInterface.simple_message: Exception! {e}")
-            traceback.print_exc()  # gibt den kompletten Stacktrace auf stderr aus
-            return ""
+                self.tokens = self.tokens + response.usage_metadata.total_token_count
+                self.numcalls = self.numcalls + 1
+                self.token_details.append(response.usage_metadata.total_token_count)
+                r = self.clean_truncated_sentence(response.text)
+                return r
+            except Exception as e:
+                msg = str(e)
+                transient = any(code in msg for code in
+                                ("503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED", "504", "DEADLINE"))
+                if transient and attempt < max_attempts - 1:
+                    wait = 2 ** attempt  # 1s, 2s
+                    dprint(dl.LLM, f"GeminiInterface.simple_message: transienter Fehler ({msg[:70]}), "
+                                   f"Retry {attempt + 1}/{max_attempts - 1} in {wait}s")
+                    time.sleep(wait)
+                    continue
+                dprint(dl.LLM, f"GeminiInterface.simple_message: Exception! {e}")
+                traceback.print_exc()  # gibt den kompletten Stacktrace auf stderr aus
+                return ""
 
     def narrate(self, gs:GameState, pl) -> str:
         #
