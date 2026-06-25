@@ -19,12 +19,21 @@ a typed `GameSession` dataclass (~50 access sites, mostly in command_engine) was
 deferred because it couldn't be runtime-verified during the work. `SessionManager`
 is dict-compatible to make that conversion clean later.
 
-**Step 2 (NOT STARTED):** refactor `GameState.py` (~1234 lines, same monolith
-smell: world/flags/turn-loop/LLM-context/web-session registry).
+**Step 2 (DONE 2026-06-25, commits 479708b, 9099156, c76e0ed):** GameState.py
+1234 -> 481 lines. 2.1 extracted `services/world_loader.py` (`WorldLoader`: world.json
+load/validate/build into WorldModel). 2.2 extracted `game_verbs.py`
+(`GameVerbsMixin`: verb_execute_json + all verb_*); `class GameState(GameVerbsMixin)`.
+2.4 deleted dead `check_game_over_old`. Existing collaborators (services/world.py:
+WorldModel/GameFlags/ContextBuilder) unchanged. Verified by instantiating GameState
+with a stub LLM (no API key) + dispatching LLM-free verbs. Scope decisions: keep the
+flag-mirror shim; defer the web-session registry to Step 3. Browser play-through with
+the real API key still recommended to confirm LLM-driven verbs.
 
 **Step 3 (NOT STARTED):** move game rules out of the web layer into the engine
 (`collect_npc_actions`, switch-timer countdown, thirst/turn/game-over logic from
-`execute_single_command`).
+`execute_single_command`); and move the web-session registry OUT of GameState
+(register/unregister/minigame-session, web_sessions/cmd_q) toward the webserver
+SessionManager. These share the engine<->web boundary.
 
 **Why:** the user explicitly wants to refactor GameState too.
 **How to apply:** agreed ordering is to refactor GameState *before* migrating

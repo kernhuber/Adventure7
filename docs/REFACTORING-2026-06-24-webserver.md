@@ -202,19 +202,23 @@ mini-game and zombie-chat (they touch the per-session `web_dialogs`) and a
 
 ---
 
-## 8. Next steps (planned, not started)
+## 8. Next steps
 
-- **Web-layer polish:** convert sessions to a typed `GameSession` dataclass (see
-  §5.4); optionally move `register`/`unregister` logic fully into `SessionManager`.
-- **Step 2 — refactor `GameState.py`** (~1234 lines, same monolith smell: world /
-  flags / turn loop / LLM-context compilation / web-session registry).
-- **Step 3 — move game rules out of the web layer into the engine:**
+- **Step 2 — refactor `GameState.py`: DONE (2026-06-25).** Split into
+  `services/world_loader.py` (`WorldLoader`) and `game_verbs.py` (`GameVerbsMixin`);
+  `GameState.py` 1234 → 481 lines. See
+  `docs/REFACTORING-2026-06-25-gamestate.md`.
+- **Step 3 — move game rules out of the web layer into the engine (not started):**
   `collect_npc_actions`, the per-turn switch-timer countdown, and the thirst /
   turn-advance / game-over logic currently in `execute_single_command` belong in
   `GameState`/`PlayerState` (cf. the `Todo` note about `user_input()` having
-  migrated out of `PlayerState`).
+  migrated out of `PlayerState`). Step 3 also picks up moving the web-session
+  registry out of `GameState` (deferred from Step 2).
+- **Web-layer polish (optional):** convert sessions to a typed `GameSession`
+  dataclass (see §5.4); optionally move `register`/`unregister` logic fully into
+  `SessionManager`.
 
-The agreed ordering is: refactor `GameState` *before* migrating rules into it, so
+The agreed ordering was: refactor `GameState` *before* migrating rules into it, so
 the rules land in their final home rather than being moved twice.
 
 ---

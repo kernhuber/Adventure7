@@ -39,10 +39,16 @@ genai`); if a stale venv has the old `google-generativeai` instead, install
 `webserver/__init__.py` imports the server **lazily** so leaf modules can be
 imported/tested without pulling in the google/LLM stack.
 
-**Game engine (root):** `GameState.py` (~1234 lines — next refactor target),
+**Game engine (root):** `GameState.py` (~481 lines — a coordinator after the Step 2
+split) wires `WorldModel`/`GameFlags`/`ContextBuilder` (`services/world.py`),
+`WorldLoader` (`services/world_loader.py`, builds the world from `data/world.json`),
+and inherits `GameVerbsMixin` (`game_verbs.py`, the `verb_*` command engine). Plus
 `PlayerState.py`, `NPCDogState.py`, `NPCZombieState.py`, `ExplosionState.py`,
 `GeminiInterface.py` (LLM), `Utils.py` (logging via `dprint(dl.…, …)`, flags like
 `GHOSTMODE`/`NODOG`). The browser front-end is in `web/`.
+
+Note: `GameState()` builds a real `GeminiInterface` only when `llm is None`; pass a
+stub (`GameState(llm=object())`) to construct it without an API key for tests.
 
 ## LLM / model notes
 
@@ -66,8 +72,9 @@ imported/tested without pulling in the google/LLM stack.
 
 ## Status & next steps
 
-Step 1 (web-layer split) is **done**. Planned: convert sessions to a typed
-`GameSession` dataclass; **Step 2** refactor `GameState.py`; **Step 3** move game
-rules (NPC turns, thirst/turn/game-over) from the web layer into the engine.
-Agreed ordering: refactor `GameState` *before* migrating rules into it. Details:
-`docs/REFACTORING-2026-06-24-webserver.md`.
+Step 1 (web-layer split) and Step 2 (`GameState` decomposition) are **done**.
+**Step 3** (not started): move game rules (NPC turns, switch-timer, thirst/turn/
+game-over) from the web layer into the engine, and move the web-session registry
+out of `GameState`. Optional later: typed `GameSession` dataclass; retire the
+flag-mirror shim. Details: `docs/REFACTORING-2026-06-24-webserver.md` (Step 1) and
+`docs/REFACTORING-2026-06-25-gamestate.md` (Step 2).
