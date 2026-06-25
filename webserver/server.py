@@ -71,9 +71,9 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                 llm = LLMClientGemini()
                 game = GameState(llm=llm)
 
-                # NEUE: Registriere Web-Session im GameState
-                game.register_web_session(session_id, websocket)
-                wd = game.web_sessions[session_id]["WebDialogs"]
+                # WebDialogs (PlayerDialogs port) is owned by the web layer now.
+                from WebDialogs import WebDialogs
+                wd = WebDialogs(websocket, session_id)
                 dprint(dl.WEBGUI, f"✅ GameState erstellt")
 
                 # Spieler erstellen
@@ -166,11 +166,7 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
         self.connected_clients.discard(websocket)
         session_id = str(id(websocket))
 
-        # NEUE: Entferne Web-Session auch aus GameState
         if session_id in self.game_sessions:
-            session = self.game_sessions[session_id]
-            if session["type"] == "real" and "game" in session:
-                session["game"].unregister_web_session(session_id)
             del self.game_sessions[session_id]
 
         dprint(dl.WEBGUI, f"👋 Client {session_id} getrennt")

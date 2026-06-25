@@ -85,11 +85,6 @@ class ContextBuilder:
         context_data["available_target_player_ids"] = [p.name for p in gs.players]
         context_data["player_location_id"] = pl.location.name
         context_data["player_inventory_ids"] = [item.name for item in pl.inventory]
-        context_data["web_interface_active"] = gs.is_web_interface_active()
-        context_data["active_web_sessions"] = len(gs.web_sessions)
-
-        active_minigames = [mg for mg in gs.active_minigames.values() if mg["status"] == "active"]
-        context_data["minigames_active"] = len(active_minigames) > 0
         return context_data
 
     def build(self, gs: "GameState", pl: "PlayerState") -> dict:

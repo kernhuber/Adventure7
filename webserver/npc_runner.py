@@ -75,10 +75,6 @@ class NPCRunnerMixin:
                     fight_message = fight_message_json["function_call"]["args"]["message"]
                     dprint(dl.WEBGUI, f"✅ Fight result verarbeitet: {fight_message[:50]}...")
 
-                # Beende Mini-Game Session im GameState
-                if hasattr(game, 'complete_minigame_session'):
-                    game.complete_minigame_session(session_id, result)
-
                 # Sende Ergebnis an Client
                 response = {
                     "type": "minigame_complete",

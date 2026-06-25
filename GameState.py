@@ -111,12 +111,6 @@ class GameState(GameVerbsMixin, GameTurnMixin):
         self._context = ContextBuilder()
         self._world = WorldModel()
 
-        # self.objects = None
-        # self.ways = None
-        # self.places = None
-        # self.web_sessions = {}      # Tracking für aktive Web-Sessions
-        # self.active_minigames = {}  # Tracking für laufende Mini-Games
-        # self.cmd_q = {}        # Will be populated by WebGameServer class
         self.init_game()
 
     #
@@ -275,9 +269,7 @@ class GameState(GameVerbsMixin, GameTurnMixin):
         #
         # Web Interface
         #
-        self.web_sessions = {}      # Tracking für aktive Web-Sessions
-        self.active_minigames = {}  # Tracking für laufende Mini-Games
-        self.cmd_q = {}        # Will be populated by WebGameServer class
+        self.cmd_q = {}        # Per-session command queue; the web server sets game.cmd_q to a deque
 
         #
         # Place definitions
@@ -393,90 +385,3 @@ class GameState(GameVerbsMixin, GameTurnMixin):
     def get_flags(self) -> GameFlags:
         """Access to the structured flags container (in addition to legacy attributes)."""
         return self._flags
-
-    def register_web_session(self, session_id, websocket=None):
-        """Registriere eine neue Web-Session"""
-        from WebDialogs import WebDialogs
-
-        # Ensure per-session command queue exists
-        if session_id not in self.cmd_q:
-            self.cmd_q[session_id] = []
-
-        sess = {
-            'websocket': websocket,
-            'active': True,
-            'minigame_active': False,
-            'created_at': self.time,
-            'WebDialogs': WebDialogs(websocket, session_id),
-            # Added fields expected by web_backend_server
-            'type': 'real',
-            'game': self,
-            'cmd_q': self.cmd_q[session_id],
-        }
-        self.web_sessions[session_id] = sess
-        return sess
-
-
-    def unregister_web_session(self, session_id):
-        """Entferne eine Web-Session"""
-        if session_id in self.web_sessions:
-            del self.web_sessions[session_id]
-        if session_id in self.active_minigames:
-            del self.active_minigames[session_id]
-
-    def is_web_interface_active(self):
-        """Prüfe ob mindestens eine Web-Session aktiv ist"""
-        return len(self.web_sessions) > 0
-
-    def start_minigame_session(self, session_id, game_type, player):
-        """Starte eine Mini-Game Session"""
-        self.active_minigames[session_id] = {
-            'game_type': game_type,
-            'player': player,
-            'started_at': self.time,
-            'status': 'active'
-        }
-        if session_id in self.web_sessions:
-            self.web_sessions[session_id]['minigame_active'] = True
-
-    def complete_minigame_session(self, session_id, result):
-        """Beende eine Mini-Game Session"""
-        if session_id in self.active_minigames:
-            from NPCDogState import NPCDogState, DogFight
-
-            result_map = {
-                'WON': DogFight.WON,
-                'LOST': DogFight.LOST,
-                'TIE': DogFight.TIE
-            }
-
-            dog_result = result_map.get(result, DogFight.TIE)
-            dog = next((p for p in self.players if isinstance(p, NPCDogState)), None)
-            if dog and hasattr(dog, 'set_fight_result'):
-                dog.set_fight_result(dog_result)
-
-            del self.active_minigames[session_id]
-            if session_id in self.web_sessions:
-                self.web_sessions[session_id]['minigame_active'] = False
-
-    def debug_web_status(self):
-        """
-        Debug-Ausgabe für Web-Interface Status
-        """
-        from Utils import dprint, dl
-
-        dprint(dl.GAMESTATE, f"🌐 Web-Sessions: {len(self.web_sessions)}")
-        for session_id, info in self.web_sessions.items():
-            dprint(dl.GAMESTATE, f"  - {session_id}: active={info['active']}, minigame={info['minigame_active']}")
-
-        dprint(dl.GAMESTATE, f"🎮 Active Mini-Games: {len(self.active_minigames)}")
-        for session_id, info in self.active_minigames.items():
-            dprint(dl.GAMESTATE, f"  - {session_id}: {info['game_type']} ({info['status']})")
-
-    def get_session_id_for_player(self, player: PlayerState) -> str:
-        if hasattr(self, 'web_sessions'):
-            for sid, ws in self.web_sessions.items():
-                if hasattr(player, "session_id") and player.session_id == sid:
-                    return sid
-        return None
-

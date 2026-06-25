@@ -381,17 +381,11 @@ Am Ort sind folgende Objekte zu sehen:"""
         return "nichts"
 
     def verb_context(self, pl: PlayerState, session_id):
-        """ERWEITERTE Kontext-Ausgabe mit Web-Interface Info"""
+        """Kontext-Ausgabe (Debug)"""
         from pprint import pprint
 
-        # Bestehende Kontext-Ausgabe
         r = self.compile_current_game_context(pl)
         pprint(r)
-
-        # NEUE Web-Interface Debug-Info
-        if self.is_web_interface_active():
-            print("\n=== WEB-INTERFACE STATUS ===")
-            self.debug_web_status()
 
     def verb_quit(self, pl: PlayerState, session_id):
         self.game_over  = True
