@@ -38,14 +38,28 @@ keeps dialogs, game-over presentation, serialization. Verified headless + browse
 playthrough (explosion/felsen, hauptschalter, zombie). Doc:
 `docs/REFACTORING-2026-06-25-step3-engine-rules.md`.
 
-**Step 3.4 (NOT STARTED):** introduce a `PlayerDialogs` Protocol
-(services/interfaces.py); inject `dialogs` into `async_verb_interact` instead of
-`self.web_sessions[sid]["WebDialogs"]`; move the web-session registry
-(register/unregister/minigame-session, web_sessions/active_minigames/cmd_q,
-get_session_id_for_player, debug_web_status) OUT of GameState into the webserver
-SessionManager; drop the engine's `from WebDialogs import`. Changes method bodies +
-~6 files -> higher risk, validate with live playthrough. NB PlayerState.cmd_q is a
-separate legacy-CLI field, not part of this move.
+**Step 3.4 (DONE 2026-06-25, commits c88e064, 5ef642c):** 3.4a added a
+`PlayerDialogs` Protocol (services/interfaces.py) and inject `dialogs` into
+`async_verb_interact` instead of `self.web_sessions[...]`. 3.4b removed the
+web-session registry from GameState (it was redundant: webserver SessionManager
+already holds per-session state; active_minigames never populated; the 3 context
+fields never read) — dropped those ContextBuilder fields, verb_context debug dump,
+the 7 registry methods + web_sessions/active_minigames dicts + `from WebDialogs import`;
+register_client now builds WebDialogs itself. cmd_q stays (web sets game.cmd_q to a
+deque; GameApplyFunctions appends). **Engine is now GUI-free.**
+
+**Robustness fixes (DONE 2026-06-25, commit 51aa914):** (1) verb_execute_json
+catches malformed/unknown tool-calls -> clean reject + sets
+self.last_command_was_system_error (no raw TypeError to player). (2) System errors no
+longer cost a round: collect_npc_actions gated on `not is_system_error` (bomb/dog/
+switch are round-driven); failed dispatch refunds thirst; LLM-parse failures flag
+is_system_error=True. (3) GeminiInterface.simple_message retries 503/429/504 with
+backoff. Confirmed by playthrough that the 2 issues were external Gemini behavior
+(fallback tool-call + 503), not refactor regressions.
+
+**Optional later:** typed GameSession dataclass; retire flag-mirror shim; remove dead
+verbs (verb_lookaround_old/llm) + emit_* dev helpers; reduce redundant narrate calls
+(serialize_real_game_state narrates each call, ~8x/session).
 
 **Why:** the user explicitly wants to refactor GameState too.
 **How to apply:** agreed ordering is to refactor GameState *before* migrating

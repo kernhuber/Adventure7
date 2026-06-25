@@ -5,7 +5,8 @@
 **Scope:** Step 3 of the larger effort. Builds on Step 1
 (`docs/REFACTORING-2026-06-24-webserver.md`) and Step 2
 (`docs/REFACTORING-2026-06-25-gamestate.md`).
-**Status:** Part 1 (3.1–3.3) **done**. 3.4 **planned, not started**.
+**Status:** Parts 1 (3.1–3.3) and 2 (3.4a–3.4b) **done**, plus follow-up
+robustness fixes. The engine is now GUI-free.
 
 ---
 
@@ -55,38 +56,38 @@ already left in Step 2); the rules now live in `game_turn.py` (~169 lines).
   (explosion branch + `felsen`), the main switch (`hauptschalter`), and waking the
   zombie (zombie branch of `run_npc_turns`).
 
-## 3. Part 2 — Step 3.4 (planned, NOT started)
+## 3. Part 2 — Step 3.4 (DONE): decouple the engine from the GUI
 
 Goal: remove the last inward dependency `GameState → WebDialogs` and move the
 web-session registry out of the engine.
 
-The knot: the engine still reaches into `self.web_sessions[session_id]["WebDialogs"]`
-inside `async_verb_interact` (game_verbs.py), and the moved turn methods rely on that
-registry being present on `GameState`.
+| Commit | Sub-step | What |
+|---|---|---|
+| `c88e064` | 3.4a | **`PlayerDialogs` port** (`services/interfaces.py`): `ask_for_pin`, `do_minigame`, `do_chat`, `do_game_over`, `ask_for_playername` — `WebDialogs` already satisfies it. `async_verb_interact` now takes an injected `dialogs` argument and calls `dialogs.do_chat(...)` instead of looking up `self.web_sessions[sid]["WebDialogs"]`. The three callers pass the session's dialogs (player interaction in `command_engine`; NPC interactions via `run_npc_turns`, forwarded by the `collect_npc_actions` wrapper). Stray `from WebDialogs import` in the verbs removed. |
+| `5ef642c` | 3.4b | **Web-session registry removed from `GameState`.** Investigation showed it was largely *redundant*: the webserver's own `SessionManager` already holds per-session state; `active_minigames` was never populated (`start_minigame_session` had no callers, so `complete_minigame_session` was a no-op); and the three web-session context fields (`web_interface_active`, `active_web_sessions`, `minigames_active`) were written but never read. So this became a removal: drop those ContextBuilder fields, the `verb_context` web-status debug dump, and the 7 registry methods + the `web_sessions`/`active_minigames` dicts + the engine's `from WebDialogs import`. `register_client` now constructs `WebDialogs` itself. `cmd_q` stays (the web server sets `game.cmd_q` to a deque; `GameApplyFunctions` appends to it). |
 
-Planned moves:
-1. **Define a `PlayerDialogs` port** (a `Protocol` in `services/interfaces.py`) with
-   `ask_for_pin`, `do_minigame`, `do_chat`, `do_game_over`, `ask_for_playername`.
-   `WebDialogs` already satisfies it.
-2. **Inject dialogs instead of looking them up.** `async_verb_interact` (and any
-   turn method that needs interaction) takes a `dialogs` argument instead of
-   reaching into `web_sessions`. The engine depends on the *protocol*, not on
-   `WebDialogs`; drop the `from WebDialogs import …` from the engine.
-3. **Move the web-session registry to the web layer.** `register/unregister_web_session`,
-   `is_web_interface_active`, `start/complete_minigame_session`, `debug_web_status`,
-   `get_session_id_for_player`, and the `web_sessions` / `active_minigames` / `cmd_q`
-   dicts move out of `GameState` into the webserver `SessionManager`.
+End state: `GameState` is GUI-free and depends only on the `PlayerDialogs` protocol.
+`PlayerState.cmd_q` is a separate legacy-CLI field and was not involved.
 
-Why it is a separate, higher-risk step: unlike 3.1–3.3 (verbatim relocations), 3.4
-**changes method bodies** (the dialog seam) and touches ~6 files
-(`game_verbs.py`, `GameState.py`, `services/interfaces.py`,
-`webserver/{server,command_engine,npc_runner,session}.py`). It must be validated
-with a live playthrough (pin-pad, mini-game, zombie-chat, game-over).
+## 4. Follow-up robustness fixes (commit `51aa914`)
 
-Note: `PlayerState.cmd_q` is its own legacy-CLI field and is **not** part of the
-registry move.
+Prompted by a playthrough (a malformed Gemini tool-call crashed a move once; a
+dog-chat hung on a 503 high-demand error):
 
-## 4. Optional later cleanups (not scheduled)
+1. **Dispatch hardening** (`verb_execute_json`): a malformed/unknown LLM tool-call
+   (e.g. `gehe` without `direction`) no longer raises a raw `TypeError` to the
+   player — it is logged, returns a clean rejection, and sets
+   `self.last_command_was_system_error`.
+2. **System errors must not cost a round** (`execute_single_command`): the bomb
+   timer (3 rounds), the dog and the switch timers are round-driven, so NPC turns
+   (`collect_npc_actions`) are now gated on `not is_system_error` (previously they
+   ran even on a system error; time advance was already gated). A failed dispatch
+   also refunds the pre-action thirst; LLM-parse failures flag their `zurueckweisen`
+   with `is_system_error=True`.
+3. **Transient-error retry on the chat path** (`GeminiInterface.simple_message`):
+   retry 503 / 429 / 504 with a short backoff (1s, 2s) instead of returning empty.
+
+## 5. Optional later cleanups (not scheduled)
 
 - Retire the flag-mirror shim (`__getattr__`/`__setattr__`/`FLAG_FIELDS`) — wide
   (13-file) sweep.
