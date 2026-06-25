@@ -212,15 +212,7 @@ class NPCRunnerMixin:
                         players_to_remove.append(npc)
 
             # Switch timer countdown — runs once per turn, after all NPCs have acted
-            f = game.get_flags()
-            if f.schalter_kontrollraum_timer > 0:
-                f.schalter_kontrollraum_timer -= 1
-                if f.schalter_kontrollraum_timer <= 0 and not f.zombie_cooperative:
-                    f.schalter_kontrollraum = False
-            if f.schalter_generatorraum_timer > 0:
-                f.schalter_generatorraum_timer -= 1
-                if f.schalter_generatorraum_timer <= 0 and not f.zombie_cooperative:
-                    f.schalter_generatorraum = False
+            game.tick_switch_timers()
 
             # Entferne abgelaufene Explosionen
             for player in players_to_remove:

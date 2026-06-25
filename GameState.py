@@ -27,9 +27,10 @@ from typing import Callable
 
 from WayPrompts import w_dach_schuppen_prompt_f
 from game_verbs import GameVerbsMixin
+from game_turn import GameTurnMixin
 
 
-class GameState(GameVerbsMixin):
+class GameState(GameVerbsMixin, GameTurnMixin):
 
     # --- Central list of flag field names kept in sync with GameFlags ---
     # Keep in Sync with Class GameFlags in services/world.py
