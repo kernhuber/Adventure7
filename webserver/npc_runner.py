@@ -114,118 +114,17 @@ class NPCRunnerMixin:
             await websocket.send(json.dumps(response))
 
     async def collect_npc_actions(self, game, session_id=None):
-        """Sammle NPC-Aktionen OHNE sie zu senden - für später in handle_command"""
+        """Run NPC turns via the engine, then refresh the session's serialized state.
+
+        The NPC-turn rules now live in GameState.run_npc_turns (Step 3.2); this wrapper
+        keeps the web-layer concerns: error handling and updating session["state"]."""
         try:
-            from NPCDogState import NPCDogState
-            from Utils import json_cmd_simple
-            # Versuche auch ExplosionState zu importieren
-            try:
-                from ExplosionState import ExplosionState
-                EXPLOSION_AVAILABLE = True
-            except ImportError:
-                EXPLOSION_AVAILABLE = False
-                dprint(dl.WEBGUI, "⚠️  ExplosionState nicht verfügbar")
-
-            npc_actions = []
-            players_to_remove = []  # Für Spieler die durch Explosion eliminiert werden
-
-            from NPCZombieState import NPCZombieState
-
-            for npc in game.players:
-                if isinstance(npc, NPCDogState):
-                    # Normaler NPC (Hund)
-                    #
-                    # Der NPCDogState ("Hund") liefert ergebnisse, die erst durch
-                    # verb_execute ausgeführt werden müssen (z.B: er geht irgendwo hin)
-                    # Die verb_execute-Funktion liefert Strings, die erst in dog_messages
-                    # umgewandelt werden müssen. (Dies ist notwendig, weil die gleichen
-                    # execute-Methoden für alle NPC aufgerufen werden, egal ob PlayerState
-                    # oder NPNCPlayerState)
-                    #
-                    npc_input = npc.NPC_game_move(game)
-                    command = npc_input.get("function_call",{}).get("name",None)
-                    args = npc_input.get("function_call",{}).get("args",{})
-
-                    if npc_input and command != "nichts":
-                        if command != "minigame":
-                            if command  in ["interaktion", "interagiere", "interagieren"]:
-
-                                whom = npc_input["function_call"]["args"]["who"]
-                                firstmessage = npc_input["function_call"]["args"]["firstmessage"]
-                                npc_result = await game.async_verb_interact(npc, session_id, whom, firstmessage)
-                            else:
-                                npc_result = game.verb_execute_json(npc, npc_input, session_id)
-                            if npc_result and npc_result.strip():
-                                npc_actions.append(json_cmd_simple("dog_message",f"**{npc.name}:** {npc_result}"))
-                        else:
-                            #
-                            # Initiate Minigame in web GUI
-                            #
-                            npc_actions.append(npc_input)
-
-                elif isinstance(npc, NPCZombieState):
-                    # Zombie NPC
-                    npc_input = npc.NPC_game_move(game)
-                    command = npc_input.get("function_call", {}).get("name", None)
-                    args = npc_input.get("function_call", {}).get("args", {})
-
-                    if npc_input and command != "nichts":
-                        if command in ["interaktion", "interagiere", "interagieren"]:
-                            whom = args.get("who", "")
-                            firstmessage = args.get("firstmessage", "")
-                            npc_result = await game.async_verb_interact(npc, session_id, whom, firstmessage)
-                        elif command == "zombie_message":
-                            # Direct message, no game engine processing needed
-                            npc_result = args.get("message", "")
-                        else:
-                            npc_result = game.verb_execute_json(npc, npc_input, session_id)
-
-                        npc.game_engine_answer(game, npc_result)
-
-                        if npc_result and npc_result.strip():
-                            npc_actions.append(json_cmd_simple("zombie_message", f"**{npc.name}:** {npc_result}"))
-
-                elif EXPLOSION_AVAILABLE and isinstance(npc, ExplosionState):
-                    # Explosion-NPC - VEREINFACHT
-                    dprint(dl.WEBGUI, f"💥 Sammle Explosion: Timer={npc.kaboom_timer}")
-
-                    # ExplosionState.explosion_input() macht ALLES und gibt Nachrichten zurück
-                    #explosion_messages = npc.explosion_input(game)
-                    #
-                    # ExplosionState liefert immer Ergebnisse vom Typ
-                    # explosion_message oder do_explosion, die nicht weiter
-                    # von verb_execute interpretiert werden müssen, sondern
-                    # direkt zur Ausgabe an das GUI übergeben werden können
-                    #
-                    npc_input = npc.explosion_input(game)
-                    command = npc_input.get("function_call", {}).get("name", None)
-                    args = npc_input.get("function_call", {}).get("args", {})
-
-                    # Verwende die Nachrichten direkt (keine verb_execute nötig!)
-                    if npc_input and command != "nichts":
-                        npc_actions.append(npc_input)
-                        dprint(dl.WEBGUI, f"💥 Explosion-Messages gesammelt!")
-
-                    # Prüfe ob die Explosion abgelaufen ist (kaboom_timer = 0 nach explosion_input)
-                    if npc.kaboom_timer <= 0:
-                        dprint(dl.WEBGUI, "💥 Explosion ist abgelaufen - entferne ExplosionState")
-                        players_to_remove.append(npc)
-
-            # Switch timer countdown — runs once per turn, after all NPCs have acted
-            game.tick_switch_timers()
-
-            # Entferne abgelaufene Explosionen
-            for player in players_to_remove:
-                if player in game.players:
-                    game.players.remove(player)
-                    dprint(dl.WEBGUI, f"🗑️  {player.name} aus Spielerliste entfernt")
+            npc_actions = await game.run_npc_turns(session_id)
             # Update game state nach NPC-Aktionen - OHNE Narration (da schon gemacht)
             if session_id and hasattr(self, 'game_sessions') and session_id in self.game_sessions:
                 session = self.game_sessions[session_id]
                 session["state"] = serialize_real_game_state(game, session_id=session_id)
-
             return npc_actions
-
         except Exception as e:
             dprint(dl.WEBGUI, f"⚠️  NPC-Sammeln-Fehler: {e}")
             import traceback
