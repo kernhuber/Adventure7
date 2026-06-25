@@ -156,26 +156,39 @@ Die Ortsbeschreibung:
             if zp:
                 r = r + "\n" + zp
 
-        if self.txt_prev_description.get(pl.location.name,None):
+        # NOTE: the "Vorherige Beschreibung" (previous narration) is intentionally NOT
+        # part of this prompt. It is volatile — it is this method's own past output — so
+        # including it would make every call's prompt unique and defeat the narration
+        # cache (regenerating, and burning tokens, on every serialize). narrate() appends
+        # it only for the actual generation (style continuity) while caching on this
+        # stable base. See _prev_description_addendum().
+        return r
 
-            r = r + f"""
- +----------------------------------+           
+    def _prev_description_addendum(self, pl) -> str:
+        """Style-continuity hint appended to the prompt at generation time only.
+
+        Never part of the narration cache key, since it changes on every generation.
+        """
+        prev = self.txt_prev_description.get(pl.location.name, None)
+        if not prev:
+            return ""
+        return f"""
+ +----------------------------------+
  + Vorherige Beschreibung des Ortes +
  +----------------------------------+
- 
- Der Ort des Geschehens ({pl.location.callnames[0]}) ist schon beschrieben worden. 
+
+ Der Ort des Geschehens ({pl.location.callnames[0]}) ist schon beschrieben worden.
  Generiere die Beschreibung der Situation ausschließlich aus den oben angegebenen
  Informationen, und greife auf die vorherige Beschreibung nur zurück, um Konsistenz
  zu wahren, was die Stimmung und die generelle Szenerie betrifft. Keinesfalls darfst
  Du Gegenstände, Objekte, Wege und Beschreibungen des Hundes oder Zombies aus der vorherigen
  Beschreibung übernehmen, denn dies kann sich im Spielverlauf geändert haben. Diese
  Informationen dürfen ausschließlich nur aus den obigen Angaben genommen werden. Die
- 
+
  Vorherige Beschreibung
  ======================
- {self.txt_prev_description[pl.location.name]}            
+ {prev}
             """
-        return r
 
     def clean_truncated_sentence(self, text: str) -> str:
         """
@@ -259,20 +272,21 @@ Die Ortsbeschreibung:
             dprint(dl.LLM,f"Skipping narrate() for Player '{pl.name}'")
             return ""
 
-        prompt = self.gen_narration_prompt(gs,pl)
-        n = self.narration_cache.get(pl.location.name,prompt=prompt)
         room = pl.location.name
+        # Cache key = the STABLE scene prompt (without the volatile previous-description
+        # block), so narration is only regenerated when the scene actually changes — not
+        # on every serialize/turn. This saves tokens and reduces LLM load (503 spikes).
+        base_prompt = self.gen_narration_prompt(gs, pl)
+        n = self.narration_cache.get(room, prompt=base_prompt)
         if n:
-            dprint(dl.LLM,f"GeminiInterface.narrate: using cached narration for room {pl.location.name}")
+            dprint(dl.LLM,f"GeminiInterface.narrate: using cached narration for room {room}")
             return n
 
+        # Scene changed (or first visit): generate, feeding the previous description for
+        # style continuity, but keep the cache key on the stable base prompt.
+        prompt = base_prompt + self._prev_description_addendum(pl)
         try:
-            dprint(dl.LLM, f"GeminiInterface.narrate: generating new narration for room {pl.location.name}")
-            #response = self.gemini_text_model.generate_content(prompt,
-            #                                                   generation_config = genai.types.GenerationConfig(
-            #                                                           max_output_tokens=300  # Beispiel: Maximal 200 Tokens für Szenenbeschreibungen
-            #                                                                                                    )
-            #                                                   )
+            dprint(dl.LLM, f"GeminiInterface.narrate: generating new narration for room {room}")
             response = self.client.models.generate_content(
                 model=self.gemini_text_model_id,  # <- Modell-ID
                 contents=prompt,
@@ -285,8 +299,8 @@ Die Ortsbeschreibung:
             self.numcalls = self.numcalls + 1
             self.token_details.append(response.usage_metadata.total_token_count)
             r = self.clean_truncated_sentence(response.text)
-            self.txt_prev_description[pl.location.name] = r
-            self.narration_cache.update(room=room,prompt=prompt, narration=r)
+            self.txt_prev_description[room] = r
+            self.narration_cache.update(room=room, prompt=base_prompt, narration=r)
             return r
         except Exception as e:
             print("Exception!!")
