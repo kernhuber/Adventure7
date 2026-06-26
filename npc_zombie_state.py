@@ -55,6 +55,14 @@ class NPCZombieState(PlayerState):
                 self.zombie_state = ZombieState.HUNTING
                 self.zombie_state_message = "Der Zombie jagt!"
                 dprint(dl.ZOMBIE, "Zombie wechselt von AWAKENING zu HUNTING")
+                # Beim Erwachen den Dialog-Modal öffnen, damit Zombie und Spieler
+                # miteinander kommunizieren (nur wenn der Spieler hier ist; sonst
+                # weist async_verb_interact ohnehin ab).
+                player = next((p for p in gs.players if type(p) is PlayerState), None)
+                if player is not None and self.location == player.location:
+                    return json_cmd_simple(
+                        "interaktion", player.name,
+                        "***Der Zombie erwacht, richtet sich ruckartig auf und starrt dich mit leeren Augen an ...***")
                 return return_do_nothing()
 
             case ZombieState.HUNTING | ZombieState.STALKING:

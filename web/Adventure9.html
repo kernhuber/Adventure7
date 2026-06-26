@@ -9,12 +9,12 @@
     <style>
         body { font-family: monospace; background: #2c1810; color: #f5deb3; padding: 20px; font-size:20px}
         .panel { background: rgba(0,0,0,0.7); border: 2px solid #cd853f; padding: 15px; margin: 10px 0; border-radius: 8px; }
-        .grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
+        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
         .subgrid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            grid-column: 1 / span 3; /* Subgrid soll sich über ganze Breite der übergeordneten Grid-Spalten erstrecken */
+            grid-column: 1 / span 2; /* Subgrid soll sich über ganze Breite der übergeordneten Grid-Spalten erstrecken */
         }
         #user-input { width: 80%; padding: 10px; background: #333; color: #f5deb3; border: 1px solid #cd853f; font-size:24px }
         #send-button { padding: 10px 20px; background: #8b4513; color: #f5deb3; border: 1px solid #cd853f; cursor: pointer; font-size:24px }
@@ -220,13 +220,6 @@
             <div id="inventory">Lade...</div>
         </div>
 
-        <div id="dogstate" class="panel">
-            <h2>🐕 Hund </h2>
-            <div id="dog-info">
-                <div id="dog-location"> Ort: Lade... </div>
-                <div id="dog-state"> Tut gerade: Lade ...</div>
-            </div>
-        </div>
         <div class="subgrid">
             <div id="environment" class="panel">
                 <h2>🗺️ Umgebung</h2>
@@ -273,6 +266,7 @@
     <script src="explosion_message.js?v=1.0.5"></script>
     <script src="power_main.js?v=1.0.5"></script>
     <script src="zombie_overlay.js?v=1.0.5"></script>
+    <script src="dog_overlay.js?v=1.0.5"></script>
     <script src="zombie_chat.js?v=1.0.5"></script>
     <script src="websockets.js?v=1.0.5"></script>
 </body>

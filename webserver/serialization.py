@@ -72,9 +72,17 @@ def serialize_real_game_state(game, session_id=None):
         if dog:
             try:
                 dog_location = getattr(dog.location, 'callnames', ['Unbekannt'])
+                dog_state_obj = getattr(dog, 'dog_state', None)
+                # "angry" while the dog is in its ATTACK state (growling/sauer); the
+                # transient "attack" (mini-game) blink is driven by the frontend from
+                # the 'minigame' NPC action.
+                dog_mood = "angry" if (dog_state_obj is not None
+                                       and getattr(dog_state_obj, "name", "") == "ATTACK") else "normal"
                 dog_info = {
                     "location": dog_location[0] if dog_location else 'Unbekannt',
-                    "state": getattr(dog, 'dog_state_message', 'Der Hund tut nichts')
+                    "state": getattr(dog, 'dog_state_message', 'Der Hund tut nichts'),
+                    "here": dog.location == player.location if player else False,
+                    "mood": dog_mood,
                 }
             except:
                 pass

@@ -21,7 +21,7 @@ let gameState = {
     round: 1,
     player: { name: "WebPlayer", location: "Start", thirst: 40, inventory: [] },
     environment: { objects: [], ways: [], blockedWays: [] },
-    dog: {location: "Geldautomat", state:"Hund tut nichts..."},
+    dog: { here: false, mood: 'normal' },
     lastAction: { command: "Noch keine", result: "Warte auf Verbindung..." }
 };
 
@@ -266,8 +266,6 @@ class AdventureBackend {
     }
 
     handleNPCActions(actions) {
-        // Sortiere NPC-Actions nach Typ
-        let dogActions = [];
         let explosionTimers = [];
         let realExplosions = [];
         console.log("+++++ handleNPCActions:")
@@ -283,30 +281,27 @@ class AdventureBackend {
                     showExplosionMessage(action.message)
                     break;
                 case "dog_message":
-                    dogActions.push(action.message);
+                    // Hund-Status nur noch als Debug; Dialoge/Knurren erscheinen im Chat-Modal.
+                    debugMessage('Hund', action.message);
+                    break;
+                case "zombie_message":
+                    // Zombie-Äußerungen nur noch als Debug; Gespräche laufen über das Chat-Modal.
+                    debugMessage('Zombie', action.message);
                     break;
                 case "minigame":
-                    gameState.lastAction = {
-                        command: 'Kampf-Vorbereitung',
-                        result: action.message
-                    };
+                    // Der Hund greift an: Icon rot blinken lassen; die Ankündigung steht im Chat-Modal.
+                    debugMessage('Hund', action.message);
+                    if (typeof showDogOverlay === 'function') showDogOverlay(true, 'attack');
                     break;
             }
         }
 
-        // Verarbeite Timer-Nachrichten (in lastAction)
+        // Explosions-Timer sind Spielereignisse (keine Dialoge) -> in "Letzte Aktion"
         if (explosionTimers.length > 0) {
             gameState.lastAction = {
                 command: 'Explosion Timer',
                 result: explosionTimers.join('\n')
             };
-        }
-
-        // Verarbeite Hund-Aktionen (update Hund-Status)
-        if (dogActions.length > 0) {
-            if (gameState.dog) {
-                gameState.dog.state = dogActions[dogActions.length - 1]; // Letzte Aktion
-            }
         }
 
         // Verarbeite echte Explosionen (Overlay)
@@ -354,29 +349,12 @@ class AdventureBackend {
     }
 }
 
-function isNearby(loc1, loc2) {
-    const ways = gameState.environment?.ways || [];
-    return ways.includes(loc2);
-}
-
-function updateDogDanger() {
-    const playerLoc = gameState.player?.location || '';
-    const dogLoc = gameState.dog?.location || '';
-    const dogDiv = document.getElementById('dogstate');
-
-    // Entferne alle Status-Klassen
-    dogDiv.classList.remove('dog-danger', 'dog-nearby', 'dog-safe');
-
-    if (playerLoc === dogLoc && playerLoc !== '') {
-        // Gleicher Ort - GEFAHR!
-        dogDiv.classList.add('dog-danger');
-    } else if (isNearby(playerLoc, dogLoc)) {
-        // Nachbar-Ort - Warnung
-        dogDiv.classList.add('dog-nearby');
-    } else {
-        // Weit weg - sicher
-        dogDiv.classList.add('dog-safe');
-    }
+// Dog/zombie status lines are debug-only now (the panel was removed). Show them in
+// the "Debug:" line and the console; dialogs themselves go to the chat modal.
+function debugMessage(label, msg) {
+    console.log(`[debug] ${label}: ${msg}`);
+    const d = document.getElementById('debug-info');
+    if (d) d.innerHTML = `Debug ${label}: ` + String(msg).replace(/\n/g, '<br>');
 }
 
 function updateStatus() {
@@ -442,12 +420,11 @@ function updateUI() {
         if (commandText) commandText.textContent = gameState.lastAction?.command || 'Noch keine';
         if (resultText) resultText.innerHTML = (gameState.lastAction?.result || 'Warte...').replace(/\n/g, '<br>');
 
-        const dog_loc = document.getElementById('dog-location')
-        const dog_state = document.getElementById('dog-state')
-
-        if (dog_loc) dog_loc.textContent = "Der Hund ist momentan hier: "+ (gameState.dog?.location || 'Unbekannt');
-        if (dog_state) dog_state.textContent =  (gameState.dog?.state || 'Der Hund döst vor sich hin');
-        updateDogDanger()
+        // The dog is shown only as an icon (top-right) when at the player's location.
+        // Yellow frame = angry, red frame = attacking (mini-game).
+        if (typeof showDogOverlay === 'function') {
+            showDogOverlay(gameState.dog?.here || false, gameState.dog?.mood || 'normal');
+        }
         updateStatus()
         showPowerMain(gameState.power_main)
         // Zombie overlay - inline definition as fallback if zombie_overlay.js not loaded
