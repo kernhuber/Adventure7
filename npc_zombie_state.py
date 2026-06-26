@@ -60,9 +60,10 @@ class NPCZombieState(PlayerState):
                 # weist async_verb_interact ohnehin ab).
                 player = next((p for p in gs.players if type(p) is PlayerState), None)
                 if player is not None and self.location == player.location:
+                    # Der Zombie eröffnet das Gespräch (hält die EC-Karte in der Hand).
                     return json_cmd_simple(
                         "interaktion", player.name,
-                        "***Der Zombie erwacht, richtet sich ruckartig auf und starrt dich mit leeren Augen an ...***")
+                        "***'Suchst du etwa ... die hier?'***")
                 return return_do_nothing()
 
             case ZombieState.HUNTING | ZombieState.STALKING:

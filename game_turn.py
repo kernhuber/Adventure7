@@ -92,7 +92,7 @@ class GameTurnMixin:
                     if command in ["interaktion", "interagiere", "interagieren"]:
                         whom = args.get("who", "")
                         firstmessage = args.get("firstmessage", "")
-                        npc_result = await self.async_verb_interact(npc, session_id, whom, firstmessage)
+                        npc_result = await self.async_verb_interact(npc, session_id, whom, firstmessage, dialogs=dialogs)
                     elif command == "zombie_message":
                         # Direct message, no self engine processing needed
                         npc_result = args.get("message", "")

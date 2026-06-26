@@ -51,14 +51,15 @@ def _awaken_zombie(gs: GameState, pl: PlayerState) -> str:
 
     gs.players.append(zombie)
 
+    # Hinweis: Die gesprochene Eröffnung ("Suchst du etwa ... die hier?") wird NICHT
+    # hier zurückgegeben (das wäre ein Dialog in "Letzte Aktion"), sondern vom Zombie
+    # im AWAKENING-Zug über das Chat-Modal eröffnet (siehe npc_zombie_state).
     return (
         "***Das Skelett beginnt sich zu bewegen!*** Knochen knacken, der Nadelstreifenanzug "
         "raschelt, und langsam richtet sich die Gestalt auf. Wo eben noch leere Augenhöhlen "
         "waren, glimmt nun ein schwaches, rötliches Licht. "
         "Der Zombie steht vor dir, schwankend aber aufrecht. "
-        "In seiner knochigen Hand hält er eine EC-Karte. "
-        "Mit einer heiseren, krächzenden Stimme fragt er: "
-        "***'Suchst du etwa... die hier?'***"
+        "In seiner knochigen Hand hält er eine EC-Karte."
     )
 
 
