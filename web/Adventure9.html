@@ -197,6 +197,13 @@
         .flash-scene {
             animation: flash-highlight 0.4s ease-out;
         }
+
+        /* Status-Panel blinkt rot, wenn der Zombie zubeißt (Lebensenergie/Durst sinkt) */
+        .bite-flash { animation: bite-flash-anim 0.4s ease-in-out 3; }
+        @keyframes bite-flash-anim {
+            0%, 100% { background: rgba(0,0,0,0.7); border-color: #cd853f; box-shadow: none; }
+            50% { background: rgba(180,0,0,0.6); border-color: #ff2222; box-shadow: 0 0 22px rgba(255,0,0,0.85); }
+        }
     </style>
 </head>
 <body>
@@ -267,6 +274,7 @@
     <script src="power_main.js?v=1.0.5"></script>
     <script src="zombie_overlay.js?v=1.0.5"></script>
     <script src="dog_overlay.js?v=1.0.5"></script>
+    <script src="bite_overlay.js?v=1.0.5"></script>
     <script src="zombie_chat.js?v=1.0.5"></script>
     <script src="websockets.js?v=1.0.5"></script>
 </body>

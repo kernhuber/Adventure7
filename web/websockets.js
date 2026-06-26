@@ -288,6 +288,12 @@ class AdventureBackend {
                     // Zombie-Äußerungen nur noch als Debug; Gespräche laufen über das Chat-Modal.
                     debugMessage('Zombie', action.message);
                     break;
+                case "zombie_bite":
+                    // Biss: dramatisches Popup + Status (Lebensenergie/Durst) blinkt auf.
+                    debugMessage('Zombie', action.message);
+                    if (typeof showBiteOverlay === 'function') showBiteOverlay(action.message);
+                    flashStatus();
+                    break;
                 case "minigame":
                     // Der Hund greift an: Icon rot blinken lassen; die Ankündigung steht im Chat-Modal.
                     debugMessage('Hund', action.message);
@@ -355,6 +361,16 @@ function debugMessage(label, msg) {
     console.log(`[debug] ${label}: ${msg}`);
     const d = document.getElementById('debug-info');
     if (d) d.innerHTML = `Debug ${label}: ` + String(msg).replace(/\n/g, '<br>');
+}
+
+// Briefly flash the Status panel red (e.g. when the zombie bite costs life energy/thirst).
+function flashStatus() {
+    const s = document.getElementById('status');
+    if (!s) return;
+    s.classList.remove('bite-flash');
+    void s.offsetWidth; // reflow to restart the animation
+    s.classList.add('bite-flash');
+    setTimeout(() => s.classList.remove('bite-flash'), 1600);
 }
 
 function updateStatus() {

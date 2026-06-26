@@ -92,9 +92,10 @@ class NPCZombieState(PlayerState):
             player.thirst_counter = max(0, player.thirst_counter - 5)
             self.zombie_thirst = min(40, self.zombie_thirst + 5)
             self.zombie_state_message = "Der Zombie hat den Spieler gebissen!"
-            return json_cmd_simple("zombie_message",
-                "***Der Zombie packt dich mit eiskalten Knochenhänden und beißt zu! "
-                "Du verlierst Lebensenergie!***")
+            # Eigener Action-Typ -> dramatisches Popup im GUI (nicht nur Debug).
+            return json_cmd_simple("zombie_bite",
+                "Der Zombie packt dich mit eiskalten Knochenhänden und beißt zu! "
+                "Du verlierst Lebensenergie!")
 
         # Move cooldown: zombie moves every other turn
         if self.move_cooldown > 0:

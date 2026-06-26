@@ -129,6 +129,18 @@ function zombie_chat(ws, who, whom, initialMessage = null) {
 
     // Funktion zum Erstellen des Chat-Overlays
     function createChatOverlay(who, whom) {
+        // Theme: the zombie dialog is red, the dog (and others) stay green —
+        // so the two conversations are easy to tell apart.
+        const isZombie = /zombie/i.test(who || '');
+        const accent = isZombie ? '#ff4444' : '#4caf50';
+        const npcBubbleBg = isZombie ? 'linear-gradient(135deg, #5a1414 0%, #3a0c0c 100%)'
+                                     : 'linear-gradient(135deg, #2d4a2d 0%, #1a3a1a 100%)';
+        const npcBubbleBorder = isZombie ? '#7a2a2a' : '#2a5a2a';
+        const npcBubbleArrow = isZombie ? '#5a1414' : '#2d4a2d';
+        const sendGrad = isZombie ? 'linear-gradient(135deg, #d32f2f 0%, #9a1414 100%)'
+                                  : 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)';
+        const sendGradHover = isZombie ? 'linear-gradient(135deg, #e53935 0%, #c62828 100%)'
+                                       : 'linear-gradient(135deg, #5cbf60 0%, #4caf50 100%)';
         const overlay = document.createElement('div');
         overlay.id = 'zombie-chat-overlay';
         overlay.innerHTML = `
@@ -196,7 +208,7 @@ function zombie_chat(ws, who, whom, initialMessage = null) {
             
             #zombie-chat-header {
                 background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-                color: #4caf50;
+                color: ${accent};
                 padding: 15px 20px;
                 border-radius: 12px 12px 0 0;
                 display: flex;
@@ -290,9 +302,9 @@ function zombie_chat(ws, who, whom, initialMessage = null) {
             }
             
             .zombie-chat-bubble-zombie {
-                background: linear-gradient(135deg, #2d4a2d 0%, #1a3a1a 100%);
-                color: #4caf50;
-                border: 1px solid #2a5a2a;
+                background: ${npcBubbleBg};
+                color: ${accent};
+                border: 1px solid ${npcBubbleBorder};
                 margin-left: 8px;
             }
             
@@ -305,7 +317,7 @@ function zombie_chat(ws, who, whom, initialMessage = null) {
                 height: 0;
                 border-top: 8px solid transparent;
                 border-bottom: 8px solid transparent;
-                border-right: 8px solid #2d4a2d;
+                border-right: 8px solid ${npcBubbleArrow};
             }
             
             .zombie-chat-bubble-player {
@@ -353,7 +365,7 @@ function zombie_chat(ws, who, whom, initialMessage = null) {
             
             #zombie-chat-input:focus {
                 outline: none;
-                border-color: #4caf50;
+                border-color: ${accent};
                 background: #111;
             }
             
@@ -362,7 +374,7 @@ function zombie_chat(ws, who, whom, initialMessage = null) {
             }
             
             #zombie-chat-send {
-                background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+                background: ${sendGrad};
                 color: white;
                 border: none;
                 padding: 12px 24px;
@@ -375,7 +387,7 @@ function zombie_chat(ws, who, whom, initialMessage = null) {
             }
             
             #zombie-chat-send:hover {
-                background: linear-gradient(135deg, #5cbf60 0%, #4caf50 100%);
+                background: ${sendGradHover};
                 transform: translateY(-1px);
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
             }

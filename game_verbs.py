@@ -178,9 +178,9 @@ class GameVerbsMixin:
                 if obj.take_f != None:
                     r= obj.take_f(self,pl)
                 else:
-                    r= f"Du hast {what} nun bei dir"
+                    r= f"Du hast {obj.callnames[0].capitalize()} nun bei dir"
             else:
-                r = f"Du kannst {what} nicht aufnehmen"
+                r = f"Du kannst {obj.callnames[0].capitalize()} nicht aufnehmen"
         return r
 
     def verb_drop(self, pl: PlayerState, session_id, whato):
@@ -197,10 +197,10 @@ class GameVerbsMixin:
             obj.hidden = False
             obj.ownedby = pl.location
             pl.location.place_objects.append(obj)
-            r = f'Objekt {what} in/auf/am {pl.location.name} abgelegt'
+            r = f'{obj.callnames[0].capitalize()} in/auf/am {pl.location.callnames[0].capitalize()} abgelegt'
             return r
 
-        r= f'{what} ist nicht in {pl.name} inventory'
+        r= f'{obj.callnames[0].capitalize()} ist nicht in {pl.name} inventory'
 
         return r
 

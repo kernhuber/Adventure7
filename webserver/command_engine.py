@@ -288,6 +288,13 @@ class CommandEngineMixin:
                                     "message": args["message"]
                                 }
                             )
+                        case "zombie_bite":
+                            filtered_actions.append(
+                                {
+                                    "command": f_call,
+                                    "message": args["message"]
+                                }
+                            )
                         case _:
                             # Andere NPC-Aktionen
                             filtered_actions.append({})
