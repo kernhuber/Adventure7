@@ -5,7 +5,7 @@
 
 from collections import deque
 
-import Utils
+import utils
 
 
 class SysTest:
@@ -119,7 +119,7 @@ class SysTest:
 
 
     def test_game_llm(self) -> str:
-        from Utils import dprint, dl
+        from utils import dprint, dl
         if self.test_queue_llm:
             c = self.test_queue_llm.popleft()
             dprint (dl.PLAYERSTATE, 'Player: {c}')

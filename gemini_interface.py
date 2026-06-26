@@ -1,13 +1,13 @@
 from __future__ import annotations
-from PlayerState import PlayerState
-from GameState import GameState
+from player_state import PlayerState
+from game_state import GameState
 # import google.generativeai as genai
 from google import genai
 import os
 import time
 import json # Für strukturierte Prompts/Antworten/Funktionsaufrufe
 from pprint import pprint
-from Utils import dprint, dpprint, dl, ddiff
+from utils import dprint, dpprint, dl, ddiff
 #from google.api_core import retry
 #from google.api_core import exceptions as gexc
 import os
@@ -137,7 +137,7 @@ Die Ortsbeschreibung:
                 r = r+"\n"
 
         dog = None
-        from NPCDogState import NPCDogState
+        from npc_dog_state import NPCDogState
         for d in gs.players:
             if type(d) is NPCDogState:
                 dog = d
@@ -146,7 +146,7 @@ Die Ortsbeschreibung:
             r = r + "\n" + dog.dog_prompt(gs,pl)
 
         zombie = None
-        from NPCZombieState import NPCZombieState
+        from npc_zombie_state import NPCZombieState
         for z in gs.players:
             if isinstance(z, NPCZombieState):
                 zombie = z

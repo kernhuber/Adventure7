@@ -10,18 +10,14 @@ metadata:
 Future work, tracked in `docs/BACKLOG.md` (repo). Refactor Steps 1-3 are done and the
 series is paused. See [[webserver-refactor-status]].
 
-**NEXT after the pause (user's stated next task): unify file naming to snake_case.**
-The repo mixes PascalCase modules (GameState.py, PlayerState.py, NPCDogState.py, …)
-and snake_case (game_verbs.py, game_turn.py, services/…). Standardize on snake_case
-module files; keep class names PascalCase. `git mv` + fix ALL imports incl. local
-imports inside functions.
-**Why:** user wants one consistent convention.
-**How to apply / gotcha:** `data/world.json` + `create_world.py` reference callbacks
-as strings ("GameApplyFunctions.o_xxx") resolved via the `module_map` in
-`GameState.init_game` → `WorldLoader.resolve_func_from_string`. Renaming modules
-requires updating those string prefixes AND/OR the module_map keys consistently, or
-the world won't load. Also: macOS case-insensitive FS (use git mv carefully), clear
-__pycache__, verify by play-through (no test suite).
+**DONE 2026-06-26 — snake_case file-naming unification.** All 20 PascalCase module
+files renamed to snake_case (classes kept PascalCase: game_state.py defines class
+GameState). Updated all imports, the 4 bare-module qualifier files
+(sys_test/server→utils, web_dialogs→player_state/npc_zombie_state/game_state,
+npc_zombie_state→game_state), the module_map keys in game_state.py + create_world.py,
+and the data/world.json callback prefixes (all consistent → world loads, callbacks
+resolve, server graph imports). NB create_world.py has a PRE-EXISTING unrelated syntax
+error (unclosed { ~line 416) and does not compile — not runtime-relevant.
 
 **Later option (NOT next): optional shell/CLI interface.** The game was originally a
 shell text-adventure; the GUI came later. Step 3 made GameState GUI-free

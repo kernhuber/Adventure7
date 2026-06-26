@@ -18,7 +18,7 @@
     "p_felsen": {
       "description": "Vor dem Berg liegt ein großer Felsen",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_felsen_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_felsen_place_prompt_f",
       "callnames": [
         "Felsen",
         "Berg",
@@ -40,7 +40,7 @@
     "p_geldautomat": {
       "description": "Hier ist ein Geldautomat, an dem man Bargeld bekommen kann",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_geldautomat_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_geldautomat_place_prompt_f",
       "callnames": [
         "Geldautomat",
         "ATM"
@@ -59,7 +59,7 @@
     "p_hoehle": {
       "description": "In die Höhle, deren Eingang freigesprengt wurde.",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_hoehle_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_hoehle_place_prompt_f",
       "callnames": [
         "Höhle",
         "Hoehle"
@@ -77,7 +77,7 @@
     "p_innen": {
       "description": "Im inneren des Holzschuppens",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_innen_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_innen_place_prompt_f",
       "callnames": [
         "innen",
         "Innenraum",
@@ -97,7 +97,7 @@
     "p_schuppen": {
       "description": "Hier ist ein alter Holzschuppen",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_schuppen_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_schuppen_place_prompt_f",
       "callnames": [
         "Schuppen",
         "Holzschuppen"
@@ -137,7 +137,7 @@
     "p_ubahn": {
       "description": "Eine U-Bahn-Station",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_ubahn_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_ubahn_place_prompt_f",
       "callnames": [
         "U-Bahn",
         "UBahn",
@@ -158,7 +158,7 @@
     "p_ubahn2": {
       "description": "Eine zweite U-Bahn-Station",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_ubahn2_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_ubahn2_place_prompt_f",
       "callnames": [
         "U-Bahn-2"
       ],
@@ -195,7 +195,7 @@
     "p_warenautomat": {
       "description": "Hier ist ein Warenautomat, an dem man Fahrradteile kaufen kann",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_warenautomat_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_warenautomat_place_prompt_f",
       "callnames": [
         "Warenautomat"
       ],
@@ -228,7 +228,7 @@
     "p_solaranlage": {
       "description": "Eine große Solaranlage, die viel Strom liefert",
       "place_prompt": "Eine große Solaranlage, die viel Strom liefert. Unter der Solaranlage gedeihen saftige Grasbüschel - irgendwo muss Wasser vorhanden sein!",
-      "place_prompt_f": "PlacePrompts.p_solaranlage_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_solaranlage_place_prompt_f",
       "callnames": [
         "Solaranlage",
         "Photovoltaik",
@@ -247,7 +247,7 @@
     "p_kontrollraum": {
       "description": "Der Kontrollraum der kleinen U-Bahn.",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_kontrollraum_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_kontrollraum_place_prompt_f",
       "callnames": [
         "Kontrollraum"
       ],
@@ -261,7 +261,7 @@
     "p_ubahn_schacht": {
       "description": "EIn finsterer U-Bahn-Schacht",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_ubahn_schacht_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_ubahn_schacht_place_prompt_f",
       "callnames": [
         "U-Bahn-Schacht"
       ],
@@ -274,7 +274,7 @@
     "p_korridor": {
       "description": "",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_korridor_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_korridor_place_prompt_f",
       "callnames": [
         "Korridor"
       ],
@@ -290,7 +290,7 @@
     "p_labor": {
       "description": "",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_labor_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_labor_place_prompt_f",
       "callnames": [
         "Labor"
       ],
@@ -303,7 +303,7 @@
     "p_bibliothek": {
       "description": "",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_bibliothek_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_bibliothek_place_prompt_f",
       "callnames": [
         "Bibliothek"
       ],
@@ -315,7 +315,7 @@
     "p_besenkammer": {
       "description": "",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_besenkammer_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_besenkammer_place_prompt_f",
       "callnames": [
         "Besenkammer"
       ],
@@ -329,7 +329,7 @@
     "p_generatorraum": {
       "description": "",
       "place_prompt": "",
-      "place_prompt_f": "PlacePrompts.p_generatorraum_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_generatorraum_place_prompt_f",
       "callnames": [
         "Generatorraum"
       ],
@@ -348,7 +348,7 @@
       "text_direction": "vom dach des Schuppens herunter",
       "description": "",
       "obstruction_check": null,
-      "way_prompt_f": "WayPrompts.w_dach_schuppen_prompt_f"
+      "way_prompt_f": "way_prompts.w_dach_schuppen_prompt_f"
     },
     "w_felsen_geldautomat": {
       "source": "p_felsen",
@@ -363,7 +363,7 @@
       "destination": "p_hoehle",
       "text_direction": "in die Höhle",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_felsen_hoehle_f",
+      "obstruction_check": "game_obstruction_check_functions.w_felsen_hoehle_f",
       "way_prompt_f": null
     },
     "w_felsen_schuppen": {
@@ -420,7 +420,7 @@
       "text_direction": "aus der Höhle heraus zum Felsen",
       "description": "",
       "obstruction_check": null,
-      "way_prompt_f": "WayPrompts.w_hoehle_felsen_prompt_f"
+      "way_prompt_f": "way_prompts.w_hoehle_felsen_prompt_f"
     },
     "w_innen_schuppen": {
       "source": "p_innen",
@@ -428,15 +428,15 @@
       "text_direction": "aus dem Schuppen heraus",
       "description": "",
       "obstruction_check": null,
-      "way_prompt_f": "WayPrompts.w_innen_schuppen_prompt_f"
+      "way_prompt_f": "way_prompts.w_innen_schuppen_prompt_f"
     },
     "w_schuppen_dach": {
       "source": "p_schuppen",
       "destination": "p_dach",
       "text_direction": "auf das Dach des Schuppens",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_schuppen_dach_f",
-      "way_prompt_f": "WayPrompts.w_schuppen_dach_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_schuppen_dach_f",
+      "way_prompt_f": "way_prompts.w_schuppen_dach_prompt_f"
     },
     "w_schuppen_felsen": {
       "source": "p_schuppen",
@@ -459,7 +459,7 @@
       "destination": "p_innen",
       "text_direction": "in den Schuppen hinein",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_schuppen_innen_f",
+      "obstruction_check": "game_obstruction_check_functions.w_schuppen_innen_f",
       "way_prompt_f": null
     },
     "w_schuppen_start": {
@@ -507,7 +507,7 @@
       "destination": "p_wagen",
       "text_direction": "in den U-Bahnwagen",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn2_wagen_f",
+      "obstruction_check": "game_obstruction_check_functions.w_ubahn2_wagen_f",
       "way_prompt_f": null
     },
     "w_ubahn_wagen": {
@@ -515,7 +515,7 @@
       "destination": "p_wagen",
       "text_direction": "in den U-Bahnwagen hinein",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn_wagen_f",
+      "obstruction_check": "game_obstruction_check_functions.w_ubahn_wagen_f",
       "way_prompt_f": null
     },
     "w_ubahn_warenautomat": {
@@ -524,14 +524,14 @@
       "text_direction": "hoch zum Warenautomaten",
       "description": "",
       "obstruction_check": null,
-      "way_prompt_f": "WayPrompts.w_ubahn_warenautomat_prompt_f"
+      "way_prompt_f": "way_prompts.w_ubahn_warenautomat_prompt_f"
     },
     "w_wagen_ubahn": {
       "source": "p_wagen",
       "destination": "p_ubahn",
       "text_direction": "auf den Bahnsteig der U-Bahn",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_wagen_ubahn_f",
+      "obstruction_check": "game_obstruction_check_functions.w_wagen_ubahn_f",
       "way_prompt_f": null
     },
     "w_wagen_ubahn2": {
@@ -539,7 +539,7 @@
       "destination": "p_ubahn2",
       "text_direction": "zur zweiten Haltestelle",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_wagen_ubahn2_f",
+      "obstruction_check": "game_obstruction_check_functions.w_wagen_ubahn2_f",
       "way_prompt_f": null
     },
     "w_warenautomat_felsen": {
@@ -579,7 +579,7 @@
       "destination": "p_ubahn",
       "text_direction": "herunter zur U-Bahn",
       "description": "Eine Treppe, die zu einer U-Bahn-Station führt!",
-      "obstruction_check": "GameObstructionCheckFunctions.w_warenautomat_ubahn_f",
+      "obstruction_check": "game_obstruction_check_functions.w_warenautomat_ubahn_f",
       "way_prompt_f": null
     },
     "w_plateau_felsen": {
@@ -588,7 +588,7 @@
       "text_direction": "zu Felsen",
       "description": "",
       "obstruction_check": null,
-      "way_prompt_f": "WayPrompts.w_plateau_felsen_prompt_f"
+      "way_prompt_f": "way_prompts.w_plateau_felsen_prompt_f"
     },
     "w_felsen_plateau": {
       "source": "p_felsen",
@@ -596,7 +596,7 @@
       "text_direction": "zum Plateau",
       "description": "",
       "obstruction_check": null,
-      "way_prompt_f": "WayPrompts.w_felsen_plateau_prompt_f"
+      "way_prompt_f": "way_prompts.w_felsen_plateau_prompt_f"
     },
     "w_solaranlage_plateau": {
       "source": "p_solaranlage",
@@ -604,7 +604,7 @@
       "text_direction": "zum Plateau",
       "description": "",
       "obstruction_check": null,
-      "way_prompt_f": "WayPrompts.w_solaranlage_plateau_prompt_f"
+      "way_prompt_f": "way_prompts.w_solaranlage_plateau_prompt_f"
     },
     "w_plateau_solaranlage": {
       "source": "p_plateau",
@@ -612,7 +612,7 @@
       "text_direction": "zur Solaranlage",
       "description": "",
       "obstruction_check": null,
-      "way_prompt_f": "WayPrompts.w_plateau_solaranlage_prompt_f"
+      "way_prompt_f": "way_prompts.w_plateau_solaranlage_prompt_f"
     },
     "w_solaranlage_ubahn2": {
       "source": "p_solaranlage",
@@ -620,48 +620,48 @@
       "text_direction": "zu U-Bahn-2",
       "description": "Ein geheimer Weg in den Untergrund",
       "visible": "false",
-      "obstruction_check": "GameObstructionCheckFunctions.w_solaranlage_ubahn2_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_solaranlage_ubahn2_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_solaranlage_ubahn2_obstruction_check",
+      "way_prompt_f": "way_prompts.w_solaranlage_ubahn2_prompt_f"
     },
     "w_ubahn2_solaranlage": {
       "source": "p_ubahn2",
       "destination": "p_solaranlage",
       "text_direction": "zu Solaranlage",
       "description": "Ein geheimer Weg zur Oberfläche",
-      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn2_solaranlage_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_ubahn2_solaranlage_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_ubahn2_solaranlage_obstruction_check",
+      "way_prompt_f": "way_prompts.w_ubahn2_solaranlage_prompt_f"
     },
     "w_ubahn2_kontrollraum": {
       "source": "p_ubahn2",
       "destination": "p_kontrollraum",
       "text_direction": "zu Kontrollraum",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn2_kontrollraum_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_ubahn2_kontrollraum_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_ubahn2_kontrollraum_obstruction_check",
+      "way_prompt_f": "way_prompts.w_ubahn2_kontrollraum_prompt_f"
     },
     "w_kontrollraum_ubahn2": {
       "source": "p_kontrollraum",
       "destination": "p_ubahn2",
       "text_direction": "zu U-Bahn-2",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_kontrollraum_ubahn2_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_kontrollraum_ubahn2_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_kontrollraum_ubahn2_obstruction_check",
+      "way_prompt_f": "way_prompts.w_kontrollraum_ubahn2_prompt_f"
     },
     "w_ubahn2_ubahnschacht": {
       "source": "p_ubahn2",
       "destination": "p_ubahn_schacht",
       "text_direction": "zu U-Bahn-Schacht",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn2_ubahnschacht_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_ubahn2_ubahnschacht_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_ubahn2_ubahnschacht_obstruction_check",
+      "way_prompt_f": "way_prompts.w_ubahn2_ubahnschacht_prompt_f"
     },
     "w_ubahnschacht_ubahn2": {
       "source": "p_ubahn_schacht",
       "destination": "p_ubahn2",
       "text_direction": "zu U-Bahn-2",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_ubahnschacht_ubahn2_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_ubahnschacht_ubahn2_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_ubahnschacht_ubahn2_obstruction_check",
+      "way_prompt_f": "way_prompts.w_ubahnschacht_ubahn2_prompt_f"
     },
     "w_korridor_ubahn_schacht": {
       "source": "p_korridor",
@@ -676,40 +676,40 @@
       "destination": "p_korridor",
       "text_direction": "zu Korridor",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_ubahn_schacht_korridor_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_ubahn_schacht_korridor_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_ubahn_schacht_korridor_obstruction_check",
+      "way_prompt_f": "way_prompts.w_ubahn_schacht_korridor_prompt_f"
     },
     "w_hoehle_korridor": {
       "source": "p_hoehle",
       "destination": "p_korridor",
       "text_direction": "zu Korridor",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_hoehle_korridor_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_hoehle_korridor_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_hoehle_korridor_obstruction_check",
+      "way_prompt_f": "way_prompts.w_hoehle_korridor_prompt_f"
     },
     "w_korridor_hoehle": {
       "source": "p_korridor",
       "destination": "p_hoehle",
       "text_direction": "zu Höhle",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_korridor_hoehle_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_korridor_hoehle_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_korridor_hoehle_obstruction_check",
+      "way_prompt_f": "way_prompts.w_korridor_hoehle_prompt_f"
     },
     "w_labor_korridor": {
       "source": "p_labor",
       "destination": "p_korridor",
       "text_direction": "zu Korridor",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_labor_korridor_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_labor_korridor_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_labor_korridor_obstruction_check",
+      "way_prompt_f": "way_prompts.w_labor_korridor_prompt_f"
     },
     "w_korridor_labor": {
       "source": "p_korridor",
       "destination": "p_labor",
       "text_direction": "zu Labor",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_korridor_labor_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_korridor_labor_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_korridor_labor_obstruction_check",
+      "way_prompt_f": "way_prompts.w_korridor_labor_prompt_f"
     },
     "w_bibliothek_korridor": {
       "source": "p_bibliothek",
@@ -724,40 +724,40 @@
       "destination": "p_bibliothek",
       "text_direction": "zu Bibliothek",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_korridor_bibliothek_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_korridor_bibliothek_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_korridor_bibliothek_obstruction_check",
+      "way_prompt_f": "way_prompts.w_korridor_bibliothek_prompt_f"
     },
     "w_korridor_besenkammer": {
       "source": "p_korridor",
       "destination": "p_besenkammer",
       "text_direction": "zu Besenkammer",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_korridor_besenkammer_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_korridor_besenkammer_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_korridor_besenkammer_obstruction_check",
+      "way_prompt_f": "way_prompts.w_korridor_besenkammer_prompt_f"
     },
     "w_besenkammer_korridor": {
       "source": "p_besenkammer",
       "destination": "p_korridor",
       "text_direction": "zu Korridor",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_besenkammer_korridor_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_besenkammer_korridor_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_besenkammer_korridor_obstruction_check",
+      "way_prompt_f": "way_prompts.w_besenkammer_korridor_prompt_f"
     },
     "w_generatorraum_labor": {
       "source": "p_generatorraum",
       "destination": "p_labor",
       "text_direction": "zu Labor",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_generatorraum_labor_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_generatorraum_labor_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_generatorraum_labor_obstruction_check",
+      "way_prompt_f": "way_prompts.w_generatorraum_labor_prompt_f"
     },
     "w_labor_generatorraum": {
       "source": "p_labor",
       "destination": "p_generatorraum",
       "text_direction": "zu Generatorraum",
       "description": "",
-      "obstruction_check": "GameObstructionCheckFunctions.w_labor_generatorraum_obstruction_check",
-      "way_prompt_f": "WayPrompts.w_labor_generatorraum_prompt_f"
+      "obstruction_check": "game_obstruction_check_functions.w_labor_generatorraum_obstruction_check",
+      "way_prompt_f": "way_prompts.w_labor_generatorraum_prompt_f"
     }
   },
   "object_defs": {
@@ -771,10 +771,10 @@
       "ownedby": "p_schuppen",
       "fixed": false,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_blumentopf_apply_f",
-      "reveal_f": "GameRevealFunctions.o_blumentopf_reveal_f",
-      "take_f": "GameTakeFunctions.o_blumentopf_take_f",
-      "prompt_f": "ObjectPrompts.o_blumentopf_prompt_f"
+      "apply_f": "game_apply_functions.o_blumentopf_apply_f",
+      "reveal_f": "game_reveal_functions.o_blumentopf_reveal_f",
+      "take_f": "game_take_functions.o_blumentopf_take_f",
+      "prompt_f": "object_prompts.o_blumentopf_prompt_f"
     },
     "o_ec_karte": {
       "name": "o_ec_karte",
@@ -789,10 +789,10 @@
       "ownedby": "p_hoehle",
       "fixed": false,
       "hidden": true,
-      "apply_f": "GameApplyFunctions.o_ec_karte_apply_f",
+      "apply_f": "game_apply_functions.o_ec_karte_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_ec_karte_prompt_f"
+      "prompt_f": "object_prompts.o_ec_karte_prompt_f"
     },
     "o_fahrrad": {
       "name": "o_fahrrad",
@@ -808,7 +808,7 @@
       "apply_f": null,
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_fahrrad_prompt_f"
+      "prompt_f": "object_prompts.o_fahrrad_prompt_f"
     },
     "o_fahrradkette": {
       "name": "o_fahrradkette",
@@ -821,10 +821,10 @@
       "ownedby": "p_warenautomat",
       "fixed": false,
       "hidden": true,
-      "apply_f": "GameApplyFunctions.o_fahrradkette_apply_f",
+      "apply_f": "game_apply_functions.o_fahrradkette_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_fahrradkette_prompt_f"
+      "prompt_f": "object_prompts.o_fahrradkette_prompt_f"
     },
     "o_farbeimer": {
       "name": "o_farbeimer",
@@ -836,10 +836,10 @@
       "ownedby": "p_innen",
       "fixed": false,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_farbeimer_apply_f",
+      "apply_f": "game_apply_functions.o_farbeimer_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_farbeimer_prompt_f"
+      "prompt_f": "object_prompts.o_farbeimer_prompt_f"
     },
     "o_felsen": {
       "name": "o_felsen",
@@ -854,10 +854,10 @@
       "ownedby": "p_felsen",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_felsen_apply_f",
+      "apply_f": "game_apply_functions.o_felsen_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_felsen_prompt_f"
+      "prompt_f": "object_prompts.o_felsen_prompt_f"
     },
     "o_geheimzahl": {
       "name": "o_geheimzahl",
@@ -872,10 +872,10 @@
       "ownedby": "p_ubahn",
       "fixed": false,
       "hidden": true,
-      "apply_f": "GameApplyFunctions.o_geheimzahl_apply_f",
+      "apply_f": "game_apply_functions.o_geheimzahl_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_geheimzahl_prompt_f"
+      "prompt_f": "object_prompts.o_geheimzahl_prompt_f"
     },
     "o_geld_dollar": {
       "name": "o_geld_dollar",
@@ -888,10 +888,10 @@
       "ownedby": "p_geldautomat",
       "fixed": false,
       "hidden": true,
-      "apply_f": "GameApplyFunctions.o_geld_dollar_apply_f",
+      "apply_f": "game_apply_functions.o_geld_dollar_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_geld_dollar_prompt_f"
+      "prompt_f": "object_prompts.o_geld_dollar_prompt_f"
     },
     "o_geld_lire": {
       "name": "o_geld_lire",
@@ -907,10 +907,10 @@
       "ownedby": "p_ubahn2",
       "fixed": false,
       "hidden": true,
-      "apply_f": "GameApplyFunctions.o_geld_lire_apply_f",
+      "apply_f": "game_apply_functions.o_geld_lire_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_geld_lire_prompt_f"
+      "prompt_f": "object_prompts.o_geld_lire_prompt_f"
     },
     "o_geldautomat": {
       "name": "o_geldautomat",
@@ -923,10 +923,10 @@
       "ownedby": "p_geldautomat",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_geldautomat_apply_f",
+      "apply_f": "game_apply_functions.o_geldautomat_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_geldautomat_prompt_f"
+      "prompt_f": "object_prompts.o_geldautomat_prompt_f"
     },
     "o_geldboerse": {
       "name": "o_geldboerse",
@@ -941,10 +941,10 @@
       "ownedby": "p_hoehle",
       "fixed": false,
       "hidden": true,
-      "apply_f": "GameApplyFunctions.o_geldboerse_apply_f",
-      "reveal_f": "GameRevealFunctions.o_geldboerse_reveal_f",
-      "take_f": "GameTakeFunctions.o_geldboerse_take_f",
-      "prompt_f": "ObjectPrompts.o_geldboerse_prompt_f"
+      "apply_f": "game_apply_functions.o_geldboerse_apply_f",
+      "reveal_f": "game_reveal_functions.o_geldboerse_reveal_f",
+      "take_f": "game_take_functions.o_geldboerse_take_f",
+      "prompt_f": "object_prompts.o_geldboerse_prompt_f"
     },
     "o_hauptschalter": {
       "name": "o_hauptschalter",
@@ -960,10 +960,10 @@
       "ownedby": "p_hoehle",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_hauptschalter_apply_f",
+      "apply_f": "game_apply_functions.o_hauptschalter_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_hauptschalter_prompt_f"
+      "prompt_f": "object_prompts.o_hauptschalter_prompt_f"
     },
     "o_hebel": {
       "name": "o_hebel",
@@ -976,10 +976,10 @@
       "ownedby": "p_dach",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_hebel_apply_f",
+      "apply_f": "game_apply_functions.o_hebel_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_hebel_prompt_f"
+      "prompt_f": "object_prompts.o_hebel_prompt_f"
     },
     "o_leiter": {
       "name": "o_leiter",
@@ -991,10 +991,10 @@
       "ownedby": "p_innen",
       "fixed": false,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_leiter_apply_f",
+      "apply_f": "game_apply_functions.o_leiter_apply_f",
       "reveal_f": null,
-      "take_f": "GameTakeFunctions.o_leiter_take_f",
-      "prompt_f": "ObjectPrompts.o_leiter_prompt_f"
+      "take_f": "game_take_functions.o_leiter_take_f",
+      "prompt_f": "object_prompts.o_leiter_prompt_f"
     },
     "o_muelleimer": {
       "name": "o_muelleimer",
@@ -1010,10 +1010,10 @@
       "ownedby": "p_ubahn",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_muelleimer_apply_f",
-      "reveal_f": "GameRevealFunctions.o_muelleimer_reveal_f",
+      "apply_f": "game_apply_functions.o_muelleimer_apply_f",
+      "reveal_f": "game_reveal_functions.o_muelleimer_reveal_f",
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_muelleimer_prompt_f"
+      "prompt_f": "object_prompts.o_muelleimer_prompt_f"
     },
     "o_pinsel": {
       "name": "o_pinsel",
@@ -1025,10 +1025,10 @@
       "ownedby": "p_innen",
       "fixed": false,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_pinsel_apply_f",
+      "apply_f": "game_apply_functions.o_pinsel_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_pinsel_prompt_f"
+      "prompt_f": "object_prompts.o_pinsel_prompt_f"
     },
     "o_pizza": {
       "name": "o_pizza",
@@ -1040,10 +1040,10 @@
       "ownedby": "p_ubahn2",
       "fixed": false,
       "hidden": true,
-      "apply_f": "GameApplyFunctions.o_pizza_apply_f",
+      "apply_f": "game_apply_functions.o_pizza_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_pizza_prompt_f"
+      "prompt_f": "object_prompts.o_pizza_prompt_f"
     },
     "o_pizzaautomat": {
       "name": "o_pizzaautomat",
@@ -1056,10 +1056,10 @@
       "ownedby": "p_ubahn2",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_pizzaautomat_apply_f",
+      "apply_f": "game_apply_functions.o_pizzaautomat_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_pizzaautomat_prompt_f"
+      "prompt_f": "object_prompts.o_pizzaautomat_prompt_f"
     },
     "o_salami": {
       "name": "o_salami",
@@ -1072,10 +1072,10 @@
       "ownedby": "p_wagen",
       "fixed": false,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_salami_apply_f",
+      "apply_f": "game_apply_functions.o_salami_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_salami_prompt_f"
+      "prompt_f": "object_prompts.o_salami_prompt_f"
     },
     "o_schluessel": {
       "name": "o_schluessel",
@@ -1088,10 +1088,10 @@
       "ownedby": "p_schuppen",
       "fixed": false,
       "hidden": true,
-      "apply_f": "GameApplyFunctions.o_schluessel_apply_f",
+      "apply_f": "game_apply_functions.o_schluessel_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_schluessel_prompt_f"
+      "prompt_f": "object_prompts.o_schluessel_prompt_f"
     },
     "o_schrott": {
       "name": "o_schrott",
@@ -1104,10 +1104,10 @@
       "ownedby": "p_schuppen",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_schrott_apply_f",
+      "apply_f": "game_apply_functions.o_schrott_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_schrott_prompt_f"
+      "prompt_f": "object_prompts.o_schrott_prompt_f"
     },
     "o_schuppen": {
       "name": "o_schuppen",
@@ -1120,10 +1120,10 @@
       "ownedby": "p_schuppen",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_schuppen_apply_f",
+      "apply_f": "game_apply_functions.o_schuppen_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_schuppen_prompt_f"
+      "prompt_f": "object_prompts.o_schuppen_prompt_f"
     },
     "o_skelett": {
       "name": "o_skelett",
@@ -1136,10 +1136,10 @@
       "ownedby": "p_hoehle",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_skelett_apply_f",
-      "reveal_f": "GameRevealFunctions.o_skelett_reveal_f",
+      "apply_f": "game_apply_functions.o_skelett_apply_f",
+      "reveal_f": "game_reveal_functions.o_skelett_reveal_f",
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_skelett_prompt_f"
+      "prompt_f": "object_prompts.o_skelett_prompt_f"
     },
     "o_sprengladung": {
       "name": "o_sprengladung",
@@ -1151,10 +1151,10 @@
       "ownedby": "p_innen",
       "fixed": false,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_sprengladung_apply_f",
+      "apply_f": "game_apply_functions.o_sprengladung_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_sprengladung_prompt_f"
+      "prompt_f": "object_prompts.o_sprengladung_prompt_f"
     },
     "o_stuhl": {
       "name": "o_stuhl",
@@ -1168,10 +1168,10 @@
       "ownedby": "p_schuppen",
       "fixed": false,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_stuhl_apply_f",
+      "apply_f": "game_apply_functions.o_stuhl_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_stuhl_prompt_f"
+      "prompt_f": "object_prompts.o_stuhl_prompt_f"
     },
     "o_tuerschliesser": {
       "name": "o_tuerschliesser",
@@ -1186,10 +1186,10 @@
       "ownedby": "p_wagen",
       "fixed": false,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_tuerschliesser_apply_f",
+      "apply_f": "game_apply_functions.o_tuerschliesser_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_tuerschliesser_prompt_f"
+      "prompt_f": "object_prompts.o_tuerschliesser_prompt_f"
     },
     "o_umschlag": {
       "name": "o_umschlag",
@@ -1202,10 +1202,10 @@
       "ownedby": "",
       "fixed": false,
       "hidden": true,
-      "apply_f": "GameApplyFunctions.o_umschlag_apply_f",
+      "apply_f": "game_apply_functions.o_umschlag_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_umschlag_prompt_f"
+      "prompt_f": "object_prompts.o_umschlag_prompt_f"
     },
     "o_warenautomat": {
       "name": "o_warenautomat",
@@ -1218,10 +1218,10 @@
       "ownedby": "p_warenautomat",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_warenautomat_apply_f",
+      "apply_f": "game_apply_functions.o_warenautomat_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_warenautomat_prompt_f"
+      "prompt_f": "object_prompts.o_warenautomat_prompt_f"
     },
     "o_wasserspender": {
       "name": "o_wasserspender",
@@ -1238,10 +1238,10 @@
       "ownedby": "p_ubahn",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_wasserspender_apply_f",
+      "apply_f": "game_apply_functions.o_wasserspender_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_wasserspender_prompt_f"
+      "prompt_f": "object_prompts.o_wasserspender_prompt_f"
     },
     "o_flasche": {
       "name": "o_flasche",
@@ -1253,10 +1253,10 @@
       "ownedby": "p_plateau",
       "fixed": false,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_flasche_apply_f",
+      "apply_f": "game_apply_functions.o_flasche_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_flasche_prompt_f"
+      "prompt_f": "object_prompts.o_flasche_prompt_f"
     },
     "o_solaranlage": {
       "name": "o_solaranlage",
@@ -1273,7 +1273,7 @@
       "apply_f": null,
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_solaranlage_prompt_f"
+      "prompt_f": "object_prompts.o_solaranlage_prompt_f"
     },
     "o_falltuer": {
       "name": "o_falltuer",
@@ -1288,10 +1288,10 @@
       "ownedby": "p_solaranlage",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_falltuer_apply_f",
+      "apply_f": "game_apply_functions.o_falltuer_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_falltuer_prompt_f"
+      "prompt_f": "object_prompts.o_falltuer_prompt_f"
     },
     "o_werbeplakat": {
       "name": "o_werbeplakat",
@@ -1305,10 +1305,10 @@
       "ownedby": "p_ubahn2",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_werbeplakat_apply_f",
+      "apply_f": "game_apply_functions.o_werbeplakat_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_werbeplakat_prompt_f"
+      "prompt_f": "object_prompts.o_werbeplakat_prompt_f"
     },
     "o_tinktur": {
       "name": "o_tinktur",
@@ -1322,10 +1322,10 @@
       "ownedby": "p_besenkammer",
       "fixed": false,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_tinktur_apply_f",
+      "apply_f": "game_apply_functions.o_tinktur_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_tinktur_prompt_f"
+      "prompt_f": "object_prompts.o_tinktur_prompt_f"
     },
     "o_schalter_kontrollraum": {
       "name": "o_schalter_kontrollraum",
@@ -1339,10 +1339,10 @@
       "ownedby": "p_kontrollraum",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_schalter_kontrollraum_apply_f",
+      "apply_f": "game_apply_functions.o_schalter_kontrollraum_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_schalter_kontrollraum_prompt_f"
+      "prompt_f": "object_prompts.o_schalter_kontrollraum_prompt_f"
     },
     "o_schalter_generatorraum": {
       "name": "o_schalter_generatorraum",
@@ -1356,10 +1356,10 @@
       "ownedby": "p_generatorraum",
       "fixed": true,
       "hidden": false,
-      "apply_f": "GameApplyFunctions.o_schalter_generatorraum_apply_f",
+      "apply_f": "game_apply_functions.o_schalter_generatorraum_apply_f",
       "reveal_f": null,
       "take_f": null,
-      "prompt_f": "ObjectPrompts.o_schalter_generatorraum_prompt_f"
+      "prompt_f": "object_prompts.o_schalter_generatorraum_prompt_f"
     }
   },
   "_editor": {

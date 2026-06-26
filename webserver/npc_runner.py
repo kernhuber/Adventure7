@@ -11,7 +11,7 @@ providing ``self.game_sessions``.
 """
 import json
 
-from Utils import dprint, dl
+from utils import dprint, dl
 from webserver.serialization import serialize_real_game_state
 from webserver.texts import txt_final_lost_text
 from webserver.game_modules import GAME_MODULES_AVAILABLE
@@ -40,7 +40,7 @@ class NPCRunnerMixin:
         # Konvertiere Web-Result zu MiniGames.py Format
         if session["type"] == "real" and GAME_MODULES_AVAILABLE:
             try:
-                from NPCDogState import DogFight
+                from npc_dog_state import DogFight
 
                 # Konvertiere String zu DogFight Enum
                 dog_result_map = {
@@ -64,7 +64,7 @@ class NPCRunnerMixin:
 
                 # Suche Hund in der Spielerliste und verarbeite Ergebnis
                 game = session["game"]
-                from NPCDogState import NPCDogState
+                from npc_dog_state import NPCDogState
                 dog = next((p for p in game.players if isinstance(p, NPCDogState)), None)
 
                 fight_message = "Mini-Game beendet"

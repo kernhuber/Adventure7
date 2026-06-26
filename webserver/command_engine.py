@@ -14,7 +14,7 @@ NPCRunnerMixin.
 """
 import json
 
-from Utils import dprint, dl, json_cmd_simple
+from utils import dprint, dl, json_cmd_simple
 from webserver.serialization import serialize_real_game_state
 from webserver.demo import process_demo_command_execution, process_simple_command_execution
 from webserver.texts import txt_final_lost_text, txt_final_won_text

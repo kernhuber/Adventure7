@@ -1,12 +1,12 @@
 """ Zombie NPC Player - LLM-driven autonomous NPC with notebook pattern """
 from __future__ import annotations
 import re
-import GameState
-from PlayerState import PlayerState
+import game_state
+from player_state import PlayerState
 from dataclasses import dataclass, field
 from typing import List, Optional
 from enum import Enum, auto
-from Utils import dprint, dl, json_cmd_simple, return_do_nothing
+from utils import dprint, dl, json_cmd_simple, return_do_nothing
 
 
 class ZombieState(Enum):
@@ -35,7 +35,7 @@ class NPCZombieState(PlayerState):
     player_last_seen_location: Optional[str] = None
     nogo_places: List[str] = field(default_factory=lambda: ["p_start", "p_dach"])
 
-    def can_zombie_go(self, gs: GameState.GameState, plc_name: str) -> bool:
+    def can_zombie_go(self, gs: game_state.GameState, plc_name: str) -> bool:
         if plc_name in self.nogo_places:
             return False
         for w in self.location.ways:
@@ -44,7 +44,7 @@ class NPCZombieState(PlayerState):
                     return True
         return False
 
-    def NPC_game_move(self, gs: GameState.GameState) -> dict:
+    def NPC_game_move(self, gs: game_state.GameState) -> dict:
         self.turn_counter += 1
 
         match self.zombie_state:
@@ -70,7 +70,7 @@ class NPCZombieState(PlayerState):
             case _:
                 return return_do_nothing()
 
-    def _do_hunting_move(self, gs: GameState.GameState) -> dict:
+    def _do_hunting_move(self, gs: game_state.GameState) -> dict:
         self.zombie_thirst -= 1
 
         # Track player location
@@ -109,7 +109,7 @@ class NPCZombieState(PlayerState):
             dprint(dl.ZOMBIE, f"Zombie LLM error: {e}")
             return return_do_nothing()
 
-    def _do_cooperating_move(self, gs: GameState.GameState) -> dict:
+    def _do_cooperating_move(self, gs: game_state.GameState) -> dict:
         self.zombie_state_message = "Der Zombie kooperiert und geht zum Generatorraum."
 
         # Already redeemed?
@@ -136,7 +136,7 @@ class NPCZombieState(PlayerState):
 
         return return_do_nothing()
 
-    def _do_redemption(self, gs: GameState.GameState) -> dict:
+    def _do_redemption(self, gs: game_state.GameState) -> dict:
         """Zombie is redeemed - drop EC card and transition to REDEEMED."""
         self.zombie_state = ZombieState.REDEEMED
         self.zombie_state_message = "Der Zombie ist erlöst!"
@@ -161,7 +161,7 @@ class NPCZombieState(PlayerState):
             "Er lässt die EC-Karte fallen und sein Körper beginnt sich aufzulösen, "
             "bis nur noch ein friedliches Leuchten bleibt, das langsam verblasst.***")
 
-    def compile_zombie_context(self, gs: GameState.GameState) -> dict:
+    def compile_zombie_context(self, gs: game_state.GameState) -> dict:
         ctx = {}
 
         # Current location
@@ -214,7 +214,7 @@ class NPCZombieState(PlayerState):
 
         return ctx
 
-    def compile_zombie_prompt(self, gs: GameState.GameState) -> str:
+    def compile_zombie_prompt(self, gs: game_state.GameState) -> str:
         zctx = self.compile_zombie_context(gs)
 
         prompt = f"""SYSTEM:
@@ -309,7 +309,7 @@ Beispiel:
 
         return return_do_nothing()
 
-    def _call_reasoning_llm(self, gs: GameState.GameState, prompt: str) -> str:
+    def _call_reasoning_llm(self, gs: game_state.GameState, prompt: str) -> str:
         from google import genai
         try:
             # Access the underlying GeminiInterface via _impl
@@ -424,7 +424,7 @@ Gebe NUR Bewertung und Zusammenfassung aus, keine einleitenden Worte.
                 self.notes = "Der Spieler hat mich überzeugt. Ich werde kooperieren. Ich gehe zum Generatorraum und aktiviere den Schalter."
                 dprint(dl.ZOMBIE, "Zombie transitions to COOPERATING after chat!")
 
-    def zombie_prompt(self, gs: GameState.GameState, pl) -> str:
+    def zombie_prompt(self, gs: game_state.GameState, pl) -> str:
         """Context injection for player's LLM narration - describes zombie presence."""
         if self.zombie_state == ZombieState.DORMANT:
             return ""
@@ -455,8 +455,8 @@ Gebe NUR Bewertung und Zusammenfassung aus, keine einleitenden Worte.
 
         return ""
 
-    def NPC_process_gs_result(self, gs: GameState.GameState, results) -> dict:
+    def NPC_process_gs_result(self, gs: game_state.GameState, results) -> dict:
         self.gameengine_returns = str(results) if results else ""
 
-    def game_engine_answer(self, gs: GameState.GameState, r: str):
+    def game_engine_answer(self, gs: game_state.GameState, r: str):
         self.gameengine_returns = r if r else ""

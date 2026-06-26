@@ -1,8 +1,8 @@
 """
 Special functions when a GameObject is "taken"
 """
-from GameState import GameState
-from PlayerState import PlayerState
+from game_state import GameState
+from player_state import PlayerState
 
 def _F(gs: GameState):
     """Return the structured flags container (GameFlags) from GameState."""
@@ -22,8 +22,8 @@ def o_fahrradkette_take_f(gs: GameState, pl: PlayerState=None) -> str:
 
 def _awaken_zombie(gs: GameState, pl: PlayerState) -> str:
     """Shared zombie awakening logic for both examine and take."""
-    from NPCZombieState import NPCZombieState
-    from Utils import dprint, dl
+    from npc_zombie_state import NPCZombieState
+    from utils import dprint, dl
 
     _F(gs).zombie_awake = True
 

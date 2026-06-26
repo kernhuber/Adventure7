@@ -11,10 +11,10 @@ import json
 import os
 from typing import Dict
 
-from Place import Place
-from Way import Way
-from GameObject import GameObject
-from Utils import dprint, dl
+from place import Place
+from way import Way
+from game_object import GameObject
+from utils import dprint, dl
 
 
 class WorldLoader:
@@ -60,7 +60,7 @@ class WorldLoader:
         and are resolved to callables.
         Returns (place_defs, way_defs, object_defs) or None if file not present/invalid.
         """
-        from Utils import GHOSTMODE
+        from utils import GHOSTMODE
         # Compute candidate paths
         candidates = [
             os.path.join("data", "world.json"),
@@ -265,7 +265,7 @@ class WorldLoader:
 
     def _init_objects(self, defs: dict, places: Dict[str, Place]) -> Dict[str, GameObject]:
         objects = {}
-        from GameObject import GameObject
+        from game_object import GameObject
         for obj_name, obj_data in defs.items():
 
             obj = GameObject(

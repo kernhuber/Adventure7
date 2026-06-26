@@ -2,7 +2,7 @@
 Functions which check, if a Way is obstructed. They return the String "Free", if the
 way is not obstructed, the reason for obstruction otherwise
 """
-from GameState import GameState
+from game_state import GameState
 
 def _F(gs: GameState):
     """Return the structured flags container (GameFlags) from GameState."""

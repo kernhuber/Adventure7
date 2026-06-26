@@ -3,7 +3,7 @@ Special Prompts for 'Way' objects.
 Suppposed to determine, if you can walk or run along a way, or if you need to for example climb it
 """
 # from GameState import GameState
-from Way import Way
+from way import Way
 #from PlayerState import PlayerState
 
 def w_schuppen_dach_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:

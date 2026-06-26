@@ -2,25 +2,25 @@
 Creates data/world_bootstrap.json
 """
 
-import GameApplyFunctions as af
-import GameTakeFunctions as tf
-import GameRevealFunctions as rf
-import GameObstructionCheckFunctions as ocf
-import PlacePrompts as pp
-import ObjectPrompts as op
-import WayPrompts as wp
+import game_apply_functions as af
+import game_take_functions as tf
+import game_reveal_functions as rf
+import game_obstruction_check_functions as ocf
+import place_prompts as pp
+import object_prompts as op
+import way_prompts as wp
 import os
 import json
-from Utils import dl, dprint
+from utils import dl, dprint
 
 module_map = {
-    "GameApplyFunctions": af,
-    "GameTakeFunctions": tf,
-    "GameRevealFunctions": rf,
-    "GameObstructionCheckFunctions": ocf,
-    "PlacePrompts": pp,
-    "ObjectPrompts": op,
-    "WayPrompts": wp,
+    "game_apply_functions": af,
+    "game_take_functions": tf,
+    "game_reveal_functions": rf,
+    "game_obstruction_check_functions": ocf,
+    "place_prompts": pp,
+    "object_prompts": op,
+    "way_prompts": wp,
 }
 
 place_defs = {

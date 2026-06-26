@@ -1,11 +1,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from GameState import GameState
-    from PlayerState import PlayerState
-    from GameObject import GameObject
-    from Place import Place
-    from Way import Way
+    from game_state import GameState
+    from player_state import PlayerState
+    from game_object import GameObject
+    from place import Place
+    from way import Way
 
 def _F(gs: "GameState"):
     """Return the structured flags container (GameFlags) from GameState."""

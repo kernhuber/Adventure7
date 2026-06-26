@@ -1,7 +1,7 @@
-from PlayerState import PlayerState
-from GameState import GameState
+from player_state import PlayerState
+from game_state import GameState
 from dataclasses import dataclass, field
-from Utils import tw_print, dprint, dl, json_cmd_simple
+from utils import tw_print, dprint, dl, json_cmd_simple
 
 
 @dataclass
@@ -33,7 +33,7 @@ class ExplosionState(PlayerState):
             if not console_only:
                 explosion_messages.append(msg)
 
-        from Place import Place
+        from place import Place
         owner = gs.objects["o_sprengladung"].ownedby
         if isinstance(owner, Place):
             self.location = owner

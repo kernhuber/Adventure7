@@ -8,7 +8,7 @@ import time
 from functools import partial
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-from Utils import dprint, dl
+from utils import dprint, dl
 
 
 class NoListingHandler(SimpleHTTPRequestHandler):

@@ -39,20 +39,23 @@ genai`); if a stale venv has the old `google-generativeai` instead, install
 `webserver/__init__.py` imports the server **lazily** so leaf modules can be
 imported/tested without pulling in the google/LLM stack.
 
-**Game engine (root):** `GameState.py` (~481 lines — a coordinator after the Step 2
+**Game engine (root):** `game_state.py` (~481 lines — a coordinator after the Step 2
 split) wires `WorldModel`/`GameFlags`/`ContextBuilder` (`services/world.py`),
 `WorldLoader` (`services/world_loader.py`, builds the world from `data/world.json`),
 and inherits `GameVerbsMixin` (`game_verbs.py`, the `verb_*` command engine). Plus
-`PlayerState.py`, `NPCDogState.py`, `NPCZombieState.py`, `ExplosionState.py`,
-`GeminiInterface.py` (LLM), `Utils.py` (logging via `dprint(dl.…, …)`, flags like
+`player_state.py`, `npc_dog_state.py`, `npc_zombie_state.py`, `explosion_state.py`,
+`gemini_interface.py` (LLM), `utils.py` (logging via `dprint(dl.…, …)`, flags like
 `GHOSTMODE`/`NODOG`). The browser front-end is in `web/`.
+
+Module files are snake_case; class names stay PascalCase (e.g. `game_state.py`
+defines `class GameState`).
 
 Note: `GameState()` builds a real `GeminiInterface` only when `llm is None`; pass a
 stub (`GameState(llm=object())`) to construct it without an API key for tests.
 
 ## LLM / model notes
 
-- Models (`GeminiInterface.py`): `gemini-2.5-flash-lite` (text / command parsing),
+- Models (`gemini_interface.py`): `gemini-2.5-flash-lite` (text / command parsing),
   `gemini-2.5-flash` (NPC reasoning).
 - If **tool/function calls** misbehave, suspect the request/response shape
   differing between the old and new google SDK before suspecting model IDs. Code:
@@ -79,11 +82,11 @@ Follow-up robustness fixes are in: malformed tool-calls fail soft, system errors
 longer cost a round (NPC turns gated on `not is_system_error`), and the chat path
 retries 503s.
 
-Future work is tracked in `docs/BACKLOG.md` — **next after the pause: unify file
-naming to snake_case** (modules snake_case, classes stay PascalCase; mind the
-`world.json`/`module_map` callback strings). Also noted there: an optional CLI
+All module files are now snake_case (the naming-convention pass is done; classes
+stay PascalCase). Future work is tracked in `docs/BACKLOG.md`: an optional CLI
 front-end (now feasible since the engine is GUI-free) and low-priority cleanups
-(typed `GameSession`, retire the flag-mirror shim, remove dead verbs/`emit_*`).
+(typed `GameSession`, retire the flag-mirror shim, remove dead verbs/`emit_*`,
+fix the long-broken `create_world.py` dev tool).
 Refactor history: `docs/REFACTORING-2026-06-24-webserver.md` (Step 1),
 `docs/REFACTORING-2026-06-25-gamestate.md` (Step 2),
 `docs/REFACTORING-2026-06-25-step3-engine-rules.md` (Step 3 + robustness/perf).

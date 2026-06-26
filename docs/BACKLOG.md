@@ -5,9 +5,17 @@ Captured ideas for after the current refactoring series (Steps 1–3 done; see t
 
 ---
 
-## NEXT after the pause — unify naming convention to snake_case
+## ✅ DONE (2026-06-26) — unify naming convention to snake_case
 
-The codebase mixes two file/module naming styles: **PascalCase** (`GameState.py`,
+All 20 PascalCase module files were renamed to snake_case (classes kept PascalCase);
+all imports, the bare-module qualifier usages, the `module_map` registry keys, and
+the `data/world.json` callback prefixes were updated consistently. Verified: world
+loads and callbacks resolve, full server graph imports. (`create_world.py` remains
+broken by a pre-existing, unrelated syntax error — see cleanups below.)
+
+The original plan, for reference:
+
+The codebase mixed two file/module naming styles: **PascalCase** (`GameState.py`,
 `PlayerState.py`, …) and **snake_case** (`game_verbs.py`, `game_turn.py`,
 `web_backend_server.py`, `services/…`). Standardize on **snake_case for module
 files** (PEP 8), keeping **class names in PascalCase** (e.g. module `game_state.py`
@@ -71,4 +79,8 @@ turn methods. **Not the next step** — just enabled by the current architecture
 - Retire the flag-mirror shim in `GameState` (`__getattr__`/`__setattr__`/
   `FLAG_FIELDS`) so code uses `get_flags()`/`_flags` directly — wide (13-file) sweep.
 - Remove dead verbs (`verb_lookaround_old`, `verb_lookaround_llm`) and the `emit_*`
-  dev codegen helpers in `GameState`.
+  dev codegen helpers in `game_state` / `game_verbs`.
+- Fix `create_world.py` — the world-definition dev tool has a pre-existing syntax
+  error (unclosed `{` near line 416) and does not compile. Not used at runtime (the
+  game loads the committed `data/world.json`), but it should be repaired if world
+  regeneration is needed.

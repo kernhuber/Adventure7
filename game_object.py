@@ -8,9 +8,9 @@ from typing import Callable, Union, Any, Optional
 
 class GameObject:
     def __init__(self, name, examine, help_text="", fixed=False, hidden=False, callnames=None, apply_f=None, reveal_f=None, take_f=None, prompt_f=None):
-        from PlayerState import PlayerState
-        from GameState import GameState
-        from Place import Place
+        from player_state import PlayerState
+        from game_state import GameState
+        from place import Place
         self.name = name
         self.examine = examine      # Text to me emitted when object is examined
         self.help_text = help_text  # Text to be emitted when player asks for help with object

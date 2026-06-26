@@ -10,7 +10,7 @@ Relies on the host class (GameState) for get_flags(), players, the verb engine, 
 """
 from __future__ import annotations
 
-from Utils import dprint, dl
+from utils import dprint, dl
 
 
 class GameTurnMixin:
@@ -35,11 +35,11 @@ class GameTurnMixin:
         timers, and remove expired explosions. Returns the list of NPC action dicts
         for the caller to render. ``dialogs`` (PlayerDialogs) is forwarded to NPC
         interactions. Moved from the web layer (collect_npc_actions) in Step 3.2."""
-        from NPCDogState import NPCDogState
-        from Utils import json_cmd_simple
+        from npc_dog_state import NPCDogState
+        from utils import json_cmd_simple
         # Versuche auch ExplosionState zu importieren
         try:
-            from ExplosionState import ExplosionState
+            from explosion_state import ExplosionState
             EXPLOSION_AVAILABLE = True
         except ImportError:
             EXPLOSION_AVAILABLE = False
@@ -48,7 +48,7 @@ class GameTurnMixin:
         npc_actions = []
         players_to_remove = []  # Für Spieler die durch Explosion eliminiert werden
 
-        from NPCZombieState import NPCZombieState
+        from npc_zombie_state import NPCZombieState
 
         for npc in self.players:
             if isinstance(npc, NPCDogState):

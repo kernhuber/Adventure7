@@ -5,15 +5,15 @@ import os
 from collections import deque
 
 
-from Place import Place
-from Way import Way
+from place import Place
+from way import Way
 from typing import Dict, List
 from typing import Set
-from PlayerState import PlayerState
-from GameObject import GameObject
+from player_state import PlayerState
+from game_object import GameObject
 from services.world import GameFlags, WorldModel, ContextBuilder
 
-from Utils import tw_print, dprint, dl, dpprint
+from utils import tw_print, dprint, dl, dpprint
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from services.interfaces import LLMClient
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 from typing import Callable
 
 
-from WayPrompts import w_dach_schuppen_prompt_f
+from way_prompts import w_dach_schuppen_prompt_f
 from game_verbs import GameVerbsMixin
 from game_turn import GameTurnMixin
 
@@ -185,7 +185,7 @@ class GameState(GameVerbsMixin, GameTurnMixin):
                 print()
 
     def add_player(self,name, npc=False):
-        from NPCDogState import NPCDogState
+        from npc_dog_state import NPCDogState
         if npc:
             start_room = self.places["p_geldautomat"]
             self.players.append(NPCDogState(name=name, location=start_room))
@@ -255,7 +255,7 @@ class GameState(GameVerbsMixin, GameTurnMixin):
         #self.llm = GeminiInterface()       # Unser Sprachmodell
         # Prefer injected LLM; fallback to local GeminiInterface to avoid module-level import cycles
         if self.llm is None:
-            from GeminiInterface import GeminiInterface  # local import prevents import cycles
+            from gemini_interface import GeminiInterface  # local import prevents import cycles
             self.llm = GeminiInterface()  # Unser Sprachmodell
         self.gamelog = []                  # Wir schneiden alles für das LLM mit
 
@@ -274,22 +274,22 @@ class GameState(GameVerbsMixin, GameTurnMixin):
         #
         # Place definitions
         #
-        import GameApplyFunctions as af
-        import GameTakeFunctions as tf
-        import GameRevealFunctions as rf
-        import GameObstructionCheckFunctions as ocf
-        import PlacePrompts as pp
-        import ObjectPrompts as op
-        import WayPrompts as wp
+        import game_apply_functions as af
+        import game_take_functions as tf
+        import game_reveal_functions as rf
+        import game_obstruction_check_functions as ocf
+        import place_prompts as pp
+        import object_prompts as op
+        import way_prompts as wp
 
         module_map = {
-            "GameApplyFunctions": af,
-            "GameTakeFunctions": tf,
-            "GameRevealFunctions": rf,
-            "GameObstructionCheckFunctions": ocf,
-            "PlacePrompts": pp,
-            "ObjectPrompts": op,
-            "WayPrompts": wp,
+            "game_apply_functions": af,
+            "game_take_functions": tf,
+            "game_reveal_functions": rf,
+            "game_obstruction_check_functions": ocf,
+            "place_prompts": pp,
+            "object_prompts": op,
+            "way_prompts": wp,
         }
 
         # Build the world via WorldLoader (load world.json -> validate -> build).

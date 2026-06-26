@@ -1,14 +1,14 @@
 """ This module contains all the game verbs as well as a super simple parser and execution mechanism"""
 #import pylab as p
 
-from GameState import GameState
-from GameObject import GameObject
-from PlayerState import PlayerState
-from NPCDogState import NPCDogState
-from ExplosionState import ExplosionState
-from Place import Place
+from game_state import GameState
+from game_object import GameObject
+from player_state import PlayerState
+from npc_dog_state import NPCDogState
+from explosion_state import ExplosionState
+from place import Place
 
-from Way import Way
+from way import Way
 
 # Helper: get the structured flags container from GameState.
 def _F(gs: GameState):
@@ -165,10 +165,10 @@ def o_hebel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, 
     else:
         return "??? Kein Spieler ???"
 
-from GameState import GameState
-from PlayerState import PlayerState
+from game_state import GameState
+from player_state import PlayerState
 def o_sprengladung_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    from ExplosionState import ExplosionState
+    from explosion_state import ExplosionState
 
     xpl = ExplosionState(gs, location=pl.location)
     xpl.name = "Explosion"

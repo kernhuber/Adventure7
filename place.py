@@ -1,8 +1,8 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Callable
-from GameObject import GameObject
-from Way import Way
+from game_object import GameObject
+from way import Way
 
 
 @dataclass

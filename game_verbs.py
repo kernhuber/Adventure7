@@ -15,8 +15,8 @@ GameState).
 from __future__ import annotations
 import json
 
-from PlayerState import PlayerState
-from Utils import tw_print, dprint, dpprint, dl
+from player_state import PlayerState
+from utils import tw_print, dprint, dpprint, dl
 
 
 class GameVerbsMixin:
@@ -89,7 +89,7 @@ class GameVerbsMixin:
         return "nichts"
 
     def verb_dogstate(self, pl: PlayerState, session_id=None):
-        from NPCDogState import NPCDogState
+        from npc_dog_state import NPCDogState
         from pprint import pprint
         dgf = None
         for p in self.players:
@@ -218,7 +218,7 @@ Am Ort sind folgende Objekte zu sehen:"""
         if rs == "":
             rs="(keine)"
         dogfound = None
-        from NPCDogState import NPCDogState
+        from npc_dog_state import NPCDogState
         for d in self.players:
             if type(d) is NPCDogState:
                 dogfound = d
@@ -421,7 +421,7 @@ Am Ort sind folgende Objekte zu sehen:"""
 
     def verb_attack(self, pl: PlayerState, session_id, whom="")->str:
         """ Player attacks dog which needs to be in the same place as Player"""
-        from NPCDogState import NPCDogState
+        from npc_dog_state import NPCDogState
         dog = next(d for d in self.players if type(d) is NPCDogState)
         #dog = None
         #for d in self.players:

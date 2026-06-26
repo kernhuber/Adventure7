@@ -1,13 +1,13 @@
 from pydantic_core.core_schema import none_schema
 
-from PlayerState import PlayerState
-from GameState import GameState
+from player_state import PlayerState
+from game_state import GameState
 from dataclasses import dataclass, field
 from collections import deque
 from typing import List, Deque, Any
 from enum import Enum, auto
 import random
-from Utils import tw_print, dprint, dl, json_cmd_simple, return_do_nothing
+from utils import tw_print, dprint, dl, json_cmd_simple, return_do_nothing
 
 class DogState(Enum):
     START = auto()
@@ -27,7 +27,7 @@ class DogFight(Enum):
 #
 @dataclass
 class NPCDogState(PlayerState):
-    from Place import Place
+    from place import Place
 
 
     growl: int = 0
@@ -374,7 +374,7 @@ Beschreibung des Hundes
         KORRIGIERTE VERSION mit richtigen DogState-Werten
         Player attacks dog - starte Mini-Game
         """
-        from Utils import dprint, dl
+        from utils import dprint, dl
         import random
 
         dprint(dl.NPCPLAYERSTATE, f"🥊 {pl.name} greift {self.name} an!")
@@ -395,7 +395,7 @@ Beschreibung des Hundes
         KORRIGIERTE VERSION mit richtigen DogState-Werten
         Verarbeite das Ergebnis eines Kampfes (für beide Interface-Typen)
         """
-        from Utils import dprint, dl
+        from utils import dprint, dl
         import random
 
         dprint(dl.NPCPLAYERSTATE, f"🎯 Kampfergebnis: {fight_result}")
@@ -450,7 +450,7 @@ Beschreibung des Hundes
         SICHERE ALTERNATIVE - falls immer noch Probleme auftreten
         Ändert dog_state nicht, nur attack_counter und message
         """
-        from Utils import dprint, dl
+        from utils import dprint, dl
         import random
 
         dprint(dl.NPCPLAYERSTATE, f"🥊 {pl.name} greift {self.name} an!")

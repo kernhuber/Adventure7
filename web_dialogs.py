@@ -6,13 +6,13 @@ from __future__ import annotations
 import json
 import re
 import random
-import PlayerState
-import NPCZombieState
-import GameState
+import player_state
+import npc_zombie_state
+import game_state
 
 #from websockets.legacy.server import WebSocketServerProtocol
 
-from Utils import dl, dprint, dpprint
+from utils import dl, dprint, dpprint
 
 
 class WebDialogs:
@@ -151,12 +151,12 @@ class WebDialogs:
         already taken place
 
         """
-        if not isinstance(pl, PlayerState.PlayerState) or hasattr(pl, 'zombie_state') or hasattr(pl, 'dog_state'):
+        if not isinstance(pl, player_state.PlayerState) or hasattr(pl, 'zombie_state') or hasattr(pl, 'dog_state'):
             #
             # pl is not a human player - check if whom is, then swap
             #
 
-            if not isinstance(whom, PlayerState.PlayerState) or hasattr(whom, 'zombie_state') or hasattr(whom, 'dog_state'):
+            if not isinstance(whom, player_state.PlayerState) or hasattr(whom, 'zombie_state') or hasattr(whom, 'dog_state'):
                 # Neither is a human player - can't do web chat
                 return
             #
@@ -193,7 +193,7 @@ class WebDialogs:
                     whom.end_chat(gs.llm,ls_chat if ls_chat else last_chat)
                     # Log zombie state transition if applicable
                     if hasattr(whom, 'zombie_state'):
-                        from NPCZombieState import ZombieState
+                        from npc_zombie_state import ZombieState
                         dprint(dl.WEBGUI, f"Zombie state after chat: {whom.zombie_state}")
                         if whom.zombie_state == ZombieState.COOPERATING:
                             dprint(dl.WEBGUI, "Zombie transitioned to COOPERATING after dialog!")

@@ -9,11 +9,11 @@ circular import).
 import sys
 import os
 
-from Utils import dprint, dl
+from utils import dprint, dl
 
 try:
-    from GameState import GameState
-    from PlayerState import PlayerState
+    from game_state import GameState
+    from player_state import PlayerState
 
     GAME_MODULES_AVAILABLE = True
     dprint(dl.WEBGUI, "✅ Game-Module erfolgreich importiert")

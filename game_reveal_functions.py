@@ -1,10 +1,10 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from GameState import GameState
-    from PlayerState import PlayerState
-    from GameObject import GameObject
-    from Place import Place
+    from game_state import GameState
+    from player_state import PlayerState
+    from game_object import GameObject
+    from place import Place
 
 
 """
@@ -38,7 +38,7 @@ def o_skelett_reveal_f(gs: "GameState", pl: "PlayerState" = None, what: "GameObj
 
 def o_geldboerse_reveal_f(gs: "GameState", pl: "PlayerState" = None, what: "GameObject" = None,
                           onwhat: "GameObject" = None) -> str:
-    from GameTakeFunctions import _awaken_zombie, _F
+    from game_take_functions import _awaken_zombie, _F
 
     o_geldboerse = gs.objects["o_geldboerse"]
 

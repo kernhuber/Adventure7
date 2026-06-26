@@ -20,13 +20,13 @@ from webserver.command_engine import CommandEngineMixin
 
 from tornado import websocket
 
-import Utils
+import utils
 import traceback
 
-Utils.ADV_LOGGER = Utils.dlogger()
+utils.ADV_LOGGER = utils.dlogger()
 
 
-from Utils import dprint, dl
+from utils import dprint, dl
 
 # Adapter für LLM-Client Gemini importieren
 from services.adapters import LLMClientGemini
@@ -72,7 +72,7 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                 game = GameState(llm=llm)
 
                 # WebDialogs (PlayerDialogs port) is owned by the web layer now.
-                from WebDialogs import WebDialogs
+                from web_dialogs import WebDialogs
                 wd = WebDialogs(websocket, session_id)
                 dprint(dl.WEBGUI, f"✅ GameState erstellt")
 
@@ -90,11 +90,11 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                 dprint(dl.WEBGUI, f"✅ Spieler erstellt: {player.name} in {player.location.name}")
 
                 # Versuche Hund hinzuzufügen
-                from Utils import GHOSTMODE, NODOG
+                from utils import GHOSTMODE, NODOG
                 if not GHOSTMODE:
                     if not NODOG:
                         try:
-                            from NPCDogState import NPCDogState
+                            from npc_dog_state import NPCDogState
                             dog = NPCDogState(name="Hund", location=game.places["p_geldautomat"])
                             game.players.append(dog)
                             dprint(dl.WEBGUI, f"✅ Hund hinzugefügt: {dog.name} in {dog.location.name}")

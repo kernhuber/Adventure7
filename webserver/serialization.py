@@ -5,14 +5,14 @@ back to the demo state so the front-end always receives a well-formed payload.
 """
 import traceback
 
-from Utils import dprint, dl
+from utils import dprint, dl
 from webserver.demo import create_demo_game_state
 
 
 def serialize_real_game_state(game, session_id=None):
     """Konvertiere echtes GameState zu JSON-Format"""
-    from NPCDogState import NPCDogState
-    from NPCZombieState import NPCZombieState
+    from npc_dog_state import NPCDogState
+    from npc_zombie_state import NPCZombieState
     try:
         player = game.players[0] if game.players else None
         if not player:

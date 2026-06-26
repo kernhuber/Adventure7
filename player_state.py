@@ -1,10 +1,10 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Optional
-from Place import Place
+from place import Place
 from collections import deque
-from SysTest import SysTest
-from Utils import dpprint, dprint, dl, return_do_nothing, json_cmd_simple
+from sys_test import SysTest
+from utils import dpprint, dprint, dl, return_do_nothing, json_cmd_simple
 
 #from GeminiInterface import GeminiInterface
 
@@ -15,7 +15,7 @@ from Utils import dpprint, dprint, dl, return_do_nothing, json_cmd_simple
 #
 @dataclass
 class PlayerState:
-    from GameObject import GameObject
+    from game_object import GameObject
     name: str
     # session_id: str  # Will be populated later
     location: Place
@@ -74,7 +74,7 @@ class PlayerState:
         :return: Command to be executed by game Engine
         """
         from rich.prompt import Prompt
-        from Utils import tw_print
+        from utils import tw_print
         dprint(dl.PLAYERSTATE,f'{self.name}, du bist aktuell hier: {self.location.callnames[0]} ')
         self.thirst_counter -= 1
         if self.thirst_counter == 0:
@@ -98,7 +98,7 @@ class PlayerState:
             if self.cmd_q:
                 user_input = self.cmd_q.popleft()
             else:
-                from Utils import DEBUG_LEVEL
+                from utils import DEBUG_LEVEL
                 if not self.pending_llm_input:
                     if DEBUG_LEVEL & dl.SYSTESTLLM:
                         if self.systest.test_queue_llm:

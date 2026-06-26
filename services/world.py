@@ -6,11 +6,11 @@ from typing import Dict, TYPE_CHECKING, List, Optional
 
 # Keine Laufzeit-Imports auf GameState/Place/Way/GameObject -> verhindert Zyklen/Package-Probleme
 if TYPE_CHECKING:
-    from GameState import GameState
-    from PlayerState import PlayerState
-    from Place import Place
-    from Way import Way
-    from GameObject import GameObject
+    from game_state import GameState
+    from player_state import PlayerState
+    from place import Place
+    from way import Way
+    from game_object import GameObject
 
 # ------------------------------
 # Context building helper
@@ -62,7 +62,7 @@ class ContextBuilder:
                 all_place_ids_for_navigation.append(w.destination.name)
 
         # Hund (NPC) – lokaler Import vermeidet Zyklen
-        from NPCDogState import NPCDogState
+        from npc_dog_state import NPCDogState
         dog_pl = next((p for p in gs.players if isinstance(p, NPCDogState)), None)
         if dog_pl:
             dog_description = dog_pl.dog_prompt(gs, pl)
@@ -71,7 +71,7 @@ class ContextBuilder:
                 all_object_ids_in_context.append(dog_pl.name)
 
         # Zombie (NPC) – lokaler Import vermeidet Zyklen
-        from NPCZombieState import NPCZombieState
+        from npc_zombie_state import NPCZombieState
         zombie_pl = next((p for p in gs.players if isinstance(p, NPCZombieState)), None)
         if zombie_pl:
             zombie_description = zombie_pl.zombie_prompt(gs, pl)
@@ -121,7 +121,7 @@ class ContextBuilder:
         details["Wo man hingehen kann"] = wege
 
         # Hund (optional) – lokaler Import vermeidet Zyklen
-        from NPCDogState import NPCDogState
+        from npc_dog_state import NPCDogState
         dog_pl = next((p for p in gs.players if isinstance(p, NPCDogState)), None)
         if dog_pl:
             dp = dog_pl.dog_prompt(gs, pl)
@@ -129,7 +129,7 @@ class ContextBuilder:
                 details["Achtung"] = dp
 
         # Zombie (optional) – lokaler Import vermeidet Zyklen
-        from NPCZombieState import NPCZombieState
+        from npc_zombie_state import NPCZombieState
         zombie_pl = next((p for p in gs.players if isinstance(p, NPCZombieState)), None)
         if zombie_pl:
             zp = zombie_pl.zombie_prompt(gs, pl)
