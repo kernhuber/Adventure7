@@ -15,11 +15,12 @@
         "o_hebel"
       ]
     },
-    "p_felsen": {
+    "p_felsnische": {
       "description": "Vor dem Berg liegt ein großer Felsen",
       "place_prompt": "",
-      "place_prompt_f": "place_prompts.p_felsen_place_prompt_f",
+      "place_prompt_f": "place_prompts.p_felsnische_place_prompt_f",
       "callnames": [
+        "Felsnische",
         "Felsen",
         "Berg",
         "Hügel",
@@ -351,7 +352,7 @@
       "way_prompt_f": "way_prompts.w_dach_schuppen_prompt_f"
     },
     "w_felsen_geldautomat": {
-      "source": "p_felsen",
+      "source": "p_felsnische",
       "destination": "p_geldautomat",
       "text_direction": "zum Geldautomat",
       "description": "",
@@ -359,7 +360,7 @@
       "way_prompt_f": null
     },
     "w_felsen_hoehle": {
-      "source": "p_felsen",
+      "source": "p_felsnische",
       "destination": "p_hoehle",
       "text_direction": "in die Höhle",
       "description": "",
@@ -367,7 +368,7 @@
       "way_prompt_f": null
     },
     "w_felsen_schuppen": {
-      "source": "p_felsen",
+      "source": "p_felsnische",
       "destination": "p_schuppen",
       "text_direction": "zum Schuppen",
       "description": "",
@@ -375,7 +376,7 @@
       "way_prompt_f": null
     },
     "w_felsen_warenautomat": {
-      "source": "p_felsen",
+      "source": "p_felsnische",
       "destination": "p_warenautomat",
       "text_direction": "zum Warenautomat",
       "description": "",
@@ -384,8 +385,8 @@
     },
     "w_geldautomat_felsen": {
       "source": "p_geldautomat",
-      "destination": "p_felsen",
-      "text_direction": "zum Felsen",
+      "destination": "p_felsnische",
+      "text_direction": "zur Felsnische",
       "description": "",
       "obstruction_check": null,
       "way_prompt_f": null
@@ -416,8 +417,8 @@
     },
     "w_hoehle_felsen": {
       "source": "p_hoehle",
-      "destination": "p_felsen",
-      "text_direction": "aus der Höhle heraus zum Felsen",
+      "destination": "p_felsnische",
+      "text_direction": "aus der Höhle heraus zur Felsnische",
       "description": "",
       "obstruction_check": null,
       "way_prompt_f": "way_prompts.w_hoehle_felsen_prompt_f"
@@ -440,8 +441,8 @@
     },
     "w_schuppen_felsen": {
       "source": "p_schuppen",
-      "destination": "p_felsen",
-      "text_direction": "zum Felsen",
+      "destination": "p_felsnische",
+      "text_direction": "zur Felsnische",
       "description": "",
       "obstruction_check": null,
       "way_prompt_f": null
@@ -544,8 +545,8 @@
     },
     "w_warenautomat_felsen": {
       "source": "p_warenautomat",
-      "destination": "p_felsen",
-      "text_direction": "zum Felsen",
+      "destination": "p_felsnische",
+      "text_direction": "zur Felsnische",
       "description": "",
       "obstruction_check": null,
       "way_prompt_f": null
@@ -584,14 +585,14 @@
     },
     "w_plateau_felsen": {
       "source": "p_plateau",
-      "destination": "p_felsen",
-      "text_direction": "zu Felsen",
+      "destination": "p_felsnische",
+      "text_direction": "zur Felsnische",
       "description": "",
       "obstruction_check": null,
       "way_prompt_f": "way_prompts.w_plateau_felsen_prompt_f"
     },
     "w_felsen_plateau": {
-      "source": "p_felsen",
+      "source": "p_felsnische",
       "destination": "p_plateau",
       "text_direction": "zum Plateau",
       "description": "",
@@ -851,7 +852,7 @@
         "Stein",
         "Gesteinsblock"
       ],
-      "ownedby": "p_felsen",
+      "ownedby": "p_felsnische",
       "fixed": true,
       "hidden": false,
       "apply_f": "game_apply_functions.o_felsen_apply_f",
@@ -1400,7 +1401,7 @@
         "x": -89,
         "y": 82.5
       },
-      "p_felsen": {
+      "p_felsnische": {
         "x": -154.32691541000054,
         "y": -196.9586599983985
       },

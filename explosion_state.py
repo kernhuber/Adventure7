@@ -122,7 +122,7 @@ class ExplosionState(PlayerState):
             #     gs.warenautomat_intakt = False
             #     import random
             #     nl = random.choice(
-            #         ["p_ubahn", "p_warenautomat", "p_geldautomat", "p_schuppen", "p_dach", "p_felsen", "p_innen"])
+            #         ["p_ubahn", "p_warenautomat", "p_geldautomat", "p_schuppen", "p_dach", "p_felsnische", "p_innen"])
             #     dprint(dl.EXPLOSIONSTATE, f"Spoiler: die Fahrradkette ist nun hier: {nl}")
             #
             #     gs.objects["o_fahrradkette"].hidden = False
@@ -174,7 +174,7 @@ class ExplosionState(PlayerState):
                 if o.name == "o_felsen":
                     log_explosion("##***--> Aha!! Hier wird der Eingang zu einer Höhle sichtbar!***")
                     gs.places[
-                        "p_felsen"].description = "Dort, wo der Felsen lag, ist nun nur noch Geröll ... und der Eingang zu einer Höhle"
+                        "p_felsnische"].description = "Dort, wo der Felsen lag, ist nun nur noch Geröll ... und der Eingang zu einer Höhle"
                     gs.felsen = False
                 elif o.name == "o_schuppen":
                     gs.ways["w_schuppen_dach"].visible = False
@@ -198,7 +198,7 @@ class ExplosionState(PlayerState):
                     gs.players.remove(p)
 
             # Gewinn-/Verlust-Check
-            if self.location.name not in ["p_felsen", "p_warenautomat"]:
+            if self.location.name not in ["p_felsnische", "p_warenautomat"]:
                 log_explosion(
                     "***Die Sprengladung ist leider am falschen Ort explodiert. Du kannst das Spiel nicht mehr gewinnen. Verwende 'quit' um es zu beenden, oder sieh dich noch ein wenig um, wenn es dich interessiert.***")
             else:

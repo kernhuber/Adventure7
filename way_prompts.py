@@ -67,7 +67,7 @@ def w_hoehle_felsen_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
 - Gehe aus der Höhle raus
 - Gehe raus
 - Gehe nach draussen
-* Liefere in diesen und ähnlichen Fällen 'gehe p_felsen' zurück
+* Liefere in diesen und ähnlichen Fällen 'gehe p_felsnische' zurück
     """
 
 def w_solaranlage_plateau_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
@@ -97,7 +97,7 @@ def w_plateau_felsen_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> s
     return """
 Dieser Weg führt vom Plateau auf dem Hügel zum Felsen oder zum Höhleneingang.
 Man kann diesen Weg gehen, laufen, herabklettern, herablaufen oder sich anderweitig auf ihm bewegen.
-Liefere "gege p_felsen" zurück, wenn dieser Weg beschritten wird.
+Liefere "gege p_felsnische" zurück, wenn dieser Weg beschritten wird.
             """
 
 def w_felsen_plateau_prompt_f(gs: "GameState", pl: "PlayerState", w: "Way") -> str:

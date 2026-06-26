@@ -24,11 +24,11 @@ Warenautomat
 - An diesem Ort befindet sich der Warenautomat für Fahrradteile, der weiter unten beschrieben wird
     """
 
-def p_felsen_place_prompt_f(gs: "GameState", pl: "PlayerState")-> str:
+def p_felsnische_place_prompt_f(gs: "GameState", pl: "PlayerState")-> str:
     rv = """
-Felsen
-======
-- Hier ist ein Hügel aus Gestein und Felsen. 
+Felsnische
+==========
+- Hier ist eine Nische in einem Hügel aus Gestein und Felsen.
 - Ein Weg führt auf ein Plateau auf dem Hügel.
 """
     if _F(gs).felsen:

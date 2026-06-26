@@ -134,10 +134,10 @@ Auf dem Dach des Schuppens
         "objects": ["o_leiter", "o_pinsel", "o_farbeimer"],
         "callnames": ["innen", "Innenraum", "drinnen", "nach innen", "in den schuppen"]
     },
-    "p_felsen": {
+    "p_felsnische": {
         "description": "Vor dem Berg liegt ein großer Felsen",
         "place_prompt": "",
-        "place_prompt_f": pp.p_felsen_place_prompt_f,
+        "place_prompt_f": pp.p_felsnische_place_prompt_f,
         "ways": ["w_felsen_hoehle", "w_felsen_schuppen", "w_felsen_warenautomat", "w_felsen_geldautomat"],
         "objects": ["o_felsen"],
         "callnames": ["Felsen", "Berg", "Hügel", "Huegel", "Felsblock"]
@@ -353,10 +353,10 @@ way_defs = {
                 "description": ""
             },
             #
-            # Place: p_felsen
+            # Place: p_felsnische
             #
             "w_felsen_schuppen": {
-                "source": "p_felsen" ,
+                "source": "p_felsnische" ,
                 "destination": "p_schuppen",
                 "text_direction": "zum Schuppen",
                 "obstruction_check": None,
@@ -364,13 +364,13 @@ way_defs = {
             },
             "w_schuppen_felsen": {
                 "source": "p_schuppen",
-                "destination": "p_felsen",
+                "destination": "p_felsnische",
                 "text_direction": "zum Felsen",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_felsen_warenautomat": {
-                "source": "p_felsen",
+                "source": "p_felsnische",
                 "destination": "p_warenautomat",
                 "text_direction": "zum Warenautomat",
                 "obstruction_check": None,
@@ -378,13 +378,13 @@ way_defs = {
             },
             "w_warenautomat_felsen": {
                 "source": "p_warenautomat",
-                "destination": "p_felsen",
+                "destination": "p_felsnische",
                 "text_direction": "zum Felsen",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_felsen_geldautomat": {
-                "source": "p_felsen",
+                "source": "p_felsnische",
                 "destination": "p_geldautomat",
                 "text_direction": "zum Geldautomat",
                 "obstruction_check": None,
@@ -392,13 +392,13 @@ way_defs = {
             },
             "w_geldautomat_felsen": {
                 "source": "p_geldautomat",
-                "destination": "p_felsen",
+                "destination": "p_felsnische",
                 "text_direction": "zum Felsen",
                 "obstruction_check": None,
                 "description": ""
             },
             "w_felsen_hoehle": {
-                "source": "p_felsen",
+                "source": "p_felsnische",
                 "destination": "p_hoehle",
                 "text_direction": "in die Höhle",
                 "obstruction_check": ocf.w_felsen_hoehle_f,
@@ -406,7 +406,7 @@ way_defs = {
             },
             "w_hoehle_felsen": {
                 "source": "p_hoehle",
-                "destination": "p_felsen",
+                "destination": "p_felsnische",
                 "text_direction": "aus der Höhle heraus zum Felsen",
                 "obstruction_check": None,
                 "way_prompt_f": wp.w_hoehle_felsen_prompt_f,
@@ -760,7 +760,7 @@ object_defs = {
                 "name": "o_felsen",
                 "examine": "Ein großer Felsen",
                 "help_text": "Ob der Felsen hier wirklich liegen soll?",
-                "ownedby": "p_felsen",
+                "ownedby": "p_felsnische",
                 "callnames": ["Felsen", "Felsblock", "Stein", "Gesteinsblock"],
                 "fixed": True,
                 "hidden": False,

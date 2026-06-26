@@ -434,7 +434,7 @@ Sprengladung
 #                 "name": "o_felsen",
 #                 "examine": "Ein großer Felsen",
 #                 "help_text": "Ob der Felsen hier wirklich liegen soll?",
-#                 "ownedby": "p_felsen",
+#                 "ownedby": "p_felsnische",
 #                 "callnames": ["Felsen", "Felsblock", "Stein", "Gesteinsblock"],
 #                 "fixed": True,
 #                 "hidden": False,
