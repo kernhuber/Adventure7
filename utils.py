@@ -26,7 +26,7 @@ class dl(IntFlag):
     ZOMBIE          = auto() # General testing of Zombie NPC
 
 GHOSTMODE = False   # No obstacles, no hidden ways, no NPCs
-NODOG = False # No dog NPC
+NODOG = True # No dog NPC
 DEBUG = True
 # DEBUG_LEVEL = dl.LLM|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.WEBGUI|dl.CMDLOG|dl.ZOMBIE
 DEBUG_LEVEL = dl.ZOMBIE|dl.LLM|dl.LLM_PROMPT
@@ -41,21 +41,22 @@ class dlogger():
 
     def dprint(self,l:dl, x):
         if DEBUG and (l & DEBUG_LEVEL):
-
+            lvl = l.name or str(l)   # z.B. "WEBGUI" (bei kombinierten Flags "A|B")
             if self.logfile:
                 with open(self.logfile, "a", encoding="utf-8") as f:
-                    f.write(str(x) + "\n")
+                    f.write(f"{lvl}: " + str(x) + "\n")
             else:
-                print(x)
+                print(f"{lvl}: {x}")
 
     def dpprint(self,l:dl,x):
         if DEBUG and (l & DEBUG_LEVEL):
-
+            lvl = l.name or str(l)
             if self.logfile:
                 with open(self.logfile, "a", encoding="utf-8") as f:
                     from pprint import pformat
-                    f.write(pformat(x,indent=5) + "\n")
+                    f.write(f"{lvl}: " + pformat(x,indent=5) + "\n")
             else:
+                print(f"{lvl}:")
                 pprint(x)
 
     def ddiff(self,l:dl,a,b):
