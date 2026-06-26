@@ -498,7 +498,9 @@ Anwendung
 - Aus dem Wasserspender kann getrunken, gesoffen oder gesüffelt werden
 - Man kann an oder mit ihm seinen Durst oder sogar seinen Brand stillen oder löschen
 - Der Wasserspender kann auch als Trinkbrunnen oder Brunnen bezeichnet werden
-- Liefere in solchen Fällen "anwenden wasserspender" zurück 
+- Liefere zum Trinken "anwenden wasserspender" zurück
+- Hier kann auch die Flasche aufgefüllt werden, um eine Notreserve mitzunehmen
+- Liefere zum Auffüllen der Flasche "anwenden flasche wasserspender" zurück
 """
 
 def o_flasche_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
@@ -512,9 +514,11 @@ Flasche
 
 Anwendung
 =========
-- Aus Flasche kann getrunken, gesoffen oder gesüffelt werden
-- Man mit ihr seinen Durst oder sogar seinen Brand stillen oder löschen
-- Liefere in solchen Fällen "anwenden Flasche" zurück 
+- Aus der Flasche kann getrunken, gesoffen oder gesüffelt werden
+- Man kann mit ihr seinen Durst oder sogar seinen Brand stillen oder löschen
+- Liefere zum Trinken "anwenden Flasche" zurück
+- Die Flasche kann am Wasserspender/Trinkbrunnen (in der U-Bahn) wieder aufgefüllt werden
+- Liefere zum Auffüllen "anwenden flasche wasserspender" zurück
 """
     else:
         return """
@@ -526,9 +530,10 @@ Flasche
 
 Anwendung
 =========
-- Du kannst mit der Flasche nichts mehr machen.
-- Eigentlich kannst du sie wegwerfen
-- Liefere "nichts" zurück 
+- Aus einer leeren Flasche kann nicht getrunken werden
+- Die Flasche kann aber am Wasserspender/Trinkbrunnen (in der U-Bahn) wieder aufgefüllt werden
+- Liefere zum Auffüllen "anwenden flasche wasserspender" zurück
+- Kann sie hier nicht aufgefüllt werden, kannst du mit ihr nichts tun: liefere dann "nichts" zurück
 """
 
 def o_solaranlage_prompt_f(gs: "GameState", pl: "PlayerState") -> str:

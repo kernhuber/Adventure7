@@ -348,17 +348,34 @@ def o_fahrradkette_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject
     else:
         return "Wie soll das gehen?"
 
+def _refill_flasche(gs: GameState) -> str:
+    """Fülle die Flasche am Wasserspender auf (beliebig oft, aber immer nur eine
+    Flaschenfüllung als Notreserve)."""
+    if gs.flasche_voll:
+        return "Die Flasche ist bereits randvoll."
+    gs.flasche_voll = True
+    return "Du füllst die Flasche am Wasserspender auf. Sie ist nun wieder randvoll – eine Notreserve für unterwegs."
+
 def o_wasserspender_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None, onwhat: GameObject=None)->str:
-    if pl.location.name == "p_ubahn":
-        pl.thirst_counter = 40
-        return "***Herrlich!*** Du hast Deinen Durst mit köstlichem, frischen Wasser gestillt. Das reicht wieder für 40 Spielzüge!"
-    else:
+    if pl.location.name != "p_ubahn":
         return "Hier ist kein Wasserspender!"
+    # Flasche am Wasserspender auffüllen: "anwenden wasserspender flasche"
+    if onwhat is not None and getattr(onwhat, "name", None) == "o_flasche":
+        return _refill_flasche(gs)
+    # Sonst: direkt am Wasserspender trinken
+    pl.thirst_counter = 40
+    return "***Herrlich!*** Du hast Deinen Durst mit köstlichem, frischen Wasser gestillt. Das reicht wieder für 40 Spielzüge!"
 
 def o_flasche_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None, onwhat:GameObject=None) -> str:
+    # Flasche am Wasserspender auffüllen: "anwenden flasche wasserspender"
+    if onwhat is not None and getattr(onwhat, "name", None) == "o_wasserspender":
+        return _refill_flasche(gs)
+    # Aus der Flasche trinken – nur wenn sie nicht leer ist
+    if not gs.flasche_voll:
+        return "Die Flasche ist leer. Du musst sie erst auffüllen – z.B. am Wasserspender in der U-Bahn."
     pl.thirst_counter += 20
     gs.flasche_voll = False
-    return f"***Das tat gut!*** Du hast deinen Durst gestillt nun {pl.thirst_counter} Spielzüge, bevor du verdurstest. Die Flasche ist nun aber leer."
+    return f"***Das tat gut!*** Du hast deinen Durst gestillt – nun {pl.thirst_counter} Spielzüge, bevor du verdurstest. Die Flasche ist nun aber leer."
 
 def o_falltuer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None, onwhat:GameObject=None) -> str:
     #
