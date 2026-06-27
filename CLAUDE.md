@@ -3,6 +3,16 @@
 A German-language text-adventure game with a browser GUI, driven by an LLM
 (Google Gemini) for scene narration, command parsing, and NPC behaviour.
 
+## Purpose (important context)
+
+This is **teaching material**, not a product. It is used in courses on: Python; "Python
+programming with AI" (Gemini); and using a coding assistant (Claude Code). It also
+contains some JavaScript (the `web/` front-end). Optimize for **clarity and
+explainability** over cleverness — code is meant to be read and understood by
+learners. The author (Chris) wrote the dog NPC himself (with help from ChatGPT and
+Gemini); the **zombie NPC was written autonomously by Claude Code**, so the author
+wants to understand how it works.
+
 ## How to run
 
 ```bash
@@ -53,6 +63,29 @@ defines `class GameState`).
 Note: `GameState()` builds a real `GeminiInterface` only when `llm is None`; pass a
 stub (`GameState(llm=object())`) to construct it without an API key for tests.
 
+**NPCs.** Both NPCs subclass `PlayerState` and expose `NPC_game_move(gs)` which the
+engine runs once per turn (`GameState.run_npc_turns`, called from the web layer).
+- `npc_dog_state.py` — a hand-written **finite state machine** (`DogState`:
+  START/EATING/ATTACK/TRACE/GOHOME); attacks trigger a mini-game.
+- `npc_zombie_state.py` — Claude-authored; a state machine (`ZombieState`:
+  DORMANT/AWAKENING/HUNTING/STALKING/COOPERATING/REDEEMED) whose moves are decided by
+  an **LLM reasoning call** (`gemini-2.5-flash`). Awoken by taking the wallet
+  (`game_take_functions._awaken_zombie`); on AWAKENING it opens the chat modal.
+NPCs can talk to the player via the `interaktion` action → `async_verb_interact` →
+`PlayerDialogs.do_chat` → the chat modal.
+
+**Web front-end (`web/`).** `Adventure9.html` (served via `index.html` redirect) +
+plain JS. `websockets.js` is the core: it owns the WebSocket, dispatches server
+messages (`game_state`, `command_result`, `npc_actions`, `start_minigame`,
+`zombie_chat`, `pinpad`, `game_over`, …), and renders the panels (2×2 grid: Szene |
+Umgebung / Letzte Aktion | Status). The dog/zombie/power are corner **icon overlays**
+(`dog_overlay.js`, `zombie_overlay.js`, `power_main.js`); `zombie_chat.js` is the chat
+modal (red for the zombie, green for the dog); `bite_overlay.js`, `minigames.js`,
+`explosion_message.js`, `pinpad.js`, `game_over.js` handle their events. "Letzte
+Aktion" is a transcript: the user input + each atomic command (`action_label`) and
+the engine response. Dialogs go to the chat modal; dog/zombie status lines are
+debug-only.
+
 ## LLM / model notes
 
 - Models (`gemini_interface.py`): `gemini-2.5-flash-lite` (text / command parsing),
@@ -70,8 +103,10 @@ stub (`GameState(llm=object())`) to construct it without an API key for tests.
 - Keep refactors in **small, bisectable commits**; do not change behaviour while
   relocating code.
 - Without `GOOGLE_API_KEY`, connecting falls back to **demo mode** cleanly.
-- Commit/push only when asked. Default working branch for this effort:
-  `Adventure10-2026-06-24-Zombie-Claude-refac`. Remote: `kernhuber/Adventure7`.
+- Commit/push only when asked (the author reviews, then says "push it"). Current
+  working branch: `Adventure-10-2026-06-26-Gameplay`. Remote: `kernhuber/Adventure7`.
+- Item/place names shown to the player should use **call-names** (pretty), never the
+  internal `o_`/`p_` ids.
 
 ## Status & next steps
 
@@ -82,11 +117,18 @@ Follow-up robustness fixes are in: malformed tool-calls fail soft, system errors
 longer cost a round (NPC turns gated on `not is_system_error`), and the chat path
 retries 503s.
 
-All module files are now snake_case (the naming-convention pass is done; classes
-stay PascalCase). Future work is tracked in `docs/BACKLOG.md`: an optional CLI
-front-end (now feasible since the engine is GUI-free) and low-priority cleanups
-(typed `GameSession`, retire the flag-mirror shim, remove dead verbs/`emit_*`,
-fix the long-broken `create_world.py` dev tool).
+All module files are now snake_case (classes stay PascalCase). The refactor phase is
+complete; current work is **gameplay & UI** on branch
+`Adventure-10-2026-06-26-Gameplay` (see `docs/GAMEPLAY-2026-06-27.md`): UI declutter
+(dog as a status icon), zombie awakening opens the chat modal, dramatic bite popup +
+status flash, pretty item names, the "Letzte Aktion" transcript, the 2×2 layout, the
+Felsnische place rename, the refillable bottle, and a debug-level log prefix.
+
+**Next:** more gameplay work, and understanding/documenting the (Claude-authored)
+zombie NPC. Backlog: `docs/BACKLOG.md` (optional CLI front-end — now feasible since
+the engine is GUI-free; typed `GameSession`; retire the flag-mirror shim; remove dead
+verbs/`emit_*`; fix the long-broken `create_world.py`).
+
 Refactor history: `docs/REFACTORING-2026-06-24-webserver.md` (Step 1),
 `docs/REFACTORING-2026-06-25-gamestate.md` (Step 2),
 `docs/REFACTORING-2026-06-25-step3-engine-rules.md` (Step 3 + robustness/perf).

@@ -1,7 +1,16 @@
 # Backlog — future work (not yet scheduled)
 
 Captured ideas for after the current refactoring series (Steps 1–3 done; see the
-`docs/REFACTORING-*.md` files). Nothing here is in progress.
+`docs/REFACTORING-*.md` files). The current active phase is **gameplay & UI**
+(`docs/GAMEPLAY-2026-06-27.md`).
+
+---
+
+## Near-term — understand & document the zombie NPC
+
+`npc_zombie_state.py` was written autonomously by Claude Code and is LLM-driven; the
+author wants to understand how it works (states, the reasoning prompt, transitions,
+redemption). Worth a walkthrough/explainer doc — this is teaching material.
 
 ---
 
