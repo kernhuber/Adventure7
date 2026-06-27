@@ -31,5 +31,12 @@ the level name.
   (`gemini-2.5-flash`); states DORMANT/AWAKENING/HUNTING/STALKING/COOPERATING/REDEEMED;
   awoken by taking the wallet (`game_take_functions._awaken_zombie`).
 
-**NEXT:** understand & document how the zombie works (author's explicit request);
-more gameplay polish.
+**Zombie design intention (teacher's leitfrage):** can an LLM make intelligent in-game
+decisions, drive a character that LEARNS / decides for itself / realises the game can
+only be won in COOPERATION with the player (steer HUNTING -> COOPERATING/REDEEMED via
+conversation), and still be a good, entertaining character? Keep the zombie
+LLM-driven, persuadable, and legible (teaching material). Guides any change to
+npc_zombie_state.py.
+
+**NEXT:** understand & document how the zombie works against that intention (author's
+explicit request); more gameplay polish.

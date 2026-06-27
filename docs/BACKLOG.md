@@ -12,6 +12,12 @@ Captured ideas for after the current refactoring series (Steps 1–3 done; see t
 author wants to understand how it works (states, the reasoning prompt, transitions,
 redemption). Worth a walkthrough/explainer doc — this is teaching material.
 
+**Design intention (the teacher's question):** can an LLM make intelligent in-game
+decisions, drive a character that learns / decides for itself / realises the game can
+only be won in **cooperation** with the player (HUNTING → COOPERATING/REDEEMED), and
+still be a good, entertaining character? Keep the zombie LLM-driven, persuadable, and
+legible. See `docs/GAMEPLAY-2026-06-27.md`.
+
 ---
 
 ## ✅ DONE (2026-06-26) — unify naming convention to snake_case
