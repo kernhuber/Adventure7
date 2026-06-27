@@ -9,7 +9,7 @@
     <style>
         body { font-family: monospace; background: #2c1810; color: #f5deb3; padding: 20px; font-size:20px}
         .panel { background: rgba(0,0,0,0.7); border: 2px solid #cd853f; padding: 15px; margin: 10px 0; border-radius: 8px; }
-        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .subgrid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -211,9 +211,26 @@
     <div id="connection-status" class="status">Verbinde...</div>
 
     <div class="grid">
+        <!-- Zeile 1: Aktuelle Szene | Umgebung (gleich groß) -->
         <div id="scene" class="panel">
             <h2>🌅 Aktuelle Szene</h2>
             <div id="scene-content">Lade Spiel...</div>
+        </div>
+
+        <div id="environment" class="panel">
+            <h2>🗺️ Umgebung</h2>
+            <h3>📦 Objekte:</h3>
+            <ul id="objects-list"><li>Lade...</li></ul>
+            <h3>🚶 Wege:</h3>
+            <ul id="ways-list"><li>Lade...</li></ul>
+        </div>
+
+        <!-- Zeile 2: Letzte Aktion | Status -->
+        <div id="last-action" class="panel">
+            <h2>⚡ Letzte Aktion</h2>
+            <div id="last-command"><strong>Kommando:</strong> <span id="command-text">Noch keine</span></div>
+            <div id="last-result"><div id="result-text">Warte auf Verbindung...</div></div>
+            <div class="debug-info" id="debug-info">Debug: Warte auf Verbindung...</div>
         </div>
 
         <div id="status" class="panel">
@@ -225,22 +242,6 @@
             </div>
             <h3>🎒 Inventar:</h3>
             <div id="inventory">Lade...</div>
-        </div>
-
-        <div class="subgrid">
-            <div id="environment" class="panel">
-                <h2>🗺️ Umgebung</h2>
-                <h3>📦 Objekte:</h3>
-                <ul id="objects-list"><li>Lade...</li></ul>
-                <h3>🚶 Wege:</h3>
-                <ul id="ways-list"><li>Lade...</li></ul>
-            </div>
-            <div id="last-action" class="panel">
-                <h2>⚡ Letzte Aktion</h2>
-                <div id="last-command"><strong>Kommando:</strong> <span id="command-text">Noch keine</span></div>
-                <div id="last-result"><div id="result-text">Warte auf Verbindung...</div></div>
-                <div class="debug-info" id="debug-info">Debug: Warte auf Verbindung...</div>
-            </div>
         </div>
     </div>
 
