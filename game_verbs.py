@@ -320,7 +320,7 @@ Am Ort sind folgende Objekte zu sehen:"""
         for i in pl.inventory:
             if i.name == what_found:
                 obj_here = i
-                retstr = f"Du trägst {i.name} gerade bei dir."
+                retstr = "Du trägst es gerade bei dir. "
                 break
         if obj_here == None:
             retstr = ""
@@ -363,7 +363,7 @@ Am Ort sind folgende Objekte zu sehen:"""
             else:
                 retstr = retstr + f"{obj_here.examine}"
         else:
-            retstr = f'{what_found} - sowas gibt es hier nicht!'
+            retstr = f'{self.objects[what_found].callnames[0].capitalize()} - sowas gibt es hier nicht!'
         return retstr
 
     def verb_llm(self, pl:PlayerState, session_id):
