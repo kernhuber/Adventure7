@@ -20,6 +20,37 @@ from webserver.demo import process_demo_command_execution, process_simple_comman
 from webserver.texts import txt_final_lost_text, txt_final_won_text
 from webserver.game_modules import GAME_MODULES_AVAILABLE, PlayerState
 
+# Arg keys that carry free text (not an object/place) -> not shown in the action label.
+_LABEL_SKIP_ARG_KEYS = {"why", "firstmessage", "message", "remaining_input", "hash", "is_system_error"}
+
+
+def _command_label(game, command_dict) -> str:
+    """Readable label for one executed command, e.g. 'gehe Schuppen' or
+    'untersuche Blumentopf'. Internal place/object ids are resolved to call-names."""
+    try:
+        fc = command_dict.get("function_call", {})
+        name = fc.get("name", "")
+        args = fc.get("args", {}) or {}
+
+        def pretty(v):
+            if not isinstance(v, str) or not v:
+                return ""
+            try:
+                o = game.objects.get(v)
+                if o is not None and getattr(o, "callnames", None):
+                    return o.callnames[0].capitalize()
+                p = game.places.get(v)
+                if p is not None and getattr(p, "callnames", None):
+                    return p.callnames[0].capitalize()
+            except Exception:
+                pass
+            return v
+
+        vals = [pretty(v) for k, v in args.items() if k not in _LABEL_SKIP_ARG_KEYS]
+        return (name + " " + " ".join(v for v in vals if v)).strip()
+    except Exception:
+        return command_dict.get("function_call", {}).get("name", "")
+
 
 class CommandEngineMixin:
 
@@ -48,6 +79,9 @@ class CommandEngineMixin:
         raw_command = command_data.get('command', '').strip()
 
         dprint(dl.WEBGUI, f"📥 Kommando empfangen: '{raw_command}' (Modus: {session['type']})")
+        if raw_command:
+            # Komplette Benutzereingabe ins Debug-Logfile (Flag dl.CMDLOG).
+            dprint(dl.CMDLOG, f"Eingabe: {raw_command}")
 
         # Bestimme welches Command zu verarbeiten ist - EXAKT wie Player_game_move
 
@@ -206,10 +240,12 @@ class CommandEngineMixin:
 
         res_msg = json_cmd_simple("player_message", result)
         # Schritt 6: Sende Antwort
+        action_label = _command_label(game, command_to_execute)
         response = {
             "type": "command_result",
             "command": raw_command,
             "executed_command": command_to_execute['function_call']['name'],
+            "action_label": action_label,
             "results": [
                 {"command": command_to_execute['function_call']['name'], "result": result,
                  "is_game_move": not (command_to_execute['function_call']['name'] == "zurueckweisen"
@@ -224,6 +260,10 @@ class CommandEngineMixin:
         await websocket.send(json.dumps(response))
         dprint(dl.WEBGUI,
                f"✅ Command '{command_to_execute['function_call']['name']}' ausgeführt. Queue: {len(session['cmd_q'])}, Pending: {session['pending_llm_input'] is not None}")
+        # Bisherige GUI-Debug-Zeile -> jetzt nur noch ins Logfile (Flag dl.CMDLOG).
+        dprint(dl.CMDLOG,
+               f"executed={command_to_execute['function_call']['name']} ({action_label}), "
+               f"queue={len(session['cmd_q'])}, pending={session['pending_llm_input'] is not None}")
 
         # Schritt 6.5: Sende NPC-Actions falls vorhanden
         #

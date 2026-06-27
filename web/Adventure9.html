@@ -20,6 +20,7 @@
         #send-button { padding: 10px 20px; background: #8b4513; color: #f5deb3; border: 1px solid #cd853f; cursor: pointer; font-size:24px }
         .status { color: #ffd700; }
         .debug-info { font-size: 0.8em; color: #888; margin-top: 5px; }
+        #last-action-content { max-height: 340px; overflow-y: auto; line-height: 1.35; }
         .explosion { color: #ff4444; font-weight: bold; animation: blink 1s infinite; }
         .explosion-timer { color: #ffaa00; font-weight: bold; }
         @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.5; } }
@@ -228,9 +229,7 @@
         <!-- Zeile 2: Letzte Aktion | Status -->
         <div id="last-action" class="panel">
             <h2>⚡ Letzte Aktion</h2>
-            <div id="last-command"><strong>Kommando:</strong> <span id="command-text">Noch keine</span></div>
-            <div id="last-result"><div id="result-text">Warte auf Verbindung...</div></div>
-            <div class="debug-info" id="debug-info">Debug: Warte auf Verbindung...</div>
+            <div id="last-action-content">Noch keine Eingabe.</div>
         </div>
 
         <div id="status" class="panel">

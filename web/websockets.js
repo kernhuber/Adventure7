@@ -90,17 +90,19 @@ class AdventureBackend {
             case 'game_state':
                 this.updateGameState(data.data);
                 break;
-            case 'command_result':
+            case 'command_result': {
+                const raw = (data.command || '').trim();
+                if (raw) resetLastAction(raw);   // neue Benutzereingabe -> Feld leeren + Header
+                const label = data.action_label || data.executed_command || '';
+                let result = '';
                 if (data.results && data.results.length > 0) {
-                    gameState.lastAction = {
-                        command: data.command,
-                        result: data.results[data.results.length - 1].result
-                    };
+                    result = data.results[data.results.length - 1].result || '';
                 }
+                appendCommandResult(label, result);
                 if (data.game_state) this.updateGameState(data.game_state);
                 else updateUI();
-                this.updateDebugInfo(data);
                 break;
+            }
             case 'npc_actions':
                 if (data.actions && data.actions.length > 0) {
                     this.handleNPCActions(data.actions);
@@ -149,18 +151,10 @@ class AdventureBackend {
                 gameOver(won,text)
                 break;
             case 'info':
-                gameState.lastAction = {
-                    command: 'Info',
-                    result: '💡 ' + data.message
-                };
-                updateUI();
+                appendLastAction(`<div style="color:#ffd700">💡 ${_fmt(data.message)}</div>`);
                 break;
             case 'error':
-                gameState.lastAction = {
-                    command: data.command || 'Fehler',
-                    result: '❌ ' + data.message
-                };
-                updateUI();
+                appendLastAction(`<div style="color:#ff6666">❌ ${_fmt(data.message)}</div>`);
                 break;
         }
     }
@@ -169,10 +163,7 @@ class AdventureBackend {
         console.log(`🎮 Starte Mini-Game: ${gameType}`);
 
         // Update UI
-        gameState.lastAction = {
-            command: 'Mini-Game',
-            result: `🎮 ${gameType} wird gestartet...`
-        };
+        appendLastAction(`<div style="color:#ffd700">🎮 ${_fmt(gameType)} wird gestartet...</div>`);
         updateUI();
 
         // Deaktiviere normale Eingabe während Mini-Game
@@ -202,10 +193,7 @@ class AdventureBackend {
         console.log(`✅ Mini-Game beendet:  ${data.result}`);
 
         // Zeige Ergebnismeldung
-        gameState.lastAction = {
-            command: `🎮 Minigame`,
-            result: data.message
-        };
+        appendLastAction(`<div style="color:#ffd700">🎮 ${_fmt(data.message)}</div>`);
 
         // Update Game State
         if (data.game_state) {
@@ -304,10 +292,7 @@ class AdventureBackend {
 
         // Explosions-Timer sind Spielereignisse (keine Dialoge) -> in "Letzte Aktion"
         if (explosionTimers.length > 0) {
-            gameState.lastAction = {
-                command: 'Explosion Timer',
-                result: explosionTimers.join('\n')
-            };
+            appendLastAction(`<div style="color:#ffaa00">💣 ${_fmt(explosionTimers.join('\n'))}</div>`);
         }
 
         // Verarbeite echte Explosionen (Overlay)
@@ -341,18 +326,6 @@ class AdventureBackend {
         }
     }
 
-    updateDebugInfo(data) {
-        const debugInfo = document.getElementById('debug-info');
-        if (debugInfo) {
-            const pendingCommands = data.pending_commands || 0;
-            const hasPendingInput = data.has_pending_input || false;
-            const executedCommand = data.executed_command || 'unknown';
-            const pendingPreview = data.pending_input_preview || '';
-
-            debugInfo.innerHTML = `Debug: Executed: <strong>${executedCommand}</strong>, Queue: ${pendingCommands}, Pending: ${hasPendingInput}` +
-                                 (pendingPreview ? `<br>Next: "${pendingPreview}"` : '');
-        }
-    }
 }
 
 // Dog/zombie status lines are debug-only now (the panel was removed). Show them in
@@ -371,6 +344,29 @@ function flashStatus() {
     void s.offsetWidth; // reflow to restart the animation
     s.classList.add('bite-flash');
     setTimeout(() => s.classList.remove('bite-flash'), 1600);
+}
+
+// --- "Letzte Aktion": accumulated log of the user input and the atomic commands ---
+let lastActionLog = "";
+function _esc(s) { const d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
+function _fmt(s) { return _esc(s).replace(/\n/g, '<br>'); }
+function renderLastAction() {
+    const el = document.getElementById('last-action-content');
+    if (el) el.innerHTML = lastActionLog || 'Noch keine Eingabe.';
+}
+// Called when the user submits a new input -> clear and start with the "Eingabe:" header.
+function resetLastAction(rawInput) {
+    lastActionLog = '<strong>Eingabe:</strong> ' + _fmt(rawInput) +
+        '<hr style="border:0;border-top:1px dashed #cd853f;margin:6px 0">';
+    renderLastAction();
+}
+function appendLastAction(html) { lastActionLog += html; renderLastAction(); }
+// One atomic command (label) followed by the game-engine response.
+function appendCommandResult(label, result) {
+    let html = '';
+    if (label) html += `<div style="margin-top:6px;color:#ffd700">${_fmt(label)}</div>`;
+    if (result != null && result !== '') html += `<div>--&gt; ${_fmt(result)}</div>`;
+    appendLastAction(html);
 }
 
 function updateStatus() {
@@ -430,11 +426,7 @@ function updateUI() {
             }
         }
 
-        const commandText = document.getElementById('command-text');
-        const resultText = document.getElementById('result-text');
-
-        if (commandText) commandText.textContent = gameState.lastAction?.command || 'Noch keine';
-        if (resultText) resultText.innerHTML = (gameState.lastAction?.result || 'Warte...').replace(/\n/g, '<br>');
+        renderLastAction();
 
         // The dog is shown only as an icon (top-right) when at the player's location.
         // Yellow frame = angry, red frame = attacking (mini-game).
