@@ -38,5 +38,11 @@ conversation), and still be a good, entertaining character? Keep the zombie
 LLM-driven, persuadable, and legible (teaching material). Guides any change to
 npc_zombie_state.py.
 
-**NEXT:** understand & document how the zombie works against that intention (author's
-explicit request); more gameplay polish.
+**Zombie explainer written:** `docs/ZOMBIE-NPC-erklaert.md` (German) — walkthrough of
+the LLM NPC: FSM, notebook/scratchpad reasoning loop (<AKTION>/<NOTIZBUCH> + regex),
+two-tier memory (notes vs last_chat), the cooperation judge in end_chat
+(KOOPERATIV/SINNVOLL → COOPERATING → Generatorraum switch → REDEEMED), two LLM uses
+(reasoning=flash, chat=flash-lite). Notable: DORMANT/STALKING are dead states;
+cooperation flip is binary; COOPERATING is scripted (no LLM).
+
+**NEXT:** more gameplay polish; possibly act on the zombie follow-ups above.

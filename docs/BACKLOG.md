@@ -10,7 +10,11 @@ Captured ideas for after the current refactoring series (Steps 1–3 done; see t
 
 `npc_zombie_state.py` was written autonomously by Claude Code and is LLM-driven; the
 author wants to understand how it works (states, the reasoning prompt, transitions,
-redemption). Worth a walkthrough/explainer doc — this is teaching material.
+redemption). **Explainer written: `docs/ZOMBIE-NPC-erklaert.md`** (walkthrough along
+the three guiding questions, with patterns and discussion points).
+
+Possible follow-ups raised there: remove the dead DORMANT/STALKING states; make the
+cooperation transition less binary; keep the zombie LLM-driven during COOPERATING too.
 
 **Design intention (the teacher's question):** can an LLM make intelligent in-game
 decisions, drive a character that learns / decides for itself / realises the game can
