@@ -366,7 +366,7 @@
       "destination": "p_hoehle",
       "text_direction": "in die Höhle",
       "description": "",
-      "obstruction_check": "game_obstruction_check_functions.w_felsen_hoehle_f",
+      "obstruction_check": "game_obstruction_check_functions.w_felsen_hoehle_obstruction_check",
       "way_prompt_f": null
     },
     "w_felsen_schuppen": {
@@ -438,7 +438,7 @@
       "destination": "p_dach",
       "text_direction": "auf das Dach des Schuppens",
       "description": "",
-      "obstruction_check": "game_obstruction_check_functions.w_schuppen_dach_f",
+      "obstruction_check": "game_obstruction_check_functions.w_schuppen_dach_obstruction_check",
       "way_prompt_f": "way_prompts.w_schuppen_dach_prompt_f"
     },
     "w_schuppen_felsen": {
@@ -462,7 +462,7 @@
       "destination": "p_innen",
       "text_direction": "in den Schuppen hinein",
       "description": "",
-      "obstruction_check": "game_obstruction_check_functions.w_schuppen_innen_f",
+      "obstruction_check": "game_obstruction_check_functions.w_schuppen_innen_obstruction_check",
       "way_prompt_f": null
     },
     "w_schuppen_start": {
@@ -510,7 +510,7 @@
       "destination": "p_wagen",
       "text_direction": "in den U-Bahnwagen",
       "description": "",
-      "obstruction_check": "game_obstruction_check_functions.w_ubahn2_wagen_f",
+      "obstruction_check": "game_obstruction_check_functions.w_ubahn2_wagen_obstruction_check",
       "way_prompt_f": null
     },
     "w_ubahn_wagen": {
@@ -518,7 +518,7 @@
       "destination": "p_wagen",
       "text_direction": "in den U-Bahnwagen hinein",
       "description": "",
-      "obstruction_check": "game_obstruction_check_functions.w_ubahn_wagen_f",
+      "obstruction_check": "game_obstruction_check_functions.w_ubahn_wagen_obstruction_check",
       "way_prompt_f": null
     },
     "w_ubahn_warenautomat": {
@@ -534,7 +534,7 @@
       "destination": "p_ubahn",
       "text_direction": "auf den Bahnsteig der U-Bahn",
       "description": "",
-      "obstruction_check": "game_obstruction_check_functions.w_wagen_ubahn_f",
+      "obstruction_check": "game_obstruction_check_functions.w_wagen_ubahn_obstruction_check",
       "way_prompt_f": null
     },
     "w_wagen_ubahn2": {
@@ -542,7 +542,7 @@
       "destination": "p_ubahn2",
       "text_direction": "zur zweiten Haltestelle",
       "description": "",
-      "obstruction_check": "game_obstruction_check_functions.w_wagen_ubahn2_f",
+      "obstruction_check": "game_obstruction_check_functions.w_wagen_ubahn2_obstruction_check",
       "way_prompt_f": null
     },
     "w_warenautomat_felsen": {
@@ -582,7 +582,7 @@
       "destination": "p_ubahn",
       "text_direction": "herunter zur U-Bahn",
       "description": "Eine Treppe, die zu einer U-Bahn-Station führt!",
-      "obstruction_check": "game_obstruction_check_functions.w_warenautomat_ubahn_f",
+      "obstruction_check": "game_obstruction_check_functions.w_warenautomat_ubahn_obstruction_check",
       "way_prompt_f": null
     },
     "w_plateau_felsen": {

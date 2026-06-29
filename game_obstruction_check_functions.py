@@ -20,25 +20,25 @@ def _deep_locked(gs: GameState, reason: str = "Der Weg tiefer in die Anlage ist 
     """
     return "Free" if _F(gs).korridor_offen else reason
 
-def w_schuppen_innen_f(gs: GameState):
+def w_schuppen_innen_obstruction_check(gs: GameState):
     if not _F(gs).schuppentuer:
         return "Dieser Weg ist versperrt - die Tür ist abgeschlossen!"
     else:
         return "Free"
 
-def w_warenautomat_ubahn_f(gs: GameState):
+def w_warenautomat_ubahn_obstruction_check(gs: GameState):
     if _F(gs).hebel:
         return "Free"
     else:
         return "Ist hier ein Weg? Und wenn, dann ist er versperrt!"
 
-def w_felsen_hoehle_f(gs: GameState):
+def w_felsen_hoehle_obstruction_check(gs: GameState):
     if _F(gs).felsen:
         return "Da könnte ein Weg hinter dem Felsen sein - aber der Felsen liegt im Weg!"
     else:
         return "Free"
 
-def w_schuppen_dach_f(gs: GameState):
+def w_schuppen_dach_obstruction_check(gs: GameState):
     if _F(gs).dach:
         if not _F(gs).leiter:
             return "Hier kommst du nicht so ohne weiteres hoch!"
@@ -48,28 +48,28 @@ def w_schuppen_dach_f(gs: GameState):
         return "Da ist gar kein Dach mehr - das hat jemand weggesprengt! "# --- missing_functions Output ---
 
 
-def w_wagen_ubahn1_f(gs: GameState):
+def w_wagen_ubahn_obstruction_check(gs: GameState):
     if not _F(gs).wagen_ubahn2:
         return "Free"
     else:
         return "Du kannst von hier nicht auf den ersten Bahnsteig gehen"
 
 
-def w_ubahn1_wagenf(gs: GameState):
+def w_ubahn_wagen_obstruction_check(gs: GameState):
     if not _F(gs).wagen_ubahn2:
         return "Free"
     else:
         return "Hier ist kein Wagen mehr!"
 
 
-def w_wagen_ubahn2_f(gs: GameState):
+def w_wagen_ubahn2_obstruction_check(gs: GameState):
     if _F(gs).wagen_ubahn2:
         return "Free"
     else:
         return "Du kannst von hier nicht auf den zweiten Bahnsteig gehen"
 
 
-def w_ubahn2_wagenf(gs: GameState):
+def w_ubahn2_wagen_obstruction_check(gs: GameState):
     if _F(gs).wagen_ubahn2:
         return "Free"
     else:

@@ -206,7 +206,7 @@ way_defs = {
                 "source": "p_warenautomat",
                 "destination": "p_ubahn",
                 "text_direction": "herunter zur U-Bahn",
-                "obstruction_check": ocf.w_warenautomat_ubahn_f,
+                "obstruction_check": ocf.w_warenautomat_ubahn_obstruction_check,
                 "visible": False,
                 "description": "Eine Treppe, die zu einer U-Bahn-Station führt!"
             },
@@ -316,7 +316,7 @@ way_defs = {
                 "source": "p_schuppen",
                 "destination": "p_innen",
                 "text_direction": "in den Schuppen hinein",
-                "obstruction_check": ocf.w_schuppen_innen_f,
+                "obstruction_check": ocf.w_schuppen_innen_obstruction_check,
                 "description": ""
             },
             "w_schuppen_dach": {
@@ -324,7 +324,7 @@ way_defs = {
                 "destination": "p_dach",
                 "visible": False,
                 "text_direction": "auf das Dach des Schuppens",
-                "obstruction_check": ocf.w_schuppen_dach_f,
+                "obstruction_check": ocf.w_schuppen_dach_obstruction_check,
                 "way_prompt_f": wp.w_schuppen_dach_prompt_f,
                 "description": ""
             },
@@ -401,7 +401,7 @@ way_defs = {
                 "source": "p_felsnische",
                 "destination": "p_hoehle",
                 "text_direction": "in die Höhle",
-                "obstruction_check": ocf.w_felsen_hoehle_f,
+                "obstruction_check": ocf.w_felsen_hoehle_obstruction_check,
                 "description": ""
             },
             "w_hoehle_felsen": {
@@ -413,6 +413,7 @@ way_defs = {
                 "description": ""
             },
         }
+
 object_defs = {
             #
             # Place: p_warenautomat
@@ -781,7 +782,7 @@ object_defs = {
                 "apply_f": af.o_hauptschalter_apply_f,
                 "prompt_f": op.o_hauptschalter_prompt_f
             }
-
+        }
 
 # EXPORTER UTILITIES AND FINAL CALL (re-added)
 
