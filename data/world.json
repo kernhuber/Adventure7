@@ -630,6 +630,7 @@
       "destination": "p_solaranlage",
       "text_direction": "zu Solaranlage",
       "description": "Ein geheimer Weg zur Oberfläche",
+      "visible": false,
       "obstruction_check": "game_obstruction_check_functions.w_ubahn2_solaranlage_obstruction_check",
       "way_prompt_f": "way_prompts.w_ubahn2_solaranlage_prompt_f"
     },

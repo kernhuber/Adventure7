@@ -95,9 +95,12 @@ def serialize_real_game_state(game, session_id=None):
         if zombie:
             try:
                 zombie_location = getattr(zombie.location, 'callnames', ['Unbekannt'])
+                zombie_state_obj = getattr(zombie, 'zombie_state', None)
                 zombie_info = {
                     "location": zombie_location[0] if zombie_location else 'Unbekannt',
                     "state": getattr(zombie, 'zombie_state_message', 'Der Zombie tut nichts'),
+                    # Enum-Name (z.B. "HUNTING") -> steuert die Glüh-Farbe des Icons im GUI.
+                    "zstate": getattr(zombie_state_obj, 'name', '') if zombie_state_obj is not None else '',
                     "here": zombie.location == player.location if player else False
                 }
             except:

@@ -97,8 +97,11 @@ def w_solaranlage_ubahn2_obstruction_check(gs: "GameState") -> str:
         return "Die Falltür ist fest verschlossen. Wohin sie nur führen mag? Und wie öffnet man sie?"
 
 def w_ubahn2_solaranlage_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return ""
+    # Der Weg ist die Geheimtür hinter dem Werbeplakat. Verstecken/Aufdecken regelt die
+    # Sichtbarkeit (o_werbeplakat_apply_f schaltet ``visible``); ist die Tür sichtbar,
+    # ist sie auch begehbar. Wichtig: "Free" zurückgeben (nicht ""), sonst wertet die
+    # Serialisierung den Weg als blockiert und er taucht nicht in der Umgebung auf.
+    return "Free"
 
 def w_ubahn2_kontrollraum_obstruction_check(gs: "GameState") -> str:
     # TODO: implement callback
