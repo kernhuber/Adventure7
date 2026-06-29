@@ -1,0 +1,35 @@
+gehe zum schuppen und untersuche den blumentopf
+öffne den schuppen mit dem schlüssel und tritt ein
+nimm die leiter und die sprengladung
+verlasse den schuppen und lehne die leiter an den schuppen
+lehne die leiter an den schuppen
+gehe zur felsnische und sprenge den felsen mit der sprengladung
+gehe zum plateau
+nimm die flasche
+gehe zur felsnische, und von dort in die höhle
+betätige den hauptschalter
+untersuche das skelett
+nimm die Geldbörse
+(rede mit dem Zombie)
+verlasse die höhle und gehe zum schuppen
+klettere auf den schuppen
+trinke aus der flasche
+ziehe am hebel
+springe vom dach und gehe zum warenautomaten
+gehe in die u-bahn
+fülle die flasche und trinke vom wasserspender
+rede mit dem Zombie
+gehe in den wagen und betätige den türschliesser
+verlasse den wagen
+ziehe am plakat
+gehe zur solaranlage (... noch nicht schön beschrieben...)
+gehe zum plateau
+gehe zur felsnische, und von dort in die höhle
+öffne die stahltür ... geht nicht ...
+verlasse die höhle und gehe zum plateau
+gehe zur solaranlage
+(kein weg:
+  gehe durch die falltüre
+  --> zurueckweisen
+--> ***Nachricht von der Spielleitung:*** Die Falltür ist offen und führt nirgendwo hin. Sie können hindurchgehen, aber es ist nicht als Bewegung zu einem Ort definiert.
+)
