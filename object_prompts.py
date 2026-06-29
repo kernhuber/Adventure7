@@ -610,6 +610,19 @@ Notfall-Schalter (Generatorraum)
     return r
 
 
+def o_manual_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    return """
+Betriebshandbuch (Manual)
+=========================
+- Ein abgegriffenes Betriebshandbuch der Anlage
+- Auf dem Umschlag steht 'Notfall-Betrieb - Bedienungsanleitung'
+- Man kann es lesen ('lies das Manual', 'lese die Bedienungsanleitung') - das entspricht 'anwenden'
+- Darin steht offenbar, wie man die Anlage im Notfall wieder startet
+- Man kann es auch aufnehmen und mitnehmen
+- Synonyme: Manual, Gebrauchsanweisung, Bedienungsanleitung, Betriebsanleitung, Handbuch, Anleitung
+"""
+
+
 def o_werbeplakat_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     if gs.werbeplakat_offen:
         return """ 

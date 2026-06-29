@@ -258,6 +258,19 @@ class CommandEngineMixin:
         }
 
         await websocket.send(json.dumps(response))
+
+        # Hat die Aktion ein Text-Popup angefordert (z.B. das Lesen des Betriebshandbuchs)?
+        # game._pending_manual_popup wird von o_manual_apply_f gesetzt; hier auslesen,
+        # als eigene Nachricht senden und wieder leeren.
+        pending_popup = getattr(game, "_pending_manual_popup", None)
+        if pending_popup:
+            await websocket.send(json.dumps({
+                "type": "manual_popup",
+                "title": "Betriebsanleitung",
+                "content": pending_popup,
+            }))
+            game._pending_manual_popup = None
+
         dprint(dl.WEBGUI,
                f"✅ Command '{command_to_execute['function_call']['name']}' ausgeführt. Queue: {len(session['cmd_q'])}, Pending: {session['pending_llm_input'] is not None}")
         # Bisherige GUI-Debug-Zeile -> jetzt nur noch ins Logfile (Flag dl.CMDLOG).
@@ -335,6 +348,13 @@ class CommandEngineMixin:
                                     "message": args["message"]
                                 }
                             )
+                        case "zombie_event":
+                            filtered_actions.append(
+                                {
+                                    "command": f_call,
+                                    "message": args["message"]
+                                }
+                            )
                         case _:
                             # Andere NPC-Aktionen
                             filtered_actions.append({})
@@ -358,6 +378,11 @@ class CommandEngineMixin:
                     if game.check_game_over():
                         game.game_over = True
                         await session["web_dialogs"].do_game_over(False,txt_final_lost_text)
+
+        # Hat ein NPC-Zug das Spiel beendet (z.B. der zu Stein erstarrte Zombie)? Erst hier
+        # melden, damit die dramatische NPC-Nachricht zuvor beim Spieler ankommt.
+        if session.pop("npc_game_over", False):
+            await session["web_dialogs"].do_game_over(game.game_won, txt_final_lost_text)
 
         # Schritt 7: Wenn noch Commands in Queue oder Pending Input vorhanden, sofort weiter verarbeiten
         if session["cmd_q"] or session["pending_llm_input"]:
@@ -450,12 +475,17 @@ class CommandEngineMixin:
                     # voranschreiten, da Bombentimer, Hund und Schalter rundengesteuert sind.
                     npc_actions = []
                     if not is_system_error:
+                        was_over = game.game_over
                         try:
                             npc_actions = await self.collect_npc_actions(game, session_id)
                             # Speichere NPC-Actions in der Session für handle_command
                             session["pending_npc_actions"] = npc_actions
                         except Exception as e:
                             dprint(dl.WEBGUI, f"⚠️  NPC-Fehler: {e}")
+                        # Hat ein NPC-Zug das Spiel beendet (z.B. der zu Stein erstarrte
+                        # Zombie)? Dann nach dem Senden der NPC-Aktionen ein Game-Over melden
+                        # (Flag, ausgewertet in handle_command).
+                        session["npc_game_over"] = bool(game.game_over and not was_over)
 
                     return result
                 else:

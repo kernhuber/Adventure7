@@ -126,7 +126,9 @@ game_known_tokens = ["anwenden",
                     "explosion_message",
                     "do_explosion",
                     "check_pinpad",
-                    "zombie_message"]
+                    "zombie_message",
+                    "zombie_bite",
+                    "zombie_event"]
 #
 # Translate "String"-style commands to JSON
 #
@@ -262,6 +264,16 @@ def json_cmd_simple(cmd_in:str, arg1:str=None, arg2:str=None):
                 }
 
             case "zombie_message":
+                args = {
+                    "message": arg1
+                }
+
+            case "zombie_bite":
+                args = {
+                    "message": arg1
+                }
+
+            case "zombie_event":
                 args = {
                     "message": arg1
                 }

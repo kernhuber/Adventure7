@@ -818,8 +818,13 @@ Die Ortsbeschreibung:
             ```json
             {{"function_call": {{"name": "anwenden", "args": {{"what": "o_hebel"}}}}}}
             ```
-    
-        
+            "Lies das Manual" ODER "Lese die Bedienungsanleitung" ODER "Schau ins Handbuch" wird zu:
+            ```json
+            {{"function_call": {{"name": "anwenden", "args": {{"what": "o_manual"}}}}}}
+            ```
+            *(Grund: Ein Dokument zu lesen wird als 'anwenden' des Dokuments interpretiert.)*
+
+
         Beispiele für 'zurueckweisen'-Befehle:
             "Öffne den Warenautomaten" wird zu:
             ```json

@@ -93,16 +93,20 @@ class GameTurnMixin:
                         whom = args.get("who", "")
                         firstmessage = args.get("firstmessage", "")
                         npc_result = await self.async_verb_interact(npc, session_id, whom, firstmessage, dialogs=dialogs)
-                    elif command == "zombie_message":
-                        # Direct message, no self engine processing needed
-                        npc_result = args.get("message", "")
+                        npc.game_engine_answer(self, npc_result)
+                        if npc_result and npc_result.strip():
+                            npc_actions.append(json_cmd_simple("zombie_message", f"**{npc.name}:** {npc_result}"))
+                    elif command in ("zombie_message", "zombie_bite", "zombie_event"):
+                        # Direkt an die GUI weiterreichen - der Aktionstyp bleibt erhalten:
+                        # zombie_message = nur Debug, zombie_bite = Biss-Popup,
+                        # zombie_event = sichtbare Zeile in "Letzte Aktion".
+                        npc.game_engine_answer(self, args.get("message", ""))
+                        npc_actions.append(npc_input)
                     else:
                         npc_result = self.verb_execute_json(npc, npc_input, session_id)
-
-                    npc.game_engine_answer(self, npc_result)
-
-                    if npc_result and npc_result.strip():
-                        npc_actions.append(json_cmd_simple("zombie_message", f"**{npc.name}:** {npc_result}"))
+                        npc.game_engine_answer(self, npc_result)
+                        if npc_result and npc_result.strip():
+                            npc_actions.append(json_cmd_simple("zombie_message", f"**{npc.name}:** {npc_result}"))
 
             elif EXPLOSION_AVAILABLE and isinstance(npc, ExplosionState):
                 # Explosion-NPC - VEREINFACHT

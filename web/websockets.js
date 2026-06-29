@@ -150,6 +150,12 @@ class AdventureBackend {
                 const won = data.won
                 gameOver(won,text)
                 break;
+            case 'manual_popup':
+                // Lesetext (z.B. das Betriebshandbuch) als modales Popup anzeigen.
+                if (typeof showTextPopup === 'function') {
+                    showTextPopup(data.title || 'Dokument', data.content || '');
+                }
+                break;
             case 'info':
                 appendLastAction(`<div style="color:#ffd700">💡 ${_fmt(data.message)}</div>`);
                 break;
@@ -281,6 +287,11 @@ class AdventureBackend {
                     debugMessage('Zombie', action.message);
                     if (typeof showBiteOverlay === 'function') showBiteOverlay(action.message);
                     flashStatus();
+                    break;
+                case "zombie_event":
+                    // Story-Ereignisse des Zombies (Erinnerung, Erkenntnis, Erlösung,
+                    // Erstarren, geteilte Energie) sichtbar ins Transkript "Letzte Aktion".
+                    appendLastAction(`<div style="color:#ff7766">🧟 ${_fmt(action.message)}</div>`);
                     break;
                 case "minigame":
                     // Der Hund greift an: Icon rot blinken lassen; die Ankündigung steht im Chat-Modal.

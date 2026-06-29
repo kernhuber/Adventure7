@@ -256,7 +256,8 @@
         "w_kontrollraum_ubahn2"
       ],
       "objects": [
-        "o_schalter_kontrollraum"
+        "o_schalter_kontrollraum",
+        "o_manual"
       ]
     },
     "p_ubahn_schacht": {
@@ -1361,6 +1362,27 @@
       "reveal_f": null,
       "take_f": null,
       "prompt_f": "object_prompts.o_schalter_generatorraum_prompt_f"
+    },
+    "o_manual": {
+      "name": "o_manual",
+      "examine": "Ein abgegriffenes Betriebshandbuch der Anlage. Auf dem Umschlag steht 'Notfall-Betrieb - Bedienungsanleitung'. Es sieht so aus, als stünde darin, wie man die Anlage wieder in Gang bringt.",
+      "help_text": "Vielleicht solltest du es lesen? Versuche 'lies das Manual'.",
+      "callnames": [
+        "Manual",
+        "Gebrauchsanweisung",
+        "Bedienungsanleitung",
+        "Betriebsanleitung",
+        "Betriebshandbuch",
+        "Handbuch",
+        "Anleitung"
+      ],
+      "ownedby": "p_kontrollraum",
+      "fixed": false,
+      "hidden": false,
+      "apply_f": "game_apply_functions.o_manual_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "object_prompts.o_manual_prompt_f"
     }
   },
   "_editor": {

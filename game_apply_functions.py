@@ -328,7 +328,7 @@ def o_fahrradkette_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject
             if _F(gs).zombie_cooperative:
                 return (
                     "Du reparierst Dein Fahrrad mit der neuen Kette. "
-                    "Bevor du losfährst, hältst du inne. Der Zombie - Herbert Kronstein - "
+                    "Bevor du losfährst, hältst du inne. Der Zombie - Harald Kronstein - "
                     "hat seinen Frieden gefunden. Seine Erlösung hat auch dir den Weg frei gemacht. "
                     "Du schwingst dich auf dein Fahrrad und schaffst es rechtzeitig, "
                     "den Briefumschlag abzugeben. "
@@ -446,6 +446,60 @@ def o_schalter_generatorraum_apply_f(gs: GameState, pl: PlayerState=None, what: 
         "Ein Schild zeigt an: 'Warte auf Schalter 1/2...' "
         "Der zweite Schalter im Kontrollraum muss ebenfalls aktiviert werden - und zwar schnell!"
     )
+
+
+# Inhalt des Betriebshandbuchs - wird als Text-Popup im GUI angezeigt (siehe
+# o_manual_apply_f). Kernaussage: die Anlage lässt sich nur ZU ZWEIT neu starten.
+MANUAL_TEXT = (
+    "BETRIEBSANLEITUNG — NOTFALL-NEUSTART DER ANLAGE\n"
+    "================================================\n"
+    "\n"
+    "1. Die Anlage besitzt ZWEI Notfall-Schalter: einen im KONTROLLRAUM,\n"
+    "   einen im GENERATORRAUM.\n"
+    "\n"
+    "2. An jeden Schalter muss sich eine Person stellen. Eine Person allein\n"
+    "   schafft es nicht — die beiden Räume liegen zu weit auseinander.\n"
+    "\n"
+    "3. Beide Schalter müssen GLEICHZEITIG aktiviert werden (innerhalb weniger\n"
+    "   Sekunden voneinander).\n"
+    "\n"
+    "4. Nur bei synchroner Aktivierung springt der Generator an — und der Weg\n"
+    "   zur Erlösung öffnet sich.\n"
+    "\n"
+    "==> Nur gemeinsam. Niemals allein."
+)
+
+
+def o_manual_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    """Das Betriebshandbuch lesen ('anwenden o_manual' / 'lies das Manual').
+
+    Zeigt den Handbuch-Inhalt als Text-Popup im GUI: dazu wird der Text auf der
+    GameState zwischengespeichert; die Web-Schicht (command_engine) liest das Feld
+    nach der Aktion aus, sendet eine `manual_popup`-Nachricht und leert es wieder.
+    """
+    gs._pending_manual_popup = MANUAL_TEXT
+    base = (
+        "Du schlägst das Betriebshandbuch auf und liest die Notfall-Anleitung. "
+        "***Zwei Schalter, zwei Räume — und sie müssen gleichzeitig aktiviert werden. "
+        "Das schafft niemand allein.***"
+    )
+
+    # Übergabe-Route: liest der Spieler die Anleitung neben einem zutraulichen Zombie
+    # (COOPERATIVE/DOUBTING) vor, liest dieser mit und versteht die Lösung -> CONVINCED.
+    # Ein jagender Zombie würde stattdessen beißen, kein gemeinsames Lesen.
+    if pl is not None:
+        from npc_zombie_state import NPCZombieState, ZombieState
+        zombie = next((z for z in gs.players
+                       if isinstance(z, NPCZombieState) and z.location == pl.location), None)
+        if zombie is not None and zombie.zombie_state in (ZombieState.COOPERATIVE, ZombieState.DOUBTING):
+            zombie._become_convinced(gs)  # Rückgabe (zombie_message) hier nicht nötig
+            base += (
+                "\n\n***Der Zombie beugt sich über deine Schulter und liest mit. Ein Funke "
+                "Verständnis blitzt in seinen Augen auf: 'Zwei Schalter... gleichzeitig... "
+                "ich brauche... dich.'***"
+            )
+
+    return base
 
 
 def o_werbeplakat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None, onwhat:GameObject=None) -> str:

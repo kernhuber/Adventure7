@@ -67,10 +67,20 @@ stub (`GameState(llm=object())`) to construct it without an API key for tests.
 engine runs once per turn (`GameState.run_npc_turns`, called from the web layer).
 - `npc_dog_state.py` — a hand-written **finite state machine** (`DogState`:
   START/EATING/ATTACK/TRACE/GOHOME); attacks trigger a mini-game.
-- `npc_zombie_state.py` — Claude-authored; a state machine (`ZombieState`:
-  DORMANT/AWAKENING/HUNTING/STALKING/COOPERATING/REDEEMED) whose moves are decided by
-  an **LLM reasoning call** (`gemini-2.5-flash`). Awoken by taking the wallet
-  (`game_take_functions._awaken_zombie`); on AWAKENING it opens the chat modal.
+- `npc_zombie_state.py` — Claude-authored, then reworked (2026-06-29) into a richer
+  arc (Harald Kronstein). State machine `ZombieState`:
+  AWAKENING/HUNTING/COOPERATIVE/DOUBTING/CONVINCED/REDEEMED/PETRIFIED. **HUNTING** moves
+  are decided by an **LLM reasoning call** (`gemini-2.5-flash`, notebook pattern + bite);
+  the cooperative states are **scripted** (cheap). A graded `trust` value drives
+  COOPERATIVE↔DOUBTING↔HUNTING; a hostile chat or `verb_attack` erodes it. The
+  **operations manual** (`o_manual` in the control room) is the solution key: reading it
+  (himself via a U-Bahn "memory" route, or the player reading it next to him) makes him
+  CONVINCED, after which he pursues the player to win their buy-in for the two-switch
+  redemption. Life energy (the old `zombie_thirst`) drains each turn; he can ask to
+  share it, and at 0 he PETRIFIES (EC card destroyed → game lost). Awoken by taking the
+  wallet (`game_take_functions._awaken_zombie`); on AWAKENING it opens the chat modal.
+  Player-visible story beats use the `zombie_event` action (→ "Letzte Aktion");
+  `zombie_message` is debug-only. See `docs/ZOMBIE-NPC-erklaert.md`.
 NPCs can talk to the player via the `interaktion` action → `async_verb_interact` →
 `PlayerDialogs.do_chat` → the chat modal.
 
@@ -124,9 +134,17 @@ complete; current work is **gameplay & UI** on branch
 status flash, pretty item names, the "Letzte Aktion" transcript, the 2×2 layout, the
 Felsnische place rename, the refillable bottle, and a debug-level log prefix.
 
-**Next:** more gameplay work, and understanding/documenting the (Claude-authored)
-zombie NPC. Backlog: `docs/BACKLOG.md` (optional CLI front-end — now feasible since
-the engine is GUI-free; typed `GameSession`; retire the flag-mirror shim; remove dead
+The **zombie NPC was reworked** (2026-06-29) into a richer arc — graded trust, the
+operations manual as solution key, a U-Bahn "memory" route to CONVINCED, a
+convince-the-player endgame, and a life-energy/petrify/share mechanic; the bite/event
+GUI channel was fixed (`zombie_event` for visible beats). Details + teaching notes:
+`docs/ZOMBIE-NPC-erklaert.md`. Needs an in-browser play-through to validate the
+LLM-driven paths (sandbox can't import the google SDK — it hangs).
+
+**Next:** more gameplay work (balancing the new trust/energy thresholds; optional
+`gib <obj> an <NPC>` verb). Backlog: `docs/BACKLOG.md` (optional CLI front-end — now
+feasible since the engine is GUI-free; typed `GameSession`; retire the flag-mirror
+shim; remove dead
 verbs/`emit_*`; fix the long-broken `create_world.py`).
 
 Refactor history: `docs/REFACTORING-2026-06-24-webserver.md` (Step 1),

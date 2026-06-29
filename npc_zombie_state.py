@@ -10,12 +10,28 @@ from utils import dprint, dl, json_cmd_simple, return_do_nothing
 
 
 class ZombieState(Enum):
-    DORMANT = auto()
-    AWAKENING = auto()
-    HUNTING = auto()
-    STALKING = auto()
-    COOPERATING = auto()
-    REDEEMED = auto()
+    AWAKENING = auto()    # gerade erwacht, eröffnet den Dialog
+    HUNTING = auto()      # feindlich: verfolgt und beißt den Spieler (LLM-gesteuert)
+    COOPERATIVE = auto()  # vertraut dem Spieler (kein Beißen), hält aber die EC-Karte
+    DOUBTING = auto()     # Vertrauen erodiert (kein Kontakt / Feindseligkeit)
+    CONVINCED = auto()    # hat das Handbuch gelesen, kennt die Lösung, sucht Kooperation
+    REDEEMED = auto()     # erlöst (Endzustand)
+    PETRIFIED = auto()    # zu Stein erstarrt (tot): EC-Karte zerstört, Spiel verloren
+
+
+# --- Stellschrauben für die Vertrauens-Mechanik (bewusst als benannte Konstanten,
+#     damit man sie beim Balancing leicht anpassen kann) -------------------------
+COOP_START_TRUST = 60        # Vertrauen direkt nach erfolgreichem Überzeugen im Chat
+DOUBT_BELOW = 40             # Vertrauen darunter -> Zustand DOUBTING
+HUNT_BELOW = 15             # Vertrauen darunter -> zurück zu HUNTING
+TRUST_DECAY_NO_CONTACT = 3   # Vertrauensverlust pro Zug ohne Spielerkontakt
+TRUST_RECOVER_CONTACT = 2    # Vertrauensgewinn pro Zug mit dem Spieler am selben Ort
+HOSTILE_CHAT_PENALTY = 35    # Vertrauensverlust bei feindseligem Gespräch (Phase 3)
+
+# --- Stellschrauben für die Lebensenergie (das frühere "zombie_thirst") ---------
+LOW_ENERGY = 8               # ab hier bittet der Zombie um geteilte Lebensenergie (Phase 5)
+SHARE_AMOUNT = 8             # so viel Lebensenergie teilt der Spieler auf einmal (Phase 5)
+MAX_ENERGY = 40              # Obergrenze der Lebensenergie
 
 
 def _F(gs):
@@ -30,8 +46,15 @@ class NPCZombieState(PlayerState):
     gameengine_returns: str = ""
     last_chat: str = "Ich erinnere mich an nichts."
     move_cooldown: int = 0
-    zombie_thirst: int = 30
+    zombie_thirst: int = 30          # Lebensenergie (0 = erstarrt zu Stein); Name bleibt zwecks geringer Streuung
     turn_counter: int = 0
+    trust: int = 0                   # Vertrauen zum Spieler (0-100); steuert COOPERATIVE/DOUBTING/HUNTING
+    turns_since_player_contact: int = 0
+    cooperation_agreed: bool = False       # Spieler hat im CONVINCED-Dialog der Schalter-Kooperation zugestimmt
+    awaiting_share_response: bool = False  # Zombie hat um geteilte Lebensenergie gebeten und wartet auf Antwort
+    share_agreed: bool = False             # Spieler hat zugesagt, Lebensenergie zu teilen
+    share_cooldown: int = 0                # Pause zwischen zwei Bitten um Lebensenergie
+    remembered_control_room: bool = False  # Erinnerung an den Kontrollraum (in der U-Bahn ausgelöst)
     player_last_seen_location: Optional[str] = None
     nogo_places: List[str] = field(default_factory=lambda: ["p_start", "p_dach"])
 
@@ -44,13 +67,49 @@ class NPCZombieState(PlayerState):
                     return True
         return False
 
+    # Zustände, in denen der Zombie "lebt" und Lebensenergie verliert.
+    ACTIVE_STATES = (
+        ZombieState.HUNTING, ZombieState.COOPERATIVE,
+        ZombieState.DOUBTING, ZombieState.CONVINCED,
+    )
+
     def NPC_game_move(self, gs: game_state.GameState) -> dict:
         self.turn_counter += 1
 
-        match self.zombie_state:
-            case ZombieState.DORMANT:
-                return return_do_nothing()
+        # Lebensenergie zentral verbrauchen: in JEDEM aktiven Zustand (früher nur beim
+        # Jagen). So kann der Zombie auch als Kooperateur "verhungern"/erstarren.
+        if self.zombie_state in self.ACTIVE_STATES:
+            self.zombie_thirst -= 1
+            if self.share_cooldown > 0:
+                self.share_cooldown -= 1
 
+            # (a) Geteilte Lebensenergie einlösen (Spieler hat im Dialog zugesagt).
+            if self.share_agreed:
+                self.share_agreed = False
+                return self._receive_shared_energy(gs)
+
+            # (b) Lebensenergie aufgebraucht -> zu Stein erstarren (EC-Karte zerstört,
+            #     Spiel verloren).
+            if self.zombie_thirst <= 0:
+                return self._do_petrify(gs)
+
+            # (c) Bei niedriger Energie um geteilte Lebensenergie bitten (der Zombie MUSS
+            #     es selbst initiieren; nur möglich, wenn der Spieler hier ist).
+            if self.zombie_thirst <= LOW_ENERGY and not self.awaiting_share_response and self.share_cooldown == 0:
+                ask = self._ask_for_energy(gs)
+                if ask is not None:
+                    return ask
+
+        # Erinnerungs-/Handbuch-Quest hat Vorrang vor dem normalen Zustandsverhalten und
+        # kann aus JEDEM aktiven Zustand (auch HUNTING) ausgelöst werden, solange der
+        # Zombie noch nicht CONVINCED ist: betritt er die U-Bahn, erinnert er sich an den
+        # Kontrollraum, geht dorthin und liest die Anleitung -> CONVINCED.
+        if self.zombie_state in self.ACTIVE_STATES and self.zombie_state != ZombieState.CONVINCED:
+            quest_action = self._handle_manual_quest(gs)
+            if quest_action is not None:
+                return quest_action
+
+        match self.zombie_state:
             case ZombieState.AWAKENING:
                 self.zombie_state = ZombieState.HUNTING
                 self.zombie_state_message = "Der Zombie jagt!"
@@ -66,21 +125,96 @@ class NPCZombieState(PlayerState):
                         "***'Suchst du etwa ... die hier?'***")
                 return return_do_nothing()
 
-            case ZombieState.HUNTING | ZombieState.STALKING:
+            case ZombieState.HUNTING:
                 return self._do_hunting_move(gs)
 
-            case ZombieState.COOPERATING:
-                return self._do_cooperating_move(gs)
+            case ZombieState.COOPERATIVE | ZombieState.DOUBTING:
+                return self._do_trusting_move(gs)
+
+            case ZombieState.CONVINCED:
+                return self._do_convinced_move(gs)
 
             case ZombieState.REDEEMED:
                 self.zombie_state_message = "Der Zombie ist erlöst."
                 return return_do_nothing()
 
+            case ZombieState.PETRIFIED:
+                self.zombie_state_message = "Der Zombie ist zu Stein erstarrt."
+                return return_do_nothing()
+
             case _:
                 return return_do_nothing()
 
+    def _do_trusting_move(self, gs: game_state.GameState) -> dict:
+        """COOPERATIVE/DOUBTING: scriptgesteuert, kein LLM, kein Beißen.
+
+        Der Zombie wartet beim Spieler. Bleibt der Spieler weg, sinkt das Vertrauen
+        Zug für Zug; ist der Spieler da, erholt es sich etwas. Aus dem Vertrauenswert
+        ergibt sich der Zustand (COOPERATIVE -> DOUBTING -> zurück zu HUNTING).
+        """
+        player = next((p for p in gs.players if type(p) is PlayerState), None)
+
+        if player is not None and self.location == player.location:
+            self.turns_since_player_contact = 0
+            self.trust = min(100, self.trust + TRUST_RECOVER_CONTACT)
+        else:
+            self.turns_since_player_contact += 1
+            self.trust = max(0, self.trust - TRUST_DECAY_NO_CONTACT)
+
+        return self._reevaluate_trust(gs)
+
+    def _state_from_trust(self) -> None:
+        """Setzt den Zustand rein anhand des Vertrauenswerts (ohne gs/Aktion).
+
+        Gemeinsame Stelle für die Schwellen, damit Vertrauensänderungen (Zug-Zerfall,
+        feindseliges Gespräch, Angriff) konsistent denselben Übergang auslösen. Wird
+        sowohl im Zug-Loop (_reevaluate_trust) als auch nach dem Chat (end_chat) genutzt.
+        """
+        if self.trust < HUNT_BELOW:
+            if self.zombie_state != ZombieState.HUNTING:
+                dprint(dl.ZOMBIE, f"Vertrauen {self.trust} < {HUNT_BELOW}: Zombie jagt wieder")
+            self.zombie_state = ZombieState.HUNTING
+            self.zombie_state_message = "Das Vertrauen ist verflogen - der Zombie jagt wieder!"
+        elif self.trust < DOUBT_BELOW:
+            self.zombie_state = ZombieState.DOUBTING
+            self.zombie_state_message = "Der Zombie wirkt zunehmend misstrauisch..."
+        else:
+            self.zombie_state = ZombieState.COOPERATIVE
+            self.zombie_state_message = "Der Zombie verhält sich ruhig und abwartend."
+
+    def _reevaluate_trust(self, gs: game_state.GameState) -> dict:
+        """Vertrauen -> Zustand übersetzen und (für den Zug-Loop) eine Aktion liefern."""
+        self._state_from_trust()
+        return return_do_nothing()
+
+    def gets_attacked(self, gs: game_state.GameState, pl: PlayerState) -> str:
+        """Der Spieler greift den Zombie an (verb_attack).
+
+        Ein Angriff ist der härteste Vertrauensbruch: das Vertrauen fällt auf 0 und der
+        Zombie jagt wieder. Ausnahme: ist er bereits CONVINCED (er kennt die Lösung und
+        will nur noch kooperieren), erschüttert ihn der Angriff zwar, aber er bleibt
+        dabei - nur der Tod beendet diesen Zustand.
+        """
+        if self.zombie_state in (ZombieState.REDEEMED, ZombieState.PETRIFIED):
+            return "Der Zombie reagiert nicht mehr."
+
+        if self.zombie_state == ZombieState.CONVINCED:
+            self.trust = max(0, self.trust - HOSTILE_CHAT_PENALTY)
+            dprint(dl.ZOMBIE, f"CONVINCED-Zombie angegriffen (bleibt CONVINCED, trust={self.trust})")
+            return ("Du schlägst auf den Zombie ein. Traurig weicht er zurück: "
+                    "'Warum...? Wir... müssen... zusammen...' - aber er gibt nicht auf.")
+
+        self.trust = 0
+        prev = self.zombie_state
+        self.zombie_state = ZombieState.HUNTING
+        self.zombie_state_message = "Der Zombie wurde angegriffen und jagt wieder!"
+        self.notes = "Der Spieler hat mich angegriffen! Ich kann ihm nicht trauen. Ich jage wieder."
+        dprint(dl.ZOMBIE, f"Zombie angegriffen: {prev.name} -> HUNTING (trust=0)")
+        return ("Du schlägst auf den Zombie ein. Es scheint ihm kaum zu schaden - aber jeder "
+                "Funke Vertrauen ist dahin. Seine Augen glühen wieder hasserfüllt.")
+
     def _do_hunting_move(self, gs: game_state.GameState) -> dict:
-        self.zombie_thirst -= 1
+        # (Lebensenergie wird zentral in NPC_game_move abgezogen.)
 
         # Track player location
         player = next((p for p in gs.players if type(p) is PlayerState), None)
@@ -90,7 +224,7 @@ class NPCZombieState(PlayerState):
         # Bite mechanic: if same location as player
         if player and self.location == player.location:
             player.thirst_counter = max(0, player.thirst_counter - 5)
-            self.zombie_thirst = min(40, self.zombie_thirst + 5)
+            self.zombie_thirst = min(MAX_ENERGY, self.zombie_thirst + 5)
             self.zombie_state_message = "Der Zombie hat den Spieler gebissen!"
             # Eigener Action-Typ -> dramatisches Popup im GUI (nicht nur Debug).
             return json_cmd_simple("zombie_bite",
@@ -119,32 +253,128 @@ class NPCZombieState(PlayerState):
             dprint(dl.ZOMBIE, f"Zombie LLM error: {e}")
             return return_do_nothing()
 
-    def _do_cooperating_move(self, gs: game_state.GameState) -> dict:
-        self.zombie_state_message = "Der Zombie kooperiert und geht zum Generatorraum."
-
-        # Already redeemed?
-        if _F(gs).zombie_cooperative:
-            return self._do_redemption(gs)
-
-        # Navigate toward Generatorraum
-        target = gs.places.get("p_generatorraum")
-        if not target:
-            return return_do_nothing()
-
-        if self.location == target:
-            # At destination: activate switch
-            self.zombie_state_message = "Der Zombie aktiviert den Schalter im Generatorraum!"
-            return json_cmd_simple("anwenden", "Generatorraumschalter")
-
-        # Find path to Generatorraum
+    def _step_toward(self, gs: game_state.GameState, target) -> Optional[dict]:
+        """Einen Schritt Richtung ``target`` (Place) gehen; None, wenn schon da / kein Weg."""
+        if target is None or self.location == target:
+            return None
         path = gs.find_shortest_path(self.location, target)
         if path and len(path) > 0:
             next_place = path[0].destination.name
             if self.can_zombie_go(gs, next_place):
                 dest_callname = path[0].destination.callnames[0] if path[0].destination.callnames else next_place
                 return json_cmd_simple("gehe", dest_callname)
+        return None
 
-        return return_do_nothing()
+    def _handle_manual_quest(self, gs: game_state.GameState) -> Optional[dict]:
+        """Erinnerungs-Route zur Anleitung. Liefert eine Aktion, solange der Zombie an der
+        Quest dran ist, sonst None (dann läuft das normale Zustandsverhalten weiter).
+        """
+        # (1) Auslöser: das Betreten einer U-Bahn-Station weckt die Erinnerung.
+        if not self.remembered_control_room:
+            if self.location.name in ("p_ubahn", "p_ubahn2"):
+                self.remembered_control_room = True
+                self.notes = ("In der U-Bahn... ich erinnere mich! Der Kontrollraum! Dort steht, "
+                              "wie man die Anlage neu startet.")
+                self.zombie_state_message = "Der Zombie erinnert sich an den Kontrollraum."
+                dprint(dl.ZOMBIE, "Zombie erinnert sich an den Kontrollraum")
+                return json_cmd_simple("zombie_event",
+                    "***Der Zombie hält inne. In der U-Bahn flackert eine Erinnerung auf: "
+                    "'Der... Kontrollraum... ich weiß noch... dort liegt die Anleitung...'***")
+            return None
+
+        # (2) Auf dem Weg: zum Kontrollraum gehen und die Anleitung lesen.
+        manual = gs.objects.get("o_manual")
+        kontrollraum = gs.places.get("p_kontrollraum")
+        if kontrollraum is None:
+            return None
+
+        if self.location == kontrollraum:
+            manual_here = manual is not None and manual in self.location.place_objects
+            manual_owned = manual is not None and manual in self.inventory
+            if manual_here or manual_owned:
+                if manual_here:
+                    self.location.place_objects.remove(manual)
+                    self.inventory.append(manual)
+                    manual.ownedby = self
+                return self._become_convinced(gs)
+            # Anleitung ist nicht (mehr) hier - der Spieler hat sie wohl genommen.
+            # Diese Route ist damit versperrt; normales Verhalten läuft weiter.
+            return None
+
+        step = self._step_toward(gs, kontrollraum)
+        if step is not None:
+            self.zombie_state_message = "Der Zombie ist auf dem Weg zum Kontrollraum."
+            return step
+        return None
+
+    def _become_convinced(self, gs: game_state.GameState) -> dict:
+        """Der Zombie hat die Anleitung gelesen: er kennt die Lösung und sucht Kooperation."""
+        self.zombie_state = ZombieState.CONVINCED
+        self.cooperation_agreed = False
+        self.move_cooldown = 0
+        self.zombie_state_message = "Der Zombie hat die Anleitung gelesen und kennt die Lösung."
+        self.notes = ("Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und "
+                      "Generatorraum. Allein schaffe ich es nicht. Ich muss den Spieler überzeugen mitzumachen.")
+        dprint(dl.ZOMBIE, "Zombie -> CONVINCED (Handbuch gelesen)")
+        return json_cmd_simple("zombie_event",
+            "***Der Zombie blättert in der Anleitung. Etwas klärt sich in seinem Blick: "
+            "'Zwei Schalter... gleichzeitig... ich kann es nicht allein. Ich brauche... dich.'***")
+
+    def _do_convinced_move(self, gs: game_state.GameState) -> dict:
+        """CONVINCED: erst den Spieler überzeugen (Dialog), dann das Schalter-Endspiel.
+
+        Der Zombie weiß jetzt um die Lösung, hält aber weiter die EC-Karte. Er sucht den
+        Spieler und bittet ihn (über das Chat-Modal) um Mithilfe. Erst wenn der Spieler
+        zugesagt hat (cooperation_agreed, gesetzt in end_chat), geht er zum Generatorraum.
+        """
+        # Endspiel: beide Schalter synchron aktiviert -> Erlösung.
+        if _F(gs).zombie_cooperative:
+            return self._do_redemption(gs)
+
+        player = next((p for p in gs.players if type(p) is PlayerState), None)
+
+        if not self.cooperation_agreed:
+            # Kleiner Cooldown, damit das Chat-Modal nicht jeden Zug erneut aufpoppt.
+            if self.move_cooldown > 0:
+                self.move_cooldown -= 1
+                self.zombie_state_message = "Der Zombie wartet auf deine Entscheidung..."
+                return return_do_nothing()
+
+            if player is not None and self.location == player.location:
+                self.move_cooldown = 2
+                self.zombie_state_message = "Der Zombie versucht, dich zur Kooperation zu bewegen."
+                return json_cmd_simple("interaktion", player.name,
+                    "***'Ich weiß jetzt, wie wir hier rauskommen! Zwei Schalter - aber wir müssen "
+                    "GLEICHZEITIG. Hilfst du mir?'***")
+
+            # Spieler nicht hier: ihm folgen, um ihn zu überzeugen.
+            if player is not None:
+                step = self._step_toward(gs, player.location)
+                if step is not None:
+                    self.zombie_state_message = "Der Zombie folgt dir, um dich zu überzeugen."
+                    return step
+            return return_do_nothing()
+
+        # Spieler hat zugestimmt -> zum Generatorraum und Schalter umlegen.
+        return self._do_switch_sequence(gs)
+
+    def _do_switch_sequence(self, gs: game_state.GameState) -> dict:
+        """Scriptgesteuertes Endspiel: zum Generatorraum gehen und den Schalter umlegen.
+
+        Der Gegen-Schalter (Kontrollraum) wird vom Spieler bedient; nur synchron öffnet
+        sich der Weg (o_schalter_*_apply_f setzen dann zombie_cooperative -> Erlösung).
+        """
+        self.zombie_state_message = "Der Zombie geht zum Generatorraum."
+        target = gs.places.get("p_generatorraum")
+        if not target:
+            return return_do_nothing()
+
+        if self.location == target:
+            self.zombie_state_message = "Der Zombie aktiviert den Schalter im Generatorraum!"
+            return json_cmd_simple("anwenden", "Generatorraumschalter")
+
+        step = self._step_toward(gs, target)
+        return step if step is not None else return_do_nothing()
 
     def _do_redemption(self, gs: game_state.GameState) -> dict:
         """Zombie is redeemed - drop EC card and transition to REDEEMED."""
@@ -164,12 +394,63 @@ class NPCZombieState(PlayerState):
             ec_karte.hidden = False
             self.location.place_objects.append(ec_karte)
 
-        return json_cmd_simple("zombie_message",
+        return json_cmd_simple("zombie_event",
             "***Ein Leuchten durchfährt den Zombie. Seine Augen werden klar, "
             "der rötliche Schimmer weicht einem warmen Glanz. "
             "'Danke...' flüstert er. 'Ich bin endlich frei.' "
             "Er lässt die EC-Karte fallen und sein Körper beginnt sich aufzulösen, "
             "bis nur noch ein friedliches Leuchten bleibt, das langsam verblasst.***")
+
+    def _ask_for_energy(self, gs: game_state.GameState) -> Optional[dict]:
+        """Bittet den Spieler (im Chat-Modal) um etwas Lebensenergie - nur wenn er hier ist."""
+        player = next((p for p in gs.players if type(p) is PlayerState), None)
+        if player is None or self.location != player.location:
+            return None
+        self.awaiting_share_response = True
+        self.share_cooldown = 4
+        self.zombie_state_message = "Der Zombie bittet um Lebensenergie."
+        dprint(dl.ZOMBIE, f"Zombie bittet um Lebensenergie (energie={self.zombie_thirst})")
+        return json_cmd_simple("interaktion", player.name,
+            "***'Ich... schwinde... bitte... teilst du etwas Lebensenergie mit mir? "
+            "Sonst werde ich zu Stein - und die EC-Karte mit mir.'***")
+
+    def _receive_shared_energy(self, gs: game_state.GameState) -> dict:
+        """Überträgt Lebensenergie vom Spieler auf den Zombie (Spieler hat zugesagt)."""
+        player = next((p for p in gs.players if type(p) is PlayerState), None)
+        give = SHARE_AMOUNT
+        if player is not None:
+            # dem Spieler mindestens 1 lassen, damit er nicht sofort verdurstet
+            give = min(SHARE_AMOUNT, max(0, player.thirst_counter - 1))
+            player.thirst_counter -= give
+        self.zombie_thirst = min(MAX_ENERGY, self.zombie_thirst + give)
+        self.zombie_state_message = "Der Zombie hat Lebensenergie erhalten."
+        dprint(dl.ZOMBIE, f"Zombie erhält {give} Lebensenergie (jetzt {self.zombie_thirst})")
+        return json_cmd_simple("zombie_event",
+            "***Ein warmer Strom fließt vom Spieler zum Zombie. Seine Gestalt festigt sich wieder: "
+            "'Danke... das hält mich noch eine Weile.'***")
+
+    def _do_petrify(self, gs: game_state.GameState) -> dict:
+        """Lebensenergie aufgebraucht: der Zombie erstarrt zu Stein, die EC-Karte zerfällt,
+        das Spiel ist verloren."""
+        self.zombie_state = ZombieState.PETRIFIED
+        self.zombie_state_message = "Der Zombie ist zu Stein erstarrt."
+
+        # EC-Karte zerstören (egal ob er sie hält oder sie am Ort liegt) -> nicht mehr lösbar.
+        ec = gs.objects.get("o_ec_karte")
+        if ec is not None:
+            if ec in self.inventory:
+                self.inventory.remove(ec)
+            if ec in self.location.place_objects:
+                self.location.place_objects.remove(ec)
+            gs.objects.pop("o_ec_karte", None)
+
+        gs.game_over = True
+        gs.game_won = False
+        dprint(dl.ZOMBIE, "Zombie zu Stein erstarrt -> EC-Karte zerstört, Spiel verloren")
+        return json_cmd_simple("zombie_event",
+            "***Die Bewegungen des Zombies werden langsamer, seine Haut grau und hart. "
+            "Mit einem letzten Knirschen erstarrt er zu Stein - und die EC-Karte in seiner Hand "
+            "zerspringt zu Staub. Ohne sie gibt es kein Entkommen mehr.***")
 
     def compile_zombie_context(self, gs: game_state.GameState) -> dict:
         ctx = {}
@@ -249,7 +530,7 @@ AKTUELLER KONTEXT:
 - Spieler hier: {', '.join(s['name'] for s in zctx['spieler_hier']) if zctx['spieler_hier'] else 'niemand'}
 - Spieler in der Nähe: {', '.join(f"{s['name']} bei {s['ort']}" for s in zctx['spieler_naehe']) if zctx['spieler_naehe'] else 'niemand'}
 - Dein Inventar: {', '.join(zctx['inventar']) if zctx['inventar'] else 'nichts'}
-- Dein Durst-Level: {zctx['durst']} (0 = verdurstet)
+- Deine Lebensenergie: {zctx['durst']} (0 = du erstarrst zu Stein)
 
 LETZTE SPIELENGINE-ANTWORT:
 {self.gameengine_returns if self.gameengine_returns else '(keine)'}
@@ -362,7 +643,7 @@ Beispiel:
         prompt = f"""
 PERSONA:
 Du bist ein Zombie in einem Adventure-Spiel. Du warst einmal ein erfolgreicher Geschäftsmann
-namens Herbert Kronstein. Du bist in dieser unterirdischen Anlage gestorben und als Untoter erwacht.
+namens Harald Kronstein. Du bist in dieser unterirdischen Anlage gestorben und als Untoter erwacht.
 Du sprichst Deutsch - manchmal kannst du nur Knurren, manchmal fallen dir Geschäftsbegriffe ein.
 Du bist hungrig, verwirrt, aber irgendwo tief in dir ist noch ein Rest Menschlichkeit.
 
@@ -393,9 +674,20 @@ Antworte dem Spieler in einem kurzen Satz (IN-CHARACTER als Zombie):
         return r
 
     def end_chat(self, llm, messages):
+        # Bewertungskriterien je nach Zustand zusammenstellen: EINVERSTANDEN nur im
+        # CONVINCED-Dialog (Schalter-Plan), TEILEN nur wenn der Zombie um Lebensenergie
+        # gebeten hat. So wertet der "Richter" nur das, was gerade zur Lage passt.
+        extra_criteria = ""
+        if self.zombie_state == ZombieState.CONVINCED:
+            extra_criteria += ("EINVERSTANDEN: [JA/NEIN] - Hat der Spieler zugesagt, gemeinsam mit dir die "
+                               "beiden Notfall-Schalter zu betätigen?\n")
+        if self.awaiting_share_response:
+            extra_criteria += ("TEILEN: [JA/NEIN] - Hat der Spieler zugesagt, etwas von seiner Lebensenergie "
+                               "mit dir zu teilen?\n")
+
         msg = f"""
 SYSTEM:
-Du verwaltest das Gedächtnis eines Zombies (ehemaliger Geschäftsmann Herbert Kronstein),
+Du verwaltest das Gedächtnis eines Zombies (ehemaliger Geschäftsmann Harald Kronstein),
 der ein NPC in einem Adventure-Spiel ist.
 
 BISHERIGES EPISODIC MEMORY:
@@ -408,7 +700,8 @@ AUFGABE 1 - BEWERTUNG (WICHTIG - ZUERST AUSGEBEN!):
 Bewerte mit JA oder NEIN:
 KOOPERATIV: [JA/NEIN] - Hat der Spieler glaubhaft Kooperation angeboten?
 SINNVOLL: [JA/NEIN] - Wurde ein konkreter, sinnvoller Kooperationsvorschlag gemacht?
-
+FEINDLICH: [JA/NEIN] - War der Spieler feindselig, bedrohlich, beleidigend oder wollte er dir schaden?
+{extra_criteria}
 AUFGABE 2 - ZUSAMMENFASSUNG:
 Extrahiere die wesentlichen Punkte aus dem Dialog. Aktualisiere das Gedächtnis.
 Fokus: Beziehung zum Spieler, Stimmung, Kooperationsbereitschaft, offene Fäden.
@@ -424,29 +717,57 @@ Gebe NUR Bewertung und Zusammenfassung aus, keine einleitenden Worte.
         else:
             self.last_chat = r
 
-        # Check if zombie should transition to cooperating
-        if self.zombie_state in (ZombieState.HUNTING, ZombieState.STALKING):
-            kooperativ = bool(re.search(r'KOOPERATIV:\s*JA', r, re.IGNORECASE))
-            sinnvoll = bool(re.search(r'SINNVOLL:\s*JA', r, re.IGNORECASE))
-            if kooperativ and sinnvoll:
-                self.zombie_state = ZombieState.COOPERATING
-                self.zombie_state_message = "Der Zombie kooperiert!"
-                self.notes = "Der Spieler hat mich überzeugt. Ich werde kooperieren. Ich gehe zum Generatorraum und aktiviere den Schalter."
-                dprint(dl.ZOMBIE, "Zombie transitions to COOPERATING after chat!")
+        kooperativ = bool(re.search(r'KOOPERATIV:\s*JA', r, re.IGNORECASE))
+        sinnvoll = bool(re.search(r'SINNVOLL:\s*JA', r, re.IGNORECASE))
+        feindlich = bool(re.search(r'FEINDLICH:\s*JA', r, re.IGNORECASE))
+        einverstanden = bool(re.search(r'EINVERSTANDEN:\s*JA', r, re.IGNORECASE))
+        teilen = bool(re.search(r'TEILEN:\s*JA', r, re.IGNORECASE))
+
+        # (1) Vertrauen aufbauen: ein glaubhaftes, sinnvolles - und NICHT feindseliges -
+        # Kooperationsangebot macht den jagenden Zombie zutraulich (COOPERATIVE). Er hört auf
+        # zu beißen, hält aber die EC-Karte. Die eigentliche Lösung (die zwei Schalter) kennt
+        # er erst, wenn er das Handbuch gelesen hat (Zustand CONVINCED).
+        if self.zombie_state in (ZombieState.HUNTING, ZombieState.DOUBTING) and kooperativ and sinnvoll and not feindlich:
+            self.zombie_state = ZombieState.COOPERATIVE
+            self.trust = max(self.trust, COOP_START_TRUST)
+            self.turns_since_player_contact = 0
+            self.zombie_state_message = "Der Zombie vertraut dir nun."
+            self.notes = "Der Spieler hat mich überzeugt, dass er kein Feind ist. Ich beiße nicht mehr. Ich behalte die EC-Karte vorerst."
+            dprint(dl.ZOMBIE, f"Zombie -> COOPERATIVE nach Chat (trust={self.trust})")
+
+        # (2) Feindseligkeit zerstört Vertrauen. Aus COOPERATIVE/DOUBTING kann das bis zurück
+        # in die Jagd führen. CONVINCED bleibt bestehen (nur der Tod beendet es).
+        if feindlich:
+            self.trust = max(0, self.trust - HOSTILE_CHAT_PENALTY)
+            dprint(dl.ZOMBIE, f"Feindseliges Gespräch -> trust={self.trust}")
+            if self.zombie_state in (ZombieState.COOPERATIVE, ZombieState.DOUBTING):
+                self._state_from_trust()
+                self.notes = "Der Spieler war feindselig. Mein Vertrauen schwindet."
+
+        # (3) Im CONVINCED-Dialog: Zustimmung des Spielers zur Schalter-Kooperation merken.
+        if self.zombie_state == ZombieState.CONVINCED and einverstanden:
+            self.cooperation_agreed = True
+            dprint(dl.ZOMBIE, "Spieler stimmt der Schalter-Kooperation zu (cooperation_agreed=True)")
+
+        # (4) Antwort auf die Bitte um geteilte Lebensenergie auswerten.
+        if self.awaiting_share_response:
+            self.awaiting_share_response = False
+            if teilen:
+                self.share_agreed = True
+                dprint(dl.ZOMBIE, "Spieler will Lebensenergie teilen (share_agreed=True)")
 
     def zombie_prompt(self, gs: game_state.GameState, pl) -> str:
         """Context injection for player's LLM narration - describes zombie presence."""
-        if self.zombie_state == ZombieState.DORMANT:
-            return ""
-        if self.zombie_state == ZombieState.REDEEMED:
+        if self.zombie_state in (ZombieState.REDEEMED, ZombieState.PETRIFIED):
             return ""
 
         if self.location == pl.location:
             state_desc = {
                 ZombieState.AWAKENING: "Er ist gerade erwacht und wirkt desorientiert.",
                 ZombieState.HUNTING: "Er starrt dich mit glühenden Augen an! Er sieht hungrig und gefährlich aus!",
-                ZombieState.STALKING: "Er beobachtet dich lauernd aus der Dunkelheit.",
-                ZombieState.COOPERATING: "Er wirkt ruhiger. In seinen Augen liegt ein Funken Verständnis.",
+                ZombieState.COOPERATIVE: "Er wirkt ruhiger. In seinen Augen liegt ein Funken Verständnis.",
+                ZombieState.DOUBTING: "Er wirkt unruhig und misstrauisch, als schwinde sein Vertrauen.",
+                ZombieState.CONVINCED: "Er wirkt entschlossen und drängt darauf, dass ihr gemeinsam etwas tun müsst.",
             }
             desc = state_desc.get(self.zombie_state, "Er steht da und bewegt sich kaum.")
             return (

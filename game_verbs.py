@@ -420,24 +420,41 @@ Am Ort sind folgende Objekte zu sehen:"""
 
 
     def verb_attack(self, pl: PlayerState, session_id, whom="")->str:
-        """ Player attacks dog which needs to be in the same place as Player"""
+        """Spieler greift einen NPC am selben Ort an (Hund oder Zombie).
+
+        Ein Angriff auf den Zombie ist zugleich der härteste Vertrauensbruch
+        (siehe NPCZombieState.gets_attacked). Welcher NPC gemeint ist, ergibt sich
+        aus ``whom`` (falls eindeutig) bzw. daraus, wer gerade anwesend ist.
+        """
         from npc_dog_state import NPCDogState
-        dog = next(d for d in self.players if type(d) is NPCDogState)
-        #dog = None
-        #for d in self.players:
-        #    if type(d) is NPCDogState:
-        #        dog = d
-        #        break
-        if dog is None:
-            return "Es gibt gar keinen Hund mehr im Spiel"
+        from npc_zombie_state import NPCZombieState
 
-        if dog.location != pl.location:
-            return "Da ist gar kein Hund bei dir, den Du angreifen könntest"
+        here = pl.location
+        dog = next((d for d in self.players if isinstance(d, NPCDogState) and d.location == here), None)
+        zombie = next((z for z in self.players if isinstance(z, NPCZombieState) and z.location == here), None)
 
-        else:
-            r = dog.gets_attacked(self, pl)
-            return ""
-            #return f"(Angriff auf den Hund abgeschlossen)"
+        # Zielwahl: explizite Nennung hat Vorrang, sonst der anwesende NPC
+        # (Zombie zuerst, da der Hund im Spiel meist abwesend ist).
+        whom_l = (whom or "").lower()
+        target = None
+        if zombie is not None and any(k in whom_l for k in ("zombie", "kronstein", "harald", "untot")):
+            target = zombie
+        elif dog is not None and any(k in whom_l for k in ("hund", "dog", "köter", "koeter")):
+            target = dog
+        elif zombie is not None:
+            target = zombie
+        elif dog is not None:
+            target = dog
+
+        if target is None:
+            return "Hier ist niemand, den du angreifen könntest."
+
+        result = target.gets_attacked(self, pl)
+        if isinstance(target, NPCZombieState):
+            return result or ""
+        # Hund: Rückgabe wird wie bisher verworfen (Ablauf läuft über command_after_fight
+        # bzw. das Minispiel, nicht über die Befehlsantwort).
+        return ""
 
     def verb_json_write(self,pl:PlayerState, session_id) -> str:
         """
