@@ -72,7 +72,8 @@
       "objects": [
         "o_skelett",
         "o_geldboerse",
-        "o_ec_karte"
+        "o_ec_karte",
+        "o_stahltuer"
       ]
     },
     "p_innen": {
@@ -1384,6 +1385,26 @@
       "reveal_f": null,
       "take_f": null,
       "prompt_f": "object_prompts.o_manual_prompt_f"
+    },
+    "o_stahltuer": {
+      "name": "o_stahltuer",
+      "examine": "Eine große, schwere Stahltür versperrt einen Korridor. Auf dieser Seite sitzt ein massives Handrad mit einem Riegel - damit lässt sie sich vermutlich von Hand entriegeln.",
+      "help_text": "Versuche, die Stahltür zu öffnen (z.B. 'öffne die Stahltür' oder 'drehe das Rad').",
+      "callnames": [
+        "Stahltür",
+        "Stahltuer",
+        "Eisentür",
+        "Panzertür",
+        "Handrad",
+        "Tür"
+      ],
+      "ownedby": "p_hoehle",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "game_apply_functions.o_stahltuer_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "object_prompts.o_stahltuer_prompt_f"
     }
   },
   "_editor": {

@@ -502,6 +502,24 @@ def o_manual_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
     return base
 
 
+def o_stahltuer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    """Die Stahltür in der Höhle öffnen: das ist der "Öffner" für die ganze unterirdische
+    Anlage. Sie setzt ``korridor_offen`` -> alle Wege hinter dem Korridor-Gate werden
+    begehbar (siehe game_obstruction_check_functions._deep_locked).
+    """
+    if pl is not None and pl.location.name != "p_hoehle":
+        return "Hier gibt es keine Stahltür."
+    if _F(gs).korridor_offen:
+        return "Die Stahltür steht bereits offen."
+    _F(gs).korridor_offen = True
+    return (
+        "Du packst das schwere Handrad und drehst mit aller Kraft. Ein Riegel gleitet zur Seite, "
+        "und mit einem dumpfen, hallenden Klacken entriegelt sich die Stahltür. "
+        "***Quietschend schwingt sie auf und gibt den Weg in den Korridor frei!*** "
+        "Aus der Tiefe der Anlage hörst du fernes Summen - als wäre nun mehr erreichbar als zuvor."
+    )
+
+
 def o_werbeplakat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None, onwhat:GameObject=None) -> str:
     #
     #  Are we in ubahn2?

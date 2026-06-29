@@ -610,6 +610,25 @@ Notfall-Schalter (Generatorraum)
     return r
 
 
+def o_stahltuer_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    if _F(gs).korridor_offen:
+        return """
+Stahltür
+========
+- Eine große, schwere Stahltür - sie steht jetzt offen und gibt den Weg in den Korridor frei
+- Synonyme: Stahltür, Eisentür, Panzertür, Tür
+"""
+    return """
+Stahltür
+========
+- Eine große, schwere Stahltür, die einen Korridor versperrt
+- Auf dieser Seite sitzt ein massives Handrad mit einem Riegel
+- Man kann versuchen, sie zu öffnen/entriegeln, z.B. 'öffne die Stahltür', 'drehe das Rad',
+  'entriegle die Tür' - das entspricht 'anwenden o_stahltuer'
+- Synonyme: Stahltür, Eisentür, Panzertür, Handrad, Tür
+"""
+
+
 def o_manual_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Betriebshandbuch (Manual)

@@ -823,6 +823,11 @@ Die Ortsbeschreibung:
             {{"function_call": {{"name": "anwenden", "args": {{"what": "o_manual"}}}}}}
             ```
             *(Grund: Ein Dokument zu lesen wird als 'anwenden' des Dokuments interpretiert.)*
+            "Öffne die Stahltür" ODER "Drehe das Handrad" ODER "Entriegle die Tür" wird zu:
+            ```json
+            {{"function_call": {{"name": "anwenden", "args": {{"what": "o_stahltuer"}}}}}}
+            ```
+            *(Grund: Eine Tür ohne Werkzeug zu öffnen wird als 'anwenden' der Tür selbst interpretiert.)*
 
 
         Beispiele für 'zurueckweisen'-Befehle:
