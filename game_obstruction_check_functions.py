@@ -8,6 +8,18 @@ def _F(gs: GameState):
     """Return the structured flags container (GameFlags) from GameState."""
     return gs.get_flags()
 
+
+def _deep_locked(gs: GameState, reason: str = "Der Weg tiefer in die Anlage ist noch versperrt.") -> str:
+    """Gemeinsames Gate für die unterirdische Anlage (Kontrollraum, U-Bahn-Schacht,
+    Korridor, Labor, Bibliothek, Besenkammer, Generatorraum): alles dahinter ist erst
+    begehbar, wenn ``korridor_offen`` gesetzt ist.
+
+    HINWEIS: ``korridor_offen`` wird derzeit noch NIRGENDS auf True gesetzt - es fehlt
+    noch der "Öffner" (z.B. ein Schalter/Hebel/Schlüssel). Bis dahin bleibt die Anlage
+    verschlossen (außer in GHOSTMODE, das alle obstruction_checks umgeht).
+    """
+    return "Free" if _F(gs).korridor_offen else reason
+
 def w_schuppen_innen_f(gs: GameState):
     if not _F(gs).schuppentuer:
         return "Dieser Weg ist versperrt - die Tür ist abgeschlossen!"
@@ -71,24 +83,20 @@ def w_ubahn2_wagenf(gs: GameState):
 
 
 
-def w_ubahn2_ubahnschacht_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return "Free"
-
-def w_ubahnschacht_ubahn2_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return "Free"
+# --- Unterirdische Anlage: alle Wege hinter dem Korridor-Gate (``korridor_offen``) ----
+# Früher waren das TODO-Stubs, die "" zurückgaben -> die Serialisierung wertete sie als
+# blockiert, daher war die gesamte Tiefe (Kontrollraum, U-Bahn-Schacht, Labor, ...)
+# unerreichbar. Jetzt einheitlich über ``_deep_locked`` an ``korridor_offen`` gehängt.
 
 def w_hoehle_korridor_obstruction_check(gs: "GameState") -> str:
-    if gs.korridor_offen:
+    if _F(gs).korridor_offen:
         return "Free"
     else:
         return "Die Stahltür ist fest verschlossen. Durch ein kleines, vergittertes Fenster kannst du auf der anderen Seite der Tür einen Korridor erkennen."
 
 
 def w_korridor_hoehle_obstruction_check(gs: "GameState") -> str:
-    # TODO:
-    return ""
+    return _deep_locked(gs)
 
 def w_solaranlage_ubahn2_obstruction_check(gs: "GameState") -> str:
     if _F(gs).korridor_offen:
@@ -104,45 +112,37 @@ def w_ubahn2_solaranlage_obstruction_check(gs: "GameState") -> str:
     return "Free"
 
 def w_ubahn2_kontrollraum_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return ""
+    return _deep_locked(gs, "Die Tür zum Kontrollraum ist verschlossen.")
 
 def w_kontrollraum_ubahn2_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return ""
+    return _deep_locked(gs)
 
 def w_ubahn2_ubahnschacht_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return ""
+    return _deep_locked(gs, "Der Zugang zum U-Bahn-Schacht ist versperrt.")
+
+def w_ubahnschacht_ubahn2_obstruction_check(gs: "GameState") -> str:
+    return _deep_locked(gs)
 
 def w_ubahn_schacht_korridor_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return ""
+    return _deep_locked(gs)
 
 def w_labor_korridor_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return ""
+    return _deep_locked(gs)
 
 def w_korridor_labor_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return ""
+    return _deep_locked(gs)
 
 def w_korridor_bibliothek_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return ""
+    return _deep_locked(gs)
 
 def w_korridor_besenkammer_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return ""
+    return _deep_locked(gs)
 
 def w_besenkammer_korridor_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return ""
+    return _deep_locked(gs)
 
 def w_generatorraum_labor_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return ""
+    return _deep_locked(gs)
 
 def w_labor_generatorraum_obstruction_check(gs: "GameState") -> str:
-    # TODO: implement callback
-    return ""
+    return _deep_locked(gs)
