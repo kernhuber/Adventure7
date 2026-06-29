@@ -21,12 +21,13 @@ class ZombieState(Enum):
 
 # --- Stellschrauben für die Vertrauens-Mechanik (bewusst als benannte Konstanten,
 #     damit man sie beim Balancing leicht anpassen kann) -------------------------
-COOP_START_TRUST = 60        # Vertrauen direkt nach erfolgreichem Überzeugen im Chat
 DOUBT_BELOW = 40             # Vertrauen darunter -> Zustand DOUBTING
 HUNT_BELOW = 15             # Vertrauen darunter -> zurück zu HUNTING
 TRUST_DECAY_NO_CONTACT = 3   # Vertrauensverlust pro Zug ohne Spielerkontakt
 TRUST_RECOVER_CONTACT = 2    # Vertrauensgewinn pro Zug mit dem Spieler am selben Ort
-HOSTILE_CHAT_PENALTY = 35    # Vertrauensverlust bei feindseligem Gespräch (Phase 3)
+HOSTILE_CHAT_PENALTY = 35    # Vertrauensverlust bei feindseligem Gespräch
+COOP_OFFER_TRUST = 60        # konkretes, glaubhaftes Kooperationsangebot im Chat -> sicher COOPERATIVE
+FRIENDLY_CHAT_BONUS = 25     # zugewandtes, aber unkonkretes Gespräch: beendet die Jagd (-> mind. DOUBTING)
 
 # --- Stellschrauben für die Lebensenergie (das frühere "zombie_thirst") ---------
 LOW_ENERGY = 8               # ab hier bittet der Zombie um geteilte Lebensenergie (Phase 5)
@@ -177,7 +178,9 @@ class NPCZombieState(PlayerState):
             self.zombie_state_message = "Das Vertrauen ist verflogen - der Zombie jagt wieder!"
         elif self.trust < DOUBT_BELOW:
             self.zombie_state = ZombieState.DOUBTING
-            self.zombie_state_message = "Der Zombie wirkt zunehmend misstrauisch..."
+            # Mittelzustand in BEIDE Richtungen: nach einem Gespräch "wachsamer Waffenstillstand"
+            # (noch kein Vertrauen), beim Erodieren "wieder misstrauisch werdend".
+            self.zombie_state_message = "Der Zombie ist wachsam, beißt aber nicht."
         else:
             self.zombie_state = ZombieState.COOPERATIVE
             self.zombie_state_message = "Der Zombie verhält sich ruhig und abwartend."
@@ -247,7 +250,9 @@ class NPCZombieState(PlayerState):
             self.move_cooldown = 1
             dprint(dl.ZOMBIE, f"Zombie location: {self.location.name}")
             dprint(dl.ZOMBIE, f"Zombie LLM action: {command}")
-            dprint(dl.ZOMBIE, f"Zombie notes: {self.notes[:100]}...")
+            # Vollständiges Notizbuch loggen (nicht auf 100 Zeichen kürzen) - so lässt
+            # sich Zug für Zug nachvollziehen, was der Zombie "lernt"/sich merkt.
+            dprint(dl.ZOMBIE, f"Zombie notes (full):\n{self.notes}")
             return command
         except Exception as e:
             dprint(dl.ZOMBIE, f"Zombie LLM error: {e}")
@@ -723,26 +728,28 @@ Gebe NUR Bewertung und Zusammenfassung aus, keine einleitenden Worte.
         einverstanden = bool(re.search(r'EINVERSTANDEN:\s*JA', r, re.IGNORECASE))
         teilen = bool(re.search(r'TEILEN:\s*JA', r, re.IGNORECASE))
 
-        # (1) Vertrauen aufbauen: ein glaubhaftes, sinnvolles - und NICHT feindseliges -
-        # Kooperationsangebot macht den jagenden Zombie zutraulich (COOPERATIVE). Er hört auf
-        # zu beißen, hält aber die EC-Karte. Die eigentliche Lösung (die zwei Schalter) kennt
-        # er erst, wenn er das Handbuch gelesen hat (Zustand CONVINCED).
-        if self.zombie_state in (ZombieState.HUNTING, ZombieState.DOUBTING) and kooperativ and sinnvoll and not feindlich:
-            self.zombie_state = ZombieState.COOPERATIVE
-            self.trust = max(self.trust, COOP_START_TRUST)
-            self.turns_since_player_contact = 0
-            self.zombie_state_message = "Der Zombie vertraut dir nun."
-            self.notes = "Der Spieler hat mich überzeugt, dass er kein Feind ist. Ich beiße nicht mehr. Ich behalte die EC-Karte vorerst."
-            dprint(dl.ZOMBIE, f"Zombie -> COOPERATIVE nach Chat (trust={self.trust})")
-
-        # (2) Feindseligkeit zerstört Vertrauen. Aus COOPERATIVE/DOUBTING kann das bis zurück
-        # in die Jagd führen. CONVINCED bleibt bestehen (nur der Tod beendet es).
+        # (1) Vertrauensänderung aus der Bewertung - GRADUELL statt binär. So beendet schon
+        # ein zugewandtes Gespräch die Jagd (kein Beißen mehr), und ein konkretes Angebot
+        # macht klar zutraulich. Feindseligkeit kostet viel Vertrauen.
+        delta = 0
         if feindlich:
-            self.trust = max(0, self.trust - HOSTILE_CHAT_PENALTY)
-            dprint(dl.ZOMBIE, f"Feindseliges Gespräch -> trust={self.trust}")
-            if self.zombie_state in (ZombieState.COOPERATIVE, ZombieState.DOUBTING):
-                self._state_from_trust()
-                self.notes = "Der Spieler war feindselig. Mein Vertrauen schwindet."
+            delta -= HOSTILE_CHAT_PENALTY
+        elif kooperativ and sinnvoll:
+            delta += COOP_OFFER_TRUST     # konkretes, glaubhaftes Angebot -> sicher über die COOPERATIVE-Schwelle
+        elif kooperativ:
+            delta += FRIENDLY_CHAT_BONUS  # freundlich/zugewandt, aber (noch) ohne Plan -> raus aus der Jagd
+        if delta:
+            self.trust = max(0, min(100, self.trust + delta))
+
+        # (2) Zustand nach JEDEM Gespräch neu aus dem Vertrauen ableiten. CONVINCED und die
+        # Endzustände bleiben unangetastet (klebrig). HUNTING<->DOUBTING<->COOPERATIVE folgen
+        # nun dem Vertrauen - kein einzelner binärer Umschwung mehr.
+        if self.zombie_state in (ZombieState.HUNTING, ZombieState.COOPERATIVE, ZombieState.DOUBTING):
+            prev = self.zombie_state
+            self._state_from_trust()
+            if self.zombie_state != prev:
+                self.turns_since_player_contact = 0
+                dprint(dl.ZOMBIE, f"Gespräch verschiebt Zustand: {prev.name} -> {self.zombie_state.name} (trust={self.trust})")
 
         # (3) Im CONVINCED-Dialog: Zustimmung des Spielers zur Schalter-Kooperation merken.
         if self.zombie_state == ZombieState.CONVINCED and einverstanden:
@@ -755,6 +762,20 @@ Gebe NUR Bewertung und Zusammenfassung aus, keine einleitenden Worte.
             if teilen:
                 self.share_agreed = True
                 dprint(dl.ZOMBIE, "Spieler will Lebensenergie teilen (share_agreed=True)")
+
+        # (5) Arbeitsgedächtnis (notes) nach JEDEM Gespräch aktualisieren - so weiß der Zombie
+        # in seinem nächsten Reasoning-Zug, wie das Gespräch ausging und warum er sich so
+        # verhält. (Genau hier "lernt" er aus der Unterhaltung.)
+        stimmung = "feindselig" if feindlich else ("kooperativ" if kooperativ else "neutral")
+        state_note = {
+            ZombieState.HUNTING:     "Ich jage den Spieler und beiße, sobald er bei mir ist.",
+            ZombieState.DOUBTING:    "Ich beiße nicht mehr, bin aber noch wachsam und unsicher, ob ich dem Spieler trauen kann.",
+            ZombieState.COOPERATIVE: "Ich vertraue dem Spieler und beiße nicht mehr. Die EC-Karte behalte ich vorerst; mir fehlt noch der Plan (die Anleitung).",
+            ZombieState.CONVINCED:   "Ich kenne die Lösung (zwei Schalter) und will den Spieler zur Mithilfe bewegen.",
+        }.get(self.zombie_state, "")
+        self.notes = (f"Gerade mit dem Spieler gesprochen (Eindruck: {stimmung}, Vertrauen {self.trust}). "
+                      + state_note)
+        dprint(dl.ZOMBIE, f"Zombie notes nach Gespräch (full):\n{self.notes}")
 
     def zombie_prompt(self, gs: game_state.GameState, pl) -> str:
         """Context injection for player's LLM narration - describes zombie presence."""
