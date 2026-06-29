@@ -141,11 +141,28 @@ GUI channel was fixed (`zombie_event` for visible beats). Details + teaching not
 `docs/ZOMBIE-NPC-erklaert.md`. Needs an in-browser play-through to validate the
 LLM-driven paths (sandbox can't import the google SDK — it hangs).
 
-**Next:** more gameplay work (balancing the new trust/energy thresholds; optional
-`gib <obj> an <NPC>` verb). Backlog: `docs/BACKLOG.md` (optional CLI front-end — now
-feasible since the engine is GUI-free; typed `GameSession`; retire the flag-mirror
-shim; remove dead
-verbs/`emit_*`; fix the long-broken `create_world.py`).
+The **underground graph was reconnected** (2026-06-29). The deep rooms (Kontrollraum,
+U-Bahn-Schacht, Korridor, Labor, Bibliothek, Besenkammer, Generatorraum) were
+unreachable because their `obstruction_check` callbacks were TODO stubs returning `""`
+— and the serializer treats anything `!= "Free"` as **blocked**. They're now gated
+behind the `korridor_offen` flag via a shared `_deep_locked(gs)` helper
+(`game_obstruction_check_functions.py`), and the **opener** is the new steel door
+`o_stahltuer` in the Höhle (`anwenden o_stahltuer` → sets `korridor_offen`). Also fixed
+the Werbeplakat secret door (ubahn2↔solaranlage), a duplicate obstruction def, and a
+Höhle↔Korridor direction asymmetry. ⚠️ **Gotcha for any new passage:** an
+`obstruction_check` must return `"Free"` (not `""`) when passable, or the way silently
+vanishes from *Umgebung*. GHOSTMODE (`utils.py`) nulls all obstruction checks, so it
+masks this.
+
+**Next — bring the dungeon to life (game-design phase):** step by step populate the
+deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
+via flags (model them on `korridor_offen`/`o_stahltuer`: a `*_offen` flag in
+`services/world.py` `GameFlags`, an `obstruction_check` gating on it, and an
+object-`apply`/reveal that toggles it). Also outstanding: in-browser validation of the
+zombie LLM paths and the `"öffne die Stahltür"` parse; balancing the trust/energy
+thresholds; optional `gib <obj> an <NPC>` verb. Backlog: `docs/BACKLOG.md` (optional CLI
+front-end — now feasible since the engine is GUI-free; typed `GameSession`; retire the
+flag-mirror shim; remove dead verbs/`emit_*`; fix the long-broken `create_world.py`).
 
 Refactor history: `docs/REFACTORING-2026-06-24-webserver.md` (Step 1),
 `docs/REFACTORING-2026-06-25-gamestate.md` (Step 2),
