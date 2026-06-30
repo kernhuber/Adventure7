@@ -118,10 +118,18 @@ def w_kontrollraum_ubahn2_obstruction_check(gs: "GameState") -> str:
     return _deep_locked(gs)
 
 def w_ubahn2_ubahnschacht_obstruction_check(gs: "GameState") -> str:
-    return _deep_locked(gs, "Der Zugang zum U-Bahn-Schacht ist versperrt.")
+    # Der U-Bahn-Wagen versperrt am zweiten Bahnsteig den schmalen Durchgang zum Schacht.
+    # Nur wenn er an Bahnsteig 1 wartet (wagen_ubahn2 == False), ist der Weg frei - dann
+    # blendet ihn _shuttle_wagon() in der Umgebung ein (visible). Gesteuert wird der Wagen
+    # über die U-Bahn-Steuerung (Kontrollraum) bzw. den Türschliesser (im Wagen).
+    if not _F(gs).wagen_ubahn2:
+        return "Free"
+    return "Der wartende U-Bahn-Wagen versperrt den schmalen Durchgang zum U-Bahn-Schacht."
 
 def w_ubahnschacht_ubahn2_obstruction_check(gs: "GameState") -> str:
-    return _deep_locked(gs)
+    # Rückweg aus dem Schacht auf den Bahnsteig ist immer frei (kein Soft-Lock, falls der
+    # Wagen zurückkehrt, während man im Schacht ist).
+    return "Free"
 
 def w_ubahn_schacht_korridor_obstruction_check(gs: "GameState") -> str:
     return _deep_locked(gs)

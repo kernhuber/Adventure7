@@ -258,7 +258,8 @@
       ],
       "objects": [
         "o_schalter_kontrollraum",
-        "o_manual"
+        "o_manual",
+        "o_u_bahn_steuerung"
       ]
     },
     "p_ubahn_schacht": {
@@ -622,7 +623,6 @@
       "destination": "p_ubahn2",
       "text_direction": "zu U-Bahn-2",
       "description": "Ein geheimer Weg in den Untergrund",
-      "visible": "false",
       "obstruction_check": "game_obstruction_check_functions.w_solaranlage_ubahn2_obstruction_check",
       "way_prompt_f": "way_prompts.w_solaranlage_ubahn2_prompt_f"
     },
@@ -631,7 +631,6 @@
       "destination": "p_solaranlage",
       "text_direction": "zu Solaranlage",
       "description": "Ein geheimer Weg zur Oberfläche",
-      "visible": false,
       "obstruction_check": "game_obstruction_check_functions.w_ubahn2_solaranlage_obstruction_check",
       "way_prompt_f": "way_prompts.w_ubahn2_solaranlage_prompt_f"
     },
@@ -1336,9 +1335,7 @@
       "examine": "Ein großer, roter Schalter an der Wand. Darüber ein Schild: 'Notfall-Schalter 1/2 - Synchrone Aktivierung erforderlich'.",
       "help_text": "Dieser Schalter scheint ein Gegenstück zu haben. Beide müssen gleichzeitig aktiviert werden.",
       "callnames": [
-        "Kontrollraumschalter",
-        "Schalter",
-        "Notfallschalter"
+        "Kontrollraumschalter"
       ],
       "ownedby": "p_kontrollraum",
       "fixed": true,
@@ -1353,9 +1350,7 @@
       "examine": "Ein großer, roter Schalter an der Wand. Darüber ein Schild: 'Notfall-Schalter 2/2 - Synchrone Aktivierung erforderlich'.",
       "help_text": "Dieser Schalter scheint ein Gegenstück zu haben. Beide müssen gleichzeitig aktiviert werden.",
       "callnames": [
-        "Generatorraumschalter",
-        "Schalter",
-        "Notfallschalter"
+        "Generatorraumschalter"
       ],
       "ownedby": "p_generatorraum",
       "fixed": true,
@@ -1370,13 +1365,7 @@
       "examine": "Ein abgegriffenes Betriebshandbuch der Anlage. Auf dem Umschlag steht 'Notfall-Betrieb - Bedienungsanleitung'. Es sieht so aus, als stünde darin, wie man die Anlage wieder in Gang bringt.",
       "help_text": "Vielleicht solltest du es lesen? Versuche 'lies das Manual'.",
       "callnames": [
-        "Manual",
-        "Gebrauchsanweisung",
-        "Bedienungsanleitung",
-        "Betriebsanleitung",
-        "Betriebshandbuch",
-        "Handbuch",
-        "Anleitung"
+        "Manual"
       ],
       "ownedby": "p_kontrollraum",
       "fixed": false,
@@ -1405,6 +1394,21 @@
       "reveal_f": null,
       "take_f": null,
       "prompt_f": "object_prompts.o_stahltuer_prompt_f"
+    },
+    "o_u_bahn_steuerung": {
+      "name": "o_u_bahn_steuerung",
+      "examine": "Ein Schalter auf dem \"Bahnhof 1\" und \"Bahnhof 2\" steht",
+      "help_text": "",
+      "callnames": [
+        "U-Bahn-Steuerung"
+      ],
+      "ownedby": "p_kontrollraum",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "game_apply_functions.o_u_bahn_steuerung_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "object_prompts.o_u_bahn_steuerung_prompt_f"
     }
   },
   "_editor": {

@@ -176,8 +176,22 @@ def p_solaranlage_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return ""
 
 def p_kontrollraum_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
-    # TODO: implement callback
-    return ""
+    rv = """
+Kontrollraum
+============
+- Der Kontrollraum der kleinen U-Bahn-Anlage.
+- An den Wänden hängen Schalttafeln, Monitore und vergilbte Betriebspläne.
+- Auf einem Pult liegt ein abgegriffenes Betriebshandbuch (Manual) - man kann es mitnehmen und lesen.
+- An der Wand sitzt ein großer roter Notfall-Schalter (Kontrollraumschalter).
+- Daneben steht die U-Bahn-Steuerung mit einem Hebel ('Bahnsteig 1' / 'Bahnsteig 2').
+"""
+    if _F(gs).schalter_kontrollraum:
+        rv += "- Der Notfall-Schalter leuchtet grün (aktiviert).\n"
+    if _F(gs).wagen_ubahn2:
+        rv += "- Die U-Bahn-Steuerung steht auf 'Bahnsteig 2' - der Wagen wartet am zweiten Bahnsteig.\n"
+    else:
+        rv += "- Die U-Bahn-Steuerung steht auf 'Bahnsteig 1' - der Wagen wartet am ersten Bahnsteig.\n"
+    return rv
 
 def p_ubahn_schacht_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback

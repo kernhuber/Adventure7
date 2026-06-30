@@ -50,24 +50,56 @@ def o_salami_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None,
 def o_geheimzahl_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     return "Ich glaube, du meinst etwas anderes - die Geheimzahl kann ich nicht anwenden!"
 
-def o_tuerschliesser_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
-    if pl.location != gs.places["p_wagen"]:
-        return "Hier ist kein Türschließer"
+def _shuttle_wagon(gs: GameState) -> bool:
+    """Schaltet den U-Bahn-Wagen zwischen Bahnsteig 1 (p_ubahn) und Bahnsteig 2 (p_ubahn2)
+    um und aktualisiert ALLE abhängigen Wege. Liefert zurück, ob der Wagen nun an
+    Bahnsteig 2 steht.
 
-    if _F(gs).wagen_ubahn2:
-        _F(gs).wagen_ubahn2 = False
-        gs.ways["w_wagen_ubahn"].visible = True
-        gs.ways["w_wagen_ubahn2"].visible = False
-        gs.ways["w_ubahn_wagen"].visible = True
-        gs.ways["w_ubahn2_wagen"].visible = False
-        return "Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und fährt zurück zum ersten Bahnsteig. Die Tür öffnet sich wieder."
-    else:
-        _F(gs).wagen_ubahn2 = True
-        gs.ways["w_wagen_ubahn"].visible = False
-        gs.ways["w_wagen_ubahn2"].visible = True
-        gs.ways["w_ubahn_wagen"].visible = False
-        gs.ways["w_ubahn2_wagen"].visible = True
+    Gemeinsam genutzt vom Türschliesser im Wagen UND der U-Bahn-Steuerung im Kontrollraum
+    (beide kann auch der Zombie bedienen). Steht der Wagen an Bahnsteig 1, gibt er am
+    zweiten Bahnsteig den Durchgang zum U-Bahn-Schacht frei (sichtbar + begehbar).
+    """
+    at_ubahn2 = not _F(gs).wagen_ubahn2
+    _F(gs).wagen_ubahn2 = at_ubahn2
+    # Ein-/Aussteigen nur am Bahnsteig, an dem der Wagen gerade steht
+    gs.ways["w_ubahn_wagen"].visible = not at_ubahn2
+    gs.ways["w_wagen_ubahn"].visible = not at_ubahn2
+    gs.ways["w_ubahn2_wagen"].visible = at_ubahn2
+    gs.ways["w_wagen_ubahn2"].visible = at_ubahn2
+    # Schacht-Durchgang in U-Bahn-2: nur sichtbar, wenn der Wagen WEG ist (Bahnsteig 1).
+    # (Begehbarkeit erzwingt zusätzlich w_ubahn2_ubahnschacht_obstruction_check.)
+    gs.ways["w_ubahn2_ubahnschacht"].visible = not at_ubahn2
+    return at_ubahn2
+
+
+def o_tuerschliesser_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    if pl is not None and pl.location != gs.places["p_wagen"]:
+        return "Hier ist kein Türschließer"
+    at_ubahn2 = _shuttle_wagon(gs)
+    if at_ubahn2:
         return "Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und hält nach kurzer Fahrt an einem zweiten Bahnsteig. Die Tür öffnet sich wieder."
+    return "Die Tür schließt sich. Der Wagen setzt sich in Bewegung, und fährt zurück zum ersten Bahnsteig. Die Tür öffnet sich wieder."
+
+
+def o_u_bahn_steuerung_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    """Die U-Bahn-Steuerung im Kontrollraum: ruft den Wagen fern an den jeweils anderen
+    Bahnsteig. Anders als der Türschliesser (der den Bediener mitnimmt) bleibt man hier
+    stehen - so kann man den Wagen von Bahnsteig 2 wegschicken und dort den Durchgang zum
+    U-Bahn-Schacht freilegen."""
+    if pl is not None and pl.location != gs.places["p_kontrollraum"]:
+        return "Hier gibt es keine U-Bahn-Steuerung."
+    at_ubahn2 = _shuttle_wagon(gs)
+    if at_ubahn2:
+        return (
+            "Du legst den Hebel auf 'Bahnsteig 2'. Auf einem Monitor siehst du, wie der "
+            "U-Bahn-Wagen anrollt und am zweiten Bahnsteig zum Stehen kommt - er verdeckt "
+            "dort nun wieder den Durchgang zum U-Bahn-Schacht."
+        )
+    return (
+        "Du legst den Hebel auf 'Bahnsteig 1'. Auf einem Monitor siehst du, wie der "
+        "U-Bahn-Wagen zum ersten Bahnsteig zurückrollt. ***Am zweiten Bahnsteig gibt er "
+        "einen schmalen Durchgang frei - er führt in einen U-Bahn-Schacht!***"
+    )
 
 def o_pizzaautomat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     return "Wie soll ich den Pizza-Automaten an sich anwenden? Ich verstehe nicht, was du meinst!"

@@ -595,6 +595,21 @@ Notfall-Schalter (Kontrollraum)
     return r
 
 
+def o_u_bahn_steuerung_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    pos = "Bahnsteig 2" if _F(gs).wagen_ubahn2 else "Bahnsteig 1"
+    return f"""
+U-Bahn-Steuerung
+================
+- Ein Steuerpult mit einem großen Hebel, beschriftet mit 'Bahnsteig 1' und 'Bahnsteig 2'
+- Damit lässt sich der U-Bahn-Wagen fernsteuern - er rollt zum gewählten Bahnsteig
+- Der Hebel steht gerade auf '{pos}'
+- Man kann die Steuerung betätigen/umlegen/anwenden, um den Wagen zu rufen
+  (Synonyme: U-Bahn-Steuerung, Steuerung, Steuerpult, Hebel)
+- Wichtig: Steht der Wagen an Bahnsteig 1, gibt er am zweiten Bahnsteig einen Durchgang
+  zum U-Bahn-Schacht frei
+"""
+
+
 def o_schalter_generatorraum_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     r = """
 Notfall-Schalter (Generatorraum)
