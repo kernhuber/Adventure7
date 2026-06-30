@@ -164,6 +164,7 @@ class GameFlags:
     falltuer_offen: bool = False
     werbeplakat_offen: bool = False
     korridor_offen: bool = False
+    kontrollraum_offen: bool = False   # Tür hinter dem Werbeplakat (U-Bahn-2 -> Kontrollraum)
     game_over: bool = False
     game_won: bool = False
     time: int = 0

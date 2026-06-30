@@ -658,12 +658,12 @@ Betriebshandbuch (Manual)
 
 
 def o_werbeplakat_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
-    if gs.werbeplakat_offen:
-        return """ 
+    if _F(gs).kontrollraum_offen:
+        return """
 Werbeplakat
 ===========
 - Ein Werbeplakat, das eigentlich eine Tür ist
-- Es steht offen und gibt einen Gang frei
+- Es steht offen und gibt einen kurzen Gang frei, der in einen Kontrollraum führt
 - Auf dem Plakat ist Werbung für Unterhaltungstechnik aus den 80er Jahren (Videorekorder, Stereoanlagen, Heimcomputer)
 - In diesem Kontext kann man zum Werbeplakat auch Plakat, Tür, oder Plakattür sagen
 - Man kann es schliessen, zumachen, zuklappen oder ähnliches

@@ -556,20 +556,19 @@ def o_werbeplakat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject 
     #
     #  Are we in ubahn2?
     #
-    if pl.location.name != "p_ubahn2":
+    if pl is not None and pl.location.name != "p_ubahn2":
         return "Sowas gibt es hier nicht!"
 
-    if gs.werbeplakat_offen:
-        gs.falltuer_offen = False
-        gs.werbeplakat_offen = False
-        gs.ways["w_ubahn2_solaranlage"].visible = False
-        gs.ways["w_solaranlage_ubahn2"].visible = False
-
-        return "Die Geheimtür hinter dem Plakat ist nun verschlossen. Auch die Falltür am anderen Ende des Weges ist zu."
+    # Hinter dem Werbeplakat verbirgt sich die Tür zum Kontrollraum. Das Plakat schaltet
+    # ``kontrollraum_offen`` (gating in game_obstruction_check_functions) und blendet den
+    # Weg in der Umgebung ein/aus. Die Solaranlage/Falltür-Logik bleibt davon unberührt.
+    if _F(gs).kontrollraum_offen:
+        _F(gs).kontrollraum_offen = False
+        gs.ways["w_ubahn2_kontrollraum"].visible = False
+        gs.ways["w_kontrollraum_ubahn2"].visible = False
+        return "Du klappst das Werbeplakat wieder zu. Die Tür dahinter - und der Weg zum Kontrollraum - ist nun verschlossen."
     else:
-        gs.falltuer_offen = True
-        gs.werbeplakat_offen = True
-        gs.ways["w_ubahn2_solaranlage"].visible = True
-        gs.ways["w_solaranlage_ubahn2"].visible = True
-
-        return "Du hast eine Geheimtür geöffnet, die hinter dem Plakat versteckt war! Dahinter ein Gang - und ein Rumpeln, als würde auch am anderen Ende des Ganges eine Tür aufgehen!"
+        _F(gs).kontrollraum_offen = True
+        gs.ways["w_ubahn2_kontrollraum"].visible = True
+        gs.ways["w_kontrollraum_ubahn2"].visible = True
+        return "Du ziehst am Werbeplakat - dahinter kommt eine versteckte Tür zum Vorschein! ***Sie gibt einen kurzen Gang frei, der in einen Kontrollraum führt.***"

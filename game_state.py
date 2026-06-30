@@ -50,6 +50,7 @@ class GameState(GameVerbsMixin, GameTurnMixin):
         "falltuer_offen",
         "werbeplakat_offen",
         "korridor_offen",
+        "kontrollraum_offen",
         "game_over",
         "game_won",
         "time",

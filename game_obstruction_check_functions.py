@@ -112,10 +112,18 @@ def w_ubahn2_solaranlage_obstruction_check(gs: "GameState") -> str:
     return "Free"
 
 def w_ubahn2_kontrollraum_obstruction_check(gs: "GameState") -> str:
-    return _deep_locked(gs, "Die Tür zum Kontrollraum ist verschlossen.")
+    # Die Tür zum Kontrollraum ist hinter dem Werbeplakat in U-Bahn-2 verborgen.
+    # Das Plakat (o_werbeplakat_apply_f) schaltet ``kontrollraum_offen``.
+    if _F(gs).kontrollraum_offen:
+        return "Free"
+    return "Hier ist keine Tür zu sehen - nur ein Werbeplakat an der Wand."
 
 def w_kontrollraum_ubahn2_obstruction_check(gs: "GameState") -> str:
-    return _deep_locked(gs)
+    # Rückweg: solange die Plakat-Tür offen ist, kommt man zurück. (Sie lässt sich nur
+    # von der U-Bahn-2-Seite schließen, also kein Soft-Lock im Kontrollraum.)
+    if _F(gs).kontrollraum_offen:
+        return "Free"
+    return "Die Tür hinter dem Werbeplakat ist geschlossen."
 
 def w_ubahn2_ubahnschacht_obstruction_check(gs: "GameState") -> str:
     # Der U-Bahn-Wagen versperrt am zweiten Bahnsteig den schmalen Durchgang zum Schacht.

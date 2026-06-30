@@ -6,6 +6,28 @@ Captured ideas for after the current refactoring series (Steps 1–3 done; see t
 
 ---
 
+## Planned — Save / Load (whole-game serialization)
+
+Requested 2026-07-01. Persist and restore a full game to/from a single JSON file —
+**not just the flags**, but the complete state of `GameState` and every player/NPC.
+
+Design (per the author):
+- Each player/NPC class gets its own **`save()` / `load()`** methods — and these are
+  declared in the **(duck-type) interface** (`services/interfaces.py`) so every actor
+  is expected to implement them. The Zombie/Dog must persist their full state, e.g. the
+  **Notizbuch (`notes`)**, `last_chat`, `trust`, `zombie_state`, `zombie_thirst`,
+  `dog_state`, etc. — not only the global flags.
+- A **saver** walks `GameState` (flags via `GameFlags`, time, ways' visibility, object
+  states/locations, …) and calls each player's `save()`, collects everything, and
+  writes one JSON file. A **loader** does the inverse: rebuild `GameState`, then hand
+  each actor its slice via `load()`.
+- The saver/loader only orchestrate; the per-actor detail lives in the actors' methods.
+
+Watch-outs: object visibility/`ownedby`/`hidden` and **way `visible`** are mutated at
+runtime (doors, the wagon, the poster) — they must be saved, not just regenerated from
+`world.json`. Cross-references (a player's `location`, an object's `ownedby`) need to be
+serialized by id and re-linked on load.
+
 ## Near-term — understand & document the zombie NPC
 
 `npc_zombie_state.py` was written autonomously by Claude Code and is LLM-driven; the
