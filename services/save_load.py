@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import functools
 import itertools
+import json
 import weakref
 from typing import Any, Iterable
 
@@ -113,3 +114,110 @@ class LoadContext:
     def resolve_all(self, ids: Iterable[str]) -> list[Any]:
         """Resolve a list of ids to instances (unknown ids are skipped)."""
         return [self._by_id[i] for i in ids if i in self._by_id]
+
+
+# --- Orchestration: whole-game save / load ------------------------------------------
+SAVE_VERSION = 1
+
+
+def _is_savable(obj: Any) -> bool:
+    return all(hasattr(obj, a) for a in ("STORE_TYPE", "store_id", "save", "load"))
+
+
+def save_game(gs: Any) -> dict:
+    """Collect the full game into a version'd blob of self-describing envelopes.
+
+    Walks the live GameState graph (ways/objects/players) plus the GameState root and the
+    LLM — the live graph is the authoritative "what exists now". Returns a JSON-able dict;
+    file I/O is the caller's concern.
+    """
+    envelopes: list[dict] = []
+
+    def emit(obj: Any) -> None:
+        if _is_savable(obj):
+            envelopes.append({"type": obj.STORE_TYPE, "id": obj.store_id(), "data": obj.save()})
+
+    emit(gs)                                   # GameState root (type "GameState")
+    emit(getattr(gs, "llm", None))             # LLM caches (if it implements Storable)
+    for w in gs.ways.values():
+        emit(w)
+    for o in gs.objects.values():
+        emit(o)
+    for p in gs.players:                       # non-savable players (e.g. an active explosion) are skipped
+        emit(p)
+
+    return {"version": SAVE_VERSION, "envelopes": envelopes}
+
+
+def load_game(blob: dict, *, llm: Any = None) -> Any:
+    """Rebuild a GameState from a save blob and return it (caller swaps session['game']).
+
+    Two phases: (1) build the base world via WorldLoader and instantiate the saved players;
+    (2) call load() everywhere so each object restores its values and resolves its refs via
+    the LoadContext. GameState is loaded LAST (rebuilds place_objects from ownedby). ``llm``
+    is the live LLM instance to reuse (its client stays live); pass None only in the fallback
+    where GameState builds its own.
+    """
+    from game_state import GameState
+    from player_state import PlayerState
+
+    if blob.get("version") != SAVE_VERSION:
+        raise ValueError(f"Unsupported save version: {blob.get('version')!r}")
+    envelopes = blob["envelopes"]
+
+    # Base world (callables + static structure + fresh flags; players == []).
+    gs = GameState(llm=llm)
+    ctx = LoadContext()
+    for p in gs.places.values():
+        ctx.register(p.name, p)
+    for w in gs.ways.values():
+        ctx.register(w.store_id(), w)
+    for o in gs.objects.values():
+        ctx.register(o.store_id(), o)
+
+    # Phase 1: instantiate the saved players (the base has none) and register them. They are
+    # created via the normal constructor (name + resolved location) so @savable registers
+    # them; the rest is overlaid in phase 2.
+    gs_env = None
+    for e in envelopes:
+        t = e["type"]
+        if t == "GameState":
+            gs_env = e
+            continue
+        cls = class_for(t)
+        if cls is not None and issubclass(cls, PlayerState):
+            loc = ctx.place(e["data"].get("location"))
+            inst = cls(name=e["id"], location=loc)
+            ctx.register(e["id"], inst)
+
+    # Phase 2: load everything except the GameState root; the LLM (live singleton) gets its
+    # caches restored in place.
+    for e in envelopes:
+        t, eid = e["type"], e["id"]
+        if t == "GameState":
+            continue
+        if t == "GeminiInterface":
+            if hasattr(gs.llm, "load"):
+                gs.llm.load(e["data"], ctx)
+            continue
+        target = ctx.by_id(eid)
+        if target is not None and hasattr(target, "load"):
+            target.load(e["data"], ctx)
+
+    # GameState last: flags, drop destroyed objects, player order, rebuild place_objects.
+    if gs_env is not None:
+        gs.load(gs_env["data"], ctx)
+
+    return gs
+
+
+def save_to_file(gs: Any, path: str) -> None:
+    """Write a full game save to ``path`` as JSON."""
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(save_game(gs), f, ensure_ascii=False, indent=2)
+
+
+def load_from_file(path: str, *, llm: Any = None) -> Any:
+    """Read a game save from ``path`` and rebuild the GameState (caller swaps the ref)."""
+    with open(path, encoding="utf-8") as f:
+        return load_game(json.load(f), llm=llm)

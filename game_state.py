@@ -386,3 +386,45 @@ class GameState(GameVerbsMixin, GameTurnMixin):
     def get_flags(self) -> GameFlags:
         """Access to the structured flags container (in addition to legacy attributes)."""
         return self._flags
+
+    # --- Storable (Save/Load) -----------------------------------------------------------
+    # GameState ist die Wurzel des Szenen-Graphen. Es ist bewusst NICHT @savable: der Loader
+    # baut die Basis-Welt explizit über den WorldLoader neu (Callables/statische Struktur)
+    # und ruft dann load() zum Überlagern des dynamischen Zustands auf. Die einzelnen
+    # Objekte/Wege/Spieler haben eigene Envelopes; GameState speichert die Flags, das aktuelle
+    # Objekt-Set und die Spieler-Reihenfolge.
+    STORE_TYPE = "GameState"
+
+    def store_id(self) -> str:
+        return "gamestate"
+
+    def save(self) -> dict:
+        import dataclasses
+        return {
+            "flags": dataclasses.asdict(self.get_flags()),
+            "object_ids": list(self.objects.keys()),
+            "player_order": [p.store_id() for p in self.players],
+        }
+
+    def load(self, data, ctx) -> None:
+        from place import Place
+        # 1) Flags zurückspielen. GameFlags ist die Quelle der Wahrheit; das Schatten-
+        #    Attribut auf GameState wird ebenfalls gesetzt (der Flag-Mirror liest beides).
+        gf = self.get_flags()
+        for k, v in data.get("flags", {}).items():
+            setattr(gf, k, v)
+            object.__setattr__(self, k, v)
+        # 2) Zur Laufzeit zerstörte Objekte entfernen (in der Basis-Welt, aber nicht im Save).
+        saved_ids = set(data.get("object_ids", []))
+        for oid in list(self.objects.keys()):
+            if oid not in saved_ids:
+                self.objects.pop(oid, None)
+        # 3) Spielerliste in gespeicherter Reihenfolge (Instanzen liegen im LoadContext).
+        self.players = [ctx.player(pid) for pid in data.get("player_order", []) if ctx.player(pid) is not None]
+        # 4) place_objects aus ownedby neu aufbauen (eine autoritative Quelle: object.ownedby).
+        for pl in self.places.values():
+            pl.place_objects = []
+        for obj in self.objects.values():
+            owner = getattr(obj, "ownedby", None)
+            if isinstance(owner, Place):
+                owner.place_objects.append(obj)
