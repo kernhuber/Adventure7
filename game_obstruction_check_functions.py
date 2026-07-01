@@ -105,11 +105,11 @@ def w_solaranlage_ubahn2_obstruction_check(gs: "GameState") -> str:
         return "Die Falltür ist fest verschlossen. Wohin sie nur führen mag? Und wie öffnet man sie?"
 
 def w_ubahn2_solaranlage_obstruction_check(gs: "GameState") -> str:
-    # Der Weg ist die Geheimtür hinter dem Werbeplakat. Verstecken/Aufdecken regelt die
-    # Sichtbarkeit (o_werbeplakat_apply_f schaltet ``visible``); ist die Tür sichtbar,
-    # ist sie auch begehbar. Wichtig: "Free" zurückgeben (nicht ""), sonst wertet die
-    # Serialisierung den Weg als blockiert und er taucht nicht in der Umgebung auf.
-    return "Free"
+    # GEPARKT (2026-07-01): Das Werbeplakat öffnet inzwischen den Kontrollraum, nicht mehr
+    # die Solaranlage. Dieser Weg hat derzeit KEINEN eigenen Öffner und bleibt daher
+    # geschlossen, bis die Solaranlage neu designt ist (dann hier auf ein passendes Flag
+    # gaten). Die Solaranlage ist weiterhin über das Plateau erreichbar.
+    return "Von hier führt (noch) kein offener Weg zur Solaranlage."
 
 def w_ubahn2_kontrollraum_obstruction_check(gs: "GameState") -> str:
     # Die Tür zum Kontrollraum ist hinter dem Werbeplakat in U-Bahn-2 verborgen.
