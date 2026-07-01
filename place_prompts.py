@@ -52,6 +52,7 @@ Höhle
         rv = f"""{rv}
 - Eine grosse, schwere Stahltür versperrt einen Weg.
 - Durch ein kleines, vergittertes Fenster in der Stahtür kann man einen Korridor auf der anderen Seite erkennen.
+- Auf dieser Seite sitzt an der Tür ein großes Handrad mit einem Riegel - dreht man daran, lässt sich die Tür von Hand entriegeln. Wichtig: diesen Öffnungs-Mechanismus erwähnen.
 """
 
     if _F(gs).hauptschalter:
