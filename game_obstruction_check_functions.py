@@ -139,26 +139,35 @@ def w_ubahnschacht_ubahn2_obstruction_check(gs: "GameState") -> str:
     # Wagen zurückkehrt, während man im Schacht ist).
     return "Free"
 
+# --- Innere Dungeon-Wege: frei begehbar ---------------------------------------------
+# Das Dungeon hat ZWEI Eingänge, die je ihr eigenes Rätsel als Gate haben:
+#   (1) Höhle -> Korridor: die Stahltür (korridor_offen), s. w_hoehle_korridor/_korridor_hoehle.
+#   (2) U-Bahn-Schacht -> Korridor: das Wagen-Rätsel (der Wagen muss weg sein, um überhaupt
+#       in den Schacht zu kommen) - daher ist der Schritt Schacht->Korridor selbst frei.
+# Innerhalb des Dungeons (Korridor-Hub <-> Labor/Bibliothek/Besenkammer, Labor <->
+# Generatorraum) läuft man frei. Einzelne Türen können später auf ein eigenes Flag
+# gegatet werden (Rätsel) - dann hier "Free" durch die Bedingung ersetzen.
+
 def w_ubahn_schacht_korridor_obstruction_check(gs: "GameState") -> str:
-    return _deep_locked(gs)
+    return "Free"
 
 def w_labor_korridor_obstruction_check(gs: "GameState") -> str:
-    return _deep_locked(gs)
+    return "Free"
 
 def w_korridor_labor_obstruction_check(gs: "GameState") -> str:
-    return _deep_locked(gs)
+    return "Free"
 
 def w_korridor_bibliothek_obstruction_check(gs: "GameState") -> str:
-    return _deep_locked(gs)
+    return "Free"
 
 def w_korridor_besenkammer_obstruction_check(gs: "GameState") -> str:
-    return _deep_locked(gs)
+    return "Free"
 
 def w_besenkammer_korridor_obstruction_check(gs: "GameState") -> str:
-    return _deep_locked(gs)
+    return "Free"
 
 def w_generatorraum_labor_obstruction_check(gs: "GameState") -> str:
-    return _deep_locked(gs)
+    return "Free"
 
 def w_labor_generatorraum_obstruction_check(gs: "GameState") -> str:
-    return _deep_locked(gs)
+    return "Free"

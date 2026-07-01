@@ -157,7 +157,7 @@ Zweite U-Bahn Station
 - Keine Schmierereien oder Graffitis
 - Der Boden ist mit Marmorfliesen gefliest.
 - Neonröhren tauchen alles in angenehmes Licht. 
-{'- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind.' if _F(gs).wagen_ubahn2 else ''}
+{'- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind.' if _F(gs).wagen_ubahn2 else '- Dort, wo sonst der U-Bahn-Wagen hält, gibt ein schmaler, dunkler Durchgang den Weg in einen U-Bahn-Schacht frei. Es ist wichtig, diesen Durchgang zu erwähnen.'}
 - Wichtig: du darfst den Hund in der Beschreibung ausschließlich nur erwähnen, wenn er im Wagen (p_wagen) oder hier am Ort ist. In allen 
   anderen Fällen kann man den Hund von hier nicht sehen.
     """
@@ -194,8 +194,15 @@ Kontrollraum
     return rv
 
 def p_ubahn_schacht_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
-    # TODO: implement callback
-    return ""
+    return """
+U-Bahn-Schacht
+==============
+- Ein enger, dunkler Wartungsschacht neben dem zweiten Bahnsteig.
+- An den Wänden laufen dicke Kabelstränge und rostige Rohre entlang.
+- Es riecht nach Staub und altem Öl; von irgendwo tropft Wasser.
+- Zurück führt der Weg auf den Bahnsteig (U-Bahn-2), in die andere Richtung
+  geht es tiefer in einen Korridor der Anlage.
+"""
 
 def p_korridor_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
