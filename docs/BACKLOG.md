@@ -8,7 +8,8 @@ Captured ideas for after the current refactoring series (Steps 1–3 done; see t
 
 ## Planned — Save / Load (whole-game serialization)
 
-Requested 2026-07-01. Persist and restore a full game to/from a single JSON file —
+Requested 2026-07-01. **Full design: `docs/SAVE-LOAD-DESIGN.md`** (agreed decisions +
+per-class field tables). Persist and restore a full game to/from a single JSON file —
 **not just the flags**, but the complete state of `GameState` and every player/NPC.
 
 Design (per the author):
