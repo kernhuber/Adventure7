@@ -6,6 +6,7 @@ from player_state import PlayerState
 from dataclasses import dataclass, field
 from typing import List, Optional
 from enum import Enum, auto
+from services.save_load import savable
 from utils import dprint, dl, json_cmd_simple, return_do_nothing
 
 
@@ -39,6 +40,7 @@ def _F(gs):
     return gs.get_flags()
 
 
+@savable
 @dataclass
 class NPCZombieState(PlayerState):
     zombie_state: ZombieState = ZombieState.AWAKENING
@@ -58,6 +60,54 @@ class NPCZombieState(PlayerState):
     remembered_control_room: bool = False  # Erinnerung an den Kontrollraum (in der U-Bahn ausgelöst)
     player_last_seen_location: Optional[str] = None
     nogo_places: List[str] = field(default_factory=lambda: ["p_start", "p_dach"])
+
+    # --- Storable (Save/Load) -------------------------------------------------------
+    # Erweitert die PlayerState-Basis (name/location/inventory/...) um den kompletten
+    # Zombie-Zustand INKL. Gedächtnis: Notizbuch (notes) + episodisches Gedächtnis
+    # (last_chat). zombie_state ist ein Enum -> als .name gespeichert. Ohne diese Felder
+    # verhielte sich der Zombie nach dem Laden nicht wie zuvor.
+    def save(self) -> dict:
+        d = super().save()
+        d.update({
+            "zombie_state": self.zombie_state.name,
+            "zombie_state_message": self.zombie_state_message,
+            "notes": self.notes,
+            "gameengine_returns": self.gameengine_returns,
+            "last_chat": self.last_chat,
+            "move_cooldown": self.move_cooldown,
+            "zombie_thirst": self.zombie_thirst,
+            "turn_counter": self.turn_counter,
+            "trust": self.trust,
+            "turns_since_player_contact": self.turns_since_player_contact,
+            "cooperation_agreed": self.cooperation_agreed,
+            "awaiting_share_response": self.awaiting_share_response,
+            "share_agreed": self.share_agreed,
+            "share_cooldown": self.share_cooldown,
+            "remembered_control_room": self.remembered_control_room,
+            "player_last_seen_location": self.player_last_seen_location,
+            "nogo_places": list(self.nogo_places),
+        })
+        return d
+
+    def load(self, data, ctx) -> None:
+        super().load(data, ctx)
+        self.zombie_state = ZombieState[data["zombie_state"]]
+        self.zombie_state_message = data.get("zombie_state_message", self.zombie_state_message)
+        self.notes = data.get("notes", self.notes)
+        self.gameengine_returns = data.get("gameengine_returns", self.gameengine_returns)
+        self.last_chat = data.get("last_chat", self.last_chat)
+        self.move_cooldown = data.get("move_cooldown", self.move_cooldown)
+        self.zombie_thirst = data.get("zombie_thirst", self.zombie_thirst)
+        self.turn_counter = data.get("turn_counter", self.turn_counter)
+        self.trust = data.get("trust", self.trust)
+        self.turns_since_player_contact = data.get("turns_since_player_contact", self.turns_since_player_contact)
+        self.cooperation_agreed = data.get("cooperation_agreed", self.cooperation_agreed)
+        self.awaiting_share_response = data.get("awaiting_share_response", self.awaiting_share_response)
+        self.share_agreed = data.get("share_agreed", self.share_agreed)
+        self.share_cooldown = data.get("share_cooldown", self.share_cooldown)
+        self.remembered_control_room = data.get("remembered_control_room", self.remembered_control_room)
+        self.player_last_seen_location = data.get("player_last_seen_location", self.player_last_seen_location)
+        self.nogo_places = list(data.get("nogo_places", self.nogo_places))
 
     def can_zombie_go(self, gs: game_state.GameState, plc_name: str) -> bool:
         if plc_name in self.nogo_places:

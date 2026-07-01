@@ -7,6 +7,7 @@ from collections import deque
 from typing import List, Deque, Any
 from enum import Enum, auto
 import random
+from services.save_load import savable
 from utils import tw_print, dprint, dl, json_cmd_simple, return_do_nothing
 
 class DogState(Enum):
@@ -25,6 +26,7 @@ class DogFight(Enum):
 #
 # Our NPC Player - the Doggo
 #
+@savable
 @dataclass
 class NPCDogState(PlayerState):
     from place import Place
@@ -42,6 +44,38 @@ class NPCDogState(PlayerState):
     nogo_places: List[str] = field(default_factory=lambda: ["p_dach","p_ubahn2"]) # Dog can't go to these places.
     way_home: Deque[Place] = field(default_factory=deque) # Falls Hund nach Hause geht
 
+    # --- Storable (Save/Load) -------------------------------------------------------
+    # Erweitert die PlayerState-Basis um den Hunde-Zustand INKL. Gedächtnis (last_chat)
+    # und History: next_loc/way_home sind Deques von Orten (= "wo war der Spieler / Weg
+    # nach Hause") -> als Liste von place-ids gespeichert, beim Laden zu deque(Place).
+    def save(self) -> dict:
+        d = super().save()
+        d.update({
+            "growl": self.growl,
+            "dog_state": self.dog_state.name,
+            "dog_state_message": self.dog_state_message,
+            "last_chat": self.last_chat,
+            "command_after_fight": self.command_after_fight,
+            "next_loc": [p.name for p in self.next_loc],
+            "next_loc_wait": self.next_loc_wait,
+            "attack_counter": self.attack_counter,
+            "nogo_places": list(self.nogo_places),
+            "way_home": [p.name for p in self.way_home],
+        })
+        return d
+
+    def load(self, data, ctx) -> None:
+        super().load(data, ctx)
+        self.growl = data.get("growl", self.growl)
+        self.dog_state = DogState[data["dog_state"]]
+        self.dog_state_message = data.get("dog_state_message", self.dog_state_message)
+        self.last_chat = data.get("last_chat", self.last_chat)
+        self.command_after_fight = data.get("command_after_fight", self.command_after_fight)
+        self.next_loc = deque(ctx.resolve_all(data.get("next_loc", [])))
+        self.next_loc_wait = data.get("next_loc_wait", self.next_loc_wait)
+        self.attack_counter = data.get("attack_counter", self.attack_counter)
+        self.nogo_places = list(data.get("nogo_places", self.nogo_places))
+        self.way_home = deque(ctx.resolve_all(data.get("way_home", [])))
 
     def can_dog_go(self, gs: GameState, plc:str)-> bool:
         if plc in self.nogo_places:
