@@ -154,6 +154,17 @@ Höhle↔Korridor direction asymmetry. ⚠️ **Gotcha for any new passage:** an
 vanishes from *Umgebung*. GHOSTMODE (`utils.py`) nulls all obstruction checks, so it
 masks this.
 
+**Dungeon layout & the U-Bahn route (2026-07-01, browser-tested & traversable).** Not a
+single master gate anymore — **two independent entrances**: (1) Höhle→Korridor via the
+steel door (`korridor_offen`); (2) the U-Bahn route — the Werbeplakat in U-Bahn-2 opens
+the **Kontrollraum** (`kontrollraum_offen`); there the **U-Bahn-Steuerung**
+(`o_u_bahn_steuerung`) sends the wagon to platform 1 (`wagen_ubahn2`, shared helper
+`_shuttle_wagon`), which exposes U-Bahn-2↔U-Bahn-Schacht, and U-Bahn-Schacht→Korridor is
+then free. The **inner** dungeon passages now `return "Free"` (roam freely; gate
+individual doors on their own flag later for riddles). `korridor_offen` now gates ONLY
+the Höhle steel door. Control room = manual + Kontrollraumschalter + U-Bahn-Steuerung.
+Room descriptions (`place_prompts.py`) are being filled in room by room.
+
 **Save / Load is implemented** (2026-07-01; design + per-class field tables in
 `docs/SAVE-LOAD-DESIGN.md`). A `Storable` Protocol (`services/interfaces.py`) with an
 `@savable` registry + `LoadContext` and `save_game`/`load_game`/`save_to_file`/

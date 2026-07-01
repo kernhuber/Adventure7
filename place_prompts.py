@@ -207,7 +207,15 @@ U-Bahn-Schacht
 
 def p_korridor_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
-    return ""
+    return """
+Korridor
+========
+- Ein kurzer, staubiger Korridor, von dem einige Türen abgehen
+- Staubig
+- Es riecht muffig nach Staub
+- Weiss gekalkte Wände
+- Trübes Licht durch alte Glühbirnen    
+    """
 
 def p_labor_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
