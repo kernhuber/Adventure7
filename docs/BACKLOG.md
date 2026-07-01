@@ -6,11 +6,17 @@ Captured ideas for after the current refactoring series (Steps 1–3 done; see t
 
 ---
 
-## Planned — Save / Load (whole-game serialization)
+## DONE (2026-07-01) — Save / Load (whole-game serialization)
 
-Requested 2026-07-01. **Full design: `docs/SAVE-LOAD-DESIGN.md`** (agreed decisions +
-per-class field tables). Persist and restore a full game to/from a single JSON file —
-**not just the flags**, but the complete state of `GameState` and every player/NPC.
+Implemented per `docs/SAVE-LOAD-DESIGN.md`. Core in `services/save_load.py` (Storable
+registry, `save_game`/`load_game`, `save_to_file`/`load_from_file`); `save()`/`load()` on
+GameState, the players/NPCs (incl. the zombie/dog memory), objects, ways, and
+GeminiInterface (caches only). Web: text commands `speichere`/`lade` + GUI buttons and a
+named-slot modal. Saves live under `saves/<name>.json` (gitignored). Round-trip +
+idempotency tested; the LLM scene-identity after load is verified in the browser.
+
+Persist and restore a full game to/from a single JSON file — **not just the flags**, but
+the complete state of `GameState` and every player/NPC.
 
 Design (per the author):
 - Each player/NPC class gets its own **`save()` / `load()`** methods — and these are

@@ -1,8 +1,20 @@
 # Save / Load — Design (Bauplan)
 
-Stand 2026-07-01. Bauplan für die Ganzspiel-Serialisierung. Noch **nicht implementiert**
-— dieses Dokument hält die abgestimmten Entscheidungen und die pro-Klasse-Feldlisten
-fest, damit die Umsetzung geradlinig läuft. Lehrmaterial → **Klarheit vor Cleverness**.
+Stand 2026-07-01. Bauplan für die Ganzspiel-Serialisierung. Lehrmaterial → **Klarheit
+vor Cleverness**.
+
+> ✅ **IMPLEMENTIERT (2026-07-01).** Dieses Dokument beschreibt den umgesetzten Entwurf.
+> Umsetzung:
+> - Interface: `services/interfaces.py` (`Storable`).
+> - Registry/Decorator/`LoadContext` + Orchestrierung (`save_game`/`load_game`,
+>   `save_to_file`/`load_from_file`): `services/save_load.py`.
+> - `save()`/`load()` in: `game_state.py` (Wurzel), `gemini_interface.py`
+>   (+`services/adapters.py`, nur Caches), `player_state.py`, `npc_zombie_state.py`,
+>   `npc_dog_state.py`, `game_object.py`, `way.py`.
+> - Web: Text-Befehle `speichere <name>`/`lade <name>` + Buttons/Slot-Modal
+>   (`webserver/command_engine.py`, `webserver/server.py`, `web/save_load.js`).
+> - Spielstände unter `saves/<name>.json` (gitignored). Round-trip + Idempotenz getestet;
+>   die LLM-gestützte Szenen-Identität nach dem Laden im Browser verifizieren.
 
 ## 1. Ziel & harte Anforderungen
 

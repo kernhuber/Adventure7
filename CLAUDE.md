@@ -154,6 +154,15 @@ Höhle↔Korridor direction asymmetry. ⚠️ **Gotcha for any new passage:** an
 vanishes from *Umgebung*. GHOSTMODE (`utils.py`) nulls all obstruction checks, so it
 masks this.
 
+**Save / Load is implemented** (2026-07-01; design + per-class field tables in
+`docs/SAVE-LOAD-DESIGN.md`). A `Storable` Protocol (`services/interfaces.py`) with an
+`@savable` registry + `LoadContext` and `save_game`/`load_game`/`save_to_file`/
+`load_from_file` (`services/save_load.py`); every actor/object/way + GameState + the LLM
+(caches only) serialise the whole graph to one JSON (`saves/<name>.json`, gitignored).
+Triggers: text `speichere <name>`/`lade <name>` and GUI buttons + a named-slot modal
+(`web/save_load.js`). The LLM `narration_cache` is persisted so the scene is identical
+after load. **When adding a new savable field**, add it to that class's `save()`/`load()`.
+
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
 via flags (model them on `korridor_offen`/`o_stahltuer`: a `*_offen` flag in
