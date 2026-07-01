@@ -45,6 +45,8 @@ class AdventureBackend {
                 if (status) status.textContent = '🟢 Verbunden';
                 document.getElementById('user-input').disabled = false;
                 document.getElementById('send-button').disabled = false;
+                const sb = document.getElementById('save-button'); if (sb) sb.disabled = false;
+                const lb = document.getElementById('load-button'); if (lb) lb.disabled = false;
             };
 
             this.ws.onmessage = (event) => {
@@ -154,6 +156,12 @@ class AdventureBackend {
                 // Lesetext (z.B. das Betriebshandbuch) als modales Popup anzeigen.
                 if (typeof showTextPopup === 'function') {
                     showTextPopup(data.title || 'Dokument', data.content || '');
+                }
+                break;
+            case 'slot_list':
+                // Antwort auf den "Laden"-Button: Spielstand-Liste -> Auswahl-Modal.
+                if (typeof renderLoadSlots === 'function') {
+                    renderLoadSlots(data.slots || []);
                 }
                 break;
             case 'info':

@@ -199,6 +199,10 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                         await self.handle_command(websocket, data)
                     #elif message_type == 'minigame_result':  # NEUE
                     #    await self.handle_minigame_result(websocket, data)
+                    elif message_type == 'list_slots':
+                        # GUI "Laden"-Button fragt die vorhandenen Spielstände ab.
+                        from webserver.command_engine import _list_slots
+                        await websocket.send(json.dumps({"type": "slot_list", "slots": _list_slots()}))
                     elif message_type == 'ping':
                         await websocket.send(json.dumps({"type": "pong"}))
                     else:
