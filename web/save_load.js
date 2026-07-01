@@ -94,10 +94,8 @@ window.renderLoadSlots = function (slots) {
             hint.textContent = 'Wähle einen Spielstand:';
             body.appendChild(hint);
             slots.forEach((name) => {
-                const b = _slButton('📂  ' + name, () => {
-                    if (backend) backend.sendCommand('lade ' + name);
-                    _slClose();
-                });
+                // Erst bestätigen (aktueller Spielstand geht verloren), dann laden.
+                const b = _slButton('📂  ' + name, () => _confirmLoad(name, slots));
                 b.style.textAlign = 'left';
                 body.appendChild(b);
             });
@@ -108,5 +106,25 @@ window.renderLoadSlots = function (slots) {
         body.appendChild(row);
     });
 };
+
+// Bestätigung vor dem Laden (nur im GUI-Pfad): der aktuelle, ungespeicherte Spielstand
+// geht dabei verloren. 'Zurück' rendert die Slot-Liste erneut (ohne erneuten Serverabruf).
+function _confirmLoad(name, slots) {
+    _slModal('⚠️ Laden bestätigen', (body) => {
+        const msg = document.createElement('div');
+        msg.style.lineHeight = '1.5';
+        msg.innerHTML = "Der <b>aktuelle Spielstand geht verloren</b> (sofern nicht gespeichert)."
+            + "<br><br>Spielstand '<b>" + name + "</b>' wirklich laden?";
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;gap:10px;justify-content:flex-end;';
+        row.appendChild(_slButton('Zurück', () => renderLoadSlots(slots), '#5a4633'));
+        row.appendChild(_slButton('Laden', () => {
+            if (backend) backend.sendCommand('lade ' + name);
+            _slClose();
+        }, '#8b0000'));
+        body.appendChild(msg);
+        body.appendChild(row);
+    });
+}
 
 console.log('save_load.js erfolgreich geladen');
