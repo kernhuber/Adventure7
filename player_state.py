@@ -4,6 +4,7 @@ from typing import List, Optional
 from place import Place
 from collections import deque
 from sys_test import SysTest
+from services.save_load import savable
 from utils import dpprint, dprint, dl, return_do_nothing, json_cmd_simple
 
 #from GeminiInterface import GeminiInterface
@@ -13,6 +14,7 @@ from utils import dpprint, dprint, dl, return_do_nothing, json_cmd_simple
 #
 # The state of a player. Multiple players - multiple states
 #
+@savable
 @dataclass
 class PlayerState:
     from game_object import GameObject
@@ -27,6 +29,29 @@ class PlayerState:
     thirst_counter: int = 40  # Alle vierzig Spielzüge müssen wir trinken
     cmd_q: deque = field(default_factory = deque)
     systest: SysTest = field(default_factory = SysTest)
+
+    # --- Storable (Save/Load) -------------------------------------------------------
+    # Referenzen (location, inventory) als IDs. cmd_q/systest werden NICHT gespeichert
+    # (leer/irrelevant an der Rundengrenze; der Konstruktor setzt frische Defaults).
+    # Subklassen (Zombie/Hund) erweitern save()/load() via super().
+    def store_id(self) -> str:
+        return self.name
+
+    def save(self) -> dict:
+        return {
+            "name": self.name,
+            "location": getattr(self.location, "name", None),
+            "inventory": [o.name for o in self.inventory],
+            "thirst_counter": self.thirst_counter,
+            "pending_llm_input": self.pending_llm_input,
+        }
+
+    def load(self, data, ctx) -> None:
+        self.name = data.get("name", self.name)
+        self.location = ctx.place(data.get("location")) or self.location
+        self.inventory = ctx.resolve_all(data.get("inventory", []))
+        self.thirst_counter = data.get("thirst_counter", self.thirst_counter)
+        self.pending_llm_input = data.get("pending_llm_input")
 
     #
     # chat function only so that the interface is there for classes deriving from PlayerState. The function

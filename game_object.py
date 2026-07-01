@@ -1,11 +1,14 @@
 from __future__ import annotations
 from typing import Callable, Union, Any, Optional
 
+from services.save_load import savable
+
 
 #
 # Objects which can appear in the game. Special objects like doors etc are derived from this object
 #
 
+@savable
 class GameObject:
     def __init__(self, name, examine, help_text="", fixed=False, hidden=False, callnames=None, apply_f=None, reveal_f=None, take_f=None, prompt_f=None):
         from player_state import PlayerState
@@ -49,4 +52,26 @@ class GameObject:
         self.reveal_f = reveal_f    # Optional: Funktion, die aufgerufen wird, wenn Objekt untersucht wird
         self.take_f = take_f        # Optional: Funktion, die aufgerufen wird, wenn Objekt genommen wird
         self.prompt_f = prompt_f
+
+    # --- Storable (Save/Load) -----------------------------------------------------------
+    # Gespeichert wird der zur Laufzeit veränderliche Zustand + Identität; die Callables
+    # (apply_f/…) und statischen Texte (callnames/help_text) kommen beim Laden aus world.json.
+    # ``examine`` MUSS mit (kann sich ändern, z.B. o_umschlag nach Tinktur). ``ownedby``
+    # (Place/Player/None) wird als ID gespeichert und über den LoadContext aufgelöst.
+    def store_id(self) -> str:
+        return self.name
+
+    def save(self) -> dict:
+        return {
+            "examine": self.examine,
+            "hidden": self.hidden,
+            "fixed": self.fixed,
+            "ownedby": getattr(self.ownedby, "name", None),
+        }
+
+    def load(self, data, ctx) -> None:
+        self.examine = data.get("examine", self.examine)
+        self.hidden = data.get("hidden", self.hidden)
+        self.fixed = data.get("fixed", self.fixed)
+        self.ownedby = ctx.by_id(data.get("ownedby"))
 
