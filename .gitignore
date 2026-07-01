@@ -53,3 +53,6 @@ debug/
 .vscode/
 /stage/
 /.apikey.env
+
+# Save games (created at runtime by services.save_load)
+/saves/

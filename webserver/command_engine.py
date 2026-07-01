@@ -13,6 +13,8 @@ and the NPC methods (``collect_npc_actions``, ``handle_minigame_result``) from
 NPCRunnerMixin.
 """
 import json
+import os
+import re
 
 from utils import dprint, dl, json_cmd_simple
 from webserver.serialization import serialize_real_game_state
@@ -22,6 +24,25 @@ from webserver.game_modules import GAME_MODULES_AVAILABLE, PlayerState
 
 # Arg keys that carry free text (not an object/place) -> not shown in the action label.
 _LABEL_SKIP_ARG_KEYS = {"why", "firstmessage", "message", "remaining_input", "hash", "is_system_error"}
+
+# --- Save / Load (text commands: "speichere <name>" / "lade <name>") ----------------
+SAVE_DIR = "saves"
+_SAVE_WORDS = {"speichere", "speichern", "speicher", "sichere", "sichern", "save"}
+_LOAD_WORDS = {"lade", "laden", "load", "spielstand"}
+_SLOT_FILLER = {"unter", "als", "den", "die", "das", "spielstand", "spiel", "game", "slot", "stand", "name"}
+
+
+def _slot_from_words(words) -> str | None:
+    """Turn the words after the save/load verb into a safe slot name (or None)."""
+    parts = [w for w in words if w not in _SLOT_FILLER]
+    safe = re.sub(r"[^\w\-]", "", "_".join(parts)).strip("_")
+    return safe or None
+
+
+def _list_slots() -> list[str]:
+    if not os.path.isdir(SAVE_DIR):
+        return []
+    return sorted(f[:-5] for f in os.listdir(SAVE_DIR) if f.endswith(".json"))
 
 
 def _command_label(game, command_dict) -> str:
@@ -54,6 +75,55 @@ def _command_label(game, command_dict) -> str:
 
 class CommandEngineMixin:
 
+    async def _handle_save_load(self, websocket, session, session_id, raw_command) -> bool:
+        """Intercept the meta-commands 'speichere <name>' / 'lade <name>' (text path; the
+        GUI buttons in step 7b reuse the same save/load). Returns True if it was a
+        save/load command (already handled), so handle_command skips normal processing."""
+        words = raw_command.lower().split()
+        if not words:
+            return False
+        verb = words[0]
+
+        async def info(msg):
+            await websocket.send(json.dumps({"type": "info", "message": msg}))
+
+        if verb in _SAVE_WORDS:
+            slot = _slot_from_words(words[1:]) or "quicksave"
+            try:
+                from services.save_load import save_to_file
+                os.makedirs(SAVE_DIR, exist_ok=True)
+                save_to_file(session["game"], os.path.join(SAVE_DIR, slot + ".json"))
+                await info(f"💾 Spiel gespeichert unter '{slot}'.")
+            except Exception as e:
+                dprint(dl.WEBGUI, f"Save-Fehler: {e}")
+                await info(f"❌ Speichern fehlgeschlagen: {e}")
+            return True
+
+        if verb in _LOAD_WORDS:
+            slot = _slot_from_words(words[1:])
+            if not slot:
+                slots = _list_slots()
+                await info("Verfügbare Spielstände: " + (", ".join(slots) if slots else "(keine)")
+                           + ". Laden mit z.B. 'lade <name>'.")
+                return True
+            path = os.path.join(SAVE_DIR, slot + ".json")
+            if not os.path.exists(path):
+                await info(f"❌ Kein Spielstand '{slot}' gefunden.")
+                return True
+            try:
+                from services.save_load import load_from_file
+                new_gs = load_from_file(path, llm=session["game"].llm)
+                session["game"] = new_gs
+                session["state"] = serialize_real_game_state(new_gs, session_id=session_id)
+                await websocket.send(json.dumps({"type": "game_state", "data": session["state"]}))
+                await info(f"📂 Spielstand '{slot}' geladen.")
+            except Exception as e:
+                dprint(dl.WEBGUI, f"Load-Fehler: {e}")
+                await info(f"❌ Laden fehlgeschlagen: {e}")
+            return True
+
+        return False
+
     async def handle_command(self, websocket, command_data):
         """Verarbeite Spieler-Kommando - Exakte Nachbildung von Player_game_move Logik"""
         session_id = str(id(websocket))
@@ -82,6 +152,10 @@ class CommandEngineMixin:
         if raw_command:
             # Komplette Benutzereingabe ins Debug-Logfile (Flag dl.CMDLOG).
             dprint(dl.CMDLOG, f"Eingabe: {raw_command}")
+
+        # Meta-Befehle Save/Load abfangen (kein Spielzug, kein LLM-Parsing).
+        if raw_command and await self._handle_save_load(websocket, session, session_id, raw_command):
+            return
 
         # Bestimme welches Command zu verarbeiten ist - EXAKT wie Player_game_move
 
