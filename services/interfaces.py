@@ -1,6 +1,33 @@
 from __future__ import annotations
 from typing import Protocol, Any, Mapping, Sequence
 
+
+class Storable(Protocol):
+    """Anything that can be part of a save game (GameState, players/NPCs, objects,
+    ways, the LLM layer, ...).
+
+    A saver serialises every live ``Storable`` into a self-describing envelope
+    ``{"type": STORE_TYPE, "id": store_id(), "data": save()}`` and writes one JSON
+    file. A loader rebuilds them in two phases: (1) instantiate every object by
+    type+id, (2) call ``load(data, ctx)`` so each object restores its values AND
+    resolves its references (location, ownedby, inventory, ...) via the
+    ``LoadContext``. See ``docs/SAVE-LOAD-DESIGN.md``.
+
+    Rules for implementers:
+    - ``save()`` returns ONLY the ``data`` part (plain JSON-able values). The saver
+      wraps type/id around it.
+    - Serialise references as **ids** (``p_*``/``o_*``/``w_*``/player name), never as
+      nested objects — this keeps cycles (Place<->GameObject) harmless.
+    - Enums -> ``.name``; deques -> list; callables & live resources (LLM client) are
+      NOT serialised (callables come back from the world definition / class).
+    """
+    STORE_TYPE: str
+
+    def store_id(self) -> str: ...
+    def save(self) -> dict: ...
+    def load(self, data: Mapping[str, Any], ctx: Any) -> None: ...
+
+
 class LLMClient(Protocol):
     def gen_narration_prompt(self, gs: Any, pl: Any) -> str: ...
     def clean_truncated_sentence(self, text: str) -> str: ...
