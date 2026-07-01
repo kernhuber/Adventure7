@@ -77,6 +77,25 @@ class GeminiInterface:
         self.token_details = []
         self.narration_cache = self._narration_cache()
 
+    # --- Storable (Save/Load) --------------------------------------------------------
+    # Die LLM ist ein lebendes Singleton: der Client/Config/Token-Stats werden NICHT
+    # gespeichert (der Client bleibt live). Gesichert werden nur die beiden Caches, die
+    # die exakten Szenenbeschreibungen tragen - sonst würde nach dem Laden neu (und damit
+    # anders) generiert. GameState orchestriert save()/load() explizit (nicht @savable).
+    STORE_TYPE = "GeminiInterface"
+
+    def store_id(self) -> str:
+        return "llm"
+
+    def save(self) -> dict:
+        return {
+            "narration_cache": dict(self.narration_cache.cache),
+            "txt_prev_description": dict(self.txt_prev_description),
+        }
+
+    def load(self, data, ctx=None) -> None:
+        self.narration_cache.cache = dict(data.get("narration_cache", {}))
+        self.txt_prev_description = dict(data.get("txt_prev_description", {}))
 
     def gen_narration_prompt(self, gs:"GameState", pl:"PlayerState") -> str:
         from typing import cast

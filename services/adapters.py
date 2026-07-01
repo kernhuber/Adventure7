@@ -28,3 +28,17 @@ class LLMClientGemini(LLMClient):
 
     def get_npc_action(self, game_state_for_npc: Mapping[str, Any]) -> Mapping[str, Any]:
         return self._impl.get_npc_action(game_state_for_npc)
+
+    # --- Storable (Save/Load): an die echte GeminiInterface (_impl) delegieren, damit
+    #     GameState.save()/load() unabhängig davon funktioniert, ob gs.llm der Adapter
+    #     oder direkt eine GeminiInterface ist.
+    STORE_TYPE = "GeminiInterface"
+
+    def store_id(self) -> str:
+        return self._impl.store_id()
+
+    def save(self) -> dict:
+        return self._impl.save()
+
+    def load(self, data: Mapping[str, Any], ctx: Any = None) -> None:
+        self._impl.load(data, ctx)
