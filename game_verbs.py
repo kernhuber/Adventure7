@@ -54,6 +54,7 @@ class GameVerbsMixin:
             "inventory": (self.verb_inventory,0),
             "context": (self.verb_context,0),
             "dogstate": (self.verb_dogstate,0),
+            "zombiestate": (self.verb_zombiestate,0),
             "quit": (self.verb_quit,0),
             "nichts": (self.verb_noop,0),
             #"interagiere": (self.verb_interact,2),
@@ -101,6 +102,39 @@ class GameVerbsMixin:
         else:
             pprint(dgf,depth=2)
             return "nichts"
+
+    def verb_zombiestate(self, pl: PlayerState, session_id=None):
+        """Debug-Kommando analog zu dogstate: den kompletten Zombie-Zustand in die Shell
+        ausgeben - Flags/State/Koordinaten UND das Gedächtnis (Notizbuch + episodisch),
+        damit man beim Spielen sieht, wie der Zombie 'arbeitet'."""
+        from npc_zombie_state import NPCZombieState
+        z = next((p for p in self.players if isinstance(p, NPCZombieState)), None)
+        if not z:
+            print("Kein Zombie im Spiel (noch nicht erwacht?).")
+            return "nichts"
+        loc = z.location.callnames[0] if (z.location and z.location.callnames) else (z.location.name if z.location else "?")
+        inv = [i.callnames[0] if i.callnames else i.name for i in z.inventory]
+        out = [
+            "",
+            "==================== ZOMBIE-STATE ====================",
+            f" Ort:              {loc}   ({z.location.name if z.location else '?'})",
+            f" State:            {z.zombie_state.name}   -> {z.zombie_state_message}",
+            f" Vertrauen(trust): {z.trust}      Lebensenergie: {z.zombie_thirst}",
+            f" Inventar:         {inv}",
+            f" Flags:            cooperation_agreed={z.cooperation_agreed}  awaiting_share={z.awaiting_share_response}  "
+            f"share_agreed={z.share_agreed}  remembered_control_room={z.remembered_control_room}",
+            f" Cooldowns/Zähler: move={z.move_cooldown}  share={z.share_cooldown}  "
+            f"turns_since_contact={z.turns_since_player_contact}  turn={z.turn_counter}",
+            f" player_last_seen: {z.player_last_seen_location}",
+            "  --- Notizbuch (notes / Arbeitsgedächtnis, wird pro Reasoning-Zug überschrieben) ---",
+            f"  {z.notes}",
+            "  --- Episodisches Gedächtnis (last_chat, über Gespräche hinweg) ---",
+            f"  {z.last_chat}",
+            "======================================================",
+            "",
+        ]
+        print("\n".join(out))
+        return "nichts"
 
 
 

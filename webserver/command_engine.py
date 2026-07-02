@@ -235,7 +235,7 @@ class CommandEngineMixin:
                 return
 
             # Schritt 3: Verarbeite User Input
-            if user_input.lower() in ["quit", "inventory", "dogstate", "nichts", "context", "toggle_layout","pinpad","minigame","zombie_chat"]:
+            if user_input.lower() in ["quit", "inventory", "dogstate", "zombiestate", "nichts", "context", "toggle_layout","pinpad","minigame","zombie_chat"]:
                 # Direkte Commands ohne LLM-Parsing
 
                 if user_input.lower().startswith("minigame"):

@@ -140,7 +140,7 @@ class PlayerState:
                     ui = self.pending_llm_input
                     self.pending_llm_input = None
                 if ui is not None:
-                    if ui == "quit" or ui=="inventory" or ui =="dogstate" or ui=="nichts" or ui=="context" or ui=="toggle_layout":
+                    if ui == "quit" or ui=="inventory" or ui =="dogstate" or ui=="zombiestate" or ui=="nichts" or ui=="context" or ui=="toggle_layout":
                         # self.cmd_q.append(ui.strip().lower())
                         self.cmd_q.append({'function_call': {'name': ui, 'args': {}}})
                     else:
