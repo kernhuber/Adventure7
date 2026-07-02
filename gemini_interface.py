@@ -246,6 +246,35 @@ Die Ortsbeschreibung:
                 # Wenn der Text sehr kurz ist und kein Leerzeichen enthält (z.B. nur ein Wort oder Fragment)
                 return text.strip() + "..."  # Füge Ellipsen direkt an
 
+    def _log_tokens(self, response, caller: str) -> None:
+        """Token-Verbrauch eines LLM-Calls zentral verbuchen - MIT Aufrufer-Label, damit
+        man am Ende sieht, WO die meisten Tokens verbraten werden (siehe token_report())."""
+        try:
+            n = response.usage_metadata.total_token_count
+        except Exception:
+            n = 0
+        self.tokens += n
+        self.numcalls += 1
+        self.token_details.append({"caller": caller, "tokens": n})
+        dprint(dl.LLM, f"[tokens] {caller}: {n} (kumuliert {self.tokens}, calls {self.numcalls})")
+
+    def token_report(self) -> dict:
+        """Aggregiert token_details nach Aufrufer -> {caller: {'calls':n,'tokens':t}} plus
+        '_gesamt'. Robust gegenüber alten Bare-Int-Einträgen (Label 'unbekannt')."""
+        report: dict = {}
+        total = 0
+        for e in self.token_details:
+            if isinstance(e, dict):
+                caller, tok = e.get("caller", "unbekannt"), e.get("tokens", 0)
+            else:
+                caller, tok = "unbekannt", (e if isinstance(e, int) else 0)
+            slot = report.setdefault(caller, {"calls": 0, "tokens": 0})
+            slot["calls"] += 1
+            slot["tokens"] += tok
+            total += tok
+        report["_gesamt"] = {"calls": self.numcalls, "tokens": total}
+        return report
+
     def simple_message(self,message, maxtokens=80):
         #
         # Send a message to the LLM and return the answer.
@@ -264,9 +293,7 @@ Die Ortsbeschreibung:
                     )
                 )
 
-                self.tokens = self.tokens + response.usage_metadata.total_token_count
-                self.numcalls = self.numcalls + 1
-                self.token_details.append(response.usage_metadata.total_token_count)
+                self._log_tokens(response, "GeminiInterface.simple_message")
                 r = self.clean_truncated_sentence(response.text)
                 return r
             except Exception as e:
@@ -314,9 +341,7 @@ Die Ortsbeschreibung:
                 )
             )
 
-            self.tokens = self.tokens + response.usage_metadata.total_token_count
-            self.numcalls = self.numcalls + 1
-            self.token_details.append(response.usage_metadata.total_token_count)
+            self._log_tokens(response, "GeminiInterface.narrate")
             r = self.clean_truncated_sentence(response.text)
             self.txt_prev_description[room] = r
             self.narration_cache.update(room=room, prompt=base_prompt, narration=r)
@@ -928,9 +953,7 @@ Die Ortsbeschreibung:
                                 dprint(dl.LLM, f"  Candidate {ci} part {pi}: {part}")
 
                 # Token-Nutzung aktualisieren
-                self.tokens += response.usage_metadata.total_token_count
-                self.numcalls += 1
-                self.token_details.append(response.usage_metadata.total_token_count)
+                self._log_tokens(response, "GeminiInterface.parse_user_input_to_commands")
 
                 if response.function_calls:
                     # FALL 1: Das Modell hat das STANDARD-Function-Calling-Verhalten gezeigt.

@@ -126,9 +126,9 @@ class GameVerbsMixin:
             f" Cooldowns/Zähler: move={z.move_cooldown}  share={z.share_cooldown}  "
             f"turns_since_contact={z.turns_since_player_contact}  turn={z.turn_counter}",
             f" player_last_seen: {z.player_last_seen_location}",
-            "  --- Notizbuch (notes / Arbeitsgedächtnis, wird pro Reasoning-Zug überschrieben) ---",
+            "  --- Notizbuch (notes / Arbeitsgedächtnis) ---",
             f"  {z.notes}",
-            "  --- Episodisches Gedächtnis (last_chat, über Gespräche hinweg) ---",
+            "  --- Episodisches Gesprächs-Gedächtnis (last_chat, über Gespräche hinweg) ---",
             f"  {z.last_chat}",
             "======================================================",
             "",
