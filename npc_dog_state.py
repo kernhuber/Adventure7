@@ -88,7 +88,59 @@ class NPCDogState(PlayerState):
         return False
 
 
-    def NPC_game_move(self, gs:GameState) -> {}:
+    def _find_zombie(self, gs: GameState):
+        """Den Zombie (falls im Spiel) finden - lokaler Import vermeidet Zyklen."""
+        from npc_zombie_state import NPCZombieState
+        return next((z for z in gs.players if isinstance(z, NPCZombieState)), None)
+
+    def _flee_from_zombie(self, gs: GameState, zombie) -> dict:
+        """Der Zombie steht am selben Ort: in ein zufällig gewähltes, erreichbares
+        Nachbarfeld fliehen (kein nogo/blockiertes Feld, nicht das Zombie-Feld). Gibt es
+        keinen Ausweg, bleibt der Hund ruhig."""
+        candidates = [w.destination for w in self.location.ways
+                      if w.destination is not zombie.location and self.can_dog_go(gs, w.destination.name)]
+        if not candidates:
+            self.dog_state = DogState.START
+            self.dog_state_message = "Der Hund duckt sich ängstlich - es gibt keinen Ausweg."
+            return return_do_nothing()
+        dest = random.choice(candidates)
+        # Panik: laufende FSM-Pläne verwerfen, damit der Hund nicht sofort zurückläuft.
+        self.dog_state = DogState.START
+        self.next_loc = deque()
+        self.way_home = deque()
+        self.dog_state_message = f"Der Hund flüchtet ängstlich vor dem Zombie Richtung {dest.callnames[0]}!"
+        return json_cmd_simple("gehe", dest.callnames[0] if dest.callnames else dest.name)
+
+    def _gehe_destination(self, action):
+        """Wenn ``action`` ein 'gehe'-Kommando ist: das Ziel-Nachbarfeld (Place) liefern,
+        sonst None. Für das Zombie-Feld-Veto."""
+        fc = action.get("function_call", {}) if isinstance(action, dict) else {}
+        if fc.get("name") != "gehe":
+            return None
+        direction = fc.get("args", {}).get("direction")
+        for w in self.location.ways:
+            d = w.destination
+            if direction == d.name or (d.callnames and direction == d.callnames[0]):
+                return d
+        return None
+
+    def NPC_game_move(self, gs: GameState) -> dict:
+        """Hunde-Zug mit ANGST VOR DEM ZOMBIE als oberster Regel:
+        - Steht der Zombie am selben Ort -> flüchten (bzw. ruhig bleiben, wenn kein Ausweg).
+        - Ansonsten normales Verhalten (FSM), aber NIEMALS in das Zombie-Feld ziehen (Veto).
+        Der Zombie-Zustand ist dabei egal - der Hund fürchtet ihn immer."""
+        zombie = self._find_zombie(gs)
+        if zombie is not None and zombie.location is self.location:
+            return self._flee_from_zombie(gs, zombie)
+
+        action = self._fsm_move(gs)
+
+        if zombie is not None and self._gehe_destination(action) is zombie.location:
+            self.dog_state_message = "Der Hund weicht dem Zombie aus und bleibt lieber, wo er ist."
+            return return_do_nothing()
+        return action
+
+    def _fsm_move(self, gs:GameState) -> {}:
         """
         Doggo routine
 
