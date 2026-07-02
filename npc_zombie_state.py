@@ -177,11 +177,10 @@ class NPCZombieState(PlayerState):
                         "***'Suchst du etwa ... die hier?'***")
                 return return_do_nothing()
 
-            case ZombieState.HUNTING:
-                return self._do_hunting_move(gs)
-
-            case ZombieState.COOPERATIVE | ZombieState.DOUBTING:
-                return self._do_trusting_move(gs)
+            case ZombieState.HUNTING | ZombieState.COOPERATIVE | ZombieState.DOUBTING:
+                # Alle drei sind LLM-getrieben (gleicher Prompt; der Zustand steht darin).
+                # Beißen/Verfolgen greifen nur in HUNTING - siehe _do_llm_move.
+                return self._do_llm_move(gs)
 
             case ZombieState.CONVINCED:
                 return self._do_convinced_move(gs)
@@ -197,30 +196,12 @@ class NPCZombieState(PlayerState):
             case _:
                 return return_do_nothing()
 
-    def _do_trusting_move(self, gs: game_state.GameState) -> dict:
-        """COOPERATIVE/DOUBTING: scriptgesteuert, kein LLM, kein Beißen.
-
-        Der Zombie wartet beim Spieler. Bleibt der Spieler weg, sinkt das Vertrauen
-        Zug für Zug; ist der Spieler da, erholt es sich etwas. Aus dem Vertrauenswert
-        ergibt sich der Zustand (COOPERATIVE -> DOUBTING -> zurück zu HUNTING).
-        """
-        player = next((p for p in gs.players if type(p) is PlayerState), None)
-
-        if player is not None and self.location == player.location:
-            self.turns_since_player_contact = 0
-            self.trust = min(100, self.trust + TRUST_RECOVER_CONTACT)
-        else:
-            self.turns_since_player_contact += 1
-            self.trust = max(0, self.trust - TRUST_DECAY_NO_CONTACT)
-
-        return self._reevaluate_trust(gs)
-
     def _state_from_trust(self) -> None:
         """Setzt den Zustand rein anhand des Vertrauenswerts (ohne gs/Aktion).
 
-        Gemeinsame Stelle für die Schwellen, damit Vertrauensänderungen (Zug-Zerfall,
-        feindseliges Gespräch, Angriff) konsistent denselben Übergang auslösen. Wird
-        sowohl im Zug-Loop (_reevaluate_trust) als auch nach dem Chat (end_chat) genutzt.
+        Gemeinsame Stelle für die Schwellen, damit Vertrauensänderungen (feindseliges
+        Gespräch, Angriff) konsistent denselben Übergang auslösen. Wird nach dem Chat
+        (end_chat) genutzt; im Zug-Loop schlägt das LLM den Zustand vor.
         """
         if self.trust < HUNT_BELOW:
             if self.zombie_state != ZombieState.HUNTING:
@@ -235,11 +216,6 @@ class NPCZombieState(PlayerState):
         else:
             self.zombie_state = ZombieState.COOPERATIVE
             self.zombie_state_message = "Der Zombie verhält sich ruhig und abwartend."
-
-    def _reevaluate_trust(self, gs: game_state.GameState) -> dict:
-        """Vertrauen -> Zustand übersetzen und (für den Zug-Loop) eine Aktion liefern."""
-        self._state_from_trust()
-        return return_do_nothing()
 
     def gets_attacked(self, gs: game_state.GameState, pl: PlayerState) -> str:
         """Der Spieler greift den Zombie an (verb_attack).
@@ -272,16 +248,29 @@ Der Spieler hat mich angegriffen! Ich kann ihm nicht trauen. Ich jage wieder."""
         return ("Du schlägst auf den Zombie ein. Es scheint ihm kaum zu schaden - aber jeder "
                 "Funke Vertrauen ist dahin. Seine Augen glühen wieder hasserfüllt.")
 
-    def _do_hunting_move(self, gs: game_state.GameState) -> dict:
-        # (Lebensenergie wird zentral in NPC_game_move abgezogen.)
+    def _do_llm_move(self, gs: game_state.GameState) -> dict:
+        """LLM-getriebener Zug für HUNTING/COOPERATIVE/DOUBTING (derselbe Prompt; der
+        aktuelle Zustand steht darin, das LLM handelt entsprechend und schlägt einen neuen
+        Zustand vor). Beißen und der Verfolgungs-Fallback greifen NUR in HUNTING.
+        (Lebensenergie wird zentral in NPC_game_move abgezogen.)"""
+        hunting = self.zombie_state == ZombieState.HUNTING
 
-        # Track player location
+        # Track player location (magische Witterung)
         player = next((p for p in gs.players if type(p) is PlayerState), None)
         if player:
             self.player_last_seen_location = player.location.name
 
-        # Bite mechanic: if same location as player
-        if player and self.location == player.location:
+        # Vertrauen pflegen: Kontakt hebt es, Vernachlässigung senkt es. So bleibt es ein
+        # lebendiges Signal für das LLM (steht im Prompt) und für Chat/Angriff.
+        if player is not None and self.location == player.location:
+            self.turns_since_player_contact = 0
+            self.trust = min(100, self.trust + TRUST_RECOVER_CONTACT)
+        else:
+            self.turns_since_player_contact += 1
+            self.trust = max(0, self.trust - TRUST_DECAY_NO_CONTACT)
+
+        # Beißen NUR in der Jagd (ein kooperativer/zweifelnder Zombie beißt nicht).
+        if hunting and player and self.location == player.location:
             player.thirst_counter = max(0, player.thirst_counter - 5)
             self.zombie_thirst = min(MAX_ENERGY, self.zombie_thirst + 5)
             self.zombie_state_message = "Der Zombie hat den Spieler gebissen!"
@@ -314,25 +303,25 @@ Der Spieler hat mich angegriffen! Ich kann ihm nicht trauen. Ich jage wieder."""
             # sich Zug für Zug nachvollziehen, was der Zombie "lernt"/sich merkt.
             dprint(dl.ZOMBIE, f"Zombie notes (full):\n{self.notes}")
 
-            # Anti-Freeze-Fallback: NUR, wenn das LLM nichts Wirksames liefert ('nichts'
-            # oder ein 'gehe' auf einen unerreichbaren Ort). Gültige Spieler-Aktionen
-            # (nimm/untersuche/anwenden/interaktion) werden RESPEKTIERT - der Zombie soll
-            # ein vollwertiger Spieler sein, nicht bloß ein Verfolger. Die Engine meldet
+            # Anti-Freeze-Fallback NUR in der Jagd: liefert das LLM dort nichts Wirksames
+            # ('nichts' oder ein 'gehe' auf einen unerreichbaren Ort), ziehe skriptbasiert
+            # Richtung Spieler. In COOPERATIVE/DOUBTING respektieren wir jede LLM-Wahl (auch
+            # 'nichts' - der Zombie darf abwarten). Gültige Spieler-Aktionen (nimm/
+            # untersuche/anwenden/interaktion) werden immer respektiert; die Engine meldet
             # das Ergebnis über gameengine_returns zurück, sodass er darauf reagieren kann.
-            if player is not None and self._needs_pursuit_fallback(gs, command):
+            if hunting and player is not None and self._needs_pursuit_fallback(gs, command):
                 fallback = self._step_toward(gs, player.location)
                 if fallback is not None:
                     dprint(dl.ZOMBIE, f"Zombie-Jagd: leerer/ungültiger Zug -> Skript-Fallback {fallback}")
                     command = fallback
 
-            # Spielleitung: den Zustandsvorschlag GEFILTERT übernehmen (grobe Mismatches
-            # verwerfen; Handoff in einen skriptbasierten Zustand sauber initialisieren).
+            # Spielleitung: den Zustandsvorschlag GEFILTERT übernehmen.
             self._apply_suggested_state(gs)
             return command
         except Exception as e:
             dprint(dl.ZOMBIE, f"Zombie LLM error: {e}")
-            # Auch im Fehlerfall verlässlich verfolgen statt regungslos verharren.
-            if player is not None:
+            # In der Jagd auch im Fehlerfall verlässlich verfolgen; sonst ruhig bleiben.
+            if hunting and player is not None:
                 fallback = self._step_toward(gs, player.location)
                 if fallback is not None:
                     return fallback
@@ -385,19 +374,15 @@ Der Spieler hat mich angegriffen! Ich kann ihm nicht trauen. Ich jage wieder."""
         return False
 
     def _apply_suggested_state(self, gs: game_state.GameState) -> None:
-        """Spielleitung: den LLM-Zustandsvorschlag GEFILTERT übernehmen. Der Filter greift
-        nur bei groben Mismatches bzw. am Übergang in einen skriptbasierten Zustand:
-        - CONVINCED wird NICHT per Vorschlag vergeben (nur über das Handbuch = Lösungs-
-          schlüssel) -> verworfen.
-        - COOPERATIVE/DOUBTING sind erlaubte Übergänge aus der Jagd; beim Handoff wird der
-          Trust angeglichen, damit das anschließende skriptbasierte Verhalten konsistent ist.
-        - HUNTING bleibt HUNTING."""
+        """Spielleitung: den LLM-Zustandsvorschlag übernehmen. Das LLM darf HUNTING,
+        COOPERATIVE, DOUBTING UND CONVINCED vorschlagen (auch wenn CONVINCED normalerweise
+        übers Handbuch kommt - eine unerwartete Spielsituation soll es erlauben dürfen).
+        Nur engine-eigene Endzustände (REDEEMED/PETRIFIED) und AWAKENING sind kein Vorschlag
+        (bereits von _state_name_to_enum herausgefiltert). Beim Übergang wird der Trust
+        angeglichen, damit er als Signal konsistent bleibt."""
         s = self.suggested_new_state
         self.suggested_new_state = None
         if s is None or s == self.zombie_state:
-            return
-        if s == ZombieState.CONVINCED:
-            dprint(dl.ZOMBIE, "Spielleitung: CONVINCED-Vorschlag verworfen (nur über das Handbuch erreichbar).")
             return
         prev = self.zombie_state.name
         if s == ZombieState.COOPERATIVE:
@@ -410,6 +395,10 @@ Der Spieler hat mich angegriffen! Ich kann ihm nicht trauen. Ich jage wieder."""
             self.zombie_state_message = "Der Zombie zögert - noch jagt er nicht wieder aktiv."
         elif s == ZombieState.HUNTING:
             self.zombie_state = ZombieState.HUNTING
+            self.zombie_state_message = "Der Zombie jagt!"
+        elif s == ZombieState.CONVINCED:
+            self.zombie_state = ZombieState.CONVINCED
+            self.zombie_state_message = "Der Zombie ist überzeugt und sucht die Kooperation."
         dprint(dl.ZOMBIE, f"Spielleitung: {prev} -> {self.zombie_state.name} (LLM-Vorschlag, trust={self.trust})")
 
     def _step_toward(self, gs: game_state.GameState, target) -> Optional[dict]:
@@ -620,8 +609,9 @@ Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und G
 
     def compile_zombie_context(self, gs: game_state.GameState) -> dict:
         ctx = {}
-        # current state
+        # current state + Vertrauenswert (Signal fürs LLM)
         ctx["zustand"] = self.zombie_state.name
+        ctx["vertrauen"] = self.trust
         # Current location
         loc = self.location
         ctx["ort"] = loc.callnames[0] if loc.callnames else loc.name
@@ -732,6 +722,7 @@ Du kennst folgende Zustände:
 
 AKTUELLER KONTEXT:
 - Dein Zustand: {zctx['zustand']}
+- Dein Vertrauen zum Spieler: {zctx['vertrauen']}/100 (niedrig = misstrauisch/jagen, hoch = kooperativ)
 - Aktueller Ort: {zctx['ort']}
 - Objekte hier: {', '.join(o['name'] for o in zctx['objekte_hier']) if zctx['objekte_hier'] else 'keine'}
 - Wege von hier: {', '.join(zctx['wege']) if zctx['wege'] else 'keine'}
@@ -746,7 +737,10 @@ LETZTE SPIELENGINE-ANTWORT:
 LETZTE KONVERSATION MIT DEM SPIELER:
 {self.last_chat}
 
-Dein Ziel: dem Spieler näherkommen und ihn beißen - handle dabei wie ein echter Spieler.
+Handle deinem aktuellen Zustand ({zctx['zustand']}) entsprechend, wie ein echter, denkender Spieler:
+- HUNTING: Du willst dem Spieler näherkommen und ihn beißen (verfolge ihn).
+- COOPERATIVE/DOUBTING: Du beißt NICHT. Du beobachtest, verfolgst deine Ziele (Erlösung), bleibst
+  aber wachsam - und schlägst je nach Verlauf einen passenden Zustand vor.
 {empf_line}
 
 VERFÜGBARE BEFEHLE (du kannst dasselbe wie ein menschlicher Spieler):
