@@ -303,10 +303,41 @@ class NPCZombieState(PlayerState):
             # Vollständiges Notizbuch loggen (nicht auf 100 Zeichen kürzen) - so lässt
             # sich Zug für Zug nachvollziehen, was der Zombie "lernt"/sich merkt.
             dprint(dl.ZOMBIE, f"Zombie notes (full):\n{self.notes}")
+            # Skript-Fallback: Liefert das LLM keine gültige Bewegung (z.B. 'nichts',
+            # 'untersuche', oder ein 'gehe' auf einen nicht erreichbaren Ort), ziehe
+            # skriptbasiert Richtung Spieler - so bleibt der Zombie ein verlässlicher
+            # Jäger, auch wenn das LLM "hängt".
+            if player is not None and not self._is_valid_pursuit_step(gs, command):
+                fallback = self._step_toward(gs, player.location)
+                if fallback is not None:
+                    dprint(dl.ZOMBIE, f"Zombie-Jagd: LLM-Zug verworfen, Skript-Fallback -> {fallback}")
+                    command = fallback
             return command
         except Exception as e:
             dprint(dl.ZOMBIE, f"Zombie LLM error: {e}")
+            # Auch im Fehlerfall verlässlich verfolgen statt regungslos verharren.
+            if player is not None:
+                fallback = self._step_toward(gs, player.location)
+                if fallback is not None:
+                    return fallback
             return return_do_nothing()
+
+    def _is_valid_pursuit_step(self, gs: game_state.GameState, command: dict) -> bool:
+        """True, wenn ``command`` ein 'gehe' auf einen tatsächlich erreichbaren Nachbarort
+        ist - dann respektieren wir die LLM-Entscheidung. Sonst False -> Skript-Fallback."""
+        fc = command.get("function_call", {}) if isinstance(command, dict) else {}
+        if fc.get("name") != "gehe":
+            return False
+        direction = (fc.get("args", {}) or {}).get("direction")
+        if not direction:
+            return False
+        dlow = direction.lower()
+        for w in self.location.ways:
+            d = w.destination
+            names = [d.name] + list(d.callnames or [])
+            if dlow in [n.lower() for n in names]:
+                return self.can_zombie_go(gs, d.name)
+        return False
 
     def _step_toward(self, gs: game_state.GameState, target) -> Optional[dict]:
         """Einen Schritt Richtung ``target`` (Place) gehen; None, wenn schon da / kein Weg."""
@@ -563,6 +594,20 @@ class NPCZombieState(PlayerState):
     def compile_zombie_prompt(self, gs: game_state.GameState) -> str:
         zctx = self.compile_zombie_context(gs)
 
+        # Empfohlene Verfolgungsrichtung als starker Steuerungshinweis fürs LLM: erster
+        # Schritt eines kürzesten Weges zum Spieler. Das LLM entscheidet weiterhin selbst,
+        # bekommt aber eine klare Richtung - so jagt es zuverlässig, statt sich mit
+        # 'untersuche' o.ä. zu verzetteln.
+        player = next((p for p in gs.players if type(p) is PlayerState), None)
+        empf_richtung = None
+        if player is not None and self.location is not player.location:
+            _path = gs.find_shortest_path(self.location, player.location)
+            if _path:
+                _d = _path[0].destination
+                empf_richtung = _d.callnames[0] if _d.callnames else _d.name
+        empf_line = (f"- EMPFOHLENE RICHTUNG, um den Spieler zu verfolgen: gehe {empf_richtung}"
+                     if empf_richtung else "- (Aktuell führt kein Weg direkt zum Spieler - dann: nichts.)")
+
         prompt = f"""SYSTEM:
 Du bist ein Zombie-NPC in einem Adventure-Spiel. Du warst einmal ein erfolgreicher Geschäftsmann,
 der in dieser unterirdischen Anlage gestorben ist und nun als Untoter erwacht bist.
@@ -590,17 +635,20 @@ AKTUELLER KONTEXT:
 LETZTE SPIELENGINE-ANTWORT:
 {self.gameengine_returns if self.gameengine_returns else '(keine)'}
 
-VERFÜGBARE BEFEHLE:
-- gehe <Ort> - Gehe zu einem benachbarten Ort
-- nimm <Objekt> - Nimm ein Objekt auf
-- anwenden <Objekt> [auf <Objekt>] - Wende ein Objekt an
-- untersuche <Objekt> - Untersuche ein Objekt
-- nichts - Warte ab, tue nichts
+DU JAGST DEN SPIELER! Deine einzige Aufgabe jetzt: ihm näherkommen, um ihn zu beißen.
+{empf_line}
+
+VERFÜGBARE BEFEHLE (in der Jagd NUR diese!):
+- gehe <Ort> - Gehe zu einem benachbarten Ort (SO verfolgst du den Spieler)
+- nichts - NUR, wenn wirklich kein Weg zum Spieler führt
+
+WICHTIG: Untersuche/nimm/anwende NICHTS - das lenkt dich nur ab und du verlierst die Beute.
+Wähle IMMER 'gehe' in Richtung Spieler (siehe empfohlene Richtung oben). VERFOLGE!
 
 ANWEISUNGEN:
-1. Analysiere die Situation basierend auf deinem Notizbuch und dem Kontext
-2. Entscheide dich für EINE Aktion
-3. Aktualisiere dein Notizbuch mit deinen Gedanken und deiner Strategie
+1. Schau, wo der Spieler ist / welche Richtung zu ihm führt
+2. Entscheide dich für EINE Aktion - im Zweifel 'gehe' in Richtung Spieler
+3. Aktualisiere dein Notizbuch mit deinen Gedanken und deiner Jagd-Strategie
 
 ANTWORTFORMAT (GENAU einhalten!):
 <AKTION>dein befehl hier</AKTION>
