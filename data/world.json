@@ -73,7 +73,8 @@
         "o_skelett",
         "o_geldboerse",
         "o_ec_karte",
-        "o_stahltuer"
+        "o_stahltuer",
+        "o_handrad"
       ]
     },
     "p_innen": {
@@ -93,7 +94,8 @@
       "objects": [
         "o_leiter",
         "o_pinsel",
-        "o_farbeimer"
+        "o_farbeimer",
+        "o_olkanne"
       ]
     },
     "p_schuppen": {
@@ -1409,6 +1411,36 @@
       "reveal_f": null,
       "take_f": null,
       "prompt_f": "object_prompts.o_u_bahn_steuerung_prompt_f"
+    },
+    "o_olkanne": {
+      "name": "o_olkanne",
+      "examine": "",
+      "help_text": "",
+      "callnames": [
+        "Ölkanne"
+      ],
+      "ownedby": "p_innen",
+      "fixed": false,
+      "hidden": false,
+      "apply_f": "game_apply_functions.o_olkanne_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "object_prompts.o_olkanne_prompt_f"
+    },
+    "o_handrad": {
+      "name": "o_handrad",
+      "examine": "Hiermit könnte man die Tür wohl öffnen",
+      "help_text": "",
+      "callnames": [
+        "Handrad"
+      ],
+      "ownedby": "p_hoehle",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "game_apply_functions.o_handrad_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "object_prompts.o_handrad_prompt_f"
     }
   },
   "_editor": {
@@ -1462,8 +1494,8 @@
         "y": -370.11312440905294
       },
       "p_solaranlage": {
-        "x": -149.05372433630433,
-        "y": -473.5806777950817
+        "x": 163.2808599013367,
+        "y": -273.3382962629355
       },
       "p_kontrollraum": {
         "x": -1077.6212111181499,

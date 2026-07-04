@@ -351,7 +351,35 @@ Verwendung der Leiter
 - in dem Fall liefere "anwenden Leiter Schuppen" oder "anwenden Leiter Felsen" zurück 
 """
 
+def o_olkanne_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    return """
+Ölkanne
+=======
+- Eine Kanne voll mit Schmieröl
+- Klein
 
+Verwendung der Ölkanne
+======================
+- Man kann mit ihr Dinge ölen, einschmieren oder einfetten
+- Beispiel: 'Schmiere das Schloss ein', 'Öle den Riegel ein', 'Träufele Öl auf das Schloss', 'Tropfe Öl uf das Handrad'
+- In diesem Fall liefere "anwenden Ölkanne Schloss", "anwenden Ölkanne Riegel", "anwenden Ölkanne Schloss", "anwenden Ölkanne Handrad" zurück
+- Das Objekt, das geschmiert/geölt/gefettet (oder ähnliches) wird, steht immer als zweites Argument
+
+"""
+
+def o_handrad_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    return f"""
+Handrad
+=======
+- Ein rostiges altes Handrad
+- Befestigt an der Stahltür
+- Es ist zum öffnen der Stahltür gedacht, {'und es lässt sich gut und leicht bewegen' if _F(gs).handrad_geschmiert else 'aber es ist völlig festgerostet und man kann es nicht bewegen'}
+
+Verwendung des Handrades
+========================
+- Man kann das Handrad drehen, oder es einfach betätigen
+
+"""
 
 def o_skelett_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """

@@ -160,6 +160,20 @@ def o_geld_dollar_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=
 def o_schuppen_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     return "Wie willst du einen Schuppen auf etwas anwenden? Das geht nicht!"
 
+def o_olkanne_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    if onwhat == gs.objects.get("o_handrad"):
+        _F(gs).handrad_geschmiert = True
+        return "Das Handrad ist nun geschmiert. Ob es sich jetzt wohl bewegen lässt?"
+    return f"Super. Du hast {onwhat.callnames[0]} mit Öl betreufelt. Hoffentlich gibt das keine Flecken!"
+
+def o_handrad_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None) -> str:
+    if _F(gs).handrad_geschmiert:
+        _F(gs).handrad_offen = True
+        _F(gs).korridor_offen = True
+        return "Die Stahltür ist nun offen"
+    else:
+        return "Das Ding ist festgerostet und lässt sich nicht bewegen."
+
 def o_blumentopf_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     return "Interessanter Ansatz ... geht aber nicht."
 

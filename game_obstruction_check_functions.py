@@ -92,7 +92,7 @@ def w_hoehle_korridor_obstruction_check(gs: "GameState") -> str:
     if _F(gs).korridor_offen:
         return "Free"
     else:
-        return "Die Stahltür ist verschlossen. Auf dieser Seite sitzt aber ein großes Handrad mit Riegel - dreh daran, um sie zu entriegeln (z.B. 'öffne die Stahltür' / 'drehe das Handrad')."
+        return "Die Stahltür ist verschlossen. Auf dieser Seite sitzt aber ein großes Handrad mit Riegel, and dem man drehen kann. Oder könnte. Vielleicht."
 
 
 def w_korridor_hoehle_obstruction_check(gs: "GameState") -> str:
