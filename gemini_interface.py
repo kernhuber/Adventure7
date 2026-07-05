@@ -150,7 +150,7 @@ Die Ortsbeschreibung:
             if w.visible:
                 f = w.obstruction_check(gs)
                 if f != "Free":
-                    r=r+f" - {f})"
+                    r=r+f"- {f}"
                 else:
                     r=r+f"- {w.destination.callnames[0]}"
                 r = r+"\n"

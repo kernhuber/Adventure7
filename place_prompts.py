@@ -142,6 +142,7 @@ U-Bahn Station
 - Keine Schmierereien oder Graffitis
 - Der Boden ist mit Marmorfliesen gefliest.
 - Neonröhren tauchen alles in angenehmes Licht. 
+- Reagiere auch, wenn dieser Ort mit "Bahnsteig" bezeichnet wird
 {'- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind.' if not _F(gs).wagen_ubahn2 else ''}
     """
     return rs
@@ -158,6 +159,7 @@ Zweite U-Bahn Station
 - Keine Schmierereien oder Graffitis
 - Der Boden ist mit Marmorfliesen gefliest.
 - Neonröhren tauchen alles in angenehmes Licht. 
+- Reagiere auch, wenn dieser Ort mit "Bahnsteig" bezeichnet wird
 {'- In der Station steht ein U-Bahn-Wagen, dessen Türen offen sind.' if _F(gs).wagen_ubahn2 else '- Dort, wo sonst der U-Bahn-Wagen hält, gibt ein schmaler, dunkler Durchgang den Weg in einen U-Bahn-Schacht frei. Es ist wichtig, diesen Durchgang zu erwähnen.'}
 - Wichtig: du darfst den Hund in der Beschreibung ausschließlich nur erwähnen, wenn er im Wagen (p_wagen) oder hier am Ort ist. In allen 
   anderen Fällen kann man den Hund von hier nicht sehen.

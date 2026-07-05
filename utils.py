@@ -26,7 +26,7 @@ class dl(IntFlag):
     ZOMBIE          = auto() # General testing of Zombie NPC
 
 GHOSTMODE = False   # No obstacles, no hidden ways, no NPCs
-NODOG = False # No dog NPC
+NODOG = True # No dog NPC
 DEBUG = True
 # DEBUG_LEVEL = dl.LLM|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.WEBGUI|dl.CMDLOG|dl.ZOMBIE
 DEBUG_LEVEL = dl.ZOMBIE|dl.LLM|dl.WEBGUI|dl.CMDLOG|dl.NPCPLAYERSTATE

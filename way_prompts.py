@@ -6,6 +6,15 @@ Suppposed to determine, if you can walk or run along a way, or if you need to fo
 from way import Way
 #from PlayerState import PlayerState
 
+def _F(gs: "GameState"):
+    """Return the structured flags container (GameFlags) from GameState."""
+    return gs.get_flags()
+"""
+For the LLM interaction: Some places have differing Prompt snippets depending
+on changes in game- and/or player state. Instead of setting these in the object
+itself, a function is called
+"""
+
 def w_schuppen_dach_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
     r = w.obstruction_check(gs)
     if r == "Free":
@@ -42,7 +51,8 @@ def w_innen_schuppen_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
     """
 
 def w_ubahn_warenautomat_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
-    return """
+    if _F(gs).hebel:
+        return """
 * Diesen weg kann man gehen, hinaufsteigen, herausgehen, laufen, hinauflaufen oder rauflaufen
 * Dieser Weg ist implizit eine Rolltreppe, ein Weg an die Oberfläche oder aus der U-Bahnstation heraus
 * Dieser weg führt zu o_warenautomat, Oberfläche, nach draussen, zurück - alles, was aus einer U-Bahn-Station an die Oberfläche führt
@@ -57,6 +67,12 @@ def w_ubahn_warenautomat_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> st
 'gehe p_warenautomat' zurück
 
 """
+    else:
+        return """
+* Dieser Weg scheint irgendwie nach oben zu führen
+* Er ist versperrt
+* Es ist eine Treppe
+        """
 
 def w_hoehle_felsen_prompt_f(gs:"GameState", pl:"PlayerState", w:Way) -> str:
     return """

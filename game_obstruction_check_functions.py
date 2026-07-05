@@ -32,6 +32,12 @@ def w_warenautomat_ubahn_obstruction_check(gs: GameState):
     else:
         return "Ist hier ein Weg? Und wenn, dann ist er versperrt!"
 
+def w_ubahn_warenautomat_obstruction_check(gs: GameState):
+    if _F(gs).hebel:
+        return "Free"
+    else:
+        return "Da geht eine Treppe nach oben - aber oben versperrt etwas den Ausgang!"
+
 def w_felsen_hoehle_obstruction_check(gs: GameState):
     if _F(gs).felsen:
         return "Da könnte ein Weg hinter dem Felsen sein - aber der Felsen liegt im Weg!"

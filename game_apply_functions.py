@@ -166,9 +166,8 @@ def o_olkanne_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None
         return "Das Handrad ist nun geschmiert. Ob es sich jetzt wohl bewegen lässt?"
     return f"Super. Du hast {onwhat.callnames[0]} mit Öl betreufelt. Hoffentlich gibt das keine Flecken!"
 
-def o_handrad_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None) -> str:
+def o_handrad_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
     if _F(gs).handrad_geschmiert:
-        _F(gs).handrad_offen = True
         _F(gs).korridor_offen = True
         return "Die Stahltür ist nun offen"
     else:

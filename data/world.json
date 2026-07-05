@@ -164,7 +164,11 @@
       "place_prompt": "",
       "place_prompt_f": "place_prompts.p_ubahn2_place_prompt_f",
       "callnames": [
-        "U-Bahn-2"
+        "U-Bahn-2",
+        "Bahnsteig",
+        "Bahnhof",
+        "UBahn",
+        "U-Bahn"
       ],
       "ways": [
         "w_ubahn2_wagen",
@@ -529,7 +533,7 @@
       "destination": "p_warenautomat",
       "text_direction": "hoch zum Warenautomaten",
       "description": "",
-      "obstruction_check": null,
+      "obstruction_check": "game_obstruction_check_functions.w_ubahn_warenautomat_obstruction_check",
       "way_prompt_f": "way_prompts.w_ubahn_warenautomat_prompt_f"
     },
     "w_wagen_ubahn": {

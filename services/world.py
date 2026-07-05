@@ -163,9 +163,8 @@ class GameFlags:
     flasche_voll: bool = True
     falltuer_offen: bool = False
     handrad_geschmiert: bool = False   # Handrad in der Höhle geschmiert?
-    handrad_offen: bool = False        # ... dann kann man es auch öffnen!
     werbeplakat_offen: bool = False
-    korridor_offen: bool = True        # Chris, händisch gesetzt
+    korridor_offen: bool = False       # Chris, händisch gesetzt
     kontrollraum_offen: bool = False   # Tür hinter dem Werbeplakat (U-Bahn-2 -> Kontrollraum)
     game_over: bool = False
     game_won: bool = False

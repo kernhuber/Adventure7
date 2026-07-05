@@ -51,7 +51,6 @@ class GameState(GameVerbsMixin, GameTurnMixin):
         "werbeplakat_offen",
         "korridor_offen",
         "kontrollraum_offen",
-        "handrad_geschmiert",
         "game_over",
         "game_won",
         "time",
