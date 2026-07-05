@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from collections import deque
+from dataclasses import fields
 
 
 from place import Place
@@ -32,37 +33,11 @@ from game_turn import GameTurnMixin
 
 class GameState(GameVerbsMixin, GameTurnMixin):
 
-    # --- Central list of flag field names kept in sync with GameFlags ---
-    # Keep in Sync with Class GameFlags in services/world.py
-    FLAG_FIELDS: Set[str] = {
-        "schuppentuer",
-        "leiter",
-        "hebel",
-        "geheimzahl",
-        "wagen_ubahn2",
-        "felsen",
-        "hauptschalter",
-        "dach",
-        "warenautomat_intakt",
-        "geldautomat_intakt",
-        "schuppen_intakt",
-        "flasche_voll",
-        "falltuer_offen",
-        "werbeplakat_offen",
-        "korridor_offen",
-        "kontrollraum_offen",
-        "game_over",
-        "game_won",
-        "time",
-        "debug_mode",
-        "zombie_awake",
-        "zombie_cooperative",
-        "schalter_kontrollraum",
-        "schalter_generatorraum",
-        "schalter_kontrollraum_timer",
-        "schalter_generatorraum_timer",
-        "umschlag_geheimbotschaft",
-    }
+    # --- Central set of flag field names ---
+    # Automatisch aus GameFlags (services/world.py) abgeleitet, damit die Liste
+    # nicht mehr an zwei Stellen von Hand gepflegt werden muss. GameFlags ist die
+    # einzige Quelle der Wahrheit; ein neues Feld dort wirkt hier automatisch.
+    FLAG_FIELDS: Set[str] = {f.name for f in fields(GameFlags)}
 
     # Provide legacy attribute access to flags (read)
     def __getattr__(self, name: str):
@@ -200,59 +175,16 @@ class GameState(GameVerbsMixin, GameTurnMixin):
         # Wege, die verschlossen sind
         #
         self.players = []
-        self.time = 0
-        self.debug_mode = False
         #
         # Game State Variables and Flags
         #
-        self.schuppentuer=False
-        self.leiter = False
-        self.hebel = False                 # Warenautomat --> Ubahn
+        # Die Startwerte ALLER Flags leben zentral als Defaults in GameFlags
+        # (services/world.py). Deshalb wird hier nur noch das eine Flag gesetzt,
+        # dessen Startwert vom Default abweicht: die zufällige Geheimzahl des
+        # Geldautomaten. Alles andere übernimmt die Dataclass automatisch.
+        # (# self.geheimzahl = "18513" -> der Geldautomat akzeptiert nur 0-9999)
         from random import randint
-        self.geheimzahl = f"{randint(1, 9999):04d}"
-        # self.geheimzahl = 18513            # Geldautomat - wobei der nur zwischen 0 und 999 akzeptiert
-        self.ubahn_in_otherstation = False # Ist unsere U-Bahn in Station 2?
-        self.felsen = True                 # Ist der Felsen noch im Weg?
-        self.hauptschalter = False         # Ohne Strom geht hier gar nichts
-        self.dach = True                   # An Ende hat jemand das Dach weggesprengt
-        self.warenautomat_intakt = True    # oder den Warenautomat
-        self.geldautomat_intakt = True     # oder den Geldautomat
-        self.schuppen_intakt = True        # oder den Schuppen
-        self.flasche_voll = True           # Eine Grace Period von 20 Zügen, danach muss der Spieler den Wasserspender entdeckt haben
-        self.game_over = False             # Na hoffentlich noch nicht so schnell!
-        self.game_won = False              # Wenn true, hat der Spieler das Spiel gewonnen.
-        self.zombie_awake = False
-        self.zombie_cooperative = False
-        self.schalter_kontrollraum = False
-        self.schalter_generatorraum = False
-        self.schalter_kontrollraum_timer = 0
-        self.schalter_generatorraum_timer = 0
-        self.umschlag_geheimbotschaft = False
-        # Mirror flags into a structured container (GameFlags) for future decoupling
-        self._flags = GameFlags(
-            schuppentuer=self.schuppentuer,
-            leiter=self.leiter,
-            hebel=self.hebel,
-            geheimzahl=self.geheimzahl,
-            wagen_ubahn2=self.ubahn_in_otherstation,
-            felsen=self.felsen,
-            hauptschalter=self.hauptschalter,
-            dach=self.dach,
-            warenautomat_intakt=self.warenautomat_intakt,
-            geldautomat_intakt=self.geldautomat_intakt,
-            schuppen_intakt=self.schuppen_intakt,
-            game_over=self.game_over,
-            game_won=self.game_won,
-            time=self.time,
-            debug_mode=self.debug_mode,
-            zombie_awake=self.zombie_awake,
-            zombie_cooperative=self.zombie_cooperative,
-            schalter_kontrollraum=self.schalter_kontrollraum,
-            schalter_generatorraum=self.schalter_generatorraum,
-            schalter_kontrollraum_timer=self.schalter_kontrollraum_timer,
-            schalter_generatorraum_timer=self.schalter_generatorraum_timer,
-            umschlag_geheimbotschaft=self.umschlag_geheimbotschaft,
-        )
+        self._flags = GameFlags(geheimzahl=f"{randint(1, 9999):04d}")
         #self.llm = GeminiInterface()       # Unser Sprachmodell
         # Prefer injected LLM; fallback to local GeminiInterface to avoid module-level import cycles
         if self.llm is None:
