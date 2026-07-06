@@ -167,6 +167,9 @@ def o_olkanne_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None
     return f"Super. Du hast {onwhat.callnames[0]} mit Öl betreufelt. Hoffentlich gibt das keine Flecken!"
 
 def o_handrad_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    if pl is not None and pl.location.name != "p_hoehle":
+        return "Hier gibt es keine Handrad."
+
     if _F(gs).handrad_geschmiert:
         _F(gs).korridor_offen = True
         return "Die Stahltür ist nun offen"
@@ -556,6 +559,8 @@ def o_stahltuer_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=No
         return "Hier gibt es keine Stahltür."
     if _F(gs).korridor_offen:
         return "Die Stahltür steht bereits offen."
+    if not _F(gs).handrad_geschmiert:
+        return "Da ist nichts zu machen - versuche es mit dem Handrad."
     _F(gs).korridor_offen = True
     return (
         "Du packst das schwere Handrad und drehst mit aller Kraft. Ein Riegel gleitet zur Seite, "
