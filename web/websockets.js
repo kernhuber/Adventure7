@@ -25,6 +25,23 @@ let gameState = {
     lastAction: { command: "Noch keine", result: "Warte auf Verbindung..." }
 };
 
+// Umgebungs-"Grundlinie" zum Zugbeginn: die Objekte/Wege, wie sie am Ende des
+// vorherigen Spielzugs sichtbar waren. Erscheint in DIESEM Zug etwas Neues, ohne
+// dass sich der Ort ändert, wird es in "Umgebung" bis zum nächsten Zug farbig
+// hervorgehoben (CSS-Klasse .env-new).
+let envBaseline = { location: null, objects: [], ways: [] };
+
+// Am Beginn eines neuen Spielzugs (neuer Benutzerbefehl) einfrieren, wie die
+// Umgebung JETZT aussieht — noch bevor die Ergebnisse dieses Zugs eingespielt
+// werden. Der Vergleich dagegen liefert dann die neu erschienenen Einträge.
+function snapshotEnvBaseline() {
+    envBaseline = {
+        location: gameState.player?.location ?? null,
+        objects: [...(gameState.environment?.objects || [])],
+        ways: [...(gameState.environment?.ways || [])],
+    };
+}
+
 let backend = null;
 
 class AdventureBackend {
@@ -94,7 +111,10 @@ class AdventureBackend {
                 break;
             case 'command_result': {
                 const raw = (data.command || '').trim();
-                if (raw) resetLastAction(raw);   // neue Benutzereingabe -> Feld leeren + Header
+                if (raw) {
+                    resetLastAction(raw);        // neue Benutzereingabe -> Feld leeren + Header
+                    snapshotEnvBaseline();       // Umgebung vor den Zug-Ergebnissen einfrieren
+                }
                 const label = data.action_label || data.executed_command || '';
                 let result = '';
                 if (data.results && data.results.length > 0) {
@@ -425,13 +445,24 @@ function updateUI() {
             }
         }
 
+        // Neu erschienene Objekte/Wege hervorheben — aber nur, wenn der Spieler
+        // den Ort NICHT gewechselt hat (bei Ortswechsel ist ohnehin alles neu).
+        const sameLoc = envBaseline.location !== null &&
+                        envBaseline.location === (gameState.player?.location ?? null);
+        const baseObjSet = sameLoc ? new Set(envBaseline.objects) : null;
+        const baseWaySet = sameLoc ? new Set(envBaseline.ways) : null;
+        const liFor = (text, baseSet) => {
+            const isNew = baseSet && !baseSet.has(text);
+            return '<li' + (isNew ? ' class="env-new"' : '') + '>' + text + '</li>';
+        };
+
         const objectsList = document.getElementById('objects-list');
         if (objectsList) {
             const objects = gameState.environment?.objects || [];
             if (objects.length === 0) {
                 objectsList.innerHTML = '<li><em>Keine Objekte</em></li>';
             } else {
-                objectsList.innerHTML = objects.map(obj => '<li>' + obj + '</li>').join('');
+                objectsList.innerHTML = objects.map(obj => liFor(obj, baseObjSet)).join('');
             }
         }
 
@@ -441,7 +472,7 @@ function updateUI() {
             if (ways.length === 0) {
                 waysList.innerHTML = '<li><em>Keine Wege</em></li>';
             } else {
-                waysList.innerHTML = ways.map(way => '<li>' + way + '</li>').join('');
+                waysList.innerHTML = ways.map(way => liFor(way, baseWaySet)).join('');
             }
         }
 

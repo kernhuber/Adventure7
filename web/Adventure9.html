@@ -199,6 +199,23 @@
             animation: flash-highlight 0.4s ease-out;
         }
 
+        /* Neu erschienene Objekte/Wege in "Umgebung": bleiben bis zum nächsten
+           Spielzug golden hervorgehoben, mit kurzem Aufleuchten beim Erscheinen. */
+        #objects-list li.env-new,
+        #ways-list li.env-new {
+            color: #ffd700;
+            font-weight: bold;
+            background: rgba(255, 215, 0, 0.18);
+            border-left: 3px solid #ffd700;
+            padding-left: 6px;
+            border-radius: 3px;
+            animation: env-new-in 0.6s ease-out;
+        }
+        @keyframes env-new-in {
+            0%   { background: rgba(255, 215, 0, 0.75); }
+            100% { background: rgba(255, 215, 0, 0.18); }
+        }
+
         /* Status-Panel blinkt rot, wenn der Zombie zubeißt (Lebensenergie/Durst sinkt) */
         .bite-flash { animation: bite-flash-anim 0.4s ease-in-out 3; }
         @keyframes bite-flash-anim {
