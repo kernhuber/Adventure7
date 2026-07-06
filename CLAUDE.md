@@ -172,7 +172,32 @@ Room descriptions (`place_prompts.py`) are being filled in room by room.
 (caches only) serialise the whole graph to one JSON (`saves/<name>.json`, gitignored).
 Triggers: text `speichere <name>`/`lade <name>` and GUI buttons + a named-slot modal
 (`web/save_load.js`). The LLM `narration_cache` is persisted so the scene is identical
-after load. **When adding a new savable field**, add it to that class's `save()`/`load()`.
+after load. **When adding a new savable field**, add it to that class's `save()`/`load()`
+— except **GameFlags** fields, which persist automatically (see next).
+
+**Flags are single-source-of-truth in `GameFlags`** (2026-07-05, `services/world.py`).
+`GameState.FLAG_FIELDS` is derived by reflection (`dataclasses.fields(GameFlags)`) instead
+of a hand-kept literal that had silently drifted (`handrad_geschmiert` was missing). The
+constructor no longer double-books flag start values — it only overrides the one that
+differs from the dataclass default (the random ATM PIN), via the `GameFlags(...)` call in
+`init_game`. Save/load is already dataclass-driven (`asdict` + a generic restore loop), so
+**adding a new flag is now ONE line in `GameFlags`** — name registration, the `gs.<flag>`
+legacy mirror, and persistence all follow automatically. The `__getattr__`/`__setattr__`
+flag-mirror shim itself still stands. Removed the dead `ubahn_in_otherstation` alias.
+
+**New objects/ways are highlighted in *Umgebung* until the next turn** (2026-07-05,
+GUI-only). When a game action reveals an object/way *without a location change*, the new
+entries get a golden `.env-new` highlight that persists until the next turn.
+`web/websockets.js` freezes an `envBaseline` at the start of each user command (before that
+turn's results are applied) and `updateUI()` marks entries present now but absent from the
+baseline (only when location is unchanged) — robust against the several renders per turn
+(`command_result` + `npc_actions`). CSS in `web/Adventure9.html`.
+
+**Höhle steel-door puzzle is two-step** (2026-07-05). The Handrad on the steel door is
+stuck until greased with the Ölkanne (`o_olkanne` → `handrad_geschmiert`); then `anwenden
+o_handrad`/`o_stahltuer` in the Höhle sets `korridor_offen`. Both openers guard on location
+(`p_hoehle`) and the greased flag. `korridor_offen` now **defaults to `False`** (was
+hand-forced `True`).
 
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
