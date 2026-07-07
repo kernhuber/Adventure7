@@ -199,6 +199,19 @@ o_handrad`/`o_stahltuer` in the Höhle sets `korridor_offen`. Both openers guard
 (`p_hoehle`) and the greased flag. `korridor_offen` now **defaults to `False`** (was
 hand-forced `True`).
 
+**Gemini-error UX + fail-safe parse** (2026-07-07). When an input fails because of an LLM
+error, a centered full-screen **"Spielleitung" modal** (`web/spielleitung_modal.js`, image
+`web/gemini_large.png`, pulsing red glow) now appears — deliberately NOT a top-right icon,
+so the player can't mistake it for a game character. It is triggered in `web/websockets.js`
+when a `command_result` carries `is_game_move === false` (the backend sets that only for
+`zurueckweisen` + `is_system_error`). Related engine fix: the command parser
+(`gemini_interface.parse_user_input_to_commands`) **no longer retries an empty/unparseable
+response** — a retry there tends to hallucinate a plausible-but-wrong command that then runs
+silently (observed: an unwanted `gehe` teleport). It now fails safe straight to
+`is_system_error` (→ modal, player stays put, no round consumed). The **exception** path
+(503/network) keeps its single retry, since a successful network retry yields a correctly
+parsed command, not a guess.
+
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
 via flags (model them on `korridor_offen`/`o_stahltuer`: a `*_offen` flag in

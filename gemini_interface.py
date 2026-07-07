@@ -1011,11 +1011,16 @@ Die Ortsbeschreibung:
                     except json.JSONDecodeError as je:
                         dprint(dl.LLM, f"JSON parse failed for text: {raw_text[:200]} — error: {je}")
 
-                # Fallback (z.B. wenn response.text kein gültiges JSON war)
-                if attempt == 0:
-                    dprint(dl.LLM, f"⚠️ Retry: API returned fallback response for '{user_input}', retrying in 1s (attempt {attempt+1}/2)")
-                    time.sleep(1)
-                    continue
+                # Fallback: leere/unparsebare Antwort (kein function_call, kein
+                # verwertbarer Text). FAIL-SAFE: hier bewusst KEIN Retry — ein
+                # zweiter Versuch rät oft ein plausibles, aber falsches Kommando,
+                # das dann still ausgeführt würde (beobachtet: ein ungewollter
+                # "gehe"-Zug). Stattdessen sofort als Systemfehler zurückweisen ->
+                # das "Spielleitung"-Modal erscheint, der Spieler bleibt stehen und
+                # kann es erneut versuchen. (Der Exception-Pfad unten behält seinen
+                # Retry für transiente 503/Netzwerkfehler — der liefert bei Erfolg
+                # ein korrekt geparstes Kommando, kein geratenes.)
+                dprint(dl.LLM, f"⚠️ Leere/unparsebare LLM-Antwort für '{user_input}' — als Systemfehler zurückgewiesen (kein Retry).")
                 return [{"function_call": {"name": "zurueckweisen", "args": {
                     "why": "Interne Befehlsstruktur konnte nicht interpretiert werden.",
                     "is_system_error": True}}}]
