@@ -40,7 +40,7 @@ function showSpielleitungModal() {
     img.width = 256;
     img.height = 256;
     img.alt = 'Spielleitung';
-    img.style.cssText = 'width:256px; height:256px; border-radius:10px; display:block; margin:0 auto 18px;';
+    img.style.cssText = 'width:320px; height:256px; border-radius:10px; display:block; margin:0 auto 18px;';
     box.appendChild(img);
 
     const text = document.createElement('div');
