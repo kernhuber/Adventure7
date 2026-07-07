@@ -143,7 +143,9 @@ def w_ubahn2_ubahnschacht_obstruction_check(gs: "GameState") -> str:
 def w_ubahnschacht_ubahn2_obstruction_check(gs: "GameState") -> str:
     # Rückweg aus dem Schacht auf den Bahnsteig ist immer frei (kein Soft-Lock, falls der
     # Wagen zurückkehrt, während man im Schacht ist).
-    return "Free"
+    if not _F(gs).wagen_ubahn2:
+        return "Free"
+    return "Irgendwas grosses blockiert den Weg. Es ist dunkel, ich ann nichts sehen - sieht aus wie ein ... Eisenbahnwagen?"
 
 # --- Innere Dungeon-Wege: frei begehbar ---------------------------------------------
 # Das Dungeon hat ZWEI Eingänge, die je ihr eigenes Rätsel als Gate haben:
@@ -155,13 +157,25 @@ def w_ubahnschacht_ubahn2_obstruction_check(gs: "GameState") -> str:
 # gegatet werden (Rätsel) - dann hier "Free" durch die Bedingung ersetzen.
 
 def w_ubahn_schacht_korridor_obstruction_check(gs: "GameState") -> str:
-    return "Free"
+    if _F(gs).dungeon_offen:
+        return "Free"
+    return "Eine stabile Stahltür! Himmel, wer baut sowas! Und wo die wohl hinführt?"
+
+def w_korridor_ubahn_schacht_obstruction_check(gs: "GameState") -> str:
+    if _F(gs).dungeon_offen:
+        return "Free"
+    return "Eine stabile Stahltür! Da steht U-Bahn drauf. Sehr lustig!"
 
 def w_labor_korridor_obstruction_check(gs: "GameState") -> str:
-    return "Free"
+    if _F(gs).dungeon_offen:
+        "Free"
+    return "Die Tür zum Korridor ... Sie ist leider verriegelt!"
+
 
 def w_korridor_labor_obstruction_check(gs: "GameState") -> str:
-    return "Free"
+    if _F(gs).dungeon_offen:
+        "Free"
+    return "Eine Tür, auf der Labor steht. Sie ist leider verriegelt"
 
 def w_korridor_bibliothek_obstruction_check(gs: "GameState") -> str:
     return "Free"

@@ -509,7 +509,7 @@ MANUAL_TEXT = (
     "   schafft es nicht — die beiden Räume liegen zu weit auseinander.\n"
     "\n"
     "3. Beide Schalter müssen GLEICHZEITIG aktiviert werden (innerhalb weniger\n"
-    "   Sekunden voneinander).\n"
+    "   Spielzüge voneinander).\n"
     "\n"
     "4. Nur bei synchroner Aktivierung springt der Generator an — und der Weg\n"
     "   zur Erlösung öffnet sich.\n"

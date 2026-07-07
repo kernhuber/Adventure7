@@ -62,3 +62,15 @@ def o_muelleimer_reveal_f(gs: "GameState", pl: "PlayerState" = None, what: "Game
         return f"Im Mülleimer findest Du einen Zettel mit einer Geheimzahl! Die Geheimzahl ist: {gs.geheimzahl}"
     else:
         return gs.objects["o_geheimzahl"].examine
+
+PLAKAT_TEXT = """
+PROUDLY BUILT BY DINGENS ELECTRIC
+=================================
+
+Betätigen sie den Hauptschalter in der Höhle
+um die Anlage zu aktivieren
+"""
+def o_solaranlage_reveal_f(gs: "GameState", pl: "PlayerState" = None, what: "GameObject" = None,
+                          onwhat: "GameObject" = None) -> str:
+    gs._pending_manual_popup = PLAKAT_TEXT
+    return gs.objects["o_solaranlage"].examine

@@ -184,8 +184,6 @@ Kontrollraum
 ============
 - Der Kontrollraum der kleinen U-Bahn-Anlage.
 - An den Wänden hängen Schalttafeln, Monitore und vergilbte Betriebspläne.
-- Auf einem Pult liegt ein abgegriffenes Betriebshandbuch (Manual) - man kann es mitnehmen und lesen.
-- An der Wand sitzt ein großer roter Notfall-Schalter (Kontrollraumschalter).
 - Daneben steht die U-Bahn-Steuerung mit einem Hebel ('Bahnsteig 1' / 'Bahnsteig 2').
 """
     if _F(gs).schalter_kontrollraum:
@@ -197,14 +195,12 @@ Kontrollraum
     return rv
 
 def p_ubahn_schacht_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
-    return """
+    return f"""
 U-Bahn-Schacht
 ==============
 - Ein enger, dunkler Wartungsschacht neben dem zweiten Bahnsteig.
 - An den Wänden laufen dicke Kabelstränge und rostige Rohre entlang.
 - Es riecht nach Staub und altem Öl; von irgendwo tropft Wasser.
-- Zurück führt der Weg auf den Bahnsteig (U-Bahn-2), in die andere Richtung
-  geht es tiefer in einen Korridor der Anlage.
 """
 
 def p_korridor_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:

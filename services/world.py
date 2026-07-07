@@ -166,6 +166,7 @@ class GameFlags:
     handrad_geschmiert: bool = False   # Handrad in der Höhle geschmiert?
     werbeplakat_offen: bool = False
     korridor_offen: bool = False       # Chris, händisch gesetzt
+    dungeon_offen: bool = False        # Damit man nicht einfach von der Höhle via Korridor überall hinkommt
     kontrollraum_offen: bool = False   # Tür hinter dem Werbeplakat (U-Bahn-2 -> Kontrollraum)
     game_over: bool = False
     game_won: bool = False

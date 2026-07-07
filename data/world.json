@@ -677,8 +677,8 @@
       "destination": "p_ubahn_schacht",
       "text_direction": "zu U-Bahn-Schacht",
       "description": "",
-      "obstruction_check": null,
-      "way_prompt_f": null
+      "obstruction_check": "game_obstruction_check_functions.w_korridor_ubahn_schacht_obstruction_check",
+      "way_prompt_f": "way_prompts.w_korridor_ubahn_schacht_prompt_f"
     },
     "w_ubahn_schacht_korridor": {
       "source": "p_ubahn_schacht",
@@ -1269,18 +1269,16 @@
     },
     "o_solaranlage": {
       "name": "o_solaranlage",
-      "examine": "Ein Gerüst mit vielen Solarkollektoren",
+      "examine": "Ein Gerüst mit vielen Solarkollektoren, auf einem ist ein Sticker aufgeklebt",
       "help_text": "",
       "callnames": [
-        "Solaranlage",
-        "PV-Anlage",
-        "Photovoltaik-Anlage"
+        "Solaranlage"
       ],
       "ownedby": "p_solaranlage",
       "fixed": true,
       "hidden": false,
       "apply_f": null,
-      "reveal_f": null,
+      "reveal_f": "game_reveal_functions.o_solaranlage_reveal_f",
       "take_f": null,
       "prompt_f": "object_prompts.o_solaranlage_prompt_f"
     },
