@@ -121,6 +121,12 @@ class AdventureBackend {
                     result = data.results[data.results.length - 1].result || '';
                 }
                 appendCommandResult(label, result);
+                // Gemini-/Systemfehler: das Backend weist mit is_system_error zurück,
+                // wodurch is_game_move === false wird. Dann die "Spielleitung" zeigen.
+                const systemError = (data.results || []).some(r => r.is_game_move === false);
+                if (systemError && typeof showSpielleitungModal === 'function') {
+                    showSpielleitungModal();
+                }
                 if (data.game_state) this.updateGameState(data.game_state);
                 else updateUI();
                 break;
