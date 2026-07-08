@@ -83,11 +83,28 @@ Legende: **Wirkung** / **Risiko** / **provider-agnostisch?**
   Austauschbarkeit: pro Aufgabe das billigste fähige Modell wählen — Entscheidung hinter dem
   `LLMClient`-Interface.
 
-## 4. Umsetzungs-Reihenfolge (aktiver Plan)
+## 4. Umsetzungs-Reihenfolge & Fortschritt
 
-1. **B1 + B1b** — billig, sicher, provider-agnostisch, Voraussetzung fürs Caching. Messen.
-2. **B2** — Tool-Schema, mit Qualitäts-A/B.
-3. **A1** — Caching hinter dem `LLMClient`-Interface (größter struktureller Gewinn).
+- [x] **B1 + B1b — ERLEDIGT (Token-Win).** Instruktions-/Beispielblock entrümpelt (nur Dedup +
+  Formatierung, kein Beispiel inhaltlich entfernt) und fix/variabel getrennt (fixer Prefix vorn,
+  Kontext + User-Eingabe hinten). Gemessen (kontrolliert, gleiche Räume): `instruktionen+bsp`
+  ~8.410 → ~4.470 Zeichen (−47 %); Parse Ø/Call **4.613 → 3.823 tok (−17 %)**; `narrate` unverändert
+  (Kontrolle); null Fehlparses. Commit `f33428f`.
+- [x] **B2 — ERLEDIGT (Quality, ~token-neutral).** `enum`-Scoping pro Verb: `nimm` nur Objekte am
+  Ort (`available_object_ids_here`), `ablegen` nur Inventar (`player_inventory_ids`); Fallback auf
+  die volle Liste bei leerer Teil-Liste. Ergebnis: **weniger ungültige Tool-Calls** (subjektiv
+  „viel weniger Fehler"), Token-Effekt aber **vernachlässigbar (~−0,5 % Tools-Schema)** — das Schema
+  ist fast nur qualitätstragende, *fixe* Struktur.
+- [ ] **A1 — NÄCHSTER SCHRITT** (der eigentliche Token-Hebel für die ~68 % Tools-Schema). Fixen
+  Prefix (Setting + Instruktionen + Tool-Beschreibungen) einmal bezahlen, danach cachen. Provider-
+  agnostisch als optionale Fähigkeit im `LLMClient`-Interface; **zuerst** die aktuelle google-genai-
+  Caching-Mechanik in der Doku prüfen (v. a. Interaktion mit den pro-Ort wechselnden `enum`s).
+
+**Erkenntnis nach B1/B2:** Der Parser-Prompt teilt sich jetzt in grob ~19 % Instruktionen /
+~13 % Kontext / **~68 % Tools-Schema** auf. Das Tools-Schema ist **fix + qualitätstragend**
+(13 Tool-Defs + Beschreibungen + Orts-/Objekt-`enum`s) → nicht sinnvoll trimmbar → **A1 (Caching)**
+ist der einzige große verbleibende Hebel dafür. B2 zeigte: `enum`-Scoping bringt Qualität, kaum
+Tokens.
 
 ## 5. Weitere Möglichkeiten — **NICHT jetzt umsetzen**
 

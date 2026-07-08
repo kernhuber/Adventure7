@@ -596,6 +596,12 @@ Die Ortsbeschreibung:
         available_place_ids = game_context_for_tools.get("available_place_ids", [])
         available_target_player_ids = game_context_for_tools.get("available_target_player_ids", [])
 
+        # B2 (enum-Scoping): engere, korrektere ID-Listen pro Verb -> kleineres Schema UND
+        # weniger ungültige Tool-Calls. 'nimm' nur Objekte am Ort, 'ablegen' nur Inventar.
+        # Fallback auf die volle Liste, falls eine Teil-Liste leer ist (kein leeres enum).
+        nimm_object_ids = game_context_for_tools.get("available_object_ids_here", []) or available_object_ids
+        ablegen_object_ids = game_context_for_tools.get("player_inventory_ids", []) or available_object_ids
+
 
 
 
@@ -668,7 +674,7 @@ Die Ortsbeschreibung:
                     "whato": Schema(
                         type=Type.STRING,
                         description="Die eindeutige ID des Objekts, das aufgenommen wird (z.B. 'o_salami').",
-                        enum=available_object_ids
+                        enum=nimm_object_ids
                     )
                 },
                 required=["whato"]
@@ -683,7 +689,7 @@ Die Ortsbeschreibung:
                     "whato": Schema(
                         type=Type.STRING,
                         description="Die eindeutige ID des Objekts, das abgelegt wird (z.B. 'o_umschlag').",
-                        enum=available_object_ids
+                        enum=ablegen_object_ids
                     )
                 },
                 required=["whato"]

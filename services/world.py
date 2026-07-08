@@ -33,11 +33,13 @@ class ContextBuilder:
         # Objekte hier (sichtbar)
         narration_details["Objekte hier"] = []
         all_object_ids_in_context: List[str] = []
+        object_ids_here: List[str] = []   # nur Objekte AM ORT (ohne Inventar/NPCs) -> für 'nimm'
         for obj in pl.location.place_objects:
             if not obj.hidden:
                 obj_description_text = obj.prompt_f(gs, pl) if obj.prompt_f else obj.examine
                 narration_details["Objekte hier"].append({obj.callnames[0]: obj_description_text})
                 all_object_ids_in_context.append(obj.name)
+                object_ids_here.append(obj.name)
 
         # Objekte im Inventar
         narration_details["Objekte, die der Spieler bei sich trägt"] = []
@@ -81,6 +83,7 @@ class ContextBuilder:
 
         context_data["narration_details"] = narration_details
         context_data["available_object_ids"] = list(set(all_object_ids_in_context))
+        context_data["available_object_ids_here"] = list(set(object_ids_here))  # nur am Ort -> 'nimm'
         context_data["available_place_ids"] = list(set(all_place_ids_for_navigation))
         context_data["available_target_player_ids"] = [p.name for p in gs.players]
         context_data["player_location_id"] = pl.location.name
