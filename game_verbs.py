@@ -55,6 +55,7 @@ class GameVerbsMixin:
             "context": (self.verb_context,0),
             "dogstate": (self.verb_dogstate,0),
             "zombiestate": (self.verb_zombiestate,0),
+            "tokenstats": (self.verb_tokenstats,0),
             "quit": (self.verb_quit,0),
             "nichts": (self.verb_noop,0),
             #"interagiere": (self.verb_interact,2),
@@ -135,6 +136,38 @@ class GameVerbsMixin:
         ]
         print("\n".join(out))
         return "nichts"
+
+    def verb_tokenstats(self, pl: PlayerState, session_id=None):
+        """Debug-Kommando analog zu dogstate/zombiestate: den kumulierten LLM-Token-
+        Verbrauch der laufenden Session nach Quelle (caller) aufschlüsseln - die Baseline
+        fürs Prompt-Optimierungs-Projekt. Datenquelle: GeminiInterface.token_report()."""
+        llm = getattr(self.llm, "_impl", self.llm)   # ggf. am Adapter vorbei auf die echte LLM
+        report_fn = getattr(llm, "token_report", None)
+        if not callable(report_fn):
+            print("Kein Token-Report verfügbar (Demo-Modus / kein GeminiInterface).")
+            return "nichts"
+        report = report_fn()
+        gesamt = report.pop("_gesamt", {"calls": 0, "tokens": 0})
+        rows = sorted(report.items(), key=lambda kv: kv[1].get("tokens", 0), reverse=True)
+        out = [
+            "",
+            "==================== TOKEN-REPORT (Session) ====================",
+            f" {'Quelle (caller)':<44}{'Calls':>7}{'Tokens':>10}{'Ø/Call':>9}",
+            " " + "-" * 68,
+        ]
+        for caller, s in rows:
+            calls, tok = s.get("calls", 0), s.get("tokens", 0)
+            avg = (tok / calls) if calls else 0
+            out.append(f" {caller:<44}{calls:>7}{tok:>10}{avg:>9.0f}")
+        out += [
+            " " + "-" * 68,
+            f" {'GESAMT':<44}{gesamt.get('calls', 0):>7}{gesamt.get('tokens', 0):>10}",
+            "================================================================",
+            "",
+        ]
+        print("\n".join(out))
+        return (f"Token-Report in der Shell ausgegeben — Gesamt: "
+                f"{gesamt.get('tokens', 0)} Tokens / {gesamt.get('calls', 0)} Calls.")
 
 
 
