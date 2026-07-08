@@ -608,7 +608,7 @@ Beschreibung des Hundes
         
         
         """
-        r = llm.simple_message(prompt,100)
+        r = llm.simple_message(prompt, 100, caller="dog_chat")
         return r
 
 
@@ -642,7 +642,7 @@ Beschreibung des Hundes
         
         Gebe NUR die Zusammenfassung aus, keine Einleitenden Worte.
 """
-        r = llm.simple_message(msg, 1000)
+        r = llm.simple_message(msg, 1000, caller="dog_end_chat")
         self.last_chat=r
         dprint(dl.NPCPLAYERSTATE,f"-----------------------\nDialog mit dem Hund:\n{self.unpack_chat(messages)}")
         dprint(dl.NPCPLAYERSTATE,f"Neue Zusammenfassung:\n{r}\n----------------------------\n")

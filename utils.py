@@ -18,6 +18,7 @@ class dl(IntFlag):
     NPCPLAYERSTATE  = auto() # Dog NPC
     LLM             = auto() # Gemini-Interface
     LLM_PROMPT      = auto() # Prompting
+    LLM_TOKENS      = auto() # Token usage
     EXPLOSIONSTATE  = auto() # test messages from the explosion NPC
     SYSTEST         = auto() # test game engine with atomic messages
     SYSTESTLLM      = auto() # test game with actual sentences

@@ -14,8 +14,8 @@ class LLMClientGemini(LLMClient):
     def clean_truncated_sentence(self, text: str) -> str:
         return self._impl.clean_truncated_sentence(text)
 
-    def simple_message(self, text: str, maxtokens: int) -> str:
-        return self._impl.simple_message(text, maxtokens)
+    def simple_message(self, text: str, maxtokens: int = 80, caller: str = "simple_message") -> str:
+        return self._impl.simple_message(text, maxtokens, caller=caller)
 
     def narrate(self, gs: Any, pl: Any) -> str:
         return self._impl.narrate(gs, pl)
@@ -25,9 +25,6 @@ class LLMClientGemini(LLMClient):
 
     def parse_user_input_to_commands(self, user_input: str, game_context_for_tools: Mapping[str, Any]) -> list[Mapping[str, Any]]:
         return self._impl.parse_user_input_to_commands(user_input, game_context_for_tools)
-
-    def get_npc_action(self, game_state_for_npc: Mapping[str, Any]) -> Mapping[str, Any]:
-        return self._impl.get_npc_action(game_state_for_npc)
 
     # --- Storable (Save/Load): an die echte GeminiInterface (_impl) delegieren, damit
     #     GameState.save()/load() unabhängig davon funktioniert, ob gs.llm der Adapter

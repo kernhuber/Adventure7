@@ -272,11 +272,6 @@ Am Ort sind folgende Objekte zu sehen:"""
                 retstr = retstr + f'- {w.destination.callnames[0]} ({w.destination.name})\n'
         return retstr
 
-    def verb_lookaround_llm(self, pl: PlayerState, session_id):
-
-        rval = self.llm.generate_scene_description(self.compile_current_game_context(pl))
-        return rval
-
     def verb_lookaround(self, pl: PlayerState, session_id):
         r=self.llm.narrate(self,pl)
         return r

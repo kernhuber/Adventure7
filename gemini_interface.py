@@ -256,7 +256,7 @@ Die Ortsbeschreibung:
         self.tokens += n
         self.numcalls += 1
         self.token_details.append({"caller": caller, "tokens": n})
-        dprint(dl.LLM, f"[tokens] {caller}: {n} (kumuliert {self.tokens}, calls {self.numcalls})")
+        dprint(dl.LLM_TOKENS, f"[tokens] {caller}: {n} (kumuliert {self.tokens}, calls {self.numcalls})")
 
     def token_report(self) -> dict:
         """Aggregiert token_details nach Aufrufer -> {caller: {'calls':n,'tokens':t}} plus
@@ -275,11 +275,15 @@ Die Ortsbeschreibung:
         report["_gesamt"] = {"calls": self.numcalls, "tokens": total}
         return report
 
-    def simple_message(self,message, maxtokens=80):
+    def simple_message(self, message, maxtokens=80, caller="simple_message"):
         #
         # Send a message to the LLM and return the answer.
         # Retries transient server errors (503 UNAVAILABLE / 429 / 504) with a short
         # backoff before giving up, so demand spikes don't surface as a "hang".
+        #
+        # ``caller`` labels the token accounting (token_report / dl.LLM_TOKENS) so we can
+        # tell WHO spent the tokens (dog chat, zombie chat, zombie reasoning, ...). All
+        # these paths share this one method, so without a label they were indistinguishable.
         #
         max_attempts = 3
         for attempt in range(max_attempts):
@@ -293,7 +297,7 @@ Die Ortsbeschreibung:
                     )
                 )
 
-                self._log_tokens(response, "GeminiInterface.simple_message")
+                self._log_tokens(response, f"GeminiInterface.{caller}")
                 r = self.clean_truncated_sentence(response.text)
                 return r
             except Exception as e:
@@ -1053,45 +1057,3 @@ Die Ortsbeschreibung:
                 return [{"function_call": {"name": "zurueckweisen", "args": {
                     "why": "Ein unerwarteter interner Fehler ist aufgetreten. Bitte versuche es anders.",
                     "is_system_error": True}}}]
-
-    def get_npc_action(self, game_state_for_npc: dict) -> dict:
-        """
-        Generiert eine strategische Aktion für den NPC (Hund) basierend auf dem Spielzustand.
-
-        Args:
-            game_state_for_npc: Ein Dictionary mit dem relevanten Spielzustand für den NPC,
-                                z.B. Spielerposition, NPC-Position, relevante Objekte, Ziele etc.
-
-        Returns:
-            Ein Dictionary mit der Strategie und der Liste der atomaren Befehle des NPC.
-            Beispiel: {"strategy": "Ich werde den Spieler verfolgen.", "commands": ["gehe p_player_location"]}
-        """
-        prompt = f"""
-        Du bist ein Non-Player-Charakter (NPC), ein Hund, in einem Text-Adventure.
-        Dein Hauptziel ist es, den Spieler daran zu hindern, sein Fahrrad zu reparieren und somit die Welt zu retten.
-        Du bist listig, kannst den Spielzustand analysieren und deine Strategie dynamisch anpassen.
-    
-        Aktueller Spielzustand (JSON):
-        {json.dumps(game_state_for_npc, indent=2)}
-    
-        Überlege dir eine prägnante Strategie (1-2 Sätze) für deine nächste Aktion und generiere dann
-        eine Liste von atomaren Game-Engine-Befehlen, die deine Strategie umsetzen.
-        Die Befehle sollen in einem JSON-Objekt mit den Schlüsseln "strategy" (String) und "commands" (Liste von Strings) zurückgegeben werden.
-    
-        Beispiel-Output:
-        {{
-            "strategy": "Ich werde die Salami fressen, um den Spieler abzulenken.",
-            "commands": ["gehe o_salami_location", "nimm o_salami", "anwenden o_salami"]
-        }}
-    
-        Gib nur das JSON-Objekt aus, ohne zusätzlichen Text.
-        """
-        try:
-            response = self.gemini_reasoning_model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
-            action = json.loads(response.text)
-            if not isinstance(action, dict) or "strategy" not in action or "commands" not in action:
-                return {"strategy": "Ich bin verwirrt und tue nichts.", "commands": ["nichts"]}
-            return action
-        except Exception as e:
-            print(f"Fehler bei der Generierung der NPC-Aktion: {e}")
-            return {"strategy": "Ich bin verwirrt und tue nichts.", "commands": ["nichts"]} # Fallback
