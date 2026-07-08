@@ -114,7 +114,8 @@ debug-only.
   relocating code.
 - Without `GOOGLE_API_KEY`, connecting falls back to **demo mode** cleanly.
 - Commit/push only when asked (the author reviews, then says "push it"). Current
-  working branch: `Adventure-10-2026-06-26-Gameplay`. Remote: `kernhuber/Adventure7`.
+  working branch: `Adventure-10-2026-07-08-Prompts` (prompt-optimization; branched off
+  `Adventure-10-2026-06-26-Gameplay`). Remote: `kernhuber/Adventure7`.
 - Item/place names shown to the player should use **call-names** (pretty), never the
   internal `o_`/`p_` ids.
 
@@ -211,6 +212,23 @@ silently (observed: an unwanted `gehe` teleport). It now fails safe straight to
 `is_system_error` (→ modal, player stays put, no round consumed). The **exception** path
 (503/network) keeps its single retry, since a successful network retry yields a correctly
 parsed command, not a guess.
+
+**Prompt-optimization sub-project** (2026-07-08/09, branch `Adventure-10-2026-07-08-Prompts`;
+full design in `docs/PROMPT-OPTIMIZATION-PLAN.md`). Goal: cut LLM token cost **without**
+weakening quality (the `enum`s + `compile_*` context + `narrate` structure are load-bearing —
+they exist because the LLM otherwise returns invalid IDs and inconsistent narration) and
+**keep the LLM swappable** (optimizations live behind the `LLMClient` abstraction, not tied to
+Gemini). Tooling added: `_log_tokens`/`token_report` + `dl.LLM_TOKENS`, per-caller labels
+(`dog_chat`/`zombie_chat`/…), the `tokenstats` debug command, and `_log_prompt_sections`
+(per-section prompt breakdown). Baseline: the **parser is ~74 %** of tokens; within it
+**tool-schema ~58–72 % / instructions ~30 % / context ~12 %**. Done: **B1+B1b** — slimmed &
+reordered the parse prompt (fixed prefix first, variable last), measured **−17 % per parse
+call**, zero quality change; **B2** — per-verb `enum` scoping (`nimm`=here, `ablegen`=inventory),
+a **quality** win (fewer invalid tool-calls) but ~token-neutral. **Next: A1** — cache the fixed
+prefix (the ~68 % tool-schema is fixed & quality-bearing, so caching, not trimming, is the lever);
+first verify the google-genai caching API + how it interacts with the per-location `enum`s.
+Deferred (see plan §5): A2 (rest-loop — needed for future-state deps, e.g. a key only known
+after examining) and C1 (narrate/compile dedup).
 
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
