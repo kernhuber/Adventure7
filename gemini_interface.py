@@ -275,6 +275,25 @@ Die Ortsbeschreibung:
         report["_gesamt"] = {"calls": self.numcalls, "tokens": total}
         return report
 
+    def _log_prompt_sections(self, caller: str, sections: dict, response) -> None:
+        """Instrumentierung fürs Prompt-Tuning: zeigt, wie sich der Input-Prompt eines
+        LLM-Calls auf seine Abschnitte aufteilt (Zeichen + geschätzte Tokens). Die
+        Token-Schätzung je Abschnitt verteilt den ECHTEN prompt_token_count der Antwort
+        proportional zur Zeichenzahl - so ist die Summe realistisch geerdet. Der Split ist
+        eine Näherung (strukturiertes Tools-Schema hat ein anderes Zeichen/Token-Verhältnis
+        als Prosa), reicht aber, um zu sehen, WO die Tokens sitzen. Läuft bei dl.LLM_TOKENS."""
+        try:
+            prompt_tokens = response.usage_metadata.prompt_token_count
+        except Exception:
+            prompt_tokens = 0
+        total_chars = sum(len(v) for v in sections.values()) or 1
+        lines = [f"[promptsize] {caller}: input≈{prompt_tokens} tok, {total_chars} Zeichen"]
+        for name, text in sections.items():
+            c = len(text)
+            est = round(prompt_tokens * c / total_chars)
+            lines.append(f"    {name:<22}{c:>7} Zeichen  ~{est:>6} tok  ({100 * c / total_chars:4.1f}%)")
+        dprint(dl.LLM_TOKENS, "\n".join(lines))
+
     def simple_message(self, message, maxtokens=80, caller="simple_message"):
         #
         # Send a message to the LLM and return the answer.
@@ -958,6 +977,19 @@ Die Ortsbeschreibung:
 
                 # Token-Nutzung aktualisieren
                 self._log_tokens(response, "GeminiInterface.parse_user_input_to_commands")
+                # Prompt-Aufschlüsselung fürs Optimieren: Instruktionen+Beispiele vs.
+                # Narrations-Kontext vs. Tools-Schema. (context_json ist wörtlich in
+                # prompt_str eingebettet -> per replace() sauber herauslösbar.)
+                context_json = json.dumps(narration_context_for_llm, indent=2)
+                self._log_prompt_sections(
+                    "parse",
+                    {
+                        "instruktionen+bsp": prompt_str.replace(context_json, ""),
+                        "narrations-kontext": context_json,
+                        "tools-schema": str(configured_tools),
+                    },
+                    response,
+                )
 
                 if response.function_calls:
                     # FALL 1: Das Modell hat das STANDARD-Function-Calling-Verhalten gezeigt.
