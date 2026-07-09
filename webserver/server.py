@@ -68,7 +68,8 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
             # Versuche echtes GameState zu verwenden
             try:
                 dprint(dl.WEBGUI, f"🎮 Versuche echtes GameState zu erstellen...")
-                llm = LLMClientGemini()
+                from services.llm_factory import make_llm
+                llm = make_llm()   # wählt Gemini/Gemma gemäß utils.LLM_BACKEND
                 game = GameState(llm=llm)
 
                 # WebDialogs (PlayerDialogs port) is owned by the web layer now.
