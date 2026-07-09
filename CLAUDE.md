@@ -224,11 +224,23 @@ Gemini). Tooling added: `_log_tokens`/`token_report` + `dl.LLM_TOKENS`, per-call
 **tool-schema ~58–72 % / instructions ~30 % / context ~12 %**. Done: **B1+B1b** — slimmed &
 reordered the parse prompt (fixed prefix first, variable last), measured **−17 % per parse
 call**, zero quality change; **B2** — per-verb `enum` scoping (`nimm`=here, `ablegen`=inventory),
-a **quality** win (fewer invalid tool-calls) but ~token-neutral. **Next: A1** — cache the fixed
-prefix (the ~68 % tool-schema is fixed & quality-bearing, so caching, not trimming, is the lever);
-first verify the google-genai caching API + how it interacts with the per-location `enum`s.
-Deferred (see plan §5): A2 (rest-loop — needed for future-state deps, e.g. a key only known
-after examining) and C1 (narrate/compile dedup).
+a **quality** win (fewer invalid tool-calls) but ~token-neutral. **A1 (caching): measured &
+stopped** — implicit caching is on by default (Gemini 2.5) and `tokenstats` now reports cached
+tokens, but only **3/34 parse calls hit** (though each hit cached ~80 %): the per-location
+`enum`s sit at the front of the request and break the common prefix on almost every move (~4 %
+overall). Caching only pays off if the tool schema becomes **location-invariant** → that's an
+`enum` change, so the **token part of the project is wrapped** at B1 (−17 %) + B2 (quality) + the
+measurement tooling. Deferred (plan §5): A2 (rest-loop — future-state deps, e.g. a key only known
+after examining), C1 (narrate/compile dedup), and **A1' — full-world-id `enum`s** to get cache
+hits (Gemini-specific; conflicts a bit with the provider-agnostic goal).
+
+**Next project — swappable local LLM (Gemma) behind `LLMClient`.** Add a `GemmaInterface`
+selectable via a switch in `utils.py`. Plugging in is easy (the `LLMClient` Protocol +
+`services/adapters.py` already isolate the engine from the concrete LLM); the real work is
+`GemmaInterface` itself — esp. that a local Gemma has no native Gemini-style function-calling/tool
+schema, so `parse_user_input_to_commands` must prompt for JSON and parse it, and a local runtime
+(Ollama / llama.cpp / transformers) must be wired. (Game logic/dungeon work continues in parallel,
+possibly later.)
 
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close

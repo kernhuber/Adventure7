@@ -95,10 +95,16 @@ Legende: **Wirkung** / **Risiko** / **provider-agnostisch?**
   die volle Liste bei leerer Teil-Liste. Ergebnis: **weniger ungültige Tool-Calls** (subjektiv
   „viel weniger Fehler"), Token-Effekt aber **vernachlässigbar (~−0,5 % Tools-Schema)** — das Schema
   ist fast nur qualitätstragende, *fixe* Struktur.
-- [ ] **A1 — NÄCHSTER SCHRITT** (der eigentliche Token-Hebel für die ~68 % Tools-Schema). Fixen
-  Prefix (Setting + Instruktionen + Tool-Beschreibungen) einmal bezahlen, danach cachen. Provider-
-  agnostisch als optionale Fähigkeit im `LLMClient`-Interface; **zuerst** die aktuelle google-genai-
-  Caching-Mechanik in der Doku prüfen (v. a. Interaktion mit den pro-Ort wechselnden `enum`s).
+- [x] **A1 — GEMESSEN & (vorerst) GESTOPPT.** Implizites Caching ist bei Gemini 2.5
+  standardmäßig an; `_log_tokens`/`token_report`/`tokenstats` messen jetzt die gecachten Tokens
+  (`cached_content_token_count`, Commit `da88681`). Befund (Playthrough): **nur 3/34 Parse-Calls
+  mit Cache-Hit**, dann aber je ~80 % des Calls gecacht (~2.700 tok) — Caching ist **binär**
+  (ganzer fixer Block trifft oder nichts). Gesamt-Cache-Quote **~4 %**. Ursache: die **pro-Ort-
+  `enum`s** im Tools-Schema stehen vorn im Request und **brechen den gemeinsamen Prefix** bei fast
+  jedem Orts-/Kontextwechsel. **Fazit:** Caching zahlt sich nur aus, wenn das Tools-Schema
+  *orts-invariant* wird — d.h. die `enum`s sind der Blocker für Größe **und** Cacheability. Ohne
+  Qualitätsänderung an den `enum`s bringt A1 nichts → Token-Teil des Projekts hier **abgeschlossen**
+  mit den Gewinnen B1 (−17 %/Call) + B2 (Quality). Idee für später siehe §5.
 
 **Erkenntnis nach B1/B2:** Der Parser-Prompt teilt sich jetzt in grob ~19 % Instruktionen /
 ~13 % Kontext / **~68 % Tools-Schema** auf. Das Tools-Schema ist **fix + qualitätstragend**
@@ -129,6 +135,16 @@ Bewusst zurückgestellt (später neu bewerten):
   Größter Effekt bei `narrate`; im Parser klein (~12 %). Qualitätssensibel (Konsistenz der
   Erzählung, Disambiguierung beim Parsen) → erst nach den sicheren Hebeln und nur mit striktem
   A/B. Vorher `narrate` analog zum Parser instrumentieren.
+
+- **A1' — Orts-invariante `enum`s für bessere Cache-Hits (Gemini-spezifisch, Idee für später).**
+  Aus der A1-Messung: implizites Caching greift nur, wenn das Tools-Schema call-übergreifend
+  identisch ist. Ansatz: statt der lokalen IDs die **komplette Welt-ID-Liste** ins `enum` legen →
+  statischer Teil sieht immer gleich aus → ~80 % des Parse-Calls würden gecacht (75 % billiger).
+  Qualität bliebe größtenteils erhalten (`enum` verhindert weiterhin *erfundene* IDs; die
+  *Lokalität* sichern wie heute der Kontext + die Engine-Abweisung). Risiko: bei Cache-*Miss*
+  ist das Schema größer, die Lokalitäts-Bindung minimal weicher → messbar per A/B (Tokens +
+  Ungültig-Call-Rate). **Achtung:** rein Gemini-/impliziter-Cache-spezifisch — passt nur bedingt
+  zum Ziel „provider-agnostisch"; daher bewusst zurückgestellt.
 
 ## 6. Mess-/Validierungsmethode
 
