@@ -73,6 +73,7 @@ class GeminiInterface:
         self.gemini_reasoning_model_id = 'gemini-2.5-flash' # Gut für komplexes Reasoning des NPC
         self.txt_prev_description = {}
         self.tokens = 0
+        self.cached_tokens = 0   # implizit gecachte Prompt-Tokens (A1-Messung)
         self.numcalls = 0
         self.token_details = []
         self.narration_cache = self._narration_cache()
@@ -253,26 +254,40 @@ Die Ortsbeschreibung:
             n = response.usage_metadata.total_token_count
         except Exception:
             n = 0
+        # Implizit gecachte Prompt-Tokens (Gemini 2.5: 75% Rabatt bei Prefix-Hit). A1-Messung:
+        # so sehen wir empirisch, ob/wie viel Caching greift, statt es aus der Doku zu raten.
+        # Feldname im google-genai SDK: cached_content_token_count (defensiv gelesen).
+        try:
+            um = response.usage_metadata
+            cached = (getattr(um, "cached_content_token_count", None)
+                      or getattr(um, "total_cached_tokens", None) or 0)
+        except Exception:
+            cached = 0
         self.tokens += n
+        self.cached_tokens += cached
         self.numcalls += 1
-        self.token_details.append({"caller": caller, "tokens": n})
-        dprint(dl.LLM_TOKENS, f"[tokens] {caller}: {n} (kumuliert {self.tokens}, calls {self.numcalls})")
+        self.token_details.append({"caller": caller, "tokens": n, "cached": cached})
+        dprint(dl.LLM_TOKENS, f"[tokens] {caller}: {n} (davon {cached} cached) "
+                              f"(kumuliert {self.tokens}, cached {self.cached_tokens}, calls {self.numcalls})")
 
     def token_report(self) -> dict:
         """Aggregiert token_details nach Aufrufer -> {caller: {'calls':n,'tokens':t}} plus
         '_gesamt'. Robust gegenüber alten Bare-Int-Einträgen (Label 'unbekannt')."""
         report: dict = {}
         total = 0
+        total_cached = 0
         for e in self.token_details:
             if isinstance(e, dict):
-                caller, tok = e.get("caller", "unbekannt"), e.get("tokens", 0)
+                caller, tok, cached = e.get("caller", "unbekannt"), e.get("tokens", 0), e.get("cached", 0)
             else:
-                caller, tok = "unbekannt", (e if isinstance(e, int) else 0)
-            slot = report.setdefault(caller, {"calls": 0, "tokens": 0})
+                caller, tok, cached = "unbekannt", (e if isinstance(e, int) else 0), 0
+            slot = report.setdefault(caller, {"calls": 0, "tokens": 0, "cached": 0})
             slot["calls"] += 1
             slot["tokens"] += tok
+            slot["cached"] += cached
             total += tok
-        report["_gesamt"] = {"calls": self.numcalls, "tokens": total}
+            total_cached += cached
+        report["_gesamt"] = {"calls": self.numcalls, "tokens": total, "cached": total_cached}
         return report
 
     def _log_prompt_sections(self, caller: str, sections: dict, response) -> None:

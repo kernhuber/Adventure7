@@ -147,27 +147,31 @@ class GameVerbsMixin:
             print("Kein Token-Report verfügbar (Demo-Modus / kein GeminiInterface).")
             return "nichts"
         report = report_fn()
-        gesamt = report.pop("_gesamt", {"calls": 0, "tokens": 0})
+        gesamt = report.pop("_gesamt", {"calls": 0, "tokens": 0, "cached": 0})
         rows = sorted(report.items(), key=lambda kv: kv[1].get("tokens", 0), reverse=True)
+        def _pct(cached, tok):
+            return f"{100 * cached / tok:.0f}%" if tok else "-"
         out = [
             "",
-            "==================== TOKEN-REPORT (Session) ====================",
-            f" {'Quelle (caller)':<44}{'Calls':>7}{'Tokens':>10}{'Ø/Call':>9}",
-            " " + "-" * 68,
+            "======================== TOKEN-REPORT (Session) ========================",
+            f" {'Quelle (caller)':<40}{'Calls':>6}{'Tokens':>9}{'Cached':>8}{'Cache%':>7}{'Ø/Call':>8}",
+            " " + "-" * 78,
         ]
         for caller, s in rows:
-            calls, tok = s.get("calls", 0), s.get("tokens", 0)
+            calls, tok, cached = s.get("calls", 0), s.get("tokens", 0), s.get("cached", 0)
             avg = (tok / calls) if calls else 0
-            out.append(f" {caller:<44}{calls:>7}{tok:>10}{avg:>9.0f}")
+            out.append(f" {caller:<40}{calls:>6}{tok:>9}{cached:>8}{_pct(cached, tok):>7}{avg:>8.0f}")
+        g_tok, g_cached = gesamt.get('tokens', 0), gesamt.get('cached', 0)
         out += [
-            " " + "-" * 68,
-            f" {'GESAMT':<44}{gesamt.get('calls', 0):>7}{gesamt.get('tokens', 0):>10}",
-            "================================================================",
+            " " + "-" * 78,
+            f" {'GESAMT':<40}{gesamt.get('calls', 0):>6}{g_tok:>9}{g_cached:>8}{_pct(g_cached, g_tok):>7}",
+            " (Cached = implizit gecachte Prompt-Tokens, Gemini 2.5, ~75% billiger)",
+            "========================================================================",
             "",
         ]
         print("\n".join(out))
-        return (f"Token-Report in der Shell ausgegeben — Gesamt: "
-                f"{gesamt.get('tokens', 0)} Tokens / {gesamt.get('calls', 0)} Calls.")
+        return (f"Token-Report in der Shell ausgegeben — Gesamt: {g_tok} Tokens "
+                f"({g_cached} cached, {_pct(g_cached, g_tok)}) / {gesamt.get('calls', 0)} Calls.")
 
 
 
