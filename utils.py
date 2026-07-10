@@ -27,12 +27,16 @@ class dl(IntFlag):
     ZOMBIE          = auto() # General testing of Zombie NPC
 
 GHOSTMODE = False   # No obstacles, no hidden ways, no NPCs
-NODOG = False # No dog NPC
+NODOG = True # No dog NPC
 DEBUG = True
 # LLM-Backend-Schalter: "gemini" (Cloud, google-genai) oder "gemma" (lokal via Ollama).
 # Die Factory services.llm_factory.make_llm() liest dieses Flag; die Gemma-Seite wird nur
 # dann importiert (lazy), sodass der Gemini-Pfad ohne installiertes 'ollama' läuft.
-LLM_BACKEND = "gemini"
+# LLM_BACKEND = "gemini"
+LLM_BACKEND = "gemma"
+# Welches lokale Gemma-Modell (Ollama-Tag), wenn LLM_BACKEND == "gemma". Die Env-Variable
+# GEMMA_MODEL übersteuert dieses Flag; sonst gilt der Default hier.
+GEMMA_MODEL = "gemma4:latest"   # z.B. "gemma3", "gemma4", "gemma3:27b"
 # DEBUG_LEVEL = dl.LLM|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.WEBGUI|dl.CMDLOG|dl.ZOMBIE
 DEBUG_LEVEL = dl.ZOMBIE|dl.LLM_TOKENS|dl.LLM|dl.LLM_PROMPT|dl.WEBGUI|dl.CMDLOG|dl.NPCPLAYERSTATE
 ADV_LOGGER = None

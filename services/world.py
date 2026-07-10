@@ -63,29 +63,40 @@ class ContextBuilder:
                 narration_details["Wo man hingehen kann"].append(wd)
                 all_place_ids_for_navigation.append(w.destination.name)
 
-        # Hund (NPC) – lokaler Import vermeidet Zyklen
+        # NPC nur dann als anwählbares Objekt-/Ziel anbieten, wenn er WIRKLICH am Ort des
+        # Spielers ist. Sonst "sieht" das LLM z.B. den Hund und untersucht/anspricht ihn,
+        # obwohl er ganz woanders steht (beobachtet mit gemma4: 'untersuche Blumentopf' ->
+        # what='Hund'). Die Narrations-Warnung bleibt unberührt (ein ferner Hund darf erwähnt
+        # werden) - nur die ID-Listen werden auf Anwesende beschränkt.
+        def _here(actor) -> bool:
+            return getattr(actor.location, "name", None) == getattr(pl.location, "name", None)
+
         from npc_dog_state import NPCDogState
         dog_pl = next((p for p in gs.players if isinstance(p, NPCDogState)), None)
         if dog_pl:
             dog_description = dog_pl.dog_prompt(gs, pl)
             if dog_description:
                 narration_details["Achtung"] = dog_description
-                all_object_ids_in_context.append(dog_pl.name)
+                if _here(dog_pl):
+                    all_object_ids_in_context.append(dog_pl.name)
 
-        # Zombie (NPC) – lokaler Import vermeidet Zyklen
         from npc_zombie_state import NPCZombieState
         zombie_pl = next((p for p in gs.players if isinstance(p, NPCZombieState)), None)
         if zombie_pl:
             zombie_description = zombie_pl.zombie_prompt(gs, pl)
             if zombie_description:
                 narration_details["Zombie-Warnung"] = zombie_description
-                all_object_ids_in_context.append(zombie_pl.name)
+                if _here(zombie_pl):
+                    all_object_ids_in_context.append(zombie_pl.name)
 
         context_data["narration_details"] = narration_details
         context_data["available_object_ids"] = list(set(all_object_ids_in_context))
         context_data["available_object_ids_here"] = list(set(object_ids_here))  # nur am Ort -> 'nimm'
         context_data["available_place_ids"] = list(set(all_place_ids_for_navigation))
-        context_data["available_target_player_ids"] = [p.name for p in gs.players]
+        # Gesprächs-/Angriffsziele: nur ANWESENDE NPCs - der Spieler selbst gehört NICHT dazu
+        # (sonst wählt das LLM bei Unsicherheit 'interagieren <Spieler>' -> Engine lehnt als
+        # "Selbstgespräch" ab, und die eigentliche Eingabe geht unter; beobachtet mit gemma4).
+        context_data["available_target_player_ids"] = [p.name for p in gs.players if _here(p) and p is not pl]
         context_data["player_location_id"] = pl.location.name
         context_data["player_inventory_ids"] = [item.name for item in pl.inventory]
         return context_data

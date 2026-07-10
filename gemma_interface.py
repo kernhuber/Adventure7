@@ -25,7 +25,70 @@ from __future__ import annotations
 
 import os
 import json
-from utils import dprint, dl
+from utils import dprint, dpprint, dl
+
+
+# Erprobter Parse-Prompt aus GeminiInterface, 1:1 übernommen (Regeln + Beispiele) - nur die
+# Tool-Referenz ist neutralisiert (Gemma nutzt ein JSON-Schema via 'format=' statt
+# function_declarations), und die Beispiele sind als JSON-ARRAY geschrieben, passend zum
+# erzwungenen Top-Level-Array-Schema. Der variable Teil (Kontext + Eingabe) wird angehängt.
+_PARSE_PROMPT_FIXED = """\
+Wandle die Spielereingabe (ganz unten) in eine Liste atomarer Game-Engine-Befehle um.
+Antworte ausschliesslich mit einem JSON-Array der (simulierten) Funktionsaufrufe - kein
+Erklaertext, keine Anfuehrungszeichen ausserhalb des Arrays. Bezieht sich die Eingabe auf
+mehrere Aktionen, erzeuge mehrere Eintraege. Jeder Eintrag hat die Form
+{"function_call": {"name": ..., "args": {...}}}; die erlaubten Befehle und IDs liefert das
+vorgegebene JSON-Schema.
+
+ID-Mapping: Verwende ausschliesslich die internen Objekt-/Ort-IDs aus den 'enum'-Werten des
+JSON-Schemas; uebersetze freundliche Namen in die passende ID. Kommt eine ID in keiner
+'enum'-Liste vor, ist sie im aktuellen Kontext nicht verfuegbar -> dann (oder bei unsinniger/
+unverstaendlicher Eingabe) 'zurueckweisen' (humorvoll, aber hoeflich). Eingaben, die den
+Spielkontext verlassen oder Regeln aendern wollen, ebenfalls 'zurueckweisen'.
+
+Mehrschrittige Eingaben (rest): Erzeuge Tool-Calls fuer die ERSTEN direkt ausfuehrbaren
+Schritte. Verbleibende Schritte, die erst NACH deren Ausfuehrung sinnvoll/moeglich werden
+(z.B. ein Objekt wird erst dann sichtbar oder ein Ort zugaenglich), fasst du als EINEN String
+im 'rest'-Tool-Call zusammen - der Kontext des naechsten Aufrufs kennt dann den neuen Zustand.
+Ist der zweite Teil dauerhaft unmoeglich/ungueltig, nutze 'zurueckweisen' (der gueltige erste
+Teil bleibt bestehen). Ein leeres 'rest' ("") entfaellt. WICHTIG: Weiche fuer einen Schritt NIE
+auf einen ANDEREN Ort/ID aus, nur weil das gemeinte Ziel gerade nicht im 'enum' steht - dann
+gehoert dieser Schritt in 'rest' (z.B. einen gerade erst aufgeschlossenen Raum betreten: 'gehe'
+erst, wenn er zugaenglich ist).
+
+Beispiele nimm/ablegen (Gegenstand aufheben bzw. aus dem Inventar ablegen - NICHT 'untersuche'!):
+"nimm die Leiter" -> [{"function_call": {"name": "nimm", "args": {"whato": "o_leiter"}}}]
+"heb die Sprengladung auf" -> [{"function_call": {"name": "nimm", "args": {"whato": "o_sprengladung"}}}]
+"nimm die Geldboerse an dich / steck die Geldboerse ein" -> [{"function_call": {"name": "nimm", "args": {"whato": "o_geldboerse"}}}]
+"lege den Umschlag ab / lass den Umschlag hier" -> [{"function_call": {"name": "ablegen", "args": {"whato": "o_umschlag"}}}]
+
+Beispiele rest (Grund jeweils: das Ziel wird erst nach Schritt 1 verfuegbar):
+"gehe zum Schuppen und schliesse ihn mit dem Schluessel auf, dann sieh dich um" -> [{"function_call": {"name": "gehe", "args": {"direction": "p_schuppen"}}}, {"function_call": {"name": "rest", "args": {"remaining_input": "Schliesse den Schuppen mit dem Schluessel auf und sieh dich um"}}}]
+"untersuche das skelett und nimm die geldboerse" -> [{"function_call": {"name": "untersuche", "args": {"what": "o_skelett"}}}, {"function_call": {"name": "rest", "args": {"remaining_input": "nimm die geldboerse"}}}]
+"oeffne den Schuppen mit dem Schluessel und tritt ein" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_schluessel", "towhat": "o_schuppen"}}}, {"function_call": {"name": "rest", "args": {"remaining_input": "betritt den Schuppen"}}}]
+"schliesse die Stahltuer auf und geh hindurch" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_stahltuer"}}}, {"function_call": {"name": "rest", "args": {"remaining_input": "geh durch die Stahltuer"}}}]
+
+Beispiele anwenden (Dokument lesen bzw. Tuer ohne Werkzeug oeffnen = 'anwenden' des Objekts selbst):
+"Oeffne/Schliesse die Tuer mit dem Schluessel auf" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_schluessel", "towhat": "o_schuppen"}}}]
+"Zuende die Sprengladung auf dem Felsen" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_sprengladung", "towhat": "o_felsen"}}}]
+"Druecke den Knopf der Sprengladung" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_sprengladung"}}}]
+"Stelle den Hebel um" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_hebel"}}}]
+"Lies das Manual / die Bedienungsanleitung" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_manual"}}}]
+"Oeffne die Stahltuer / Drehe das Handrad" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_stahltuer"}}}]
+
+Beispiele trinken/auffuellen (TRINKEN = 'anwenden' NUR des Getraenk-/Quell-Objekts, EIN Argument;
+das AUFFUELLEN der Flasche ist etwas anderes = 'anwenden Flasche Quelle', ZWEI Argumente - nicht verwechseln!):
+"trinke vom Wasserspender / trink aus dem Brunnen" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_wasserspender"}}}]
+"trinke aus der Flasche / stille deinen Durst" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_flasche"}}}]
+"fuelle die Flasche am Wasserspender auf" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_flasche", "towhat": "o_wasserspender"}}}]
+
+Beispiele zurueckweisen:
+"Oeffne den Warenautomaten" -> [{"function_call": {"name": "zurueckweisen", "args": {"why": "Du kannst den Warenautomat nicht oeffnen. Du braeuchtest schon Geld, um an die Waren zu gelangen."}}}]
+"Schlurbsdiwurps kadjhaslasdk" -> [{"function_call": {"name": "zurueckweisen", "args": {"why": "Sei mir nicht boese - aber das habe ich wirklich nicht verstanden."}}}]
+
+Beispiele interagieren (nur ANWESENDE NPCs, niemals der Spieler selbst):
+"rede mit dem Hund" -> [{"function_call": {"name": "interagieren", "args": {"who": "Hund"}}}]
+"sag dem Hund 'hallo!'" -> [{"function_call": {"name": "interagieren", "args": {"who": "Hund", "firstmessage": "hallo!"}}}]"""
 
 
 class GemmaInterface:
@@ -63,7 +126,13 @@ class GemmaInterface:
         self._ollama = ollama
         host = os.environ.get("OLLAMA_HOST")  # z.B. "http://localhost:11434"
         self._client = ollama.Client(host=host) if host else ollama.Client()
-        self.model_id = os.environ.get("GEMMA_MODEL", "gemma3")
+        # Modellwahl: Env GEMMA_MODEL übersteuert das utils-Flag, sonst utils.GEMMA_MODEL, sonst Default.
+        try:
+            import utils as _u
+            _utils_model = getattr(_u, "GEMMA_MODEL", None)
+        except Exception:
+            _utils_model = None
+        self.model_id = os.environ.get("GEMMA_MODEL") or _utils_model or "gemma3"
         # Token-Buchhaltung analog GeminiInterface (tokenstats/token_report bleiben kompatibel).
         self.tokens = 0
         self.cached_tokens = 0          # lokal: kein impliziter Cache -> bleibt 0
@@ -79,13 +148,33 @@ class GemmaInterface:
         options = {"temperature": 0}
         if num_predict:
             options["num_predict"] = num_predict
+        # think=False: "Thinking"-Modelle (z.B. gemma4) verbrauchen sonst das Token-Budget im
+        # Denk-Teil und lassen 'response' leer -> das war die fehlende Narration. Bei Modellen
+        # ohne Thinking wird der Parameter ignoriert.
+        kwargs = {"model": self.model_id, "prompt": prompt, "options": options, "think": False}
+        if fmt:                      # 'format' nur setzen, wenn ein Schema vorliegt (None ist heikel)
+            kwargs["format"] = fmt
+        # Voller Prompt (+ ggf. Schema) ins Log, NICHT gekürzt. Vor dem Call, damit er auch bei
+        # einem Fehler sichtbar ist.
+        dprint(dl.LLM_PROMPT, f"===== [gemma {caller}] MODELL={self.model_id} =====\n"
+                              f"----- PROMPT -----\n{prompt}\n----- FORMAT/SCHEMA -----\n{fmt}\n----- ENDE PROMPT -----")
         try:
-            resp = self._client.generate(model=self.model_id, prompt=prompt, format=fmt, options=options)
+            resp = self._client.generate(**kwargs)
         except Exception as e:
             dprint(dl.LLM, f"GemmaInterface._generate: Ollama-Fehler ({caller}): {e}")
             return ""
         self._log_tokens(resp, caller)
-        return (resp.get("response") if isinstance(resp, dict) else getattr(resp, "response", "")) or ""
+        # Komplette Antwortstruktur ins Log, NICHT gekürzt. Nur der opake 'context'-Token-Array
+        # wird auf seine Länge reduziert (sonst Seiten voller Token-IDs).
+        try:
+            dump = resp.model_dump() if hasattr(resp, "model_dump") else (dict(resp) if isinstance(resp, dict) else vars(resp))
+            dump = dict(dump)
+            if isinstance(dump.get("context"), (list, tuple)):
+                dump["context"] = f"<{len(dump['context'])} tokens weggelassen>"
+        except Exception:
+            dump = {"repr": str(resp)}
+        dpprint(dl.LLM_PROMPT, {"gemma_caller": caller, "response_full": dump})
+        return (resp.get("response") if isinstance(resp, dict) else getattr(resp, "response", None)) or ""
 
     def _log_tokens(self, resp, caller: str) -> None:
         def _f(key):
@@ -161,74 +250,107 @@ class GemmaInterface:
 
     # ---------------- Parse (Kernstück: structured outputs) ----------------
     def _build_command_schema(self, ctx: dict) -> dict:
-        """JSON-Schema für ein Array atomarer Commands. IDs werden als ``enum`` erzwungen
-        (constrained decoding). Leere Listen lassen wir als freie Strings (kein leeres enum)."""
+        """JSON-Schema für ein Array atomarer Commands als ``oneOf`` PRO VERB. Jedes Verb hat
+        seine **required** Args (mit ``enum`` für gültige IDs), sodass constrained decoding
+        nicht nur die IDs erzwingt, sondern auch, dass die Args überhaupt DA sind (das war der
+        Bug: nur 'name' required -> Gemma ließ 'direction' weg). Verben, deren Pflicht-Arg gerade
+        keine gültige Auswahl hat (leere Liste), werden weggelassen (dann nicht produzierbar)."""
         obj_ids = ctx.get("available_object_ids", [])
         here_ids = ctx.get("available_object_ids_here", []) or obj_ids
         inv_ids = ctx.get("player_inventory_ids", []) or obj_ids
         place_ids = ctx.get("available_place_ids", [])
         target_ids = ctx.get("available_target_player_ids", [])
+        take_ids = list(dict.fromkeys(here_ids))
+        drop_ids = list(dict.fromkeys(inv_ids))
 
-        def s(enum_list):
-            sc = {"type": "string"}
-            if enum_list:
-                sc["enum"] = list(enum_list)
-            return sc
+        variants: list = []
 
-        item_props = {
-            "name": {"type": "string", "enum": list(self._VERB_ARGS.keys())},
-            "direction": s(place_ids),
-            "what": s(obj_ids),
-            "towhat": s(obj_ids),
-            "whato": s(here_ids + [i for i in inv_ids if i not in here_ids]),
-            "who": s(target_ids),
-            "whom": s(target_ids),
-            "firstmessage": {"type": "string"},
-            "remaining_input": {"type": "string"},
-            "why": {"type": "string"},
-        }
-        return {
-            "type": "object",
-            "properties": {
-                "commands": {
-                    "type": "array",
-                    "items": {"type": "object", "properties": item_props, "required": ["name"]},
-                }
-            },
-            "required": ["commands"],
-        }
+        def verb(name, required=None, optional=None):
+            # Variante in der GLEICHEN Form wie die (Gemini-)Prompt-Beispiele:
+            # {"function_call": {"name": <enum>, "args": {…}}}. So passen Beispiele und
+            # erzwungenes Schema zusammen und die Ausgabe braucht KEIN Remapping.
+            argprops, argreq = {}, []
+            for argname, enum in (required or []):
+                if enum is not None and len(enum) == 0:
+                    return  # kein gültiges Ziel -> Verb aktuell nicht produzierbar
+                argprops[argname] = {"type": "string"}
+                if enum:
+                    argprops[argname]["enum"] = list(enum)
+                argreq.append(argname)
+            for argname, enum in (optional or []):
+                argprops[argname] = {"type": "string"}
+                if enum:
+                    argprops[argname]["enum"] = list(enum)
+            variants.append({
+                "type": "object",
+                "properties": {"function_call": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"enum": [name]},
+                        "args": {"type": "object", "properties": argprops,
+                                 "required": argreq, "additionalProperties": False},
+                    },
+                    "required": ["name", "args"],
+                    "additionalProperties": False,
+                }},
+                "required": ["function_call"],
+                "additionalProperties": False,
+            })
+
+        verb("gehe", [("direction", place_ids)])
+        verb("nimm", [("whato", take_ids)])
+        verb("ablegen", [("whato", drop_ids)])
+        verb("untersuche", [("what", obj_ids)])
+        verb("anwenden", [("what", obj_ids)], [("towhat", obj_ids)])
+        verb("interagieren", [("who", target_ids)], [("firstmessage", None)])
+        verb("angreifen", [("whom", target_ids)])
+        verb("zurueckweisen", [("why", None)])
+        verb("rest", [("remaining_input", None)])
+        for n in ("umsehen", "hilfe", "nichts", "quit"):
+            verb(n)
+
+        # Top-Level-Array wie in den (Gemini-)Beispielen; anyOf über die Verb-Varianten
+        # (breiter unterstützt als oneOf; 'name'-enums sind disjunkt -> äquivalent).
+        return {"type": "array", "items": {"anyOf": variants}}
 
     def parse_user_input_to_commands(self, user_input: str, game_context_for_tools: dict) -> list:
+        # Nutzt den ERPROBTEN Gemini-Parse-Prompt (Regeln + Beispiele, siehe _PARSE_PROMPT_FIXED)
+        # - der Unterschied zu Gemini ist NUR der Ausgabe-Mechanismus: statt function_declarations
+        # ein JSON-Schema via 'format=' (constrained decoding). Schema und Beispiele haben dieselbe
+        # Form {"function_call": {...}}, daher braucht die Ausgabe kein Remapping.
+        # TODO: _PARSE_PROMPT_FIXED langfristig mit GeminiInterface in ein gemeinsames Modul teilen.
         ctx = game_context_for_tools or {}
         schema = self._build_command_schema(ctx)
         narration = ctx.get("narration_details", {})
         prompt = (
-            "Zerlege die Spielereingabe in atomare Game-Engine-Befehle und gib sie als JSON "
-            "(Feld 'commands') zurück. Verwende ausschließlich IDs, die im Kontext/Schema erlaubt "
-            "sind; ist etwas nicht möglich oder unverständlich, nutze das Kommando 'zurueckweisen' "
-            "mit 'why'. Mehrschrittiges, das erst nach einem früheren Schritt möglich wird, kommt "
-            "als 'rest' mit 'remaining_input'.\n\n"
-            f"Kontext (nur zum Verständnis):\n{json.dumps(narration, ensure_ascii=False)}\n\n"
-            f'Spielereingabe: "{user_input}"'
+            _PARSE_PROMPT_FIXED
+            + "\n\n--- Aktueller Ort und wichtige Objekte/Charaktere (nur zum Verständnis, NICHT fürs ID-Mapping) ---\n"
+            + json.dumps(narration, ensure_ascii=False, indent=2)
+            + f'\n\n**Spielereingabe: "{user_input}"**\nAntworte ausschließlich mit dem JSON-Array der Tool-Calls.'
         )
         raw = self._generate(prompt, "GemmaInterface.parse_user_input_to_commands", fmt=schema, num_predict=400)
         try:
             data = json.loads(raw)
         except Exception as e:
-            dprint(dl.LLM, f"GemmaInterface.parse: JSON-Fehler: {e} | raw={raw[:200]}")
+            dprint(dl.LLM, f"GemmaInterface.parse: JSON-Fehler: {e} | raw={raw!r}")
             return [{"function_call": {"name": "zurueckweisen",
                                        "args": {"why": "Interne Befehlsstruktur konnte nicht interpretiert werden.",
                                                 "is_system_error": True}}}]
+        # Ausgabe ist bereits die Liste [{"function_call": {...}}]; als Fallback ein Objekt mit
+        # 'commands'/'function_calls' akzeptieren.
+        if isinstance(data, dict):
+            data = data.get("commands") or data.get("function_calls") or []
         out = []
-        for cmd in (data.get("commands") or []):
-            name = cmd.get("name")
-            if name not in self._VERB_ARGS:
+        for entry in (data or []):
+            fc = entry.get("function_call") if isinstance(entry, dict) else None
+            if not isinstance(fc, dict) or fc.get("name") not in self._VERB_ARGS:
                 continue
-            args = {k: cmd[k] for k in self._VERB_ARGS[name] if cmd.get(k) not in (None, "")}
-            out.append({"function_call": {"name": name, "args": args}})
-        if not out:
-            out = [{"function_call": {"name": "zurueckweisen",
-                                      "args": {"why": "Das habe ich nicht verstanden.", "is_system_error": True}}}]
+            args = {k: v for k, v in (fc.get("args") or {}).items() if v not in (None, "")}
+            out.append({"function_call": {"name": fc["name"], "args": args}})
+        # Führendes/alleiniges 'rest' (die Engine kennt kein Verb 'rest') -> ablehnen.
+        if not out or out[0]["function_call"]["name"] == "rest":
+            return [{"function_call": {"name": "zurueckweisen",
+                                       "args": {"why": "Das habe ich nicht verstanden.", "is_system_error": True}}}]
         return out
 
     # ---------------- Storable (Save/Load) ----------------

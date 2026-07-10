@@ -348,6 +348,23 @@ Die Ortsbeschreibung:
                 traceback.print_exc()  # gibt den kompletten Stacktrace auf stderr aus
                 return ""
 
+    def _call_reasoning_llm(self, gs, prompt: str) -> str:
+        """NPC-Reasoning (z.B. Zombie-HUNTING): EIN Textaufruf gegen das stärkere
+        Reasoning-Modell. Backend-Nahtstelle: der NPC ruft ``gs.llm._impl._call_reasoning_llm``
+        auf, GemmaInterface hat dieselbe Methode - so bleibt der NPC-Code LLM-unabhängig.
+        Gibt bei Fehler "" zurück (der Aufrufer hat einen eigenen Fallback)."""
+        try:
+            response = self.client.models.generate_content(
+                model=self.gemini_reasoning_model_id,
+                contents=prompt,
+                config=genai.types.GenerateContentConfig(max_output_tokens=400),
+            )
+            self._log_tokens(response, "NPCZombieState._call_reasoning_llm")
+            return response.text or ""
+        except Exception as e:
+            dprint(dl.LLM, f"GeminiInterface._call_reasoning_llm: Exception! {e}")
+            return ""
+
     def narrate(self, gs:GameState, pl) -> str:
         #
         # Generate narration only for human players. NPCs don't need that

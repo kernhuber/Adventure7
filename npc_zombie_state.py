@@ -670,14 +670,24 @@ Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und G
         # bekommt aber eine klare Richtung - so jagt es zuverlässig, statt sich mit
         # 'untersuche' o.ä. zu verzetteln.
         player = next((p for p in gs.players if type(p) is PlayerState), None)
+        same_loc = player is not None and self.location is player.location
         empf_richtung = None
-        if player is not None and self.location is not player.location:
+        if player is not None and not same_loc:
             _path = gs.find_shortest_path(self.location, player.location)
             if _path:
                 _d = _path[0].destination
                 empf_richtung = _d.callnames[0] if _d.callnames else _d.name
-        empf_line = (f"- EMPFOHLENE RICHTUNG, um den Spieler zu verfolgen: gehe {empf_richtung}"
-                     if empf_richtung else "- (Aktuell führt kein Weg direkt zum Spieler - dann: nichts.)")
+        # Zweck der empfohlenen Richtung hängt vom Zustand ab: in HUNTING verfolgst du den
+        # Spieler (um zu beißen), in COOPERATIVE/DOUBTING FOLGST du ihm (um bei ihm zu bleiben) -
+        # so wirkt ein kooperativer Zombie lebendig statt passiv herumzustehen.
+        if empf_richtung:
+            _zweck = ("um den Spieler zu verfolgen" if self.zombie_state == ZombieState.HUNTING
+                      else "um beim Spieler zu bleiben und ihm zu folgen")
+            empf_line = f"- EMPFOHLENE RICHTUNG, {_zweck}: gehe {empf_richtung}"
+        elif same_loc:
+            empf_line = "- Der Spieler ist HIER bei dir - bleib bei ihm (sprich ihn an oder handle sinnvoll)."
+        else:
+            empf_line = "- (Aktuell führt kein Weg direkt zum Spieler - dann: nichts.)"
 
         prompt = f"""SYSTEM:
 Du bist ein Zombie-NPC in einem Adventure-Spiel. Du warst einmal ein erfolgreicher Geschäftsmann,
@@ -739,8 +749,10 @@ LETZTE KONVERSATION MIT DEM SPIELER:
 
 Handle deinem aktuellen Zustand ({zctx['zustand']}) entsprechend, wie ein echter, denkender Spieler:
 - HUNTING: Du willst dem Spieler näherkommen und ihn beißen (verfolge ihn).
-- COOPERATIVE/DOUBTING: Du beißt NICHT. Du beobachtest, verfolgst deine Ziele (Erlösung), bleibst
-  aber wachsam - und schlägst je nach Verlauf einen passenden Zustand vor.
+- COOPERATIVE/DOUBTING: Du beißt NICHT. Du bleibst beim Spieler und FOLGST ihm (gehe in die
+  empfohlene Richtung, sobald er sich entfernt), beobachtest ihn und verfolgst dein Ziel (Erlösung),
+  bleibst aber wachsam. 'nichts' nur, wenn ihr am selben Ort seid UND gerade nichts Sinnvolles ansteht.
+  Schlage je nach Verlauf einen passenden Zustand vor.
 {empf_line}
 
 VERFÜGBARE BEFEHLE (du kannst dasselbe wie ein menschlicher Spieler):
@@ -825,22 +837,19 @@ Beispiel:
         return return_do_nothing()
 
     def _call_reasoning_llm(self, gs: game_state.GameState, prompt: str) -> str:
-        from google import genai
+        """NPC-Reasoning über die Backend-Nahtstelle - NICHT mehr fest auf Gemini verdrahtet.
+        Delegiert an ``gs.llm._impl._call_reasoning_llm`` (GeminiInterface ODER GemmaInterface
+        implementieren beide diese Methode), sodass der Zombie mit jedem LLM-Backend läuft.
+        Liefert das Backend leer/Fehler, fällt er auf ein leeres 'nichts' zurück (in HUNTING
+        macht ``_do_llm_move`` zusätzlich den skriptbasierten Verfolgungs-Fallback)."""
         try:
-            # Access the underlying GeminiInterface via _impl
-            impl = gs.llm._impl
-            response = impl.client.models.generate_content(
-                model=impl.gemini_reasoning_model_id,
-                contents=prompt,
-                config=genai.types.GenerateContentConfig(
-                    max_output_tokens=400
-                )
-            )
-            impl._log_tokens(response, "NPCZombieState._call_reasoning_llm")
-            return response.text
+            text = gs.llm._impl._call_reasoning_llm(gs, prompt)
         except Exception as e:
             dprint(dl.ZOMBIE, f"Zombie reasoning LLM error: {e}")
+            text = ""
+        if not text or not text.strip():
             return "<AKTION>nichts</AKTION>\n<NOTIZBUCH>" + self.notes + "</NOTIZBUCH>"
+        return text
 
     def sanitize_string(self, s):
         _CONTROL = re.compile(r"[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]")
