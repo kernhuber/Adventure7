@@ -413,6 +413,28 @@ class NPCDogState(PlayerState):
             rs = DogState.EATING
         return rs,json_cmd_simple("nichts")
 
+    def gets_given(self, gs: GameState, pl: PlayerState, obj):
+        """Der Spieler gibt dem Hund einen Gegenstand (Verb 'gib').
+
+        Futter (Salami/Pizza) lenkt ihn für ein paar Züge ab - dieselbe Wirkung, als
+        fände er es am Boden (siehe setup_state_eating), nur direkt aus der Hand. Alles
+        andere lässt er achtlos fallen, sodass der Spieler es wieder aufheben kann.
+        """
+        pl.remove_from_inventory(obj)
+        if obj.name in ["o_salami", "o_pizza"]:
+            if obj.name in gs.objects:
+                del gs.objects[obj.name]
+            self.dog_state = DogState.EATING
+            self.eat_counter = 3
+            self.dog_state_message = f"**Der Hund frisst {obj.callnames[0]}**"
+            return (f"Der Hund schnappt sich {obj.callnames[0].capitalize()} und frisst gierig. "
+                    "Für eine Weile ist er zufrieden abgelenkt und lässt dich in Ruhe.")
+        # Kein Futter: stillschweigend am aktuellen Ort ablegen.
+        obj.hidden = False
+        obj.ownedby = self.location
+        self.location.place_objects.append(obj)
+        return f"Der Hund beschnuppert {obj.callnames[0].capitalize()} kurz und lässt es achtlos fallen."
+
     def dog_prompt(self,gs: GameState,pl: PlayerState):
 
         pp = None

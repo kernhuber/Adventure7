@@ -53,6 +53,25 @@ legible. See `docs/GAMEPLAY-2026-06-27.md`.
 
 ---
 
+## Near-term — `gib`-Verb: open NPC-reaction cases (2026-07-11)
+
+The `gib <obj> an <NPC>` verb + reactions are implemented via a `gets_given(gs, pl, obj)`
+hook on each NPC (dog: food → distracted a few turns, else drop silently; zombie: thanks +
+`trust += GIFT_TRUST_BONUS`, and `o_manual` → CONVINCED). Still open:
+
+- **Zombie drops ALL items on redemption** (not just the EC card). Needed so the player can
+  give the zombie something as a trust-building gesture (e.g. the envelope `o_umschlag`) and
+  **retrieve it after redemption**. TODO is marked in `NPCZombieState._do_redemption`; the
+  broader "give-then-reclaim" loop isn't designed yet. Without this, gifts to the zombie are
+  effectively lost.
+- **Case 2 — zombie gives the player something** (no engine path yet; `gib` is player→NPC
+  only). Future uses: the zombie placates the player with an item (not the EC card), or hands
+  over the **EC card on the correct success path** instead of dropping it on the floor.
+- Balancing: is `GIFT_TRUST_BONUS = 20` right? A gift shouldn't trivially flip HUNTING →
+  COOPERATIVE, but should be a meaningful de-escalation nudge.
+
+---
+
 ## ✅ DONE (2026-06-26) — unify naming convention to snake_case
 
 All 20 PascalCase module files were renamed to snake_case (classes kept PascalCase);

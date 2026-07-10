@@ -284,9 +284,10 @@ class GameVerbsMixin:
         if target is None:
             return f"Hier ist niemand namens {towhom}, dem du etwas geben könntest."
 
-        pl.remove_from_inventory(obj)
-        target.add_to_inventory(obj)
-        return f"Du gibst {target.name} {obj.callnames[0].capitalize()}."
+        # Der NPC entscheidet selbst, was mit dem Geschenk geschieht (annehmen/fressen/
+        # ablegen) und liefert die Spieler-Rückmeldung. gets_given nimmt obj ggf. selbst
+        # aus dem Spielerinventar - so kann ein NPC ein Geschenk auch ablehnen.
+        return target.gets_given(self, pl, obj)
 
     def verb_drop(self, pl: PlayerState, session_id, whato):
         what = self.obj_name_from_friendly_name(whato)

@@ -29,6 +29,7 @@ TRUST_RECOVER_CONTACT = 2    # Vertrauensgewinn pro Zug mit dem Spieler am selbe
 HOSTILE_CHAT_PENALTY = 35    # Vertrauensverlust bei feindseligem Gespräch
 COOP_OFFER_TRUST = 60        # konkretes, glaubhaftes Kooperationsangebot im Chat -> sicher COOPERATIVE
 FRIENDLY_CHAT_BONUS = 25     # zugewandtes, aber unkonkretes Gespräch: beendet die Jagd (-> mind. DOUBTING)
+GIFT_TRUST_BONUS = 20        # der Spieler schenkt dem Zombie etwas (Verb 'gib') -> Vertrauensgewinn
 
 # --- Stellschrauben für die Lebensenergie (das frühere "zombie_thirst") ---------
 LOW_ENERGY = 8               # ab hier bittet der Zombie um geteilte Lebensenergie (Phase 5)
@@ -458,6 +459,42 @@ In der U-Bahn... ich erinnere mich! Der Kontrollraum! Dort steht, wie man die An
             return step
         return None
 
+    def gets_given(self, gs: game_state.GameState, pl: PlayerState, obj) -> str:
+        """Der Spieler gibt dem Zombie einen Gegenstand (Verb 'gib').
+
+        Als (ehemaliger) Geschäftsmann freut er sich über ein Geschenk und bedankt sich;
+        sein Vertrauen wächst (GIFT_TRUST_BONUS). Die **Anleitung** (o_manual) ist der
+        Lösungsschlüssel - sie zu bekommen wirkt wie sie zu lesen und bringt ihn in den
+        CONVINCED-Zustand. Er behält die Geschenke (bis zur Erlösung - dort sollen sie
+        künftig fallen, siehe TODO in _do_redemption). In den Endzuständen
+        (PETRIFIED/REDEEMED) nimmt er nichts mehr an.
+        """
+        if self.zombie_state in (ZombieState.PETRIFIED, ZombieState.REDEEMED):
+            return "Der Zombie reagiert nicht mehr."   # Geschenk bleibt beim Spieler
+
+        pl.remove_from_inventory(obj)
+        self.add_to_inventory(obj)
+        self.trust = min(100, self.trust + GIFT_TRUST_BONUS)
+
+        # Die Anleitung zu bekommen wirkt wie sie zu lesen -> CONVINCED.
+        if obj.name == "o_manual" and self.zombie_state != ZombieState.CONVINCED:
+            self._become_convinced(gs)   # Seiteneffekte (Zustand/Notizen); Rückgabe hier verworfen
+            dprint(dl.ZOMBIE, f"Zombie bekam die Anleitung geschenkt -> CONVINCED (trust={self.trust})")
+            return ("Der Zombie greift begierig nach der Anleitung. Während er blättert, klärt sich "
+                    "sein Blick: 'Zwei Schalter... gleichzeitig... allein schaffe ich es nicht. Ich "
+                    "brauche dich.' Etwas in ihm hat sich entschieden.")
+
+        # Notizbucheintrag, damit das Reasoning das Geschenk wahrnimmt.
+        self.notes = f"""{self.notes}
+
+Spielleitung:
+Der Spieler hat mir {obj.callnames[0]} gegeben - eine Geste des Vertrauens. Das rechne ich ihm hoch an; mein Vertrauen zu ihm ist gewachsen."""
+        self.zombie_state_message = "Der Zombie freut sich über das Geschenk."
+        dprint(dl.ZOMBIE, f"Zombie bekam {obj.name} geschenkt (trust={self.trust})")
+        return (f"Der Zombie nimmt {obj.callnames[0].capitalize()} entgegen und deutet eine "
+                "Verbeugung an - eine Reminiszenz an alte Geschäftsmanieren. 'Wie überaus "
+                "großzügig. Ich danke dir.' Sein Misstrauen schwindet ein wenig.")
+
     def _become_convinced(self, gs: game_state.GameState) -> dict:
         """Der Zombie hat die Anleitung gelesen: er kennt die Lösung und sucht Kooperation."""
         self.zombie_state = ZombieState.CONVINCED
@@ -536,6 +573,10 @@ Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und G
         self.zombie_state = ZombieState.REDEEMED
         self.zombie_state_message = "Der Zombie ist erlöst!"
 
+        # TODO (vorgemerkt 2026-07-11): Bei der Erlösung ALLE Gegenstände am Ort ablegen,
+        # nicht nur die EC-Karte - damit der Spieler ihm zuvor via 'gib' gegebene Gegenstände
+        # (z.B. den Umschlag als vertrauensbildende Maßnahme) wieder aufsammeln kann. Diese
+        # Spiellogik ist noch nicht ausgearbeitet; siehe docs/BACKLOG.md. Aktuell: nur EC-Karte.
         # Drop EC card
         ec_karte = None
         for item in self.inventory:
