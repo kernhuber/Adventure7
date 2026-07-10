@@ -274,15 +274,29 @@ nudge** so a cooperative zombie trails the player instead of idling. Still open:
 (`rest`) sentences that stop after the first command (not yet reproduced in a captured log); a full
 Gemma browser play-through of the deep dungeon.
 
+**`gib <obj> an <NPC>` verb — DONE & browser-confirmed** (2026-07-11, commits
+`0e60523`/`019bb17`). `verb_give` (`game_verbs.py`) resolves the object via
+`self.objects.get(obj_name_from_friendly_name(...))` (the ID→GameObject two-step, the
+earlier bug was passing the raw ID to `is_in_inventory`), checks the recipient is a
+co-located NPC, then delegates to a **`gets_given(gs, pl, obj)`** hook on that NPC (each
+decides: accept / eat / drop / decline, and returns the player-facing message). Wired into
+both parsers (Gemini `t_gib` FunctionDeclaration + Gemma `_VERB_ARGS`/schema/examples;
+`what`=inventory, `towhom`=present NPCs). Reactions: **dog** — food (`o_salami`/`o_pizza`)
+→ distracted-eating for a few turns (as if found on the ground), else silently dropped;
+**zombie** — thanks in persona, `trust += GIFT_TRUST_BONUS (20)` + a notebook entry so the
+reasoning "sees" it, and **`o_manual` → CONVINCED** (same as reading it); end states decline.
+Deferred (in `docs/BACKLOG.md`): drop ALL items on redemption (so a gifted envelope can be
+reclaimed), and Case 2 (zombie→player, e.g. handing over the EC card on success).
+
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
 via flags (model them on `korridor_offen`/`o_stahltuer`: a `*_offen` flag in
 `services/world.py` `GameFlags`, an `obstruction_check` gating on it, and an
-object-`apply`/reveal that toggles it). Also outstanding: in-browser validation of the
-zombie LLM paths and the `"öffne die Stahltür"` parse; balancing the trust/energy
-thresholds; optional `gib <obj> an <NPC>` verb. Backlog: `docs/BACKLOG.md` (optional CLI
-front-end — now feasible since the engine is GUI-free; typed `GameSession`; retire the
-flag-mirror shim; remove dead verbs/`emit_*`; fix the long-broken `create_world.py`).
+object-`apply`/reveal that toggles it). Also outstanding: balancing the trust/energy
+thresholds; the zombie **redemption-drop** loop (give→reclaim, see Backlog). Backlog:
+`docs/BACKLOG.md` (optional CLI front-end — now feasible since the engine is GUI-free;
+typed `GameSession`; retire the flag-mirror shim; remove dead verbs/`emit_*`; fix the
+long-broken `create_world.py`).
 
 Refactor history: `docs/REFACTORING-2026-06-24-webserver.md` (Step 1),
 `docs/REFACTORING-2026-06-25-gamestate.md` (Step 2),
