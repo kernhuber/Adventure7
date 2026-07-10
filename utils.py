@@ -110,6 +110,7 @@ def ddiff(l:dl, a, b):
 game_known_tokens = ["anwenden",
                     "interagiere",
                     "nimm",
+                    "gib",
                     "ablegen",
                     "untersuche",
                     "umsehen",
@@ -180,6 +181,11 @@ def json_cmd_simple(cmd_in:str, arg1:str=None, arg2:str=None):
             case "nimm":
                 args = {
                     "whato":arg1
+                }
+            case "gib":
+                args = {
+                    "what":arg1,
+                    "towhom":arg2 if arg2 else "empty",
                 }
             case "ablegen":
                 args = {

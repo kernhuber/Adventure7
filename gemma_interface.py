@@ -62,6 +62,10 @@ Beispiele nimm/ablegen (Gegenstand aufheben bzw. aus dem Inventar ablegen - NICH
 "nimm die Geldboerse an dich / steck die Geldboerse ein" -> [{"function_call": {"name": "nimm", "args": {"whato": "o_geldboerse"}}}]
 "lege den Umschlag ab / lass den Umschlag hier" -> [{"function_call": {"name": "ablegen", "args": {"whato": "o_umschlag"}}}]
 
+Beispiele geben (Gegenstand aus dem Inventar an einen ANWESENDEN NPC uebergeben - 'gib'=what+towhom; NICHT 'ablegen'!):
+"gib dem Hund den Knochen / ueberreiche dem Hund den Knochen" -> [{"function_call": {"name": "gib", "args": {"what": "o_knochen", "towhom": "Hund"}}}]
+"gib dem Zombie die Geldboerse" -> [{"function_call": {"name": "gib", "args": {"what": "o_geldboerse", "towhom": "Zombie"}}}]
+
 Beispiele rest (Grund jeweils: das Ziel wird erst nach Schritt 1 verfuegbar):
 "gehe zum Schuppen und schliesse ihn mit dem Schluessel auf, dann sieh dich um" -> [{"function_call": {"name": "gehe", "args": {"direction": "p_schuppen"}}}, {"function_call": {"name": "rest", "args": {"remaining_input": "Schliesse den Schuppen mit dem Schluessel auf und sieh dich um"}}}]
 "untersuche das skelett und nimm die geldboerse" -> [{"function_call": {"name": "untersuche", "args": {"what": "o_skelett"}}}, {"function_call": {"name": "rest", "args": {"remaining_input": "nimm die geldboerse"}}}]
@@ -100,6 +104,7 @@ class GemmaInterface:
         "interagieren": ["who", "firstmessage"],
         "nimm": ["whato"],
         "ablegen": ["whato"],
+        "gib": ["what", "towhom"],
         "untersuche": ["what"],
         "angreifen": ["whom"],
         "zurueckweisen": ["why"],
@@ -300,6 +305,9 @@ class GemmaInterface:
         verb("gehe", [("direction", place_ids)])
         verb("nimm", [("whato", take_ids)])
         verb("ablegen", [("whato", drop_ids)])
+        # geben: Objekt aus dem Inventar (drop_ids) an einen anwesenden NPC (target_ids).
+        # Fehlt eins von beiden (leere Liste), lässt verb() das Verb weg -> nicht produzierbar.
+        verb("gib", [("what", drop_ids), ("towhom", target_ids)])
         verb("untersuche", [("what", obj_ids)])
         verb("anwenden", [("what", obj_ids)], [("towhat", obj_ids)])
         verb("interagieren", [("who", target_ids)], [("firstmessage", None)])

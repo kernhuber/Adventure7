@@ -44,6 +44,7 @@ class GameVerbsMixin:
         vtab = {
             "anwenden":(self.verb_apply,2),
             "nimm":(self.verb_take,1),
+            "gib":(self.verb_give,2),
             "ablegen":(self.verb_drop,1),
             "umsehen":(self.verb_context,0),
             "untersuche": (self.verb_examine,1),
@@ -253,6 +254,39 @@ class GameVerbsMixin:
             else:
                 r = f"Du kannst {obj.callnames[0].capitalize()} nicht aufnehmen"
         return r
+
+    def verb_give(self, pl: PlayerState, session_id, what=None, towhom=None):
+        """Der Spieler gibt einen Gegenstand aus seinem Inventar an einen ANWESENDEN NPC.
+
+        Analog zu verb_drop/verb_apply: obj_name_from_friendly_name liefert nur die ID -
+        das GameObject kommt aus self.objects.get(...). is_in_inventory/add_to_inventory
+        arbeiten auf GameObjects, nicht auf IDs. Ziel muss ein NPC am selben Ort sein.
+        """
+        if what is None or towhom is None:
+            return "Ich bin verwirrt - wem soll ich was geben?"
+        from npc_dog_state import NPCDogState
+        from npc_zombie_state import NPCZombieState
+
+        # ID -> GameObject (der Zweischritt, der vorher fehlte)
+        obj = self.objects.get(self.obj_name_from_friendly_name(what))
+        if obj is None:
+            return "Sowas gibt es hier nicht."
+        if not pl.is_in_inventory(obj):
+            return "Sowas hast Du nicht bei dir."
+
+        # Ziel: ein ANWESENDER NPC (Hund/Zombie) - der Spieler selbst zählt nicht.
+        here = pl.location
+        towhom_l = (towhom or "").lower()
+        target = next((p for p in self.players
+                       if p is not pl and p.location == here
+                       and isinstance(p, (NPCDogState, NPCZombieState))
+                       and p.name.lower() == towhom_l), None)
+        if target is None:
+            return f"Hier ist niemand namens {towhom}, dem du etwas geben könntest."
+
+        pl.remove_from_inventory(obj)
+        target.add_to_inventory(obj)
+        return f"Du gibst {target.name} {obj.callnames[0].capitalize()}."
 
     def verb_drop(self, pl: PlayerState, session_id, whato):
         what = self.obj_name_from_friendly_name(whato)

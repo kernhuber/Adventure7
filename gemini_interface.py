@@ -757,6 +757,26 @@ Die Ortsbeschreibung:
                 required=["whom"]
             )
         )
+        t_gib = FunctionDeclaration(
+            name="gib",
+            description="Der Spieler gibt einen Gegenstand aus seinem Inventar an einen anwesenden Charakter (NPC).",
+            parameters=Schema(
+                type=Type.OBJECT,
+                properties={
+                    "what": Schema(
+                        type=Type.STRING,
+                        description="Die eindeutige ID des Objekts aus dem Inventar, das übergeben wird (z.B. 'o_knochen').",
+                        enum=ablegen_object_ids
+                    ),
+                    "towhom": Schema(
+                        type=Type.STRING,
+                        description="Der Name des anwesenden Charakters, der den Gegenstand erhält (z.B. 'Hund').",
+                        enum=available_target_player_ids
+                    )
+                },
+                required=["what", "towhom"]
+            )
+        )
         t_zurueckweisen = FunctionDeclaration(
             name="zurueckweisen",
             description="Gib diesen Befehl aus, wenn die Spielereingabe nicht verstanden wurde oder nach der Spielelogik nicht ausführbar ist. Liefere eine verständliche Erklärung.",
@@ -818,7 +838,7 @@ Die Ortsbeschreibung:
             )
         )
 
-        function_declarations_list = [t_gehen, t_nimm, t_anwenden, t_interagieren, t_ablegen, t_umsehen, t_angreifen, t_untersuche, t_rest, t_zurueckweisen, t_nichts, t_quit, t_hilfe]
+        function_declarations_list = [t_gehen, t_nimm, t_anwenden, t_interagieren, t_ablegen, t_gib, t_umsehen, t_angreifen, t_untersuche, t_rest, t_zurueckweisen, t_nichts, t_quit, t_hilfe]
         configured_tools = [
             Tool(function_declarations=[decl])  # Jedes Tool MUSS eine Liste von FunctionDeclarations enthalten
             for decl in function_declarations_list
@@ -882,6 +902,10 @@ Die Ortsbeschreibung:
         *Beispiele `interagieren`:*
         "rede mit dem Hund" -> {{"function_call": {{"name": "interagieren", "args": {{"who": "Hund"}}}}}}
         "sage 'hallo!' zu Chris" -> {{"function_call": {{"name": "interagieren", "args": {{"who": "Chris", "firstmessage": "hallo!"}}}}}}
+
+        *Beispiele `gib`* (Gegenstand aus dem Inventar an einen ANWESENDEN NPC übergeben; NICHT 'ablegen'):
+        "gib dem Hund den Knochen / überreiche dem Hund den Knochen" -> {{"function_call": {{"name": "gib", "args": {{"what": "o_knochen", "towhom": "Hund"}}}}}}
+        "gib dem Zombie die Geldbörse" -> {{"function_call": {{"name": "gib", "args": {{"what": "o_geldboerse", "towhom": "Zombie"}}}}}}
 
         --- Aktueller Ort und wichtige Objekte/Charaktere (nur zum Verständnis, NICHT fürs ID-Mapping) ---
         {json.dumps(narration_context_for_llm, indent=2)}
