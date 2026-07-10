@@ -165,6 +165,16 @@ einen neuen Adapter erfordern, nicht Änderungen in der Spiel-Engine. Caching (A
 **optionale Fähigkeit** modelliert: nutzbar, wenn der Adapter sie anbietet; sonst weicher
 Fallback auf den vollen Prompt.
 
+**Realisiert (2026-07-09/10, Branch `Adventure-10-2026-07-09-Gemma`):** ein **lokaler Gemma-Adapter**
+(`GemmaInterface` via Ollama, `LLM_BACKEND="gemma"`). Bestätigt das Designprinzip — die Engine blieb
+unverändert. Der wesentliche Unterschied lag im Ausgabe-*Mechanismus*: Gemma hat kein natives
+Function-Calling, daher **Ollama Structured Outputs** (JSON-Schema via `format=`, constrained
+decoding) statt Gemini-`function_declarations`. Wichtiger Befund für dieses Dokument: constrained
+decoding garantiert **Wohlgeformtheit, nicht Richtigkeit** — die enum-/Kontext-Qualitätsrationale
+aus §Qualität bleibt also load-bearing, und ein schwächeres lokales Modell braucht zusätzlich
+**explizite Beispiele** im Parse-Prompt (nicht bloß Regeln). Details + Test-/Modellbefunde in
+CLAUDE.md „Status & next steps" und der Projekt-Memory `prompt-optimization-progress`.
+
 ---
 
 **Verwandte Doku/Notizen:** Token-Logging-Setup (`_log_tokens`/`dl.LLM_TOKENS`/`token_report`);

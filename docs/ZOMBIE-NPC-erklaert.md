@@ -32,11 +32,21 @@ Zwei getrennte LLM-Nutzungen mit unterschiedlichen Modellen:
 
 | Zweck | Methode | Modell |
 |---|---|---|
-| Entscheidung „was tue ich diesen Zug?" (nur in HUNTING) | `_call_reasoning_llm` | `gemini-2.5-flash` (Reasoning) |
-| Gespräch + Bewertung (`chat` / `end_chat`) | `llm.simple_message` | `gemini-2.5-flash-lite` (Text) |
+| Entscheidung „was tue ich diesen Zug?" (HUNTING/COOPERATIVE/DOUBTING) | `_call_reasoning_llm` | Reasoning-Modell des aktiven Backends |
+| Gespräch + Bewertung (`chat` / `end_chat`) | `llm.simple_message` | Text-Modell des aktiven Backends |
 
-→ **Schweres Modell zum Denken, leichtes zum Plaudern.** Die kooperativen Zustände
-laufen bewusst **ohne** Pro-Zug-LLM (Skript = günstig, vorhersehbar).
+→ **Schweres Modell zum Denken, leichtes zum Plaudern.** Die *rein* skriptbasierten
+Zustände sind CONVINCED/REDEEMED/PETRIFIED sowie der Handbuch-Quest-Vorrang; die aktiven
+Zustände HUNTING/COOPERATIVE/DOUBTING entscheiden pro Zug per Reasoning-LLM.
+
+**Backend-agnostisch** (2026-07-10): `_call_reasoning_llm` war früher fest auf Gemini
+verdrahtet (`from google import genai` + `gs.llm._impl.client…`). Unter dem lokalen
+Gemma-Backend (`LLM_BACKEND="gemma"`) warf das eine Exception → jeder Zug wurde „nichts";
+in HUNTING verdeckte das der Verfolgungs-Fallback, in COOPERATIVE **fror der Zombie ein**.
+Jetzt delegiert der Zombie an `gs.llm._impl._call_reasoning_llm` — sowohl `GeminiInterface`
+als auch `GemmaInterface` haben diese Methode, der NPC-Code ist damit LLM-unabhängig. Dazu
+ein **Folge-dem-Spieler-Nudge** für COOPERATIVE/DOUBTING (empfohlene Richtung zustandsabhängig
+gerahmt), damit ein kooperativer Zombie dem Spieler folgt statt passiv stehenzubleiben.
 
 Der NPC erbt von `PlayerState` und stellt `NPC_game_move(gs)` bereit, das die Engine
 einmal pro Spielrunde aufruft (`GameState.run_npc_turns`, vom Web-Layer getrieben).
@@ -230,9 +240,12 @@ als Token in `utils.game_known_tokens` registriert, weitergeleitet in
 
 - Der Reasoning-Prompt bietet auch Aktionen an (nimm/anwenden/untersuche), die in der
   Jagd selten sinnvoll sind → das LLM könnte „komische" Aktionen wählen.
-- **Token-Kosten**: Reasoning-Call (~jeden 2. Zug in HUNTING) + Chat-Call je Nachricht
-  + `end_chat`. Die kooperativen Zustände sind deshalb absichtlich skriptbasiert.
-- Direkter Zugriff `gs.llm._impl` — Kopplung an die konkrete `GeminiInterface`.
+- **Token-Kosten**: Reasoning-Call (~jeden 2. Zug in den aktiven Zuständen) + Chat-Call je
+  Nachricht + `end_chat`. Die Endzustände (CONVINCED/REDEEMED/PETRIFIED) sparen den LLM-Call.
+- Direkter Zugriff `gs.llm._impl` (statt über den Adapter) — die Kopplung ist inzwischen aber
+  backend-**neutral**: `_call_reasoning_llm` existiert auf beiden Impls (`GeminiInterface`/
+  `GemmaInterface`), der Zombie läuft also mit Gemini wie mit lokalem Gemma. Sauberer wäre,
+  `_call_reasoning_llm` auch auf dem `LLMClient`-Adapter zu exponieren (Backlog).
 - Die **Übergabe-Route** der Anleitung ist pragmatisch („neben dem Zombie lesen");
   ein eigener `gib <Objekt> an <NPC>`-Befehl wäre sauberer (Backlog).
 - Vertrauens-/Energie-Schwellen sind nur grob abgestimmt — Balancing-Aufgabe.

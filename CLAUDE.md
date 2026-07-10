@@ -100,6 +100,10 @@ debug-only.
 
 - Models (`gemini_interface.py`): `gemini-2.5-flash-lite` (text / command parsing),
   `gemini-2.5-flash` (NPC reasoning).
+- **Backend switch** (`utils.py`): `LLM_BACKEND` = `"gemini"` (cloud) or `"gemma"`
+  (local via Ollama); `services/llm_factory.make_llm()` picks the adapter. The Gemma
+  side is imported lazily, so the Gemini path runs without `ollama` installed. See the
+  Gemma sub-project note under *Status & next steps* and `gemma_interface.py`.
 - If **tool/function calls** misbehave, suspect the request/response shape
   differing between the old and new google SDK before suspecting model IDs. Code:
   `GeminiInterface.parse_user_input_to_commands` and the `generate_content(...)`
@@ -114,8 +118,8 @@ debug-only.
   relocating code.
 - Without `GOOGLE_API_KEY`, connecting falls back to **demo mode** cleanly.
 - Commit/push only when asked (the author reviews, then says "push it"). Current
-  working branch: `Adventure-10-2026-07-08-Prompts` (prompt-optimization; branched off
-  `Adventure-10-2026-06-26-Gameplay`). Remote: `kernhuber/Adventure7`.
+  working branch: `Adventure-10-2026-07-09-Gemma` (local-LLM/Gemma; branched off
+  `Adventure-10-2026-07-08-Prompts`). Remote: `kernhuber/Adventure7`.
 - Item/place names shown to the player should use **call-names** (pretty), never the
   internal `o_`/`p_` ids.
 
@@ -234,13 +238,41 @@ measurement tooling. Deferred (plan §5): A2 (rest-loop — future-state deps, e
 after examining), C1 (narrate/compile dedup), and **A1' — full-world-id `enum`s** to get cache
 hits (Gemini-specific; conflicts a bit with the provider-agnostic goal).
 
-**Next project — swappable local LLM (Gemma) behind `LLMClient`.** Add a `GemmaInterface`
-selectable via a switch in `utils.py`. Plugging in is easy (the `LLMClient` Protocol +
-`services/adapters.py` already isolate the engine from the concrete LLM); the real work is
-`GemmaInterface` itself — esp. that a local Gemma has no native Gemini-style function-calling/tool
-schema, so `parse_user_input_to_commands` must prompt for JSON and parse it, and a local runtime
-(Ollama / llama.cpp / transformers) must be wired. (Game logic/dungeon work continues in parallel,
-possibly later.)
+**Swappable local LLM (Gemma via Ollama) behind `LLMClient` — IMPLEMENTED & browser-tested**
+(2026-07-09/10, branch `Adventure-10-2026-07-09-Gemma`). `GemmaInterface` (`gemma_interface.py`)
+implements the same surface as `GeminiInterface`; select it with `utils.LLM_BACKEND="gemma"`
+(+ `GEMMA_MODEL`, or the `GEMMA_MODEL` env var). Runtime = **Ollama** (`pip install ollama`,
+service on :11434, a pulled model). Key design: a local Gemma has **no native function-calling**,
+so instead of a tool schema we use **Ollama Structured Outputs** — pass a JSON Schema (per-verb
+`anyOf`, `enum`s for valid IDs) via `format=`; XGrammar constrained decoding then guarantees
+schema-valid JSON with valid IDs (this *replaces & hardens* the Gemini-`enum` quality guard).
+`parse_user_input_to_commands` returns the **same** `[{"function_call": …}]` shape, so the engine
+is unchanged. `think=False` is required (thinking models otherwise spend the token budget in the
+"think" phase and leave `response` empty).
+
+**Model choice matters** (32 GB M3): `gemma4:31b` (19 GB) overwhelmed the machine — on 32 GB the
+GPU-wired limit is ~⅔ RAM ≈ 21 GB. Default is **`gemma4:latest` (9.6 GB)**; `gemma3:latest`
+(3.3 GB) for max headroom. ("Gemma 4" tags are likely community-tagged, not an official Google
+release — treat quoted benchmarks skeptically.)
+
+**Teaching lesson from the browser tests:** Structured Outputs guarantee **well-formedness, not
+correctness** — a weak local model still makes *valid-but-wrong* semantic choices, and it is
+**example-driven**: abstract rules don't steer it, concrete examples in `_PARSE_PROMPT_FIXED` do.
+Fixes shipped (each an added example / tightened rule, verified against `gemma4:latest`): `nimm`
+was parsed as `untersuche`; a gated compound ("unlock the shed and enter" before the place is a
+valid `gehe` target) forced `gehe` onto a *wrong* available place (backward teleport) instead of
+deferring to `rest`; "trinke vom Wasserspender" filled the bottle instead of drinking. Context fix
+(`services/world.py`): only offer NPCs as object/target ids when co-located with the player, and
+drop the player from target ids (stopped bogus `interagieren <self>` / distant-NPC picks).
+
+**Backend-agnostic NPC reasoning** (2026-07-10): `NPCZombieState._call_reasoning_llm` was hardcoded
+to Gemini (`from google import genai` + `gs.llm._impl.client…`) → under Gemma it threw and every
+zombie turn became `nichts` (HUNTING masked it via the pursuit fallback; **COOPERATIVE froze**). It
+now delegates to `gs.llm._impl._call_reasoning_llm` (added to `GeminiInterface`; Gemma already had
+it), so the zombie reasons under either backend. Plus a COOPERATIVE/DOUBTING **follow-the-player
+nudge** so a cooperative zombie trails the player instead of idling. Still open: rare multi-step
+(`rest`) sentences that stop after the first command (not yet reproduced in a captured log); a full
+Gemma browser play-through of the deep dungeon.
 
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
