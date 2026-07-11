@@ -114,6 +114,11 @@ class CommandEngineMixin:
                 from services.save_load import load_from_file
                 new_gs = load_from_file(path, llm=session["game"].llm)
                 session["game"] = new_gs
+                # Per-Session-Bindung wie in register_client nachziehen: die frisch geladene
+                # GameState hat cmd_q noch als Default ({}); ohne diese Zeile schlägt später
+                # z.B. der Pinpad (gs.cmd_q.append(check_pinpad)) mit "'dict' object has no
+                # attribute 'append'" fehl.
+                new_gs.cmd_q = session["cmd_q"]
                 session["state"] = serialize_real_game_state(new_gs, session_id=session_id)
                 await websocket.send(json.dumps({"type": "game_state", "data": session["state"]}))
                 await info(f"📂 Spielstand '{slot}' geladen.")
