@@ -306,54 +306,29 @@ def o_ec_karte_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=Non
     if not _F(gs).hauptschalter:
         return "Sieht so aus, als wäre der Automat ausgeschaltet"
 
-    if pl.location.name!="p_geldautomat" and onwhat.name!="o_geldautomat":
+    # Nur am Geldautomaten (oder explizit auf ihn angewendet) sinnvoll. onwhat kann None sein
+    # (z.B. "anwenden EC-Karte" direkt am Automaten) -> defensiv prüfen.
+    if pl.location.name != "p_geldautomat" and (onwhat is None or onwhat.name != "o_geldautomat"):
         return "Ich verstehe nicht, was genau du mit der Geldkarte machen willst!"
-    #
-    # Web-Version oder nicht?
-    #
-    is_web_interface = (hasattr(gs, 'web_sessions') and
-                        len(getattr(gs, 'web_sessions', {})) > 0)
-    if not is_web_interface:
-        print(f"{'*'*60}")
-        print(f"*{' '*58}*")
-        s=("Bitte geben sie die Geheimzahl ein!").center(58," ")
-        print(f'*{s}*')
-        print(f"*{' ' * 58}*")
-        print(f"{'*' * 60}")
-        z = -1
-        while z<0:
-            x = input("Geheimzahl: ")
-            if x.isdigit():
-                z = f'{int(x):04d}'
-        if gs.geheimzahl == z:
-            gs.objects["o_geld_dollar"].hidden = False
-            return "**Die Zahl stimmt!** Du tippst die entsprechenden Tasten - der Automat rattert, und spuckt ein Bündel Scheine aus. Frisch gedruckte US-Dollar!"
-        else:
-            return " --- Die Zahl ist falsch. ---"
-    else:
-        #
-        # Get number from the web interface, have
-        #
 
-#----
-        # Statt pl.websocket
-        session_id = getattr(pl, 'session_id', None)
-
-        if session_id is None:
-            return "Fehler beim Zugriff auf Web-Session."
-#---
-        # Fordere PIN über Web-GUI an → Command-Queue!
-        import hashlib
-        md = hashlib.md5(_F(gs).geheimzahl.encode()).hexdigest()
-        gs.cmd_q.append({
-            "function_call": {
-                "name": "check_pinpad",
-                "args": {
-                    "hash": md
-                }
+    # PIN-Eingabe anfordern: EIN 'check_pinpad'-Kommando in die (Session-)Command-Queue legen.
+    # Das Front-End beantwortet es über den PlayerDialogs-Port - im Web öffnet
+    # command_engine -> web_dialogs.ask_for_pin das Pinpad-Modal, eine spätere CLI würde es
+    # per Konsole beantworten. (Früher stand hier eine input()-Shell-Routine hinter einer
+    # inzwischen TOTEN gs.web_sessions-Erkennung -> die lief im Web-Backend ins Leere: es kam
+    # die alte Shell statt des Modals, und die Eingabe schlug fehl. Die Engine ist GUI-frei;
+    # sie stellt hier nur die PIN-ANFRAGE und trifft die Web/CLI-Entscheidung nicht mehr.)
+    import hashlib
+    md = hashlib.md5(_F(gs).geheimzahl.encode()).hexdigest()
+    gs.cmd_q.append({
+        "function_call": {
+            "name": "check_pinpad",
+            "args": {
+                "hash": md
             }
-        })
-        return "Warte auf Eingabe..."
+        }
+    })
+    return "Du steckst die EC-Karte in den Geldautomaten. Auf dem Bildschirm erscheint: 'Bitte Geheimzahl eingeben.'"
 
 
 def o_pinsel_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
