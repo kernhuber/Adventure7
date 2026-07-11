@@ -261,9 +261,16 @@ correctness** — a weak local model still makes *valid-but-wrong* semantic choi
 Fixes shipped (each an added example / tightened rule, verified against `gemma4:latest`): `nimm`
 was parsed as `untersuche`; a gated compound ("unlock the shed and enter" before the place is a
 valid `gehe` target) forced `gehe` onto a *wrong* available place (backward teleport) instead of
-deferring to `rest`; "trinke vom Wasserspender" filled the bottle instead of drinking. Context fix
-(`services/world.py`): only offer NPCs as object/target ids when co-located with the player, and
-drop the player from target ids (stopped bogus `interagieren <self>` / distant-NPC picks).
+deferring to `rest`; "trinke vom Wasserspender" filled the bottle instead of drinking; "stecke die
+EC-Karte in den Geldautomaten" applied the *wallet* (`o_geldboerse`) instead of the card
+(`o_ec_karte`) — added the ATM-insert example; and "nimm die Geheimzahl" (not a takeable object in
+that location's `nimm`-enum) was **substituted** to `nimm(o_wasserspender)` — tightened the
+ID-mapping rule (**never substitute a different object/place to satisfy the verb → `zurueckweisen`
+if the intended target is in no enum**) + a concrete reject example (2026-07-11, commit `e86da0d`;
+both backends in parallel). The rule only triggers when the object truly isn't a valid target, so it
+never blocks a legitimate take. Context fix (`services/world.py`): only offer NPCs as object/target
+ids when co-located with the player, and drop the player from target ids (stopped bogus
+`interagieren <self>` / distant-NPC picks).
 
 **Backend-agnostic NPC reasoning** (2026-07-10): `NPCZombieState._call_reasoning_llm` was hardcoded
 to Gemini (`from google import genai` + `gs.llm._impl.client…`) → under Gemma it threw and every
@@ -285,15 +292,34 @@ both parsers (Gemini `t_gib` FunctionDeclaration + Gemma `_VERB_ARGS`/schema/exa
 → distracted-eating for a few turns (as if found on the ground), else silently dropped;
 **zombie** — thanks in persona, `trust += GIFT_TRUST_BONUS (20)` + a notebook entry so the
 reasoning "sees" it, and **`o_manual` → CONVINCED** (same as reading it); end states decline.
-Deferred (in `docs/BACKLOG.md`): drop ALL items on redemption (so a gifted envelope can be
-reclaimed), and Case 2 (zombie→player, e.g. handing over the EC card on success).
+Deferred (in `docs/BACKLOG.md`): Case 2 (zombie→player, e.g. handing over the EC card on success).
+
+**Zombie endgame + dried Wasserspender + test commands** (2026-07-11, commit `3c2828e`,
+browser-tested). Both end states now **remove the zombie from the game** (new `vanished` flag;
+`run_npc_turns` drops a vanished zombie post-loop via the existing `players_to_remove` path).
+**Redemption** (`_do_redemption`): drops his **entire** inventory at the spot (EC card + gifted
+items to reclaim), thanks the player, vanishes (GUI animation = a marked TODO). **Petrify**
+(`_do_petrify`): pity message, vanishes, **all inventory destroyed with him**, and it **dries out
+the U-Bahn Wasserspender** (`gs.wasserspender_trocken=True`). DESIGN = "slow doom": **no immediate
+game over** — without water the player eventually dies of thirst (`evaluate_thirst` at `thirst==0`);
+the immediate-game-over alternative is left as a code comment. Test commands (toggled by
+`utils.ZOMBIE_TESTCMDS`, bypass-gated in `command_engine.py`): **`zombie_versteinern`** /
+**`zombie_erlöst`** (alias `zombie_erloest`). Related fix: `o_flasche_apply_f` let you drink from a
+full bottle even when the fountain is dry (only refilling depends on it), and the "wet" fountain
+description had run-on bullets (missing `\n`).
+
+**Narration prompt shared across backends** (2026-07-11, commit `53fffb9`). Under Gemma the
+narration was terse and never mentioned the dog/zombie; its `gen_narration_prompt` was a condensed
+draft. The rich narrator prompt (scenario + location + objects + ways + present NPCs) now lives in
+**`narration_prompt.build_narration_prompt(gs, pl)`** and both `GeminiInterface` and `GemmaInterface`
+delegate to it — one source, no duplication.
 
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
 via flags (model them on `korridor_offen`/`o_stahltuer`: a `*_offen` flag in
 `services/world.py` `GameFlags`, an `obstruction_check` gating on it, and an
 object-`apply`/reveal that toggles it). Also outstanding: balancing the trust/energy
-thresholds; the zombie **redemption-drop** loop (give→reclaim, see Backlog). Backlog:
+thresholds; the zombie endgame's GUI animation + Case 2 (zombie→player), see Backlog. Backlog:
 `docs/BACKLOG.md` (optional CLI front-end — now feasible since the engine is GUI-free;
 typed `GameSession`; retire the flag-mirror shim; remove dead verbs/`emit_*`; fix the
 long-broken `create_world.py`).
