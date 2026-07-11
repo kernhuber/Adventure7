@@ -411,8 +411,18 @@ def o_ec_karte_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 EC-Karte
 ========
-- Eine EC-Karte einer bekannten Bank
+- Eine EC-Karte einer bekannten Bank (wird auch "Geldkarte" genannt)
 - noch gültig
+
+Verwendung der EC-Karte
+=======================
+- ACHTUNG Wortverwechslung: "Geldkarte" = "EC-Karte" = DIESE Karte (o_ec_karte). Das ist NICHT
+  der "Geldautomat" (die Maschine) und NICHT die "Geldbörse"! Sagt der Spieler "Geldkarte",
+  meint er IMMER diese Karte.
+- Man kann die EC-Karte/Geldkarte in den Geldautomaten stecken/einführen/einschieben, um Geld abzuheben
+- Liefere in diesem Fall "anwenden EC-Karte Geldautomat" zurück: die Karte steht als ERSTES
+  Argument, der Geldautomat als zweites (NICHT umgekehrt, NICHT die Geldbörse).
+- Beispiel: "stecke die Geldkarte in den Geldautomaten" -> anwenden EC-Karte Geldautomat
 """
 
 
