@@ -17,9 +17,9 @@ VORAUSSETZUNGEN auf dem Rechner: ``pip install ollama``, laufender Ollama-Dienst
 ein gezogenes Modell (z.B. ``ollama pull gemma3``). Ohne das schlägt erst der ``__init__`` fehl
 (bewusst -> die Factory importiert diese Datei nur, wenn LLM_BACKEND="gemma").
 
-STATUS: Gerüst. ``parse_user_input_to_commands`` ist ausimplementiert (Kernstück);
-``gen_narration_prompt`` ist noch eine kondensierte Erst-Fassung (TODO: den reichen
-Narrations-Prompt mit GeminiInterface teilen, statt duplizieren).
+STATUS: ``parse_user_input_to_commands`` ist ausimplementiert (Kernstück); ``gen_narration_prompt``
+teilt sich jetzt den reichen Erzähler-Prompt mit GeminiInterface über ``narration_prompt.build_narration_prompt``
+(inkl. Wege + anwesende NPCs Hund/Zombie) - kein Duplikat mehr.
 """
 from __future__ import annotations
 
@@ -218,19 +218,11 @@ class GemmaInterface:
 
     # ---------------- Narration ----------------
     def gen_narration_prompt(self, gs, pl) -> str:
-        # TODO: den reichen Narrations-Prompt mit GeminiInterface.gen_narration_prompt teilen
-        # (in ein gemeinsames services/llm_prompts.py extrahieren), statt hier zu duplizieren.
-        # Erst-Fassung: kompakter, konsistenz-betonter Prompt aus dem Ortszustand.
-        if pl.location.place_prompt_f:
-            loc = pl.location.place_prompt_f(gs, pl)
-        else:
-            loc = pl.location.place_prompt
-        objs = "".join(o.prompt_f(gs, pl) for o in pl.location.place_objects if not o.hidden)
-        return (
-            "Du bist der Erzähler eines Text-Adventures. Fasse die Fakten stimmungsvoll zusammen "
-            "(<=500 Zeichen), erfinde NICHTS dazu, bleibe konsistent, rede den Spieler in der 1. Person an.\n"
-            f"Ort: {pl.location.callnames[0]}\n{loc}\nObjekte:\n{objs}\n"
-        )
+        # Gemeinsamer, reicher Narrations-Prompt (Ort + Objekte + Wege + anwesende NPCs) -
+        # identisch zu GeminiInterface, damit auch Gemma Hund/Zombie und die Wege erwähnt.
+        # Früher stand hier eine kondensierte Fassung ohne NPCs -> knappe Narration.
+        from narration_prompt import build_narration_prompt
+        return build_narration_prompt(gs, pl)
 
     def narrate(self, gs, pl) -> str:
         prompt = self.gen_narration_prompt(gs, pl)

@@ -99,90 +99,10 @@ class GeminiInterface:
         self.txt_prev_description = dict(data.get("txt_prev_description", {}))
 
     def gen_narration_prompt(self, gs:"GameState", pl:"PlayerState") -> str:
-        from typing import cast
-        if pl.location.place_prompt_f:
-            pl_loc_prompt = pl.location.place_prompt_f(gs,pl)
-        else:
-            pl_loc_prompt = pl.location.place_prompt
-
-        r = f"""
-Du bist der Erzähler in einem Adventure-Spiel. Deine Aufgabe ist es, die folgenden Informationen
-zu einem Stimmungsvollen Text zusammenzufassen. Halte Dich dabei strikt an die Vorgaben und erfinde
-keine neuen Orte, Gegenstände, Akteure oder sonstige Dinge. Deine Zusammenfassung sollte 500 Zeichen
-nicht überschreiten.
-    
-+---------------------+
-+ Generelles Szenario +
-+---------------------+
-Sofern der Spieler sich an den Orten start, warenautomat, geldautomat, dach oder felsen befindet,
-gilt folgendes generelles Szenario
-- Wüste
-- Greller Sonnenschein
-- extrem heiss
-
-An anderen Orten wird das Szenario in der Ortsbeschreibung beschrieben. In diesem Fall 
-verwende das dort angegebene Szenario
-
-Rede den Spieler in der ersten Person an! 
-
-+-------------------------------------+  
-+ Ort des Spielers oder der Spielerin +
-+-------------------------------------+
-- {pl.name} (Spieler/Spielerin) befindet sich am Ort "{pl.location.callnames[0]}"
-
-Die Ortsbeschreibung:
-=====================
-
-{pl_loc_prompt}
-
-+-----------------------+
-+ Objekte an diesem Ort +
-+-----------------------+
-        """
-        for obj in pl.location.place_objects:
-            if not obj.hidden:
-                r = r+obj.prompt_f(gs,pl)
-        r=r+"""
-+----------------------------+        
-+ Wege, die hier existrieren +
-+----------------------------+
-"""
-        for w in pl.location.ways:
-            if w.visible:
-                f = w.obstruction_check(gs)
-                if f != "Free":
-                    r=r+f"- {f}"
-                else:
-                    r=r+f"- {w.destination.callnames[0]}"
-                r = r+"\n"
-
-        dog = None
-        from npc_dog_state import NPCDogState
-        for d in gs.players:
-            if type(d) is NPCDogState:
-                dog = d
-                break
-        if dog:
-            r = r + "\n" + dog.dog_prompt(gs,pl)
-
-        zombie = None
-        from npc_zombie_state import NPCZombieState
-        for z in gs.players:
-            if isinstance(z, NPCZombieState):
-                zombie = z
-                break
-        if zombie:
-            zp = zombie.zombie_prompt(gs, pl)
-            if zp:
-                r = r + "\n" + zp
-
-        # NOTE: the "Vorherige Beschreibung" (previous narration) is intentionally NOT
-        # part of this prompt. It is volatile — it is this method's own past output — so
-        # including it would make every call's prompt unique and defeat the narration
-        # cache (regenerating, and burning tokens, on every serialize). narrate() appends
-        # it only for the actual generation (style continuity) while caching on this
-        # stable base. See _prev_description_addendum().
-        return r
+        # Reicher, faktentreuer Erzähler-Prompt - jetzt in narration_prompt.build_narration_prompt
+        # gebündelt, damit Gemini UND Gemma exakt denselben Prompt nutzen (inkl. Wege + Hund/Zombie).
+        from narration_prompt import build_narration_prompt
+        return build_narration_prompt(gs, pl)
 
     def _prev_description_addendum(self, pl) -> str:
         """Style-continuity hint appended to the prompt at generation time only.
