@@ -235,7 +235,15 @@ class CommandEngineMixin:
                 return
 
             # Schritt 3: Verarbeite User Input
-            if user_input.lower() in ["quit", "inventory", "dogstate", "zombiestate", "tokenstats", "nichts", "context", "toggle_layout","pinpad","minigame","zombie_chat"]:
+            _direct_cmds = ["quit", "inventory", "dogstate", "zombiestate", "tokenstats", "nichts", "context", "toggle_layout","pinpad","minigame","zombie_chat"]
+            # Zombie-Ende-Testkommandos nur, wenn in utils freigeschaltet (sonst normales Parsing).
+            try:
+                from utils import ZOMBIE_TESTCMDS
+            except Exception:
+                ZOMBIE_TESTCMDS = False
+            if ZOMBIE_TESTCMDS:
+                _direct_cmds += ["zombie_versteinern", "zombie_erloest", "zombie_erlöst"]
+            if user_input.lower() in _direct_cmds:
                 # Direkte Commands ohne LLM-Parsing
 
                 if user_input.lower().startswith("minigame"):

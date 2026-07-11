@@ -407,6 +407,8 @@ def _refill_flasche(gs: GameState) -> str:
 def o_wasserspender_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None, onwhat: GameObject=None)->str:
     if pl.location.name != "p_ubahn":
         return "Hier ist kein Wasserspender!"
+    if gs.wasserspender_trocken:
+        return "Der Wasserspender ist trocken"
     # Flasche am Wasserspender auffüllen: "anwenden wasserspender flasche"
     if onwhat is not None and getattr(onwhat, "name", None) == "o_flasche":
         return _refill_flasche(gs)
@@ -415,8 +417,11 @@ def o_wasserspender_apply_f(gs: GameState, pl: PlayerState=None, what: GameObjec
     return "***Herrlich!*** Du hast Deinen Durst mit köstlichem, frischen Wasser gestillt. Das reicht wieder für 40 Spielzüge!"
 
 def o_flasche_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None, onwhat:GameObject=None) -> str:
-    # Flasche am Wasserspender auffüllen: "anwenden flasche wasserspender"
+    # Flasche am Wasserspender auffüllen: "anwenden flasche wasserspender" - NUR das
+    # Auffüllen hängt vom Wasserspender ab. Aus einer vollen Flasche trinken geht immer.
     if onwhat is not None and getattr(onwhat, "name", None) == "o_wasserspender":
+        if gs.wasserspender_trocken:
+            return "Der Wasserspender ist ausgetrocknet – du kannst die Flasche hier nicht mehr auffüllen."
         return _refill_flasche(gs)
     # Aus der Flasche trinken – nur wenn sie nicht leer ist
     if not gs.flasche_voll:

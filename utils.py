@@ -29,10 +29,14 @@ class dl(IntFlag):
 GHOSTMODE = False   # No obstacles, no hidden ways, no NPCs
 NODOG = True # No dog NPC
 DEBUG = True
+# Test-/Debug-Kommandos, um das Zombie-Ende auszulösen: "zombie_versteinern" und
+# "zombie_erlöst". Nur zum Testen gedacht -> hier an-/ausschaltbar. Bei False werden die
+# beiden Kommandos nicht als direkte Befehle erkannt (landen dann im normalen LLM-Parsing).
+ZOMBIE_TESTCMDS = True
 # LLM-Backend-Schalter: "gemini" (Cloud, google-genai) oder "gemma" (lokal via Ollama).
 # Die Factory services.llm_factory.make_llm() liest dieses Flag; die Gemma-Seite wird nur
 # dann importiert (lazy), sodass der Gemini-Pfad ohne installiertes 'ollama' läuft.
-# LLM_BACKEND = "gemini"
+#LLM_BACKEND = "gemini"
 LLM_BACKEND = "gemma"
 # Welches lokale Gemma-Modell (Ollama-Tag), wenn LLM_BACKEND == "gemma". Die Env-Variable
 # GEMMA_MODEL übersteuert dieses Flag; sonst gilt der Default hier.

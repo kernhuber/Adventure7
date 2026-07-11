@@ -61,6 +61,7 @@ class NPCZombieState(PlayerState):
     share_cooldown: int = 0                # Pause zwischen zwei Bitten um Lebensenergie
     remembered_control_room: bool = False  # Erinnerung an den Kontrollraum (in der U-Bahn ausgelöst)
     player_last_seen_location: Optional[str] = None
+    vanished: bool = False           # nach Erlösung/Versteinerung: der Zombie ist aus dem Spiel (wird aus gs.players entfernt)
     nogo_places: List[str] = field(default_factory=lambda: ["p_start", "p_dach"])
 
     # --- Storable (Save/Load) -------------------------------------------------------
@@ -569,33 +570,31 @@ Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und G
         return step if step is not None else return_do_nothing()
 
     def _do_redemption(self, gs: game_state.GameState) -> dict:
-        """Zombie is redeemed - drop EC card and transition to REDEEMED."""
+        """Erlösung: der Zombie lässt ALLES, was er trägt, am Ort der Erlösung fallen,
+        bedankt sich beim Spieler und verschwindet aus dem Spiel. Der Spieler kann die
+        fallengelassenen Dinge (u.a. die EC-Karte und ihm zuvor via 'gib' geschenkte
+        Gegenstände wie den Umschlag) danach aufsammeln.
+        """
         self.zombie_state = ZombieState.REDEEMED
         self.zombie_state_message = "Der Zombie ist erlöst!"
 
-        # TODO (vorgemerkt 2026-07-11): Bei der Erlösung ALLE Gegenstände am Ort ablegen,
-        # nicht nur die EC-Karte - damit der Spieler ihm zuvor via 'gib' gegebene Gegenstände
-        # (z.B. den Umschlag als vertrauensbildende Maßnahme) wieder aufsammeln kann. Diese
-        # Spiellogik ist noch nicht ausgearbeitet; siehe docs/BACKLOG.md. Aktuell: nur EC-Karte.
-        # Drop EC card
-        ec_karte = None
-        for item in self.inventory:
-            if item.name == "o_ec_karte":
-                ec_karte = item
-                break
+        # Alles Getragene am Ort ablegen (sichtbar, dem Ort zugeordnet).
+        dropped = []
+        for item in list(self.inventory):
+            self.inventory.remove(item)
+            item.ownedby = self.location
+            item.hidden = False
+            self.location.place_objects.append(item)
+            dropped.append(item.callnames[0] if item.callnames else item.name)
 
-        if ec_karte:
-            self.inventory.remove(ec_karte)
-            ec_karte.ownedby = self.location
-            ec_karte.hidden = False
-            self.location.place_objects.append(ec_karte)
-
+        self.vanished = True   # -> nach dem NPC-Zug aus gs.players entfernt (game_turn.run_npc_turns)
+        dprint(dl.ZOMBIE, f"Zombie ERLÖST -> lässt {dropped} fallen und verschwindet")
+        # TODO (vorgemerkt): hier später eine Erlösungs-Animation im GUI zeigen.
         return json_cmd_simple("zombie_event",
-            "***Ein Leuchten durchfährt den Zombie. Seine Augen werden klar, "
-            "der rötliche Schimmer weicht einem warmen Glanz. "
-            "'Danke...' flüstert er. 'Ich bin endlich frei.' "
-            "Er lässt die EC-Karte fallen und sein Körper beginnt sich aufzulösen, "
-            "bis nur noch ein friedliches Leuchten bleibt, das langsam verblasst.***")
+            "***Ein warmes Leuchten durchfährt den Zombie, der rötliche Schimmer weicht einem "
+            "sanften Glanz. Seine Augen werden klar: 'Danke... du hast mir geholfen, endlich frei "
+            "zu sein.' Behutsam lässt er alles fallen, was er bei sich trug, und sein Körper löst "
+            "sich in ein friedliches Licht auf, das langsam verblasst. Der Zombie ist fort.***")
 
     def _ask_for_energy(self, gs: game_state.GameState) -> Optional[dict]:
         """Bittet den Spieler (im Chat-Modal) um etwas Lebensenergie - nur wenn er hier ist."""
@@ -626,27 +625,34 @@ Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und G
             "'Danke... das hält mich noch eine Weile.'***")
 
     def _do_petrify(self, gs: game_state.GameState) -> dict:
-        """Lebensenergie aufgebraucht: der Zombie erstarrt zu Stein, die EC-Karte zerfällt,
-        das Spiel ist verloren."""
+        """Lebensenergie aufgebraucht: der Zombie erstarrt zu Stein und verschwindet aus
+        dem Spiel; ALLE Gegenstände in seinem Inventar (inkl. EC-Karte) vergehen MIT ihm.
+        Zusätzlich versiegt der Wasserspender in der U-Bahn (siehe GameFlags-Notiz) - ohne
+        Wassernachschub verdurstet der Spieler irgendwann (Game Over über den Durst, nicht
+        sofort)."""
         self.zombie_state = ZombieState.PETRIFIED
         self.zombie_state_message = "Der Zombie ist zu Stein erstarrt."
 
-        # EC-Karte zerstören (egal ob er sie hält oder sie am Ort liegt) -> nicht mehr lösbar.
-        ec = gs.objects.get("o_ec_karte")
-        if ec is not None:
-            if ec in self.inventory:
-                self.inventory.remove(ec)
-            if ec in self.location.place_objects:
-                self.location.place_objects.remove(ec)
-            gs.objects.pop("o_ec_karte", None)
+        # Alles Getragene zerfällt mit ihm zu Staub -> endgültig aus der Welt entfernt.
+        for item in list(self.inventory):
+            self.inventory.remove(item)
+            gs.objects.pop(item.name, None)
 
-        gs.game_over = True
-        gs.game_won = False
-        dprint(dl.ZOMBIE, "Zombie zu Stein erstarrt -> EC-Karte zerstört, Spiel verloren")
+        # Der Wasserspender in der U-Bahn trocknet aus -> der Durst wird zur tödlichen Uhr.
+        gs.wasserspender_trocken = True
+
+        # DESIGN: "slow doom" - KEIN sofortiges Game Over. Der Spieler verdurstet mit der
+        # Zeit, weil der Wasserspender versiegt ist (evaluate_thirst beendet das Spiel bei
+        # thirst==0). Alternative (sofortiges Game Over) - bei Bedarf hier einkommentieren:
+        #     gs.game_over = True
+        #     gs.game_won = False
+        self.vanished = True   # -> nach dem NPC-Zug aus gs.players entfernt (game_turn.run_npc_turns)
+        dprint(dl.ZOMBIE, "Zombie VERSTEINERT -> Inventar zerfällt, Wasserspender trocken, verschwindet")
         return json_cmd_simple("zombie_event",
             "***Die Bewegungen des Zombies werden langsamer, seine Haut grau und hart. "
-            "Mit einem letzten Knirschen erstarrt er zu Stein - und die EC-Karte in seiner Hand "
-            "zerspringt zu Staub. Ohne sie gibt es kein Entkommen mehr.***")
+            "'Es tut mir leid... für dich und für mich. Wir hätten es fast geschafft.' Mit einem "
+            "letzten Knirschen erstarrt er zu Stein und zerfällt zu Staub - und mit ihm alles, was "
+            "er trug. Irgendwo tief unten versiegt ein Wasserspender.***")
 
     def compile_zombie_context(self, gs: game_state.GameState) -> dict:
         ctx = {}

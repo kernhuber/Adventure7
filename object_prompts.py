@@ -514,21 +514,25 @@ Anwendung
 """
 
 def o_wasserspender_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
-    return """
+    return f"""
 Wasserspender
 =============
 - Ein schöner Wasserspender aus Metall
 - Er hat ein kleines Becken
-- Aus einem kleinen Wasserhahn in Form eines Delfins sprudelt frisches, klares Wasser
+- {'Aus einem kleinen Wasserhahn in Form eines Delfins sprudelt frisches, klares Wasser' 
+    if not _F(gs).wasserspender_trocken else 
+    'Er hat einen kleinen Wasserhahn in Form eines Delfins, aber es kommt kein Wasser heraus'}
 
 Anwendung
 =========
-- Aus dem Wasserspender kann getrunken, gesoffen oder gesüffelt werden
-- Man kann an oder mit ihm seinen Durst oder sogar seinen Brand stillen oder löschen
-- Der Wasserspender kann auch als Trinkbrunnen oder Brunnen bezeichnet werden
-- Liefere zum Trinken "anwenden wasserspender" zurück
-- Hier kann auch die Flasche aufgefüllt werden, um eine Notreserve mitzunehmen
-- Liefere zum Auffüllen der Flasche "anwenden flasche wasserspender" zurück
+{('- Aus dem Wasserspender kann getrunken, gesoffen oder gesüffelt werden\n'
+  '- Man kann an oder mit ihm seinen Durst oder sogar seinen Brand stillen oder löschen\n'
+  '- Der Wasserspender kann auch als Trinkbrunnen oder Brunnen bezeichnet werden\n'
+  '- Liefere zum Trinken "anwenden wasserspender" zurück\n'
+  '- Hier kann auch die Flasche aufgefüllt werden, um eine Notreserve mitzunehmen\n'
+  '- Liefere zum Auffüllen der Flasche "anwenden flasche wasserspender" zurück')
+    if not _F(gs).wasserspender_trocken else
+('- Man kann mit dem Wasserspender nichts anfangen, er ist trocken')}
 """
 
 def o_flasche_prompt_f(gs: "GameState", pl: "PlayerState") -> str:

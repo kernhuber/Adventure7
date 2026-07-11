@@ -177,6 +177,7 @@ class GameFlags:
     schuppen_intakt: bool = True
     flasche_voll: bool = True
     falltuer_offen: bool = False
+    wasserspender_trocken: bool = False # Nur wenn der Zombie versteinert ist. Führt irgendwann zu Game Over
     handrad_geschmiert: bool = False   # Handrad in der Höhle geschmiert?
     werbeplakat_offen: bool = False
     korridor_offen: bool = False       # Chris, händisch gesetzt

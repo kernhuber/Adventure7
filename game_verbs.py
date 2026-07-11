@@ -56,6 +56,9 @@ class GameVerbsMixin:
             "context": (self.verb_context,0),
             "dogstate": (self.verb_dogstate,0),
             "zombiestate": (self.verb_zombiestate,0),
+            "zombie_versteinern": (self.verb_zombie_versteinern,0),
+            "zombie_erloest": (self.verb_zombie_erloest,0),
+            "zombie_erlöst": (self.verb_zombie_erloest,0),
             "tokenstats": (self.verb_tokenstats,0),
             "quit": (self.verb_quit,0),
             "nichts": (self.verb_noop,0),
@@ -137,6 +140,40 @@ class GameVerbsMixin:
         ]
         print("\n".join(out))
         return "nichts"
+
+    def _zombie_event_text(self, event: dict, fallback: str) -> str:
+        """Zieht die Erzähltext-Nachricht aus einem zombie_event-Command (wie es
+        _do_petrify/_do_redemption zurückgeben) heraus - für die Verb-Rückgabe."""
+        try:
+            return event["function_call"]["args"].get("message") or fallback
+        except Exception:
+            return fallback
+
+    def verb_zombie_versteinern(self, pl: PlayerState, session_id=None):
+        """TEST-Kommando (schaltbar via utils.ZOMBIE_TESTCMDS): löst das Versteinern des
+        Zombies aus - er zerfällt, sein Inventar vergeht mit ihm, der Wasserspender trocknet
+        aus, und er verschwindet sofort aus dem Spiel."""
+        from npc_zombie_state import NPCZombieState
+        z = next((p for p in self.players if isinstance(p, NPCZombieState)), None)
+        if z is None:
+            return "Es ist kein Zombie (mehr) im Spiel."
+        event = z._do_petrify(self)
+        if z in self.players:          # im Verb-Kontext sicher sofort entfernen
+            self.players.remove(z)
+        return self._zombie_event_text(event, "Der Zombie wurde versteinert und ist verschwunden.")
+
+    def verb_zombie_erloest(self, pl: PlayerState, session_id=None):
+        """TEST-Kommando (schaltbar via utils.ZOMBIE_TESTCMDS): löst die Erlösung des
+        Zombies aus - er lässt alles Getragene am Ort fallen, bedankt sich und verschwindet
+        aus dem Spiel."""
+        from npc_zombie_state import NPCZombieState
+        z = next((p for p in self.players if isinstance(p, NPCZombieState)), None)
+        if z is None:
+            return "Es ist kein Zombie (mehr) im Spiel."
+        event = z._do_redemption(self)
+        if z in self.players:          # im Verb-Kontext sicher sofort entfernen
+            self.players.remove(z)
+        return self._zombie_event_text(event, "Der Zombie wurde erlöst und ist verschwunden.")
 
     def verb_tokenstats(self, pl: PlayerState, session_id=None):
         """Debug-Kommando analog zu dogstate/zombiestate: den kumulierten LLM-Token-

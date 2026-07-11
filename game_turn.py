@@ -108,6 +108,12 @@ class GameTurnMixin:
                         if npc_result and npc_result.strip():
                             npc_actions.append(json_cmd_simple("zombie_message", f"**{npc.name}:** {npc_result}"))
 
+                # Erlöst/versteinert -> der Zombie verschwindet aus dem Spiel. Sein
+                # zombie_event (Drama) ist bereits gesammelt; jetzt zum Entfernen vormerken
+                # (sicher NACH der Iteration, s.u.).
+                if getattr(npc, "vanished", False):
+                    players_to_remove.append(npc)
+
             elif EXPLOSION_AVAILABLE and isinstance(npc, ExplosionState):
                 # Explosion-NPC - VEREINFACHT
                 dprint(dl.WEBGUI, f"💥 Sammle Explosion: Timer={npc.kaboom_timer}")
