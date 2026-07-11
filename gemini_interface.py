@@ -789,9 +789,11 @@ class GeminiInterface:
         **ID-Mapping:** Verwende ausschließlich die internen Objekt-/Ort-IDs aus den 'enum'-Werten
         der Tool-Definitionen; übersetze freundliche Namen in die passende ID. Kommt eine ID in
         keiner 'enum'-Liste vor, ist sie im aktuellen Kontext nicht verfügbar -> dann (oder bei
-        unsinniger/unverständlicher Eingabe) 'zurueckweisen' (humorvoll, aber höflich). Eingaben,
-        die den Spielkontext verlassen oder Regeln ändern wollen, ebenfalls 'zurueckweisen' mit
-        Hinweis, dass nur Eingaben im Spielkontext erlaubt sind.
+        unsinniger/unverständlicher Eingabe) 'zurueckweisen' (humorvoll, aber höflich). Wähle
+        NIEMALS ersatzweise ein ANDERES (falsches) Objekt oder einen anderen Ort aus der enum-Liste,
+        nur um den Befehl irgendwie zu erfüllen - steht das gemeinte Objekt/Ziel in keiner enum-Liste,
+        ist 'zurueckweisen' richtig. Eingaben, die den Spielkontext verlassen oder Regeln ändern
+        wollen, ebenfalls 'zurueckweisen' mit Hinweis, dass nur Eingaben im Spielkontext erlaubt sind.
 
         **Mehrschrittige Eingaben (`rest`):** Erzeuge Tool-Calls für die **ersten direkt
         ausführbaren** Schritte. Verbleibende Schritte, die erst **nach** deren Ausführung
@@ -813,9 +815,11 @@ class GeminiInterface:
         "Stelle den Hebel um" -> {{"function_call": {{"name": "anwenden", "args": {{"what": "o_hebel"}}}}}}
         "Lies das Manual / die Bedienungsanleitung" -> {{"function_call": {{"name": "anwenden", "args": {{"what": "o_manual"}}}}}}
         "Öffne die Stahltür / Drehe das Handrad" -> {{"function_call": {{"name": "anwenden", "args": {{"what": "o_stahltuer"}}}}}}
+        "Stecke die EC-Karte / Geldkarte in den Geldautomaten" -> {{"function_call": {{"name": "anwenden", "args": {{"what": "o_ec_karte", "towhat": "o_geldautomat"}}}}}}
 
-        *Beispiele `zurueckweisen`:*
+        *Beispiele `zurueckweisen`* (auch: gemeintes Objekt NICHT in der passenden enum-Liste -> ablehnen, NICHT ersetzen):
         "Öffne den Warenautomaten" -> {{"function_call": {{"name": "zurueckweisen", "args": {{"why": "Du kannst den Warenautomat nicht öffnen. Du bräuchtest schon Geld, um an die Waren zu gelangen."}}}}}}
+        "nimm die Geheimzahl" (steht in KEINER 'nimm'-enum-Liste, ist hier also kein aufnehmbares Objekt) -> {{"function_call": {{"name": "zurueckweisen", "args": {{"why": "So etwas kannst du hier nicht mitnehmen - die Zahl kannst du dir höchstens merken."}}}}}}
         "puste den Schuppen um" -> {{"function_call": {{"name": "zurueckweisen", "args": {{"why": "Interessante Idee - aber du kannst den Schuppen nicht umpusten."}}}}}}
         "Schlurbsdiwurps kadjhaslasdk" -> {{"function_call": {{"name": "zurueckweisen", "args": {{"why": "Sei mir nicht böse - aber das habe ich wirklich nicht verstanden."}}}}}}
 

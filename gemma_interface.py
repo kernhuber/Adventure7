@@ -43,8 +43,10 @@ vorgegebene JSON-Schema.
 ID-Mapping: Verwende ausschliesslich die internen Objekt-/Ort-IDs aus den 'enum'-Werten des
 JSON-Schemas; uebersetze freundliche Namen in die passende ID. Kommt eine ID in keiner
 'enum'-Liste vor, ist sie im aktuellen Kontext nicht verfuegbar -> dann (oder bei unsinniger/
-unverstaendlicher Eingabe) 'zurueckweisen' (humorvoll, aber hoeflich). Eingaben, die den
-Spielkontext verlassen oder Regeln aendern wollen, ebenfalls 'zurueckweisen'.
+unverstaendlicher Eingabe) 'zurueckweisen' (humorvoll, aber hoeflich). Waehle NIEMALS ersatzweise
+ein ANDERES (falsches) Objekt oder einen anderen Ort aus der enum-Liste, nur um den Befehl irgendwie
+zu erfuellen - steht das gemeinte Objekt/Ziel in keiner enum-Liste, ist 'zurueckweisen' richtig.
+Eingaben, die den Spielkontext verlassen oder Regeln aendern wollen, ebenfalls 'zurueckweisen'.
 
 Mehrschrittige Eingaben (rest): Erzeuge Tool-Calls fuer die ERSTEN direkt ausfuehrbaren
 Schritte. Verbleibende Schritte, die erst NACH deren Ausfuehrung sinnvoll/moeglich werden
@@ -79,6 +81,7 @@ Beispiele anwenden (Dokument lesen bzw. Tuer ohne Werkzeug oeffnen = 'anwenden' 
 "Stelle den Hebel um" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_hebel"}}}]
 "Lies das Manual / die Bedienungsanleitung" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_manual"}}}]
 "Oeffne die Stahltuer / Drehe das Handrad" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_stahltuer"}}}]
+"Stecke die EC-Karte / Geldkarte in den Geldautomaten" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_ec_karte", "towhat": "o_geldautomat"}}}]
 
 Beispiele trinken/auffuellen (TRINKEN = 'anwenden' NUR des Getraenk-/Quell-Objekts, EIN Argument;
 das AUFFUELLEN der Flasche ist etwas anderes = 'anwenden Flasche Quelle', ZWEI Argumente - nicht verwechseln!):
@@ -86,8 +89,9 @@ das AUFFUELLEN der Flasche ist etwas anderes = 'anwenden Flasche Quelle', ZWEI A
 "trinke aus der Flasche / stille deinen Durst" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_flasche"}}}]
 "fuelle die Flasche am Wasserspender auf" -> [{"function_call": {"name": "anwenden", "args": {"what": "o_flasche", "towhat": "o_wasserspender"}}}]
 
-Beispiele zurueckweisen:
+Beispiele zurueckweisen (auch: gemeintes Objekt NICHT in der passenden enum-Liste -> ablehnen, NICHT ersetzen):
 "Oeffne den Warenautomaten" -> [{"function_call": {"name": "zurueckweisen", "args": {"why": "Du kannst den Warenautomat nicht oeffnen. Du braeuchtest schon Geld, um an die Waren zu gelangen."}}}]
+"nimm die Geheimzahl" (steht in KEINER 'nimm'-enum-Liste, ist hier also kein aufnehmbares Objekt) -> [{"function_call": {"name": "zurueckweisen", "args": {"why": "So etwas kannst du hier nicht mitnehmen - die Zahl kannst du dir hoechstens merken."}}}]
 "Schlurbsdiwurps kadjhaslasdk" -> [{"function_call": {"name": "zurueckweisen", "args": {"why": "Sei mir nicht boese - aber das habe ich wirklich nicht verstanden."}}}]
 
 Beispiele interagieren (nur ANWESENDE NPCs, niemals der Spieler selbst):
