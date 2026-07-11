@@ -272,6 +272,24 @@ never blocks a legitimate take. Context fix (`services/world.py`): only offer NP
 ids when co-located with the player, and drop the player from target ids (stopped bogus
 `interagieren <self>` / distant-NPC picks).
 
+**"Geld…" synonym collisions + ATM pinpad + load bug** (2026-07-12). The fixed parse example alone
+did NOT fix "stecke die **Geldkarte** in den Geldautomaten" (mapped to `o_geldautomat`; "ec-karte"
+worked) — the object-adjacent **`Verwendung` hint** in `o_ec_karte_prompt_f` (the game's own
+"Liefere 'anwenden EC-Karte Geldautomat'" idiom, like Ölkanne/Flasche) sharply decoupling
+"Geldkarte = EC-Karte = o_ec_karte, NOT Geldautomat/Geldbörse" did (5/5, commit `9cf4187`).
+**Lesson: an object-adjacent description hint beats a distant fixed example for synonym
+collisions.** Two engine bugs on the EC-card→ATM path: (a) `o_ec_karte_apply_f` chose web-vs-shell
+via `hasattr(gs,'web_sessions')`, but that registry was removed in Step 3 → always False → the dead
+`input()` shell routine ran in the web backend; fixed (`39ed20d`) by making the GUI-free engine just
+enqueue the PIN request (`check_pinpad`+hash) on `gs.cmd_q` for the front-end's PlayerDialogs
+(`ask_for_pin` → modal). (b) A **load** replaced `session["game"]` but didn't re-apply the
+per-session binding `game.cmd_q = session["cmd_q"]` (only `register_client` did) → a loaded game had
+`cmd_q={}` (dict) → `.append` crashed on the pinpad; fixed (`25d8bc3`) by rebinding on load. **OPEN
+(next session):** "nimm die **Geldkarte**" takes the **Geldbörse** instead (both present after the
+zombie's redemption in the Höhle; same "Geld…" collision, now on `nimm`). Plan: A/B test a generic
+"check identifiers carefully" hint vs. concrete per-object decoupling — a generic rule is expected to
+underperform on this example-driven model; nothing changed yet.
+
 **Backend-agnostic NPC reasoning** (2026-07-10): `NPCZombieState._call_reasoning_llm` was hardcoded
 to Gemini (`from google import genai` + `gs.llm._impl.client…`) → under Gemma it threw and every
 zombie turn became `nichts` (HUNTING masked it via the pursuit fallback; **COOPERATIVE froze**). It
