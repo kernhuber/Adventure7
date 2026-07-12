@@ -247,7 +247,7 @@ class CommandEngineMixin:
             except Exception:
                 ZOMBIE_TESTCMDS = False
             if ZOMBIE_TESTCMDS:
-                _direct_cmds += ["zombie_versteinern", "zombie_erloest", "zombie_erlöst"]
+                _direct_cmds += ["zombie_versteinern", "zombie_erloesen", "zombie_erlösen"]
             if user_input.lower() in _direct_cmds:
                 # Direkte Commands ohne LLM-Parsing
 
