@@ -208,14 +208,19 @@ class WorldModel:
 
     # --- Query helpers (thin wrappers) ---
     def obj_name_from_friendly_name(self, n: str) -> str:
+        # Case-INSENSITIVE: Callnames sind lowercase gespeichert, aber Aufrufer (NPCs via
+        # json_cmd_simple, das LLM) liefern u.U. andere Schreibweisen ("Generatorraumschalter").
+        # Ohne das lief z.B. der Zombie-Schalterdruck ins Leere (verb_apply fand das Objekt nicht).
+        nl = n.lower()
         for v in self.objects.values():
-            if n in v.callnames:
+            if any(nl == c.lower() for c in v.callnames):
                 return v.name
         return n
 
     def place_name_from_friendly_name(self, n: str) -> str:
+        nl = n.lower()
         for v in self.places.values():
-            if n in v.callnames:
+            if any(nl == c.lower() for c in v.callnames):
                 return v.name
         return n
 

@@ -520,19 +520,16 @@ Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und G
             "'Zwei Schalter... gleichzeitig... ich kann es nicht allein. Ich brauche... dich.'***")
 
     def _do_convinced_move(self, gs: game_state.GameState) -> dict:
-        """CONVINCED: der Zombie kennt die Lösung und handelt AUTONOM.
-
-        Er fragt NICHT mehr um Erlaubnis und verfolgt den Spieler NICHT mehr (früher hing das
-        Endspiel an einer Zustimmung `cooperation_agreed` - das nervte und wirkte begriffsstutzig).
-        Stattdessen kündigt er seinen Plan EINMAL an (wenn der Spieler da ist) und führt ihn dann
-        eigenständig aus: zum Generatorraum, dort an seinem Schalter warten, bis der Spieler den
-        Kontrollraum aktiviert (= Zeit fürs Positionieren), dann den eigenen Schalter drücken, ins
-        Labor gehen und auf den Kanonenstrahl warten. Erlöst wird er durch die Strahlenkanone
-        (o_strahlenkanone_apply_f), die nur der Spieler auslösen kann - so bleibt Zeit zum Abschied.
-        """
+        """CONVINCED: **KI-primär mit Skript-Fallback.** Der Reasoning-LLM entscheidet den Zug
+        (Bewegung, Ansprache, Warten) anhand des ERLÖSUNGS-PLANS im Prompt (compile_zombie_prompt).
+        Ein deterministisches Sicherheitsnetz (_cooperative_endgame_fallback + _guard_convinced_action)
+        garantiert den Fortschritt, damit das Endspiel gewinnbar bleibt. CONVINCED ist klebrig -> der
+        LLM-Zustandsvorschlag wird bewusst IGNORIERT. Die Erlösung löst weiterhin nur die Strahlenkanone
+        aus (o_strahlenkanone_apply_f) - er verfolgt den Spieler nicht und drückt seinen Schalter nur,
+        wenn der Kontrollraum-Schalter aktiv ist (Timing-Invariante steckt im Fallback)."""
         player = next((p for p in gs.players if type(p) is PlayerState), None)
 
-        # Plan EINMALIG ankündigen, wenn der Spieler anwesend ist.
+        # Plan EINMAL zuverlässig ankündigen (der Spieler MUSS ihn erfahren) - danach übernimmt die KI.
         if not self.announced_endgame_plan and player is not None and self.location == player.location:
             self.announced_endgame_plan = True
             self.zombie_state_message = "Der Zombie erklärt dir seinen Plan."
@@ -542,36 +539,105 @@ Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und G
                 "Kontrollraum aktivierst - dann drücke ich meinen und gehe ins Labor. Feuere die "
                 "Kanone auf mich ab, solange beide Schalter aktiv sind. Das erlöst mich.'***")
 
-        return self._do_cooperative_endgame(gs)
+        # Deterministisches Etappenziel (Sicherheitsnetz) vorab - ohne Seiteneffekte.
+        fb = self._cooperative_endgame_fallback(gs)
 
-    def _do_cooperative_endgame(self, gs: game_state.GameState) -> dict:
-        # Phase 1: zum Generatorraum-Schalter - und dort WARTEN, bis der Spieler den
-        # Kontrollraum-Schalter aktiviert hat. Erst dann drücken (so laufen beide Timer
-        # gemeinsam, und der Spieler hat vorher beliebig Zeit, sich zu positionieren).
+        # KI-primär: den Reasoning-LLM entscheiden lassen (sanfter Takt via move_cooldown, wie in
+        # _do_llm_move - an "off"-Zügen greift ohnehin der Fallback).
+        command = None
+        if self.move_cooldown > 0:
+            self.move_cooldown -= 1
+        else:
+            try:
+                raw = self._call_reasoning_llm(gs, self.compile_zombie_prompt(gs))
+                command, new_notes, _ = self.parse_llm_response(raw)  # Zustandsvorschlag ignoriert (klebrig)
+                self.notes = new_notes
+                self.move_cooldown = 1
+                dprint(dl.ZOMBIE, f"CONVINCED LLM-Aktion: {command}")
+            except Exception as e:
+                dprint(dl.ZOMBIE, f"CONVINCED reasoning error: {e}")
+                command = None
+
+        final = self._guard_convinced_action(gs, command, fb)
+        self._apply_convinced_side_effects(gs, final)
+        return final
+
+    def _cooperative_endgame_fallback(self, gs: game_state.GameState) -> dict:
+        """Deterministischer nächster Endspiel-Schritt OHNE Seiteneffekte (nur Berechnung): zum
+        Generatorraum-Schalter, dort warten bis der Kontrollraum aktiv ist, dann drücken, danach ins
+        Labor und warten. Dient als Sicherheitsnetz hinter der KI-Entscheidung."""
         if not self.pressed_endgame_switch:
             gen = gs.places.get("p_generatorraum")
             if gen is None:
                 return return_do_nothing()
-            if self.location != gen:
-                self.zombie_state_message = "Der Zombie geht zu seinem Schalter im Generatorraum."
+            if self.location is not gen:
                 step = self._step_toward(gs, gen)
                 return step if step is not None else return_do_nothing()
             if _F(gs).schalter_kontrollraum_timer <= 0:
-                self.zombie_state_message = "Der Zombie wartet am Schalter, bis du den Kontrollraum aktivierst."
-                return return_do_nothing()
-            # Kontrollraum ist aktiv -> jetzt den eigenen Schalter drücken.
-            self.pressed_endgame_switch = True
-            self.zombie_state_message = "Der Zombie aktiviert den Schalter im Generatorraum!"
+                return return_do_nothing()   # am Schalter warten, bis der Spieler den Kontrollraum aktiviert
             return json_cmd_simple("anwenden", "Generatorraumschalter")
-
-        # Phase 2: ins Labor zur Strahlenkanone und dort auf den Spieler warten.
         labor = gs.places.get("p_labor")
-        if labor is not None and self.location == labor:
-            self.zombie_state_message = "Der Zombie wartet neben der Strahlenkanone auf dich."
+        if labor is not None and self.location is labor:
             return return_do_nothing()
-        self.zombie_state_message = "Der Zombie macht sich auf den Weg ins Labor."
         step = self._step_toward(gs, labor) if labor is not None else None
         return step if step is not None else return_do_nothing()
+
+    _GEN_SWITCH_NAMES = ("generatorraumschalter", "o_schalter_generatorraum")
+
+    def _guard_convinced_action(self, gs: game_state.GameState, command: Optional[dict], fb: dict) -> dict:
+        """KI-Zug (command) übernehmen, solange er den Endspiel-Fortschritt nicht bricht; sonst den
+        deterministischen Fallback (fb) erzwingen. Reden (interaktion) ist immer erlaubt."""
+        fc = command.get("function_call", {}) if isinstance(command, dict) else {}
+        name = fc.get("name")
+        fbfc = fb.get("function_call", {})
+        fbname = fbfc.get("name")
+        if name == "interaktion":
+            return command
+        if fbname == "nichts":
+            # Warte-/Bleib-Phase: nicht weglaufen (verhindert u.a. ein zu frühes Schalter-Drücken,
+            # solange der Kontrollraum noch nicht aktiv ist). Nur 'nichts' zulassen.
+            return command if name == "nichts" else return_do_nothing()
+        if fbname == "anwenden":
+            # Timing-kritischer Schalter-Druck: LLM darf ihn selbst drücken, sonst erzwingt der Fallback ihn.
+            same = (name == "anwenden"
+                    and str(fc.get("args", {}).get("what", "")).lower() in self._GEN_SWITCH_NAMES)
+            return command if same else fb
+        if fbname == "gehe":
+            # Weg-Phase: KI-'gehe' nur übernehmen, wenn sie dem empfohlenen Etappenschritt entspricht
+            # (verhindert Herumirren im Endspiel); sonst den Fallback-Schritt.
+            if name == "gehe":
+                d1 = str(fc.get("args", {}).get("direction", "")).lower()
+                d2 = str(fbfc.get("args", {}).get("direction", "")).lower()
+                if d1 and d1 == d2:
+                    return command
+            return fb
+        return fb
+
+    def _apply_convinced_side_effects(self, gs: game_state.GameState, final: dict) -> None:
+        """Interne Zustands-/Anzeige-Nachwirkungen der endgültig gewählten CONVINCED-Aktion setzen
+        (das Fallback selbst ist seiteneffektfrei). Wichtig: pressed_endgame_switch erst hier, wenn der
+        Schalter-Druck WIRKLICH der gewählte Zug ist."""
+        fc = final.get("function_call", {}) if isinstance(final, dict) else {}
+        name = fc.get("name")
+        what = str(fc.get("args", {}).get("what", "")).lower()
+        gen = gs.places.get("p_generatorraum")
+        labor = gs.places.get("p_labor")
+        if name == "anwenden" and what in self._GEN_SWITCH_NAMES:
+            self.pressed_endgame_switch = True
+            self.zombie_state_message = "Der Zombie aktiviert den Schalter im Generatorraum!"
+        elif name == "gehe":
+            self.zombie_state_message = ("Der Zombie geht zu seinem Schalter im Generatorraum."
+                                         if not self.pressed_endgame_switch
+                                         else "Der Zombie macht sich auf den Weg ins Labor.")
+        elif name == "interaktion":
+            self.zombie_state_message = "Der Zombie spricht mit dir."
+        else:  # nichts
+            if not self.pressed_endgame_switch and self.location is gen:
+                self.zombie_state_message = "Der Zombie wartet am Schalter, bis du den Kontrollraum aktivierst."
+            elif self.pressed_endgame_switch and self.location is labor:
+                self.zombie_state_message = "Der Zombie wartet neben der Strahlenkanone auf dich."
+            else:
+                self.zombie_state_message = "Der Zombie hält inne."
 
     def _do_redemption(self, gs: game_state.GameState) -> dict:
         """Erlösung: der Zombie lässt ALLES, was er trägt, am Ort der Erlösung fallen,
@@ -743,6 +809,35 @@ Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und G
         else:
             empf_line = "- (Aktuell führt kein Weg direkt zum Spieler - dann: nichts.)"
 
+        # CONVINCED-Endspiel: KI-primär (der Reasoning-LLM entscheidet den Zug), aber klar geführt.
+        # Die empfohlene Richtung zeigt jetzt aufs ETAPPENZIEL (Generatorraum-Schalter bzw. Labor),
+        # nicht auf den Spieler; dazu ein Plan-Block mit dem aktuellen Schalter-Stand.
+        convinced_block = ""
+        if self.zombie_state == ZombieState.CONVINCED:
+            kr = _F(gs).schalter_kontrollraum_timer > 0
+            gr = _F(gs).schalter_generatorraum_timer > 0
+            if not self.pressed_endgame_switch:
+                goal = gs.places.get("p_generatorraum"); goal_name = "dein Schalter im Generatorraum"
+            else:
+                goal = gs.places.get("p_labor"); goal_name = "die Strahlenkanone im Labor"
+            if goal is not None and self.location is not goal:
+                _gp = gs.find_shortest_path(self.location, goal)
+                if _gp:
+                    _gd = _gp[0].destination
+                    _grich = _gd.callnames[0] if _gd.callnames else _gd.name
+                    empf_line = f"- EMPFOHLENE RICHTUNG zu deinem Etappenziel ({goal_name}): gehe {_grich}"
+            elif goal is not None:
+                empf_line = f"- Du bist an deinem Etappenziel ({goal_name})."
+            convinced_block = f"""
+DEIN ERLÖSUNGS-PLAN (CONVINCED - du kennst die Lösung und willst DICH erlösen lassen):
+- Nur die Strahlenkanone im Labor kann dich erlösen, und NUR der Spieler kann sie abfeuern - du NICHT.
+- Sie feuert nur, wenn BEIDE Notfall-Schalter zugleich aktiv sind: Kontrollraum (Spieler) + Generatorraum (DU).
+- Stand: dein Generatorraum-Schalter {'AKTIV' if gr else 'inaktiv'}; Kontrollraum-Schalter {'AKTIV' if kr else 'inaktiv'}; von dir {'gedrückt' if self.pressed_endgame_switch else 'noch NICHT gedrückt'}.
+- Plan: Geh zu deinem Schalter im Generatorraum und WARTE dort, bis der Kontrollraum-Schalter aktiv ist
+  (gib dem Spieler Zeit!). Drücke dann 'anwenden Generatorraumschalter', geh danach ins Labor und warte
+  auf den Kanonenstrahl. Du VERFOLGST den Spieler NICHT und bleibst in CONVINCED.
+"""
+
         prompt = f"""SYSTEM:
 Du bist ein Zombie-NPC in einem Adventure-Spiel. Du warst einmal ein erfolgreicher Geschäftsmann,
 der in dieser unterirdischen Anlage gestorben ist und nun als Untoter erwacht bist. Du hattest einen
@@ -800,13 +895,16 @@ LETZTE SPIELENGINE-ANTWORT:
 
 LETZTE KONVERSATION MIT DEM SPIELER:
 {self.last_chat}
-
+{convinced_block}
 Handle deinem aktuellen Zustand ({zctx['zustand']}) entsprechend, wie ein echter, denkender Spieler:
 - HUNTING: Du willst dem Spieler näherkommen und ihn beißen (verfolge ihn).
 - COOPERATIVE/DOUBTING: Du beißt NICHT. Du bleibst beim Spieler und FOLGST ihm (gehe in die
   empfohlene Richtung, sobald er sich entfernt), beobachtest ihn und verfolgst dein Ziel (Erlösung),
   bleibst aber wachsam. 'nichts' nur, wenn ihr am selben Ort seid UND gerade nichts Sinnvolles ansteht.
   Schlage je nach Verlauf einen passenden Zustand vor.
+- CONVINCED: Du beißt NICHT und verfolgst den Spieler NICHT. Folge deinem ERLÖSUNGS-PLAN (siehe oben):
+  bewege dich zu deinem Etappenziel (empfohlene Richtung), drücke im richtigen Moment deinen Schalter,
+  warte sonst geduldig ('nichts') - du kannst den Spieler dabei ansprechen. Du bleibst CONVINCED.
 {empf_line}
 
 VERFÜGBARE BEFEHLE (du kannst dasselbe wie ein menschlicher Spieler):
