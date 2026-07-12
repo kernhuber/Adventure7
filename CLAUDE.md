@@ -284,11 +284,16 @@ via `hasattr(gs,'web_sessions')`, but that registry was removed in Step 3 → al
 enqueue the PIN request (`check_pinpad`+hash) on `gs.cmd_q` for the front-end's PlayerDialogs
 (`ask_for_pin` → modal). (b) A **load** replaced `session["game"]` but didn't re-apply the
 per-session binding `game.cmd_q = session["cmd_q"]` (only `register_client` did) → a loaded game had
-`cmd_q={}` (dict) → `.append` crashed on the pinpad; fixed (`25d8bc3`) by rebinding on load. **OPEN
-(next session):** "nimm die **Geldkarte**" takes the **Geldbörse** instead (both present after the
-zombie's redemption in the Höhle; same "Geld…" collision, now on `nimm`). Plan: A/B test a generic
-"check identifiers carefully" hint vs. concrete per-object decoupling — a generic rule is expected to
-underperform on this example-driven model; nothing changed yet.
+`cmd_q={}` (dict) → `.append` crashed on the pinpad; fixed (`25d8bc3`) by rebinding on load.
+More of the same lesson: "nimm die **Geldkarte**" taking the **Geldbörse** turned out to be already
+fixed by the EC-card hint (that hint sits in the object description, which is in the context for
+*all* verbs incl. `nimm`) — an A/B test (generic "check identifiers" hint vs. concrete decoupling
+vs. baseline) scored 5/5 across the board, so **no change**; the generic rule was pure token
+overhead on an already-solved case. And "nimm die **Lire** (aus dem Pizzaautomaten)" was parsed as
+`nimm(o_pizzaautomat)` — the machine, not the money (`o_geld_lire` lacked the Dollar's
+"Verwendung/Beispiele" hint and "Lire" is thematically tied to the Italian pizza machine); fixed
+(`c9e3e3f`) by giving `o_geld_lire` the same object-adjacent hint + a sharp "Lire = the money, NOT
+the machine" decoupling (5/5).
 
 **Backend-agnostic NPC reasoning** (2026-07-10): `NPCZombieState._call_reasoning_llm` was hardcoded
 to Gemini (`from google import genai` + `gs.llm._impl.client…`) → under Gemma it threw and every
@@ -367,6 +372,9 @@ silently failed to arm (broke the endgame). Now case-insensitive (helps any NPC/
 Also: fixed a `web_dialogs.do_chat` crash (unbound `r`) on a zombie-initiated chat — which had also
 broken the energy-share mechanic (the chat crashed before `end_chat` ran, so `share_agreed` was
 never set and the zombie kept petrifying). Water values bumped (Wasserspender → 100, bottle → +40).
+GUI aid for the split-up endgame (`c9e3e3f`): the serializer emits `switches:{kontrollraum,
+generatorraum}` (the timer counts) and the status panel shows a "Schalter — Kontrollraum: n ·
+Generator: m" row (`-` for an inactive/0 switch), visible only while at least one switch is armed.
 
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
