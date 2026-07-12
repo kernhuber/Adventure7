@@ -388,8 +388,8 @@ def o_wasserspender_apply_f(gs: GameState, pl: PlayerState=None, what: GameObjec
     if onwhat is not None and getattr(onwhat, "name", None) == "o_flasche":
         return _refill_flasche(gs)
     # Sonst: direkt am Wasserspender trinken
-    pl.thirst_counter = 40
-    return "***Herrlich!*** Du hast Deinen Durst mit köstlichem, frischen Wasser gestillt. Das reicht wieder für 40 Spielzüge!"
+    pl.thirst_counter = 100
+    return "***Herrlich!*** Du hast Deinen Durst mit köstlichem, frischen Wasser gestillt. Das reicht wieder für 100 Spielzüge!"
 
 def o_flasche_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = None, onwhat:GameObject=None) -> str:
     # Flasche am Wasserspender auffüllen: "anwenden flasche wasserspender" - NUR das
@@ -401,7 +401,7 @@ def o_flasche_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject = No
     # Aus der Flasche trinken – nur wenn sie nicht leer ist
     if not gs.flasche_voll:
         return "Die Flasche ist leer. Du musst sie erst auffüllen – z.B. am Wasserspender in der U-Bahn."
-    pl.thirst_counter += 20
+    pl.thirst_counter += 40
     gs.flasche_voll = False
     return f"***Das tat gut!*** Du hast deinen Durst gestillt – nun {pl.thirst_counter} Spielzüge, bevor du verdurstest. Die Flasche ist nun aber leer."
 

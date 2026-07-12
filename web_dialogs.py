@@ -198,9 +198,12 @@ class WebDialogs:
                 else:
                     chat = data.get("zombiechat",None)
                     if chat:
+                        # Nur wenn der Spieler tatsächlich etwas gesagt hat, antworten. Sonst
+                        # (z.B. beim zombie-INITIIERTEN Chat, wo die erste Client-Nachricht keine
+                        # Spielereingabe ist) war 'r' vorher ungebunden -> UnboundLocalError.
                         r = whom.chat(gs.llm,chat)
                         last_chat = chat
-                    await self.ws.send(json.dumps({"zombiemessage":r}))
+                        await self.ws.send(json.dumps({"zombiemessage":r}))
                     zahler += 1
 
         #
