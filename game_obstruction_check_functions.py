@@ -147,14 +147,16 @@ def w_ubahnschacht_ubahn2_obstruction_check(gs: "GameState") -> str:
         return "Free"
     return "Irgendwas grosses blockiert den Weg. Es ist dunkel, ich ann nichts sehen - sieht aus wie ein ... Eisenbahnwagen?"
 
-# --- Innere Dungeon-Wege: frei begehbar ---------------------------------------------
-# Das Dungeon hat ZWEI Eingänge, die je ihr eigenes Rätsel als Gate haben:
-#   (1) Höhle -> Korridor: die Stahltür (korridor_offen), s. w_hoehle_korridor/_korridor_hoehle.
-#   (2) U-Bahn-Schacht -> Korridor: das Wagen-Rätsel (der Wagen muss weg sein, um überhaupt
-#       in den Schacht zu kommen) - daher ist der Schritt Schacht->Korridor selbst frei.
-# Innerhalb des Dungeons (Korridor-Hub <-> Labor/Bibliothek/Besenkammer, Labor <->
-# Generatorraum) läuft man frei. Einzelne Türen können später auf ein eigenes Flag
-# gegatet werden (Rätsel) - dann hier "Free" durch die Bedingung ersetzen.
+# --- Dungeon: Korridor-Hub + dahinter der GEHEIMTRAKT --------------------------------
+# In den KORRIDOR (Hub) gelangt man über die Höhle-Stahltür (korridor_offen) -
+# s. w_hoehle_korridor/_korridor_hoehle. Vom Korridor kommt man aber NICHT weiter, bis
+# der Geheimtrakt-Schalter in p_innen (o_geheimtraktschalter_apply_f, braucht Strom)
+# ``dungeon_offen`` setzt. Danach sind ALLE Geheimtrakt-Türen offen:
+#   Korridor <-> Bibliothek/Besenkammer/Labor und der zweite Eingang U-Bahn-Schacht <->
+#   Korridor hängen alle an ``dungeon_offen``. Labor <-> Generatorraum bleibt frei (beide
+#   Räume liegen ohnehin schon im dungeon_offen-Bereich -> "alle Türen offen").
+# Nur die HIN-Richtung (Korridor -> Raum) wird gegatet; die Rückwege bleiben frei
+# (kein Soft-Lock - dungeon_offen lässt sich von innen nicht umschalten).
 
 def w_ubahn_schacht_korridor_obstruction_check(gs: "GameState") -> str:
     if _F(gs).dungeon_offen:
@@ -178,10 +180,14 @@ def w_korridor_labor_obstruction_check(gs: "GameState") -> str:
     return "Eine Tür, auf der Labor steht. Sie ist leider verriegelt"
 
 def w_korridor_bibliothek_obstruction_check(gs: "GameState") -> str:
-    return "Free"
+    if _F(gs).dungeon_offen:
+        return "Free"
+    return "Eine Tür, auf der Bibliothek steht. Sie ist verriegelt."
 
 def w_korridor_besenkammer_obstruction_check(gs: "GameState") -> str:
-    return "Free"
+    if _F(gs).dungeon_offen:
+        return "Free"
+    return "Eine Tür zur Besenkammer. Sie ist verriegelt."
 
 def w_besenkammer_korridor_obstruction_check(gs: "GameState") -> str:
     return "Free"

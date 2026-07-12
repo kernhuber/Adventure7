@@ -724,9 +724,9 @@ def o_geheimtraktschalter_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     r = """
 Bakelit-Schalter
 ================
-- Beschriftet mit "Labyrinth"
+- Beschriftet mit "Geheimtrakt"
 - Man kann mit ihm "auf" und "zu" wählen
-- Man kann ihn betätigen, schalten, drehen oder andere Dinge tun, mit denen man einen Schalter schalten kann. Liefere in dem Fall 'anwenden o_schalter' zurück
+- Man kann ihn betätigen, schalten, drehen oder andere Dinge tun, mit denen man einen Schalter schalten kann. Liefere in dem Fall 'anwenden Schalter' zurück
 """
     if not _F(gs).hauptschalter:
         return r + "- Eine kleine Leuchte ist aus, der Schalter scheint tot zu sein"
