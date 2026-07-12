@@ -442,15 +442,21 @@ def o_tinktur_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None
     return "Worauf soll ich die Tinktur anwenden? Versuche es auf einem Gegenstand!"
 
 
+def _both_switches_armed(gs: GameState) -> bool:
+    """True, wenn BEIDE Schalter-Timer noch laufen (>0) - nur dann ist die Strahlenkanone
+    im Labor scharf. Die Timer werden pro Zug in game_turn.tick_switch_timers heruntergezählt."""
+    return _F(gs).schalter_kontrollraum_timer > 0 and _F(gs).schalter_generatorraum_timer > 0
+
+
 def o_schalter_kontrollraum_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    from utils import SCHALTER_TIMER
     _F(gs).schalter_kontrollraum = True
-    _F(gs).schalter_kontrollraum_timer = 3
-    if _F(gs).schalter_generatorraum and _F(gs).schalter_generatorraum_timer > 0:
-        _F(gs).zombie_cooperative = True
+    _F(gs).schalter_kontrollraum_timer = SCHALTER_TIMER
+    if _both_switches_armed(gs):
         return (
-            "Du aktivierst den Schalter - er leuchtet grün auf! "
-            "Ein tiefes Summen ertönt, und du spürst eine Vibration im Boden. "
-            "***Beide Schalter sind gleichzeitig aktiviert! Ein Mechanismus greift ineinander!***"
+            "Du aktivierst den Schalter - er leuchtet grün auf! Ein tiefes Summen ertönt. "
+            "***Beide Schalter sind gleichzeitig aktiv - die Strahlenkanone im Labor ist jetzt "
+            "scharf! Aber beeil dich, es hält nicht lange an!***"
         )
     return (
         "Du aktivierst den Schalter - er leuchtet grün auf. "
@@ -460,14 +466,14 @@ def o_schalter_kontrollraum_apply_f(gs: GameState, pl: PlayerState=None, what: G
 
 
 def o_schalter_generatorraum_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject=None, onwhat: GameObject=None) -> str:
+    from utils import SCHALTER_TIMER
     _F(gs).schalter_generatorraum = True
-    _F(gs).schalter_generatorraum_timer = 3
-    if _F(gs).schalter_kontrollraum and _F(gs).schalter_kontrollraum_timer > 0:
-        _F(gs).zombie_cooperative = True
+    _F(gs).schalter_generatorraum_timer = SCHALTER_TIMER
+    if _both_switches_armed(gs):
         return (
-            "Du aktivierst den Schalter - er leuchtet grün auf! "
-            "Ein tiefes Summen ertönt, und du spürst eine Vibration im Boden. "
-            "***Beide Schalter sind gleichzeitig aktiviert! Ein Mechanismus greift ineinander!***"
+            "Du aktivierst den Schalter - er leuchtet grün auf! Ein tiefes Summen ertönt. "
+            "***Beide Schalter sind gleichzeitig aktiv - die Strahlenkanone im Labor ist jetzt "
+            "scharf! Aber beeil dich, es hält nicht lange an!***"
         )
     return (
         "Du aktivierst den Schalter - er leuchtet grün auf. "
@@ -585,4 +591,32 @@ def o_geheimtraktschalter_apply_f(gs: GameState, pl: PlayerState, what: GameObje
         return "Das rote Licht der kleinen Lampe wechselt zu grün, der Schalter steht nun auf 'auf'"
 
 def o_strahlenkanone_apply_f(gs: GameState, pl: PlayerState, what: GameObject = None, onwhat:GameObject=None) -> str:
-    return "Noch nichts implementiert - sorry..."
+    """Die De-Zombifikationskanone im Labor abfeuern (anwenden o_strahlenkanone).
+
+    Scharf ist sie nur, solange BEIDE Schalter-Timer laufen (Kontrollraum + Generatorraum,
+    s. _both_switches_armed). Ist in diesem Moment der Zombie mit im Labor, wird er erlöst
+    (dieselbe Erlösung wie beim Endspiel: er lässt alles fallen und verschwindet). Sonst
+    feuert die Kanone wirkungslos.
+    """
+    from npc_zombie_state import NPCZombieState
+    if pl is not None and pl.location.name != "p_labor":
+        return "Hier steht keine Strahlenkanone."
+    if not _both_switches_armed(gs):
+        return ("Die Strahlenkanone brummt kurz, bleibt aber dunkel. Ein Display: 'NICHT SCHARF - "
+                "beide Schalter (Kontrollraum UND Generatorraum) müssen gleichzeitig aktiv sein.'")
+
+    # Beide Schalter scharf -> Kanone feuert. Ist der Zombie hier, wird er erlöst.
+    zombie = next((p for p in gs.players
+                   if isinstance(p, NPCZombieState) and p.location == pl.location), None)
+    if zombie is None:
+        return ("Ein greller Strahl schießt aus der Kanone und erfüllt das Labor mit fahlem Licht - "
+                "aber hier ist niemand, den er erlösen könnte. Nach einem Moment verpufft er.")
+
+    event = zombie._do_redemption(gs)   # setzt Zustand/vanished/zombie_cooperative + legt Inventar ab
+    if zombie in gs.players:
+        gs.players.remove(zombie)       # Spieler-Aktion (nicht in der NPC-Schleife) -> sofort entfernen
+    try:
+        msg = event["function_call"]["args"]["message"]
+    except Exception:
+        msg = "Der Zombie ist erlöst."
+    return ("Ein greller Strahl schießt aus der Kanone und hüllt den Zombie in warmes Licht.\n\n" + msg)

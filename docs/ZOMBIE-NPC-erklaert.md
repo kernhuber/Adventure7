@@ -67,7 +67,9 @@ AWAKENING ──► HUNTING ──Chat: Spieler überzeugt──► COOPERATIVE
         ├─ liest die Anleitung (Erinnerungs-Route ODER Spieler liest sie ihm vor) ──► CONVINCED
         │                                                                               │
         │                          CONVINCED: verfolgt den Spieler, Dialog zum Überzeugen
-        │                          Spieler stimmt zu ──► zwei Schalter (Script) ──► REDEEMED
+        │                          Spieler stimmt zu ──► Zombie drückt Generatorraum-Schalter,
+        │                          geht ins Labor u. wartet ──► Spieler: Kontrollraum-Schalter +
+        │                          Strahlenkanone abfeuern (beide Timer scharf) ──► REDEEMED
         │
         └─ Lebensenergie auf 0 ──► PETRIFIED  (EC-Karte zerstört → Spiel verloren)
 ```
@@ -75,8 +77,12 @@ AWAKENING ──► HUNTING ──Chat: Spieler überzeugt──► COOPERATIVE
 - **AWAKENING** → wechselt sofort zu HUNTING **und** eröffnet das Chat-Modal.
 - **HUNTING** → `_do_hunting_move` (der LLM-Kern, Biss).
 - **COOPERATIVE / DOUBTING** → `_do_trusting_move` (scriptgesteuert, kein Biss, Vertrauens-Zerfall).
-- **CONVINCED** → `_do_convinced_move` (erst Spieler überzeugen, dann Schalter-Endspiel).
-- **REDEEMED** / **PETRIFIED** → Endzustände (tun nichts mehr).
+- **CONVINCED** → `_do_convinced_move` (erst Spieler überzeugen; dann `_do_cooperative_endgame`:
+  Generatorraum-Schalter drücken → ins Labor gehen und warten). Die **Erlösung** löst nicht mehr
+  das Schalter-Paar automatisch aus, sondern der Spieler, indem er bei beiden aktiven Schalter-Timern
+  die **Strahlenkanone** im Labor auf den anwesenden Zombie abfeuert (`o_strahlenkanone_apply_f` →
+  `_do_redemption`). Timer-Länge: `utils.SCHALTER_TIMER` (Default 10).
+- **REDEEMED** / **PETRIFIED** → Endzustände; der Zombie verschwindet aus dem Spiel (`vanished`).
 
 🔎 **Lehrbeobachtung:** Im Vergleich zur Erstfassung wurden die **toten Zustände**
 DORMANT/STALKING **entfernt** und drei neue eingeführt (COOPERATIVE, DOUBTING,

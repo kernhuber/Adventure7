@@ -61,6 +61,7 @@ class NPCZombieState(PlayerState):
     share_cooldown: int = 0                # Pause zwischen zwei Bitten um Lebensenergie
     remembered_control_room: bool = False  # Erinnerung an den Kontrollraum (in der U-Bahn ausgelöst)
     player_last_seen_location: Optional[str] = None
+    pressed_endgame_switch: bool = False   # CONVINCED-Endspiel: hat der Zombie "seinen" Schalter (Generatorraum) schon gedrückt?
     vanished: bool = False           # nach Erlösung/Versteinerung: der Zombie ist aus dem Spiel (wird aus gs.players entfernt)
     nogo_places: List[str] = field(default_factory=lambda: ["p_start", "p_dach"])
 
@@ -88,6 +89,7 @@ class NPCZombieState(PlayerState):
             "share_cooldown": self.share_cooldown,
             "remembered_control_room": self.remembered_control_room,
             "player_last_seen_location": self.player_last_seen_location,
+            "pressed_endgame_switch": self.pressed_endgame_switch,
             "nogo_places": list(self.nogo_places),
         })
         return d
@@ -110,6 +112,7 @@ class NPCZombieState(PlayerState):
         self.share_cooldown = data.get("share_cooldown", self.share_cooldown)
         self.remembered_control_room = data.get("remembered_control_room", self.remembered_control_room)
         self.player_last_seen_location = data.get("player_last_seen_location", self.player_last_seen_location)
+        self.pressed_endgame_switch = data.get("pressed_endgame_switch", self.pressed_endgame_switch)
         self.nogo_places = list(data.get("nogo_places", self.nogo_places))
 
     def can_zombie_go(self, gs: game_state.GameState, plc_name: str) -> bool:
@@ -514,16 +517,16 @@ Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und G
             "'Zwei Schalter... gleichzeitig... ich kann es nicht allein. Ich brauche... dich.'***")
 
     def _do_convinced_move(self, gs: game_state.GameState) -> dict:
-        """CONVINCED: erst den Spieler überzeugen (Dialog), dann das Schalter-Endspiel.
+        """CONVINCED: erst den Spieler überzeugen (Dialog), dann ins Labor zur Strahlenkanone.
 
         Der Zombie weiß jetzt um die Lösung, hält aber weiter die EC-Karte. Er sucht den
         Spieler und bittet ihn (über das Chat-Modal) um Mithilfe. Erst wenn der Spieler
-        zugesagt hat (cooperation_agreed, gesetzt in end_chat), geht er zum Generatorraum.
+        zugesagt hat (cooperation_agreed, gesetzt in end_chat), geht er ins Labor und wartet
+        dort neben der Strahlenkanone: Der Spieler muss BEIDE Schalter (Kontrollraum +
+        Generatorraum) aktivieren und dann die Kanone abfeuern - das erlöst den anwesenden
+        Zombie (o_strahlenkanone_apply_f). Die eigentliche Erlösung löst also die Kanone aus,
+        nicht mehr dieser Zug.
         """
-        # Endspiel: beide Schalter synchron aktiviert -> Erlösung.
-        if _F(gs).zombie_cooperative:
-            return self._do_redemption(gs)
-
         player = next((p for p in gs.players if type(p) is PlayerState), None)
 
         if not self.cooperation_agreed:
@@ -537,8 +540,10 @@ Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und G
                 self.move_cooldown = 2
                 self.zombie_state_message = "Der Zombie versucht, dich zur Kooperation zu bewegen."
                 return json_cmd_simple("interaktion", player.name,
-                    "***'Ich weiß jetzt, wie wir hier rauskommen! Zwei Schalter - aber wir müssen "
-                    "GLEICHZEITIG. Hilfst du mir?'***")
+                    "***'Ich weiß jetzt, wie wir hier rauskommen! Im Labor steht eine Strahlenkanone. "
+                    "Ich drücke den Schalter im Generatorraum und warte dann im Labor. Du musst den "
+                    "Schalter im Kontrollraum aktivieren und die Kanone auf mich abfeuern, solange beide "
+                    "Schalter aktiv sind. Hilfst du mir?'***")
 
             # Spieler nicht hier: ihm folgen, um ihn zu überzeugen.
             if player is not None:
@@ -548,25 +553,31 @@ Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und G
                     return step
             return return_do_nothing()
 
-        # Spieler hat zugestimmt -> zum Generatorraum und Schalter umlegen.
-        return self._do_switch_sequence(gs)
+        # Spieler hat zugestimmt: Der Zombie leistet SEINEN Teil - erst den Generatorraum-
+        # Schalter drücken, dann ins Labor zur Kanone, wo er auf den Spieler wartet. Die
+        # Kanone kann nur der Spieler auslösen (beide Schalter scharf) - so bleibt Zeit für
+        # den Abschied.
+        return self._do_cooperative_endgame(gs)
 
-    def _do_switch_sequence(self, gs: game_state.GameState) -> dict:
-        """Scriptgesteuertes Endspiel: zum Generatorraum gehen und den Schalter umlegen.
+    def _do_cooperative_endgame(self, gs: game_state.GameState) -> dict:
+        # Phase 1: den eigenen Schalter (Generatorraum) drücken.
+        if not self.pressed_endgame_switch:
+            gen = gs.places.get("p_generatorraum")
+            if gen is not None and self.location == gen:
+                self.pressed_endgame_switch = True
+                self.zombie_state_message = "Der Zombie aktiviert den Schalter im Generatorraum!"
+                return json_cmd_simple("anwenden", "Generatorraumschalter")
+            self.zombie_state_message = "Der Zombie eilt zum Generatorraum, um seinen Schalter zu drücken."
+            step = self._step_toward(gs, gen) if gen is not None else None
+            return step if step is not None else return_do_nothing()
 
-        Der Gegen-Schalter (Kontrollraum) wird vom Spieler bedient; nur synchron öffnet
-        sich der Weg (o_schalter_*_apply_f setzen dann zombie_cooperative -> Erlösung).
-        """
-        self.zombie_state_message = "Der Zombie geht zum Generatorraum."
-        target = gs.places.get("p_generatorraum")
-        if not target:
+        # Phase 2: ins Labor zur Strahlenkanone und dort auf den Spieler warten.
+        labor = gs.places.get("p_labor")
+        if labor is not None and self.location == labor:
+            self.zombie_state_message = "Der Zombie wartet neben der Strahlenkanone auf dich."
             return return_do_nothing()
-
-        if self.location == target:
-            self.zombie_state_message = "Der Zombie aktiviert den Schalter im Generatorraum!"
-            return json_cmd_simple("anwenden", "Generatorraumschalter")
-
-        step = self._step_toward(gs, target)
+        self.zombie_state_message = "Der Zombie macht sich auf den Weg ins Labor."
+        step = self._step_toward(gs, labor) if labor is not None else None
         return step if step is not None else return_do_nothing()
 
     def _do_redemption(self, gs: game_state.GameState) -> dict:
@@ -577,6 +588,9 @@ Ich habe die Anleitung gelesen. Zwei Schalter, gleichzeitig - Kontrollraum und G
         """
         self.zombie_state = ZombieState.REDEEMED
         self.zombie_state_message = "Der Zombie ist erlöst!"
+        # Merker fürs Sieg-Ende (o_fahrradkette_apply_f wählt darüber die schönere
+        # Schluss-Erzählung): der Zombie wurde erlöst.
+        _F(gs).zombie_cooperative = True
 
         # Alles Getragene am Ort ablegen (sichtbar, dem Ort zugeordnet).
         dropped = []

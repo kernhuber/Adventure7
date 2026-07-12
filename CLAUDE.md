@@ -332,6 +332,25 @@ draft. The rich narrator prompt (scenario + location + objects + ways + present 
 **`narration_prompt.build_narration_prompt(gs, pl)`** and both `GeminiInterface` and `GemmaInterface`
 delegate to it — one source, no duplication.
 
+**Geheimtrakt gate + Strahlenkanone redemption endgame** (2026-07-12; dungeon rooms/switch
+authored by Chris in `942eecd`, cannon endgame wired this session). **Opening the deep dungeon
+is two-stage now:** the Höhle steel door (`korridor_offen`) gets you into the **Korridor** hub,
+but from there you can go no further until the **Geheimtrakt-Schalter** (`o_geheimtraktschalter`
+in `p_innen`, needs `hauptschalter`) sets **`dungeon_offen`** — which gates Korridor↔Labor,
+Korridor→Bibliothek/Besenkammer, and the U-Bahn-Schacht↔Korridor entrance (Labor↔Generatorraum
+stays free, both are inside the gate). Only the entry directions are gated; return ways stay free
+(no soft-lock, and `dungeon_offen` can't be toggled from inside). **The redemption is now
+cannon-triggered, not auto-on-switches:** the two switches (`o_schalter_kontrollraum` /
+`o_schalter_generatorraum`) each arm a `SCHALTER_TIMER`-turn countdown (`utils.SCHALTER_TIMER`,
+default 10; ticked in `game_turn.tick_switch_timers`); while **both** timers are >0 the
+**Strahlenkanone** (`o_strahlenkanone` in the Labor) is "armed", and firing it (`anwenden
+o_strahlenkanone`) with the zombie present in the Labor redeems him (`_do_redemption`, which now
+also sets `zombie_cooperative` for the win-ending flavor). In CONVINCED the cooperative zombie
+presses the **Generatorraum** switch himself, then walks to the **Labor** and waits — he can't
+fire the cannon, so the player activates the **Kontrollraum** switch and fires (leaves room for a
+goodbye). New savable flag `pressed_endgame_switch` drives the zombie's two-phase move; the old
+`_do_switch_sequence` / auto-redeem-on-both-switches path was removed.
+
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
 via flags (model them on `korridor_offen`/`o_stahltuer`: a `*_offen` flag in

@@ -33,6 +33,11 @@ DEBUG = True
 # "zombie_erlöst". Nur zum Testen gedacht -> hier an-/ausschaltbar. Bei False werden die
 # beiden Kommandos nicht als direkte Befehle erkannt (landen dann im normalen LLM-Parsing).
 ZOMBIE_TESTCMDS = True
+# Endspiel: Wie viele Spielzüge ein aktivierter Schalter (Kontrollraum/Generatorraum)
+# "scharf" bleibt. Solange BEIDE Schalter-Timer > 0 sind, lässt sich die Strahlenkanone
+# im Labor abfeuern (erlöst den dort anwesenden Zombie). Kleiner = knapperes Timing.
+# (5 war zu knapp: allein Kontrollraum->...->Labor sind schon ~4 Züge.)
+SCHALTER_TIMER = 10
 # LLM-Backend-Schalter: "gemini" (Cloud, google-genai) oder "gemma" (lokal via Ollama).
 # Die Factory services.llm_factory.make_llm() liest dieses Flag; die Gemma-Seite wird nur
 # dann importiert (lazy), sodass der Gemini-Pfad ohne installiertes 'ollama' läuft.
