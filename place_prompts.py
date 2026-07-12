@@ -217,11 +217,26 @@ Korridor
 
 def p_labor_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
-    return ""
+    return """
+Unterirdisches Labor    
+====================
+- Keine Fenster
+- Labortische
+- Elektronischer kram
+- Chaos
+- Unordentlich
+"""
 
 def p_bibliothek_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback
-    return ""
+    return """
+Unterirdische Bibliothek
+========================
+- Keine Fenster
+- Regale mit Büchern
+- Staubig
+- Muffiger Gestank
+"""
 
 def p_besenkammer_place_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     # TODO: implement callback

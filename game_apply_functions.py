@@ -570,3 +570,19 @@ def o_werbeplakat_apply_f(gs: GameState, pl: PlayerState=None, what: GameObject 
         gs.ways["w_ubahn2_kontrollraum"].visible = True
         gs.ways["w_kontrollraum_ubahn2"].visible = True
         return "Du ziehst am Werbeplakat - dahinter kommt eine versteckte Tür zum Vorschein! ***Sie gibt einen kurzen Gang frei, der in einen Kontrollraum führt.***"
+
+
+def o_geheimtraktschalter_apply_f(gs: GameState, pl: PlayerState, what: GameObject = None, onwhat:GameObject=None) -> str:
+    if pl is not None and pl.location.name != "p_innen":
+        return "Sowas gibt es hier nicht!"
+    if not _F(gs).hauptschalter:
+        return "Der Schalter ist tot. Es tut sich nichts"
+    if _F(gs).dungeon_offen:
+        _F(gs).dungeon_offen = False
+        return "Das grüne Licht der kleinen Lampe wechselt zu rot, der Schalter steht nun auf 'zu'"
+    else:
+        _F(gs).dungeon_offen = True
+        return "Das rote Licht der kleinen Lampe wechselt zu grün, der Schalter steht nun auf 'auf'"
+
+def o_strahlenkanone_apply_f(gs: GameState, pl: PlayerState, what: GameObject = None, onwhat:GameObject=None) -> str:
+    return "Noch nichts implementiert - sorry..."

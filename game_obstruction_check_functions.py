@@ -168,13 +168,13 @@ def w_korridor_ubahn_schacht_obstruction_check(gs: "GameState") -> str:
 
 def w_labor_korridor_obstruction_check(gs: "GameState") -> str:
     if _F(gs).dungeon_offen:
-        "Free"
+        return "Free"
     return "Die Tür zum Korridor ... Sie ist leider verriegelt!"
 
 
 def w_korridor_labor_obstruction_check(gs: "GameState") -> str:
     if _F(gs).dungeon_offen:
-        "Free"
+        return "Free"
     return "Eine Tür, auf der Labor steht. Sie ist leider verriegelt"
 
 def w_korridor_bibliothek_obstruction_check(gs: "GameState") -> str:

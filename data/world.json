@@ -119,7 +119,8 @@
         "o_blumentopf",
         "o_schluessel",
         "o_stuhl",
-        "o_schrott"
+        "o_schrott",
+        "o_geheimtraktschalter"
       ]
     },
     "p_start": {
@@ -308,7 +309,9 @@
         "w_labor_korridor",
         "w_labor_generatorraum"
       ],
-      "objects": []
+      "objects": [
+        "o_strahlenkanone"
+      ]
     },
     "p_bibliothek": {
       "description": "",
@@ -1443,6 +1446,36 @@
       "reveal_f": null,
       "take_f": null,
       "prompt_f": "object_prompts.o_handrad_prompt_f"
+    },
+    "o_strahlenkanone": {
+      "name": "o_strahlenkanone",
+      "examine": "De-Zombifikations-Strahler",
+      "help_text": "Damit könnte man den Zombie erlösen",
+      "callnames": [
+        "Strahlenkanone", "Strahler", "Kanone", "Dezombifikator", "De-Zombiefikator"
+      ],
+      "ownedby": "p_labor",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "game_apply_functions.o_strahlenkanone_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "object_prompts.o_strahlenkanone_prompt_f"
+    },
+    "o_geheimtraktschalter": {
+      "name": "o_geheimtraktschalter",
+      "examine": "Ein an der Schuppenwand montierter Schalter, auf dem \"Geheimtrakt\" steht",
+      "help_text": "Irgendwas kann man damit an und ausschalten",
+      "callnames": [
+        "Geheimtraktschalter", "Schalter", "Drehschalter"
+      ],
+      "ownedby": "p_innen",
+      "fixed": true,
+      "hidden": false,
+      "apply_f": "game_apply_functions.o_geheimtraktschalter_apply_f",
+      "reveal_f": null,
+      "take_f": null,
+      "prompt_f": "object_prompts.o_geheimtraktschalter_prompt_f"
     }
   },
   "_editor": {

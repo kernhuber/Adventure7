@@ -719,3 +719,32 @@ Werbeplakat
 - Das Plakat hat Scharniere auf der linken Seite, und einen Griff auf der rechten Seite - könnte eine versteckte Tür sein?
 - Man kann an dem Plakat ziehen, es öffnen oder aufklappen oder ähnliches
     """
+
+def o_geheimtraktschalter_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    r = """
+Bakelit-Schalter
+================
+- Beschriftet mit "Labyrinth"
+- Man kann mit ihm "auf" und "zu" wählen
+- Man kann ihn betätigen, schalten, drehen oder andere Dinge tun, mit denen man einen Schalter schalten kann. Liefere in dem Fall 'anwenden o_schalter' zurück
+"""
+    if not _F(gs).hauptschalter:
+        return r + "- Eine kleine Leuchte ist aus, der Schalter scheint tot zu sein"
+    else:
+        if _F(gs).dungeon_offen:
+            r=r+"- Eine kleine Leuchte leuchtet grün, der Schalter steht auf 'auf'"
+        else:
+            r=r+"- Eine kleine Leuchte leuchtet rot, der Schalter steht auf 'zu'"
+    return r
+
+def o_strahlenkanone_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
+    return """
+Strahlenkanone
+==============
+- Steht in der Mitte des Labors
+- So groß, dass sie bis zur Decke des Labors reicht
+- Komplizierte Verkabelung
+- Sieht angsteinflössend aus
+- Schild mit "Dezombifikationskanone" an der Kanone angebracht
+- Zettel mit "2 Schalter betätigen, Kontrollraum und Generatorraum"    
+"""
