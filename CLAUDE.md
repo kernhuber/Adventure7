@@ -327,7 +327,7 @@ the U-Bahn Wasserspender** (`gs.wasserspender_trocken=True`). DESIGN = "slow doo
 game over** — without water the player eventually dies of thirst (`evaluate_thirst` at `thirst==0`);
 the immediate-game-over alternative is left as a code comment. Test commands (toggled by
 `utils.ZOMBIE_TESTCMDS`, bypass-gated in `command_engine.py`): **`zombie_versteinern`** /
-**`zombie_erlöst`** (alias `zombie_erloest`). Related fix: `o_flasche_apply_f` let you drink from a
+**`zombie_erlösen`** (alias `zombie_erloesen`). Related fix: `o_flasche_apply_f` let you drink from a
 full bottle even when the fountain is dry (only refilling depends on it), and the "wet" fountain
 description had run-on bullets (missing `\n`).
 
