@@ -77,11 +77,15 @@ AWAKENING ──► HUNTING ──Chat: Spieler überzeugt──► COOPERATIVE
 - **AWAKENING** → wechselt sofort zu HUNTING **und** eröffnet das Chat-Modal.
 - **HUNTING** → `_do_hunting_move` (der LLM-Kern, Biss).
 - **COOPERATIVE / DOUBTING** → `_do_trusting_move` (scriptgesteuert, kein Biss, Vertrauens-Zerfall).
-- **CONVINCED** → `_do_convinced_move` (erst Spieler überzeugen; dann `_do_cooperative_endgame`:
-  Generatorraum-Schalter drücken → ins Labor gehen und warten). Die **Erlösung** löst nicht mehr
-  das Schalter-Paar automatisch aus, sondern der Spieler, indem er bei beiden aktiven Schalter-Timern
-  die **Strahlenkanone** im Labor auf den anwesenden Zombie abfeuert (`o_strahlenkanone_apply_f` →
-  `_do_redemption`). Timer-Länge: `utils.SCHALTER_TIMER` (Default 10).
+- **CONVINCED** → `_do_convinced_move` ist **KI-primär mit Skript-Fallback** (2026-07-12): der Zombie
+  kündigt seinen Plan EINMAL an (kein Deal-Fragen, kein Verfolgen mehr) und lässt dann den Reasoning-LLM
+  jeden aktiven Zug entscheiden (CONVINCED-Block im `compile_zombie_prompt` + Empfehlungsrichtung aufs
+  Etappenziel). `_guard_convinced_action` übernimmt den LLM-Zug, solange er den Fortschritt nicht bricht,
+  sonst greift der seiteneffektfreie `_cooperative_endgame_fallback` (zum Generatorraum-Schalter → warten,
+  bis der Kontrollraum aktiv ist → drücken → ins Labor → warten). CONVINCED ist klebrig (LLM-Zustands-
+  vorschlag wird ignoriert). Die **Erlösung** löst nicht das Schalter-Paar automatisch aus, sondern der
+  Spieler, indem er bei beiden aktiven Schalter-Timern (`utils.SCHALTER_TIMER`, Default 10) die
+  **Strahlenkanone** im Labor auf den anwesenden Zombie abfeuert (`o_strahlenkanone_apply_f` → `_do_redemption`).
 - **REDEEMED** / **PETRIFIED** → Endzustände; der Zombie verschwindet aus dem Spiel (`vanished`).
 
 🔎 **Lehrbeobachtung:** Im Vergleich zur Erstfassung wurden die **toten Zustände**

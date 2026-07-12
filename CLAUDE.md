@@ -345,11 +345,28 @@ cannon-triggered, not auto-on-switches:** the two switches (`o_schalter_kontroll
 default 10; ticked in `game_turn.tick_switch_timers`); while **both** timers are >0 the
 **Strahlenkanone** (`o_strahlenkanone` in the Labor) is "armed", and firing it (`anwenden
 o_strahlenkanone`) with the zombie present in the Labor redeems him (`_do_redemption`, which now
-also sets `zombie_cooperative` for the win-ending flavor). In CONVINCED the cooperative zombie
-presses the **Generatorraum** switch himself, then walks to the **Labor** and waits — he can't
-fire the cannon, so the player activates the **Kontrollraum** switch and fires (leaves room for a
-goodbye). New savable flag `pressed_endgame_switch` drives the zombie's two-phase move; the old
-`_do_switch_sequence` / auto-redeem-on-both-switches path was removed.
+also sets `zombie_cooperative` for the win-ending flavor). In CONVINCED the zombie presses the
+**Generatorraum** switch himself, then goes to the **Labor** and waits — he can't fire the cannon,
+so the player activates the **Kontrollraum** switch and fires (leaves room for a goodbye). Savable
+flags `pressed_endgame_switch` / `announced_endgame_plan`; the old `_do_switch_sequence` /
+auto-redeem-on-both-switches path was removed.
+
+**CONVINCED endgame reworked to LLM-primary + script fallback** (2026-07-12). First the
+`cooperation_agreed` gate was dropped: the zombie no longer nags for a deal or pursues the player —
+he announces his plan **once** and acts. Then the movement itself became **LLM-driven** (option B):
+`_do_convinced_move` asks the reasoning LLM each active turn (CONVINCED block in
+`compile_zombie_prompt` describes the plan + points the recommended direction at the current
+sub-goal), and `_guard_convinced_action` accepts the LLM move unless it would break progress —
+otherwise the **side-effect-free** `_cooperative_endgame_fallback` step is used. CONVINCED is
+sticky (the LLM's state suggestion is ignored); the switch-press timing invariant (only when the
+Kontrollraum is active) lives in the fallback, and the zombie waits at his switch to give the
+player time. **Bug found via this path:** `obj_name_from_friendly_name` /
+`place_name_from_friendly_name` (`services/world.py`) were **case-SENSITIVE**, but callnames are
+stored lowercase — so the zombie's `anwenden Generatorraumschalter` never resolved and the switch
+silently failed to arm (broke the endgame). Now case-insensitive (helps any NPC/LLM callname).
+Also: fixed a `web_dialogs.do_chat` crash (unbound `r`) on a zombie-initiated chat — which had also
+broken the energy-share mechanic (the chat crashed before `end_chat` ran, so `share_agreed` was
+never set and the zombie kept petrifying). Water values bumped (Wasserspender → 100, bottle → +40).
 
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
