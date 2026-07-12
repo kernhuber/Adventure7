@@ -164,8 +164,15 @@ def o_geld_lire_prompt_f(gs: "GameState", pl: "PlayerState") -> str:
     return """
 Lire
 ====
-- Eine Menge Lire
-- Münzen und Scheine
+- Eine Menge italienische Lire - Münzen und Scheine (das Wechselgeld aus dem Pizza-Automaten)
+- Die Lire kann man nehmen, aufnehmen, aufklauben, einstecken, an sich nehmen
+- ACHTUNG Wortverwechslung: "Lire" ist das GELD (o_geld_lire) - NICHT der Pizza-Automat (o_pizzaautomat)!
+  Sagt der Spieler "nimm die Lire (aus dem Automaten)", meint er IMMER das Geld, nicht den Automaten.
+
+Beispiele:
+
+Nimm die Lire aus dem Pizzaautomaten --> 'nimm o_geld_lire'
+Nimm das Wechselgeld / die Muenzen und Scheine --> 'nimm o_geld_lire'
     """
 
 

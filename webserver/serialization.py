@@ -120,6 +120,13 @@ def serialize_real_game_state(game, session_id=None):
             },
             "dog": dog_info,
             "zombie": zombie_info,
+            # Endspiel: Zählerstände der beiden Notfall-Schalter (0 = inaktiv). Das GUI zeigt sie
+            # an, damit sich Spieler und Zombie beim Aktivieren koordinieren können, auch wenn sie
+            # in verschiedenen Räumen sind.
+            "switches": {
+                "kontrollraum": getattr(game, 'schalter_kontrollraum_timer', 0),
+                "generatorraum": getattr(game, 'schalter_generatorraum_timer', 0),
+            },
             "environment": {
                 "objects": visible_objects,
                 "ways": available_ways,

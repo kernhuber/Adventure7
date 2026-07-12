@@ -414,6 +414,27 @@ function appendCommandResult(label, result) {
     appendLastAction(html);
 }
 
+// Endspiel: Zählerstände der beiden Notfall-Schalter anzeigen, damit sich Spieler und Zombie
+// koordinieren können, auch wenn sie in verschiedenen Räumen an je einem Schalter stehen. Die
+// Zeile erscheint nur, solange mindestens ein Schalter aktiv ist (Timer > 0); ein inaktiver
+// Schalter (0) wird als "-" gezeigt.
+function updateSwitches() {
+    const row = document.getElementById('switches');
+    if (!row) return;
+    const sw = gameState.switches || {};
+    const k = sw.kontrollraum || 0;
+    const g = sw.generatorraum || 0;
+    if (k > 0 || g > 0) {
+        const kEl = document.getElementById('switch-kontrollraum');
+        const gEl = document.getElementById('switch-generatorraum');
+        if (kEl) kEl.textContent = k > 0 ? k : '-';
+        if (gEl) gEl.textContent = g > 0 ? g : '-';
+        row.style.display = '';
+    } else {
+        row.style.display = 'none';
+    }
+}
+
 function updateStatus() {
 
     const plDiv = document.getElementById('status');
@@ -490,6 +511,7 @@ function updateUI() {
             showDogOverlay(gameState.dog?.here || false, gameState.dog?.mood || 'normal');
         }
         updateStatus()
+        updateSwitches()
         showPowerMain(gameState.power_main)
         // Zombie overlay - inline definition as fallback if zombie_overlay.js not loaded
         if (typeof showZombieOverlay === 'function') {
