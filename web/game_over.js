@@ -9,6 +9,17 @@ function gameOver(won, text) {
         return;
     }
 
+    // Ende-Musik abspielen: game_won.mp3 (gewonnen) bzw. game_lost.mp3 (verloren). Läuft nach
+    // Spielereingaben, daher i.d.R. von der Autoplay-Policy erlaubt; .catch() ignoriert eine
+    // etwaige Blockade still.
+    try {
+        const endMusic = new Audio(won ? 'game_won.mp3' : 'game_lost.mp3');
+        endMusic.volume = 0.6;
+        endMusic.play().catch(() => {});
+    } catch (e) {
+        console.warn('Ende-Musik nicht abspielbar:', e);
+    }
+
     // Overlay erstellen
     const overlay = document.createElement('div');
     overlay.style.cssText = `
@@ -109,7 +120,11 @@ function gameOver(won, text) {
     }
 
     function playBeep() {
-        if (!audioContext) return;
+        // Blip-Lautstärke bewusst auf 0 (stumm): der SciFi-Piepston bei der zeichenweisen
+        // Textausgabe stört. Struktur bleibt erhalten - später evtl. ein anderer Sound
+        // (dann BLIP_VOLUME > 0 setzen).
+        const BLIP_VOLUME = 0;
+        if (!audioContext || BLIP_VOLUME <= 0) return;
 
         try {
             const oscillator = audioContext.createOscillator();
