@@ -32,9 +32,9 @@ FRIENDLY_CHAT_BONUS = 25     # zugewandtes, aber unkonkretes Gespräch: beendet 
 GIFT_TRUST_BONUS = 20        # der Spieler schenkt dem Zombie etwas (Verb 'gib') -> Vertrauensgewinn
 
 # --- Stellschrauben für die Lebensenergie (das frühere "zombie_thirst") ---------
-LOW_ENERGY = 8               # ab hier bittet der Zombie um geteilte Lebensenergie (Phase 5)
+LOW_ENERGY = 12               # ab hier bittet der Zombie um geteilte Lebensenergie (Phase 5)
 SHARE_AMOUNT = 8             # so viel Lebensenergie teilt der Spieler auf einmal (Phase 5)
-MAX_ENERGY = 40              # Obergrenze der Lebensenergie
+MAX_ENERGY = 70              # Obergrenze der Lebensenergie
 
 
 def _F(gs):
