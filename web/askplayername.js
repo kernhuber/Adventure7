@@ -188,6 +188,7 @@ function askPlayerName() {
         try {
             startMusic = new Audio('game_start.mp3');
             startMusic.volume = 0.6;
+            startMusic.loop = true;   // solange der Namens-Screen offen ist, in Schleife
             startMusic.play().catch(() => {});
         } catch (e) {
             console.warn('Start-Musik nicht abspielbar:', e);
