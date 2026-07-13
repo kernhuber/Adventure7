@@ -1,3 +1,40 @@
+// --- Start-Screen-Musik (game_start.mp3) ---------------------------------------------
+// Gemeinsamer, kleiner Audio-Controller für den Startablauf: Der Welcome-Overlay startet
+// die Musik beim ersten Klick (echte User-Geste -> Autoplay erlaubt), die Namenseingabe
+// (askplayername.js) blendet sie beim Abschicken sanft aus. So läuft sie sofort, sobald
+// der Spieler auf "Weiter" klickt - noch bevor der Namens-Screen erscheint.
+window.__gameStartMusic = window.__gameStartMusic || null;
+
+function startGameStartMusic() {
+    if (!window.__gameStartMusic) {
+        try {
+            const m = new Audio('game_start.mp3');
+            m.volume = 0.6;
+            m.loop = true;
+            window.__gameStartMusic = m;
+        } catch (e) { return; }
+    }
+    try { window.__gameStartMusic.play().catch(() => {}); } catch (e) {}
+}
+
+function stopGameStartMusic() {
+    const m = window.__gameStartMusic;
+    if (!m) return;
+    // Sanft ausblenden, dann pausieren (statt hartem Abbruch beim Return).
+    if (m._fade) clearInterval(m._fade);
+    m._fade = setInterval(() => {
+        const v = (m.volume || 0) - 0.05;
+        if (v <= 0) {
+            clearInterval(m._fade);
+            m._fade = null;
+            try { m.pause(); m.currentTime = 0; } catch (e) {}
+            m.volume = 0.6;   // für einen evtl. erneuten Start zurücksetzen
+        } else {
+            m.volume = v;
+        }
+    }, 70);
+}
+
 function showWelcome(htmlContent = "Willkommen!<br><br>Klicken Sie, um fortzufahren.") {
     // Overlay-Element erstellen
     const overlay = document.createElement('div');
@@ -56,6 +93,9 @@ function showWelcome(htmlContent = "Willkommen!<br><br>Klicken Sie, um fortzufah
 
     // Click-Event für das Ausblenden
     function closeOverlay() {
+        // Der Klick auf "Weiter" ist die erste User-Geste -> hier startet die Start-Musik,
+        // damit sie schon läuft, wenn der Namens-Screen erscheint.
+        startGameStartMusic();
         overlay.style.opacity = '0';
 
         // Nach der Transition das Element entfernen

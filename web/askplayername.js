@@ -125,10 +125,9 @@ function askPlayerName() {
         modal.appendChild(hint);
         overlay.appendChild(modal);
 
-        // Start-Screen-Musik (game_start.mp3); wird gestartet und beim Abschicken des Namens
-        // wieder gestoppt, damit sie nicht ins Spiel hineinläuft. startMusicUnlock ist der
-        // Fallback-Listener, der die Musik bei der ersten User-Geste nachstartet (Autoplay-Policy).
-        let startMusic = null;
+        // Start-Screen-Musik: gesteuert über den gemeinsamen Controller in welcome.js. Normal
+        // startet sie schon beim Welcome-Klick; hier nur ein Fallback (falls noch nicht) + Stopp
+        // (sanftes Ausblenden) beim Abschicken des Namens. startMusicUnlock ist der Geste-Fallback.
         let startMusicUnlock = null;
         const stopStartMusic = () => {
             if (startMusicUnlock) {
@@ -136,7 +135,7 @@ function askPlayerName() {
                 document.removeEventListener('keydown', startMusicUnlock);
                 startMusicUnlock = null;
             }
-            if (startMusic) { try { startMusic.pause(); } catch (e) {} }
+            if (typeof stopGameStartMusic === 'function') stopGameStartMusic();
         };
 
         // Cleanup-Funktion
@@ -191,31 +190,19 @@ function askPlayerName() {
         // Overlay zum DOM hinzufügen
         document.body.appendChild(overlay);
 
-        // Start-Screen-Musik abspielen. WICHTIG: play() läuft hier NICHT in einem Klick-Handler
-        // (der Namens-Screen wird per WebSocket-Nachricht geöffnet), daher blockiert die
-        // Autoplay-Policy (v.a. Safari) ein sofortiges play() STILL. Deshalb: erst direkt
-        // versuchen, und falls blockiert, beim ERSTEN Klick/Tastendruck nachstarten (dann läuft
-        // play() innerhalb einer echten User-Geste). Der Welcome-Klick oder das Tippen des Namens
-        // löst das zuverlässig aus.
-        try {
-            startMusic = new Audio('game_start.mp3');
-            startMusic.volume = 0.6;
-            startMusic.loop = true;   // solange der Namens-Screen offen ist, in Schleife
+        // Start-Musik anstoßen (idempotent - läuft sie schon vom Welcome-Klick, ist das ein
+        // No-Op). Als Fallback zusätzlich beim ERSTEN Klick/Tastendruck nachstarten, falls sie
+        // hier mangels User-Geste noch nicht laufen konnte (z.B. ohne vorherigen Welcome-Screen).
+        if (typeof startGameStartMusic === 'function') {
+            startGameStartMusic();
             startMusicUnlock = () => {
                 document.removeEventListener('pointerdown', startMusicUnlock);
                 document.removeEventListener('keydown', startMusicUnlock);
                 startMusicUnlock = null;
-                if (startMusic) startMusic.play().catch(() => {});
+                startGameStartMusic();
             };
-            const p = startMusic.play();
-            if (p && typeof p.catch === 'function') {
-                p.catch(() => {
-                    document.addEventListener('pointerdown', startMusicUnlock);
-                    document.addEventListener('keydown', startMusicUnlock);
-                });
-            }
-        } catch (e) {
-            console.warn('Start-Musik nicht abspielbar:', e);
+            document.addEventListener('pointerdown', startMusicUnlock);
+            document.addEventListener('keydown', startMusicUnlock);
         }
 
         // Eingabefeld nach kurzer Verzögerung fokussieren
