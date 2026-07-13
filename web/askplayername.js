@@ -125,10 +125,19 @@ function askPlayerName() {
         modal.appendChild(hint);
         overlay.appendChild(modal);
 
-        // Start-Screen-Musik (game_start.mp3); wird beim Anzeigen gestartet und beim
-        // Abschicken des Namens wieder gestoppt, damit sie nicht ins Spiel hineinläuft.
+        // Start-Screen-Musik (game_start.mp3); wird gestartet und beim Abschicken des Namens
+        // wieder gestoppt, damit sie nicht ins Spiel hineinläuft. startMusicUnlock ist der
+        // Fallback-Listener, der die Musik bei der ersten User-Geste nachstartet (Autoplay-Policy).
         let startMusic = null;
-        const stopStartMusic = () => { if (startMusic) { try { startMusic.pause(); } catch (e) {} } };
+        let startMusicUnlock = null;
+        const stopStartMusic = () => {
+            if (startMusicUnlock) {
+                document.removeEventListener('pointerdown', startMusicUnlock);
+                document.removeEventListener('keydown', startMusicUnlock);
+                startMusicUnlock = null;
+            }
+            if (startMusic) { try { startMusic.pause(); } catch (e) {} }
+        };
 
         // Cleanup-Funktion
         const cleanup = () => {
@@ -182,14 +191,29 @@ function askPlayerName() {
         // Overlay zum DOM hinzufügen
         document.body.appendChild(overlay);
 
-        // Start-Screen-Musik abspielen. Der Welcome-Overlay davor wird per Klick geschlossen,
-        // es gab also i.d.R. schon eine User-Geste -> Autoplay erlaubt; eine Blockade wird
-        // still abgefangen.
+        // Start-Screen-Musik abspielen. WICHTIG: play() läuft hier NICHT in einem Klick-Handler
+        // (der Namens-Screen wird per WebSocket-Nachricht geöffnet), daher blockiert die
+        // Autoplay-Policy (v.a. Safari) ein sofortiges play() STILL. Deshalb: erst direkt
+        // versuchen, und falls blockiert, beim ERSTEN Klick/Tastendruck nachstarten (dann läuft
+        // play() innerhalb einer echten User-Geste). Der Welcome-Klick oder das Tippen des Namens
+        // löst das zuverlässig aus.
         try {
             startMusic = new Audio('game_start.mp3');
             startMusic.volume = 0.6;
             startMusic.loop = true;   // solange der Namens-Screen offen ist, in Schleife
-            startMusic.play().catch(() => {});
+            startMusicUnlock = () => {
+                document.removeEventListener('pointerdown', startMusicUnlock);
+                document.removeEventListener('keydown', startMusicUnlock);
+                startMusicUnlock = null;
+                if (startMusic) startMusic.play().catch(() => {});
+            };
+            const p = startMusic.play();
+            if (p && typeof p.catch === 'function') {
+                p.catch(() => {
+                    document.addEventListener('pointerdown', startMusicUnlock);
+                    document.addEventListener('keydown', startMusicUnlock);
+                });
+            }
         } catch (e) {
             console.warn('Start-Musik nicht abspielbar:', e);
         }
