@@ -125,6 +125,11 @@ function askPlayerName() {
         modal.appendChild(hint);
         overlay.appendChild(modal);
 
+        // Start-Screen-Musik (game_start.mp3); wird beim Anzeigen gestartet und beim
+        // Abschicken des Namens wieder gestoppt, damit sie nicht ins Spiel hineinläuft.
+        let startMusic = null;
+        const stopStartMusic = () => { if (startMusic) { try { startMusic.pause(); } catch (e) {} } };
+
         // Cleanup-Funktion
         const cleanup = () => {
             if (overlay.parentNode) {
@@ -148,6 +153,7 @@ function askPlayerName() {
 
                     // Fade-Out-Animation starten
                     overlay.classList.add('fade-out');
+                    stopStartMusic();
 
                     // Nach 1 Sekunde Overlay entfernen und Wert zurückgeben
                     setTimeout(() => {
@@ -175,6 +181,17 @@ function askPlayerName() {
 
         // Overlay zum DOM hinzufügen
         document.body.appendChild(overlay);
+
+        // Start-Screen-Musik abspielen. Der Welcome-Overlay davor wird per Klick geschlossen,
+        // es gab also i.d.R. schon eine User-Geste -> Autoplay erlaubt; eine Blockade wird
+        // still abgefangen.
+        try {
+            startMusic = new Audio('game_start.mp3');
+            startMusic.volume = 0.6;
+            startMusic.play().catch(() => {});
+        } catch (e) {
+            console.warn('Start-Musik nicht abspielbar:', e);
+        }
 
         // Eingabefeld nach kurzer Verzögerung fokussieren
         setTimeout(() => {
