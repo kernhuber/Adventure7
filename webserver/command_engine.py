@@ -509,6 +509,11 @@ class CommandEngineMixin:
 
                         if pin_result == "OK":
                             game.objects["o_geld_dollar"].hidden = False
+                            # Dieser check_pinpad-Zweig kehrt früh zurück (vor der normalen
+                            # Re-Serialisierung weiter unten). Ohne dieses Update bliebe
+                            # session["state"] der Stand VOR dem Ausgeben der Dollar - sie
+                            # tauchten erst nach dem nächsten Spielzug in der Umgebung auf.
+                            session["state"] = serialize_real_game_state(game, session_id=session_id)
                             return "**Die Zahl stimmt!** Der Automat rattert und spuckt frische US-Dollar aus."
                         else:
                             return " --- Die Zahl ist falsch. ---"
