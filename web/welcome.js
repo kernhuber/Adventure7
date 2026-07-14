@@ -9,7 +9,7 @@ function startGameStartMusic() {
     if (!window.__gameStartMusic) {
         try {
             const m = new Audio('game_start.mp3');
-            m.volume = 0.6;
+            m.volume = 1.0;   // volle Lautstärke (war zu leise)
             m.loop = true;
             window.__gameStartMusic = m;
         } catch (e) { return; }
@@ -28,7 +28,7 @@ function stopGameStartMusic() {
             clearInterval(m._fade);
             m._fade = null;
             try { m.pause(); m.currentTime = 0; } catch (e) {}
-            m.volume = 0.6;   // für einen evtl. erneuten Start zurücksetzen
+            m.volume = 1.0;   // für einen evtl. erneuten Start zurücksetzen
         } else {
             m.volume = v;
         }
@@ -91,11 +91,20 @@ function showWelcome(htmlContent = "Willkommen!<br><br>Klicken Sie, um fortzufah
     // Overlay zum Body hinzufügen
     document.body.appendChild(overlay);
 
+    // Musik beim ERSTEN User-Input (Klick/Taste irgendwo) starten - das ist die früheste von
+    // der Autoplay-Policy erlaubte Stelle und funktioniert unabhängig davon, ob der Spieler
+    // zuerst den Welcome-Screen wegklickt oder direkt in die Namenseingabe tippt. Danach läuft
+    // sie durch (loop) bis zum Spielende (game_over.js stoppt sie dann).
+    const firstGestureStart = () => {
+        document.removeEventListener('pointerdown', firstGestureStart);
+        document.removeEventListener('keydown', firstGestureStart);
+        startGameStartMusic();
+    };
+    document.addEventListener('pointerdown', firstGestureStart);
+    document.addEventListener('keydown', firstGestureStart);
+
     // Click-Event für das Ausblenden
     function closeOverlay() {
-        // Der Klick auf "Weiter" ist die erste User-Geste -> hier startet die Start-Musik,
-        // damit sie schon läuft, wenn der Namens-Screen erscheint.
-        startGameStartMusic();
         overlay.style.opacity = '0';
 
         // Nach der Transition das Element entfernen

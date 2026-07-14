@@ -125,18 +125,9 @@ function askPlayerName() {
         modal.appendChild(hint);
         overlay.appendChild(modal);
 
-        // Start-Screen-Musik: gesteuert über den gemeinsamen Controller in welcome.js. Normal
-        // startet sie schon beim Welcome-Klick; hier nur ein Fallback (falls noch nicht) + Stopp
-        // (sanftes Ausblenden) beim Abschicken des Namens. startMusicUnlock ist der Geste-Fallback.
-        let startMusicUnlock = null;
-        const stopStartMusic = () => {
-            if (startMusicUnlock) {
-                document.removeEventListener('pointerdown', startMusicUnlock);
-                document.removeEventListener('keydown', startMusicUnlock);
-                startMusicUnlock = null;
-            }
-            if (typeof stopGameStartMusic === 'function') stopGameStartMusic();
-        };
+        // Hinweis: Die Start-Screen-Musik wird zentral in welcome.js gesteuert (Start beim
+        // ersten User-Input, läuft dann durch bis zum Spielende). Die Namenseingabe stoppt sie
+        // bewusst NICHT mehr - so geht die Musik nahtlos in den Spielbeginn über.
 
         // Cleanup-Funktion
         const cleanup = () => {
@@ -159,9 +150,8 @@ function askPlayerName() {
                     input.removeEventListener('keydown', handleKeyDown);
                     overlay.removeEventListener('click', handleOverlayClick);
 
-                    // Fade-Out-Animation starten
+                    // Fade-Out-Animation starten (die Musik läuft bewusst weiter)
                     overlay.classList.add('fade-out');
-                    stopStartMusic();
 
                     // Nach 1 Sekunde Overlay entfernen und Wert zurückgeben
                     setTimeout(() => {
@@ -190,20 +180,6 @@ function askPlayerName() {
         // Overlay zum DOM hinzufügen
         document.body.appendChild(overlay);
 
-        // Start-Musik anstoßen (idempotent - läuft sie schon vom Welcome-Klick, ist das ein
-        // No-Op). Als Fallback zusätzlich beim ERSTEN Klick/Tastendruck nachstarten, falls sie
-        // hier mangels User-Geste noch nicht laufen konnte (z.B. ohne vorherigen Welcome-Screen).
-        if (typeof startGameStartMusic === 'function') {
-            startGameStartMusic();
-            startMusicUnlock = () => {
-                document.removeEventListener('pointerdown', startMusicUnlock);
-                document.removeEventListener('keydown', startMusicUnlock);
-                startMusicUnlock = null;
-                startGameStartMusic();
-            };
-            document.addEventListener('pointerdown', startMusicUnlock);
-            document.addEventListener('keydown', startMusicUnlock);
-        }
 
         // Eingabefeld nach kurzer Verzögerung fokussieren
         setTimeout(() => {

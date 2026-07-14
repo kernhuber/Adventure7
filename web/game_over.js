@@ -9,6 +9,10 @@ function gameOver(won, text) {
         return;
     }
 
+    // Erst die (durchlaufende) Start-Musik ausblenden, damit sie sich nicht mit der Ende-Musik
+    // überlagert.
+    if (typeof stopGameStartMusic === 'function') stopGameStartMusic();
+
     // Ende-Musik abspielen: game_won.mp3 (gewonnen) bzw. game_lost.mp3 (verloren). Läuft nach
     // Spielereingaben, daher i.d.R. von der Autoplay-Policy erlaubt; .catch() ignoriert eine
     // etwaige Blockade still.
