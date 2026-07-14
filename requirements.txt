@@ -5,3 +5,5 @@ regex
 websockets
 tornado
 python-dotenv
+# Lokales LLM-Backend (Gemma über die Ollama-Runtime); nur nötig für utils.LLM_BACKEND="gemma".
+ollama
