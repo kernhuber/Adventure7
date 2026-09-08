@@ -5,11 +5,14 @@ REM (macOS/Linux: siehe start.sh mit derselben Funktionalitaet.)
 REM Immer aus dem Verzeichnis dieser Datei arbeiten (egal, von wo aufgerufen).
 cd /d "%~dp0"
 
-REM --- Repo best-effort aktualisieren ---------------------------------------------
-REM Aktualisiert die AKTUELLE Branch, ohne sie zu wechseln. Fehler sind nicht kritisch.
+REM --- Repo aktualisieren (dient zugleich als Installer/Updater) -------------------
+REM Der Spielstand liegt auf dieser Branch -> beim Umzug auf eine neue Branch hier aendern.
+REM 'git checkout' stellt zugleich das Upstream-Tracking her, damit 'git pull' funktioniert
+REM (ein frischer Klon landet sonst auf 'main' ohne Bezug zu dieser Branch). Nicht kritisch.
+set BRANCH=Adventure-10-2026-07-09-Gemma
+git fetch origin 2>nul
+git checkout %BRANCH% 2>nul
 git pull --ff-only 2>nul
-REM Zum Festpinnen einer bestimmten Branch (z.B. fuer Kurse) hier eine Zeile ergaenzen, z.B.:
-REM   git checkout Adventure-10-2026-07-09-Gemma
 
 REM --- Python-venv anlegen (falls nicht vorhanden) --------------------------------
 if not exist venv (
@@ -29,7 +32,6 @@ REM --- API-Key laden (optional) -----------------------------------------------
 REM Auf Windows muss .apikey die Zeile  set GOOGLE_API_KEY=...  enthalten.
 if exist .apikey call .apikey
 
-cls
 echo.
 echo.
 
