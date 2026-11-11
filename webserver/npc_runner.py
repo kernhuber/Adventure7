@@ -83,7 +83,8 @@ class NPCRunnerMixin:
                     "game_state": serialize_real_game_state(game, session_id=session_id)
                 }
 
-                await websocket.send(json.dumps(response))
+                # _send statt direktem Senden: so kann ein Agent den Ausgang des Kampfs mitlesen.
+                await self._send(session, websocket, response)
                 dprint(dl.WEBGUI, f"✅ Mini-Game Ergebnis verarbeitet: {result}")
 
             except Exception as e:

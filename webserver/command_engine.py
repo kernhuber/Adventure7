@@ -75,6 +75,16 @@ def _command_label(game, command_dict) -> str:
 
 class CommandEngineMixin:
 
+    async def _send(self, session, websocket, payload: dict) -> None:
+        """Sende eine Nachricht an den Browser (wie bisher) -- und schneide sie mit, falls ein
+        Agent mitliest. LERNPUNKT: Der Agent bekommt so exakt die Nachrichten, die auch ein
+        menschlicher Spieler im Browser sähe, nicht eine zweite, womöglich großzügigere Quelle.
+        Bei Menschen ist session["tap"] nicht gesetzt (None) -> Verhalten unverändert."""
+        await websocket.send(json.dumps(payload))
+        tap = session.get("tap")
+        if tap is not None:
+            tap.append(payload)
+
     async def _handle_save_load(self, websocket, session, session_id, raw_command) -> bool:
         """Intercept the meta-commands 'speichere <name>' / 'lade <name>' (text path; the
         GUI buttons in step 7b reuse the same save/load). Returns True if it was a
@@ -344,18 +354,18 @@ class CommandEngineMixin:
                 session["pending_llm_input"]) > 50 else session["pending_llm_input"]
         }
 
-        await websocket.send(json.dumps(response))
+        await self._send(session, websocket, response)
 
         # Hat die Aktion ein Text-Popup angefordert (z.B. das Lesen des Betriebshandbuchs)?
         # game._pending_manual_popup wird von o_manual_apply_f gesetzt; hier auslesen,
         # als eigene Nachricht senden und wieder leeren.
         pending_popup = getattr(game, "_pending_manual_popup", None)
         if pending_popup:
-            await websocket.send(json.dumps({
+            await self._send(session, websocket, {
                 "type": "manual_popup",
                 "title": "Betriebsanleitung",
                 "content": pending_popup,
-            }))
+            })
             game._pending_manual_popup = None
 
         dprint(dl.WEBGUI,
@@ -456,7 +466,7 @@ class CommandEngineMixin:
                 #
                 # An das GUI senden, wo es dann (in JavaScript) weiterverarbeitet wird
                 #
-                await websocket.send(json.dumps(npc_message))
+                await self._send(session, websocket, npc_message)
                 dprint(dl.WEBGUI, f"💥 NPC-Actions gesendet: {len(filtered_actions)} Aktionen")
                 #
                 # Hat die Explosion uns weggeputzt?
