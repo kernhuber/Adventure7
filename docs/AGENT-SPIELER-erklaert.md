@@ -218,6 +218,27 @@ Zügen. Details: `docs/SAVE-LOAD-DESIGN.md`.
 
 ---
 
+## 10b. Lernen von Spiel zu Spiel: `Experience.md`
+
+Das Notizbuch lebt nur ein Spiel lang. Was ein Mensch sich **nach** dem Spiel merkt („Die Sprengladung ist
+gefährlich, nicht im Schuppen zünden!“), schreibt der Agent in die Datei **`Experience.md`** (Projektordner,
+`experience.py`):
+
+- **Am Spielende** (gewonnen, verloren oder Rundenlimit) bekommt der Agent einen letzten Modellaufruf: Ergebnis,
+  letzte Meldungen, Notizbuch und die letzten Züge – und soll Erkenntnisse festhalten (Werkzeug
+  `erfahrung_notieren`, höchstens 8, nur Selbsterlebtes, nichts Doppeltes). Das Panel zeigt sie live in Türkis
+  („Erfahrung“), meist noch vor dem Game-Over-Screen im Hintergrund.
+- **Beim nächsten Start** steht die Datei im System-Prompt („ERFAHRUNGEN AUS FRÜHEREN SPIELEN“; die neuesten
+  6000 Zeichen). Das „Lernen“ ist also nur **Text, den der Agent schreibt und liest** – kein Training.
+- Die Datei ist normaler Markdown: lesen, falsche Erkenntnisse löschen, eigene Tipps ergänzen. Ausschalten mit
+  `config.EXPERIENCE_AKTIV = False` (Experiment: „Lernt der Agent ohne Erinnerung überhaupt?“).
+- **Tipp von außen:** Beim Laden aus dem Welcome-Screen oder dem Panel kann man einen Tipp mitgeben (`&tipp=…`), der
+  in der ersten Runde im Prompt steht – so, wie man einem Mitspieler vor einem zweiten Anlauf etwas zuflüstert.
+- Der System-Prompt rät dem Agenten, **vor riskanten oder unumkehrbaren Aktionen** `spielstand_speichern` zu
+  nutzen (mit Warn-Notiz). Ob er es tut, entscheidet er selbst.
+
+---
+
 ## 11. Ein kommentierter Ausschnitt aus einer echten Spur
 
 Aus `agent_runs/2026-11-11_15-09-31.jsonl` (Modell `gemini-2.5-flash`, Hund an; gekürzt). Jede Zeile der Spur ist

@@ -399,6 +399,12 @@ interface is `AgentLLM.frage(...)` (`llm.py`), a fake model exists (`python -m a
 Claude's sandbox (use system python + a `utils` stub for tests); `web/index.html` must keep the query string when
 redirecting; the read-only chat modal must end left of the panel (otherwise it blocks the controls).
 
+**Agent learns across games (2026-11-11):** `agent_player/experience.py` — after a finished game the agent writes lessons
+into `Experience.md` (project root, hand-editable; tool `erfahrung_notieren`), and `AgentKontext.system_prompt()` injects the
+newest `config.EXPERIENCE_MAX_ZEICHEN` of it at the next start (off via `config.EXPERIENCE_AKTIV`). Loading a save from the
+welcome screen/panel can carry a `&tipp=` hint for the agent. The game-over screen leaves room for the agent panel
+(`--agent-offset`).
+
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
 via flags (model them on `korridor_offen`/`o_stahltuer`: a `*_offen` flag in
