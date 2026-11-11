@@ -10,7 +10,7 @@ function showPowerMain(onoff) {
         overlay.style.cssText = `
             position: fixed;
             top: 0;
-            right: 0;
+            right: var(--agent-offset, 0px);   /* --agent-offset: Breite des Agenten-Panels (agent_panel.js), sonst 0 */
             z-index: -1;
             width: 125px;
             height: 180px;

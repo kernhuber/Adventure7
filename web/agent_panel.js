@@ -68,6 +68,8 @@ const agentPanel = (function () {
         const w = (collapsed ? 150 : PANEL_WIDTH) * zoom;
         panelEl.style.width = (collapsed ? 150 : PANEL_WIDTH) + 'px';
         document.body.style.marginRight = (w + 10) + 'px';
+        // Die Icons oben rechts (Strom, Zombie, Hund, Agent) liegen sonst unter dem Panel: sie rücken daneben.
+        document.documentElement.style.setProperty('--agent-offset', w + 'px');
     }
     function setZoom(z) {
         zoom = Math.min(2, Math.max(0.7, Math.round(z * 100) / 100));
@@ -219,6 +221,7 @@ const agentPanel = (function () {
         panel.appendChild(body);
         document.body.appendChild(panel);
         layout();
+        if (typeof showAgentOverlay === 'function') showAgentOverlay(true, false);   // Agent-Icon neben Hund/Zombie/Strom
     }
 
     function scrollLog() {
@@ -229,6 +232,7 @@ const agentPanel = (function () {
     function handle(data) {
         if (!agentMode || !logEl) return;
         if (data.type === 'agent_status') {
+            if (typeof showAgentOverlay === 'function') showAgentOverlay(true, data.state === 'running');   // Rahmen pulsiert, solange der Agent arbeitet
             statusEl.textContent = `${STATE_TEXT[data.state] || data.state} · Runde ${data.round} · Schritt ${data.step}`
                 + (data.model ? ` · ${data.model}` : '');
             if (data.calls_limit !== undefined) {

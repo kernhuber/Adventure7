@@ -12,6 +12,8 @@ AGENT_SPIELERNAME = "Agent"       # Name der Spielfigur im Agentenmodus
 # Ausgang des Hundekampfs (ersetzt das Minispiel): Gewichte für (Hund gewinnt = Spiel verloren, Spieler gewinnt, Gleichstand).
 # (1, 1, 1) = gleich wahrscheinlich. Z. B. (1, 3, 2) macht eine Niederlage seltener.
 MINISPIEL_GEWICHTE = (1, 1, 1)
+# So lange zeigt der Browser das Kampf-Overlay (3 s Kampf + 3 s Ergebnis + Ausblenden); der Server wartet entsprechend.
+DOGFIGHT_DAUER_S = 6.6
 
 # --- Modell (ab Meilenstein 2) ----------------------------------------------
 AGENT_MODELL = "gemini-2.5-flash"

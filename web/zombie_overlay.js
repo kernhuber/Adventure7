@@ -32,7 +32,7 @@ function showZombieOverlay(visible, state) {
         overlay.style.cssText = `
             position: fixed;
             top: 0;
-            right: 125px;
+            right: calc(var(--agent-offset, 0px) + 125px);   /* --agent-offset: Breite des Agenten-Panels (agent_panel.js), sonst 0 */
             z-index: -1;
             width: 125px;
             height: 180px;

@@ -26,6 +26,10 @@ class AgentDialogs(WebDialogs):
         'WON' bedeutet (wie in handle_minigame_result): der HUND gewinnt."""
         ergebnis = random.choices(["WON", "LOST", "TIE"], weights=config.MINISPIEL_GEWICHTE)[0]
         dprint(dl.WEBGUI, f"🎲 Agentenmodus: Minispiel ersetzt durch Zufall -> {ergebnis}")
+        # Der Browser zeigt den Kampf als Overlay (web/dogfight_overlay.js). Wir warten, bis es vorbei ist -
+        # sonst käme z. B. das Game-Over-Popup schon während des Kampfes.
+        await self.ws.send(json.dumps({"type": "agent_dogfight", "result": ergebnis}))
+        await asyncio.sleep(config.DOGFIGHT_DAUER_S)
         return ergebnis
 
     async def ask_for_pin(self, expected_md5_hash: str) -> str:
