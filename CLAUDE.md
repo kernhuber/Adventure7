@@ -118,8 +118,10 @@ debug-only.
   relocating code.
 - Without `GOOGLE_API_KEY`, connecting falls back to **demo mode** cleanly.
 - Commit/push only when asked (the author reviews, then says "push it"). Current
-  working branch: `Adventure-10-2026-07-09-Gemma` (local-LLM/Gemma; branched off
-  `Adventure-10-2026-07-08-Prompts`). Remote: `kernhuber/Adventure7`.
+  working branch: `Adventure-11-AgentNPC` (agent player; branched off `Adventure-10-2026-07-09-Gemma`).
+  Remote: `kernhuber/Adventure7`. ⚠️ `start.sh`/`start.bat`/`install.*` hard-code `BRANCH` (now `Adventure-11-AgentNPC`)
+  and run `git checkout` on every start (silently, errors hidden) — starting the game moves HEAD to that branch
+  (uncommitted changes come along). Update `BRANCH` there when moving to a new branch.
 - Item/place names shown to the player should use **call-names** (pretty), never the
   internal `o_`/`p_` ids.
 
@@ -375,6 +377,27 @@ never set and the zombie kept petrifying). Water values bumped (Wasserspender �
 GUI aid for the split-up endgame (`c9e3e3f`): the serializer emits `switches:{kontrollraum,
 generatorraum}` (the timer counts) and the status panel shows a "Schalter — Kontrollraum: n ·
 Generator: m" row (`-` for an inactive/0 switch), visible only while at least one switch is armed.
+
+**Agent player — an AI agent plays the game, the browser watches (2026-11-11, branch
+`Adventure-11-AgentNPC`; assignment `docs/AGENT-SPIELER-AUFTRAG.md`, plan `docs/AGENT-SPIELER-PLAN.md`, teaching doc
+`docs/AGENT-SPIELER-erklaert.md`).** Package `agent_player/`; start with the link "Agent spielen lassen" or
+`http://localhost:8000/?mode=agent` (`&player=fake|skript`, `&save=<slot>`). Design = "Weg 2": the browser session runs
+as usual, only the *inputs* come from the agent (`AgentDialogs` replaces `WebDialogs` for name/PIN/mini-game/chat;
+moves are queued as `function_call`s and run through the normal `handle_command` path, so thirst/NPC turns/game over
+behave exactly as for a human). Core = `loop.spiele_runde` (the inner agent loop, one readable function) inside
+`runner._spiele_agent` (outer round loop). **Free actions** (read/notebook/save, cost no round) vs. **moves** (cost one
+round, mandatory `warum`) are separate lists in `tools.py`; invalid calls return an error as tool result and cost no
+round. Fairness: `observation.py` builds the agent's view only from `session["state"]` + the messages the browser got
+(`CommandEngineMixin._send` copies them into `session["tap"]`) — never `GameState`/IDs/flags. Context is rebuilt fresh
+every round (situation + notebook + last 10 moves). Chats with dog/zombie run in `chat.py` (NPC side unchanged), the PIN pad in
+`pin.py` (one try per card insert), the dog mini-game is replaced by a dice roll (`config.MINISPIEL_GEWICHTE`). Saves:
+`services/save_load.py` got an optional top-level `"agent"` block with its own format tag + version, validated on load
+(`agent_player/spielstand.py`); the agent can call `spielstand_speichern(notiz)` to leave a note to its future self.
+Config in `agent_player/config.py` (model `gemini-2.5-flash`, limits); dog on/off is `utils.NODOG` only. The model
+interface is `AgentLLM.frage(...)` (`llm.py`), a fake model exists (`python -m agent_player.fake_run`). Traces:
+`agent_runs/*.jsonl` (git-ignored). Spectator panel: `web/agent_panel.js`. ⚠️ Gotchas: the google SDK/venv imports hang in
+Claude's sandbox (use system python + a `utils` stub for tests); `web/index.html` must keep the query string when
+redirecting; the read-only chat modal must end left of the panel (otherwise it blocks the controls).
 
 **Next — bring the dungeon to life (game-design phase):** step by step populate the
 deep rooms — riddles/puzzles, items, NPC/atmosphere, and passageways that open/close
