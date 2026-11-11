@@ -12,10 +12,19 @@ unter, aber das ist eine andere Geschichte.
 sie nicht mehr. Glücklicherweise bist Du an einem Ort gestrandet, an
 dem es Rettung geben könnte. 
 <p> <strong>Und nun?</strong>
-<p> (Weiter mit einem Mausklick) `;
+`;
+// Hinweis für den Welcome-Screen OHNE Startauswahl (wenn die Wahl schon per URL getroffen wurde).
+const welcHint = '<p> (Weiter mit einem Mausklick) ';
+
+// Wurde die Spielart schon per URL gewählt (?mode=agent oder ?load=...), entfällt die Auswahl im Welcome-Screen.
+function startChoiceMade() {
+    const p = new URLSearchParams(window.location.search);
+    return p.has('mode') || p.has('load');
+}
 
 window.onload =function() {
-    showWelcome(welc);
+    if (startChoiceMade()) showWelcome(welc + welcHint);
+    else showWelcome(welc, { choices: true });     // Altes Spiel laden / selbst spielen / Agent spielen lassen
 };
 let gameState = {
     round: 1,
@@ -45,9 +54,10 @@ function snapshotEnvBaseline() {
 let backend = null;
 
 class AdventureBackend {
-    constructor() {
+    // autoConnect=false: Verbindung erst nach der Wahl im Welcome-Screen ("selbst spielen" ruft connect()).
+    constructor(autoConnect = true) {
         this.ws = null;
-        this.connect();
+        if (autoConnect) this.connect();
     }
 
     connect() {
@@ -184,6 +194,10 @@ class AdventureBackend {
                 if (typeof showTextPopup === 'function') {
                     showTextPopup(data.title || 'Dokument', data.content || '');
                 }
+                break;
+            case 'agent_dogfight':
+                // Kampf Agent <-> Hund (statt Minispiel): Overlay; der Server wartet so lange.
+                if (typeof showDogfight === 'function') showDogfight(data.result);
                 break;
             case 'agent_status':
             case 'agent_event':
@@ -694,7 +708,7 @@ function hideExplosion() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    backend = new AdventureBackend();
+    backend = new AdventureBackend(startChoiceMade());
     updateUI();
     setTimeout(() => {
         const input = document.getElementById('user-input');
@@ -711,7 +725,7 @@ function _showZombieOverlayInline(visible, state) {
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = ZOMBIE_ID;
-        overlay.style.cssText = 'position:fixed;top:0;right:125px;z-index:-1;width:125px;height:180px;border-radius:14px;pointer-events:none;';
+        overlay.style.cssText = 'position:fixed;top:0;right:calc(var(--agent-offset, 0px) + 125px);z-index:-1;width:125px;height:180px;border-radius:14px;pointer-events:none;';
         const img = document.createElement('img');
         img.id = ZOMBIE_ID + '_img';
         img.src = 'zombie.png';

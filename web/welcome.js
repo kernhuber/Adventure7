@@ -35,7 +35,8 @@ function stopGameStartMusic() {
     }, 70);
 }
 
-function showWelcome(htmlContent = "Willkommen!<br><br>Klicken Sie, um fortzufahren.") {
+// options.choices = true: Startauswahl (Altes Spiel laden / selbst spielen / Agent spielen lassen) statt "Klick zum Weiter".
+function showWelcome(htmlContent = "Willkommen!<br><br>Klicken Sie, um fortzufahren.", options = {}) {
     // Overlay-Element erstellen
     const overlay = document.createElement('div');
     overlay.id = 'welcomeOverlay';
@@ -84,6 +85,10 @@ function showWelcome(htmlContent = "Willkommen!<br><br>Klicken Sie, um fortzufah
 
     // HTML-Content einsetzen
     textContainer.innerHTML = htmlContent;
+    if (options.choices) {
+        overlay.style.cursor = 'default';
+        renderStartChoices(textContainer, () => closeOverlay());
+    }
 
     // Textcontainer zum Overlay hinzufügen
     overlay.appendChild(textContainer);
@@ -119,11 +124,11 @@ function showWelcome(htmlContent = "Willkommen!<br><br>Klicken Sie, um fortzufah
     }
 
     // Event Listener hinzufügen
-    overlay.addEventListener('click', closeOverlay);
+    if (!options.choices) overlay.addEventListener('click', closeOverlay);   // mit Auswahl schließen nur die Knöpfe
 
     // Escape-Taste zum Schließen
     function handleKeyPress(event) {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && !options.choices) {
             closeOverlay();
             document.removeEventListener('keydown', handleKeyPress);
         }
@@ -132,6 +137,80 @@ function showWelcome(htmlContent = "Willkommen!<br><br>Klicken Sie, um fortzufah
 
     // Optional: Nach bestimmter Zeit automatisch schließen (auskommentiert)
     // setTimeout(closeOverlay, 5000);
+}
+
+// --- Startauswahl im Welcome-Screen ------------------------------------------------------
+// Drei Wege: (1) selbst spielen -> die WebSocket-Verbindung wird erst JETZT aufgebaut (backend.connect(), der
+// Server fragt dann den Namen), (2) Agent spielen lassen und (3) einen alten Spielstand laden: beides lädt die
+// Seite mit einem URL-Parameter neu (?mode=agent bzw. ?load=<name> / ?mode=agent&save=<name>), weil der
+// Server die Spielart beim Verbinden aus der URL liest.
+function renderStartChoices(container, onSelf) {
+    const box = document.createElement('div');
+    box.style.cssText = 'margin-top:22px;display:flex;flex-direction:column;gap:12px;align-items:stretch';
+    container.appendChild(box);
+
+    const btnStyle = 'font:bold 15pt "Courier New",monospace;padding:12px 18px;cursor:pointer;border-radius:8px;'
+        + 'border:2px solid #8a6d1f;background:#fff3c4;color:#333;';
+    const mkBtn = (text, onclick, small) => {
+        const b = document.createElement('button');
+        b.textContent = text;
+        b.style.cssText = btnStyle + (small ? 'font-size:12pt;padding:6px 12px;' : '');
+        b.onmouseenter = () => { b.style.background = '#ffe48a'; };
+        b.onmouseleave = () => { b.style.background = '#fff3c4'; };
+        b.onclick = (e) => { e.stopPropagation(); onclick(); };
+        return b;
+    };
+    const go = (query) => { window.location.href = window.location.pathname + query; };
+
+    function showMain() {
+        box.innerHTML = '';
+        box.appendChild(mkBtn('🎮 Neues Spiel – selbst spielen', () => {
+            if (typeof backend !== 'undefined' && backend) backend.connect();
+            onSelf();
+        }));
+        box.appendChild(mkBtn('🤖 Neues Spiel – Agent spielen lassen', () => go('?mode=agent')));
+        box.appendChild(mkBtn('📂 Altes Spiel laden', showSlots));
+    }
+
+    function showSlots() {
+        box.innerHTML = '<div style="font-size:12pt">Lade Spielstände …</div>';
+        fetch('slots.json', { cache: 'no-store' }).then(r => r.json()).then(slots => {
+            box.innerHTML = '';
+            const hinweis = document.createElement('div');
+            hinweis.style.cssText = 'font-size:11pt;text-align:left';
+            hinweis.textContent = '🤖 = enthält das Gedächtnis eines Agenten (Notizbuch, Notiz an sich selbst). '
+                + 'Ohne 🤖 startet der Agent ohne Gedächtnis.';
+            box.appendChild(hinweis);
+            const liste = document.createElement('div');
+            liste.style.cssText = 'max-height:320px;overflow-y:auto;text-align:left';
+            if (!slots.length) liste.textContent = 'Keine Spielstände vorhanden.';
+            slots.forEach(s => {
+                const zeile = document.createElement('div');
+                zeile.style.cssText = 'margin:6px 0;padding:6px;border-bottom:1px solid rgba(0,0,0,0.15)';
+                const name = document.createElement('div');
+                name.style.cssText = 'font-size:12pt;font-weight:bold';
+                name.textContent = (s.agent ? '🤖 ' : '') + s.name;
+                zeile.appendChild(name);
+                if (s.agent && s.notiz) {
+                    const n = document.createElement('div');
+                    n.style.cssText = 'font-size:10pt;color:#7a4b00';
+                    n.textContent = '📝 ' + s.notiz;
+                    zeile.appendChild(n);
+                }
+                zeile.appendChild(mkBtn('👤 selbst spielen', () => go('?load=' + encodeURIComponent(s.name)), true));
+                zeile.appendChild(document.createTextNode(' '));
+                zeile.appendChild(mkBtn('🤖 Agent spielen lassen', () => go('?mode=agent&save=' + encodeURIComponent(s.name)), true));
+                liste.appendChild(zeile);
+            });
+            box.appendChild(liste);
+            box.appendChild(mkBtn('← Zurück', showMain, true));
+        }).catch(() => {
+            box.innerHTML = '<div style="color:#a00">Spielstände konnten nicht geladen werden.</div>';
+            box.appendChild(mkBtn('← Zurück', showMain, true));
+        });
+    }
+
+    showMain();
 }
 
 // Export für Module (optional)

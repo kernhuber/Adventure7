@@ -67,7 +67,8 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
         # Agentenmodus: Browser verbindet sich mit ws://host:port/?mode=agent[&player=llm|fake|skript][&save=<slot>]
         # (siehe docs/AGENT-SPIELER-PLAN.md). Sonst spielt wie bisher ein Mensch.
         agent_mode, agent_spieler, agent_save = self._agent_request(websocket)
-        agent_zustand, agent_meldungen = None, []   # aus einem geladenen Spielstand
+        agent_zustand, agent_meldungen = None, []   # aus einem geladenen Spielstand (Meldungen gehen an den Browser)
+        human_load = None if agent_mode else self._load_request(websocket)   # ?load=<slot>: Mensch ab Spielstand
 
         if GAME_MODULES_AVAILABLE:
             # Versuche echtes GameState zu verwenden
@@ -88,7 +89,8 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                 dprint(dl.WEBGUI, f"✅ GameState erstellt")
 
                 # Spieler erstellen
-                pname = await wd.ask_for_playername()
+                # Beim Laden eines Spielstands entfällt die Namensabfrage (der Spielername kommt aus dem Spielstand).
+                pname = "Spieler" if human_load else await wd.ask_for_playername()
                 player = PlayerState(pname, game.places["p_start"])
                 player.session_id = session_id  # 👈 Spieler bekommt seine Session-ID
                 game.players.append(player)
@@ -125,6 +127,19 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                         game = geladen
                         player = game.players[0]
                         player.session_id = session_id
+
+                # Mensch mit ?load=<slot>: Spielstand laden und die frisch gebaute Welt ersetzen.
+                if human_load:
+                    try:
+                        from services.save_load import load_from_file
+                        from agent_player.spielstand import pfad_fuer
+                        game = load_from_file(pfad_fuer(human_load), llm=llm)
+                        player = game.players[0]
+                        player.session_id = session_id
+                        agent_meldungen.append(f"📂 Spielstand '{human_load}' geladen.")
+                    except Exception as e:
+                        dprint(dl.WEBGUI, f"Load-Fehler: {e}")
+                        agent_meldungen.append(f"❌ Laden von '{human_load}' fehlgeschlagen ({e}) – es startet ein neues Spiel.")
 
                 # Konvertiere zu serialisierbarem Format - MIT initialer Narration
                 game_state = serialize_real_game_state(game, session_id=session_id)
@@ -203,6 +218,15 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
         spieler = query.get("player", ["llm"])[0]
         save = query.get("save", [""])[0].strip() or None
         return True, (spieler if spieler in ("llm", "fake", "skript") else "llm"), save
+
+    @staticmethod
+    def _load_request(websocket) -> str | None:
+        """Menschlicher Spieler ab Spielstand: ws://host:port/?load=<slot> (aus dem Welcome-Screen)."""
+        from urllib.parse import urlparse, parse_qs
+        try:
+            return parse_qs(urlparse(websocket.request.path).query).get("load", [""])[0].strip() or None
+        except Exception:
+            return None
 
     async def unregister_client(self, websocket):
         """Client-Verbindung beenden"""

@@ -3,6 +3,7 @@
 Extracted from web_backend_server.py (Step 1.2 refactor). Serves the browser
 front-end with directory listing disabled and caching turned off for development.
 """
+import json
 import threading
 import time
 from functools import partial
@@ -17,6 +18,19 @@ class NoListingHandler(SimpleHTTPRequestHandler):
     def list_directory(self, path):
         self.send_error(403, "Verzeichnisauflistung nicht erlaubt")
         return None
+
+    def do_GET(self):
+        # Liste der Spielstände für die Startauswahl im Welcome-Screen (agent_player.spielstand.auflisten).
+        if self.path.split("?")[0] == "/slots.json":
+            from agent_player.spielstand import auflisten
+            body = json.dumps(auflisten(), ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        super().do_GET()
 
     def end_headers(self):
         # Prevent browser caching of HTML/JS files during development
