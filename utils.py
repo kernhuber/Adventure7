@@ -25,9 +25,10 @@ class dl(IntFlag):
     WEBGUI          = auto() # WebGUI debugging
     CMDLOG          = auto() # Testing of json_cmd-Function below
     ZOMBIE          = auto() # General testing of Zombie NPC
+    AGENT           = auto() # Agent player (agent_player/)
 
 GHOSTMODE = False   # No obstacles, no hidden ways, no NPCs
-NODOG = True # No dog NPC
+NODOG = False # No dog NPC
 DEBUG = True
 # Test-/Debug-Kommandos, um das Zombie-Ende auszulösen: "zombie_versteinern" und
 # "zombie_erlöst". Nur zum Testen gedacht -> hier an-/ausschaltbar. Bei False werden die
@@ -47,7 +48,7 @@ LLM_BACKEND = "gemini"
 # GEMMA_MODEL übersteuert dieses Flag; sonst gilt der Default hier.
 GEMMA_MODEL = "gemma4:latest"   # z.B. "gemma3", "gemma4", "gemma3:27b"
 # DEBUG_LEVEL = dl.LLM|dl.NPCPLAYERSTATE|dl.PLAYERSTATE|dl.GAMELOOP|dl.GAMESTATE|dl.WEBGUI|dl.CMDLOG|dl.ZOMBIE
-DEBUG_LEVEL = dl.ZOMBIE|dl.LLM_TOKENS|dl.LLM|dl.LLM_PROMPT|dl.WEBGUI|dl.CMDLOG|dl.NPCPLAYERSTATE
+DEBUG_LEVEL = dl.ZOMBIE|dl.LLM_TOKENS|dl.LLM|dl.LLM_PROMPT|dl.WEBGUI|dl.CMDLOG|dl.NPCPLAYERSTATE|dl.AGENT
 ADV_LOGGER = None
 
 class dlogger():

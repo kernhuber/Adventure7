@@ -56,3 +56,6 @@ debug/
 
 # Save games (created at runtime by services.save_load)
 /saves/
+
+# JSONL traces of agent games (agent_player/trace.py)
+/agent_runs/
