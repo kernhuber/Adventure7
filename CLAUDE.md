@@ -24,10 +24,13 @@ wants to understand how it works.
 the `webserver/` package. Do not move the shim — `start.sh`/`start.bat` and
 PyInstaller depend on this path.
 
-Note: `start.sh` only runs `pip install -r requirements.txt` when `venv/` is
-absent. The project uses the new unified SDK **`google-genai`** (`from google import
-genai`); if a stale venv has the old `google-generativeai` instead, install
-`google-genai` manually.
+Note: on every start `start.sh`/`start.bat` (a) fetch + `git checkout` the hard-coded `BRANCH` and
+`git pull --ff-only` (errors are hidden), (b) create `venv/` only if it is absent, but (c) run
+`pip install -q -r requirements.txt` **every time** (idempotent; this also installs newly added dependencies
+such as `ollama` into an existing venv), then source `.apikey`, print an Ollama hint if it is missing, and start
+the server. The project uses the new unified SDK **`google-genai`** (`from google import genai`, listed in
+`requirements.txt`); a stale venv with only the old `google-generativeai` gets `google-genai` on the next start.
+Agent mode: open `http://localhost:8000/?mode=agent` (see *Agent player* below).
 
 ## Architecture
 
@@ -49,7 +52,7 @@ genai`); if a stale venv has the old `google-generativeai` instead, install
 `webserver/__init__.py` imports the server **lazily** so leaf modules can be
 imported/tested without pulling in the google/LLM stack.
 
-**Game engine (root):** `game_state.py` (~481 lines — a coordinator after the Step 2
+**Game engine (root):** `game_state.py` (~360 lines — a coordinator after the Step 2
 split) wires `WorldModel`/`GameFlags`/`ContextBuilder` (`services/world.py`),
 `WorldLoader` (`services/world_loader.py`, builds the world from `data/world.json`),
 and inherits `GameVerbsMixin` (`game_verbs.py`, the `verb_*` command engine). Plus
@@ -91,7 +94,9 @@ messages (`game_state`, `command_result`, `npc_actions`, `start_minigame`,
 Umgebung / Letzte Aktion | Status). The dog/zombie/power are corner **icon overlays**
 (`dog_overlay.js`, `zombie_overlay.js`, `power_main.js`); `zombie_chat.js` is the chat
 modal (red for the zombie, green for the dog); `bite_overlay.js`, `minigames.js`,
-`explosion_message.js`, `pinpad.js`, `game_over.js` handle their events. "Letzte
+`explosion_message.js`, `pinpad.js`, `game_over.js` handle their events. The welcome screen (`welcome.js`) lets the
+player choose: new game yourself / new game played by the agent / load a save. Agent mode adds `agent_panel.js`
+(spectator panel), `agent_overlay.js` (agent icon) and `dogfight_overlay.js` (see *Agent player* below). "Letzte
 Aktion" is a transcript: the user input + each atomic command (`action_label`) and
 the engine response. Dialogs go to the chat modal; dog/zombie status lines are
 debug-only.
@@ -126,6 +131,12 @@ debug-only.
   internal `o_`/`p_` ids.
 
 ## Status & next steps
+
+> **Reading note:** the sections below are a **chronological log** — each paragraph describes the state at its
+> date, and older ones (e.g. "current work is gameplay & UI on branch `Adventure-10-2026-06-26-Gameplay`") are
+> historical. Where a paragraph conflicts with the code, **trust the code**; the newest entries are the
+> *Agent player* paragraphs near the end. `docs/BACKLOG.md` is likewise a mix of done and open items (re-checked
+> against the code on 2026-11-11).
 
 Step 1 (web-layer split), Step 2 (`GameState` decomposition), and **Step 3**
 (game rules → engine via `game_turn.py` `GameTurnMixin`; `PlayerDialogs` port; web-session
@@ -412,8 +423,8 @@ via flags (model them on `korridor_offen`/`o_stahltuer`: a `*_offen` flag in
 object-`apply`/reveal that toggles it). Also outstanding: balancing the trust/energy
 thresholds; the zombie endgame's GUI animation + Case 2 (zombie→player), see Backlog. Backlog:
 `docs/BACKLOG.md` (optional CLI front-end — now feasible since the engine is GUI-free;
-typed `GameSession`; retire the flag-mirror shim; remove dead verbs/`emit_*`; fix the
-long-broken `create_world.py`).
+typed `GameSession`; retire the flag-mirror shim; remove the dead `verb_lookaround_old`/`emit_*`; verify
+`create_world.py`, which compiles again).
 
 Refactor history: `docs/REFACTORING-2026-06-24-webserver.md` (Step 1),
 `docs/REFACTORING-2026-06-25-gamestate.md` (Step 2),

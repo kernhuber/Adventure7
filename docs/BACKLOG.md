@@ -1,8 +1,8 @@
 # Backlog — future work (not yet scheduled)
 
-Captured ideas for after the current refactoring series (Steps 1–3 done; see the
-`docs/REFACTORING-*.md` files). The current active phase is **gameplay & UI**
-(`docs/GAMEPLAY-2026-06-27.md`).
+Captured ideas, partly done, partly open. **Re-checked against the code on 2026-11-11** — items are tagged
+✅ DONE / OPEN below; older notes keep their original wording as history. Steps 1–3 of the refactoring series are
+done (`docs/REFACTORING-*.md`); the agent player is implemented (`docs/AGENT-SPIELER-erklaert.md`).
 
 ---
 
@@ -42,8 +42,9 @@ author wants to understand how it works (states, the reasoning prompt, transitio
 redemption). **Explainer written: `docs/ZOMBIE-NPC-erklaert.md`** (walkthrough along
 the three guiding questions, with patterns and discussion points).
 
-Possible follow-ups raised there: remove the dead DORMANT/STALKING states; make the
-cooperation transition less binary; keep the zombie LLM-driven during COOPERATING too.
+Possible follow-ups raised there — ✅ all done: the dead DORMANT/STALKING states are gone, the cooperation is a
+graded `trust` value, and the zombie is LLM-driven in COOPERATIVE/DOUBTING/CONVINCED too (see
+`docs/ZOMBIE-NPC-erklaert.md`).
 
 **Design intention (the teacher's question):** can an LLM make intelligent in-game
 decisions, drive a character that learns / decides for itself / realises the game can
@@ -59,11 +60,9 @@ The `gib <obj> an <NPC>` verb + reactions are implemented via a `gets_given(gs, 
 hook on each NPC (dog: food → distracted a few turns, else drop silently; zombie: thanks +
 `trust += GIFT_TRUST_BONUS`, and `o_manual` → CONVINCED). Still open:
 
-- **Zombie drops ALL items on redemption** (not just the EC card). Needed so the player can
-  give the zombie something as a trust-building gesture (e.g. the envelope `o_umschlag`) and
-  **retrieve it after redemption**. TODO is marked in `NPCZombieState._do_redemption`; the
-  broader "give-then-reclaim" loop isn't designed yet. Without this, gifts to the zombie are
-  effectively lost.
+- ✅ **DONE (3c2828e) — Zombie drops ALL items on redemption** (not just the EC card), so gifts
+  can be reclaimed. Only the redemption **GUI animation** is still an open TODO in
+  `NPCZombieState._do_redemption`.
 - **Case 2 — zombie gives the player something** (no engine path yet; `gib` is player→NPC
   only). Future uses: the zombie placates the player with an item (not the EC card), or hands
   over the **EC card on the correct success path** instead of dropping it on the floor.
@@ -135,7 +134,8 @@ the `PlayerDialogs` port, and the web-session registry lives in the web layer), 
 **CLI front-end could be offered again** without touching the engine: implement a
 console `PlayerDialogs` (ask_for_pin/do_minigame/do_chat/do_game_over/
 ask_for_playername via stdin/stdout) and a simple read-eval loop calling the engine's
-turn methods. **Not the next step** — just enabled by the current architecture.
+turn methods. **Not the next step** — just enabled by the current architecture. (The agent player already
+proves the port: `agent_player/dialogs.py` `AgentDialogs` is a second `PlayerDialogs` implementation.)
 
 ---
 
@@ -145,9 +145,23 @@ turn methods. **Not the next step** — just enabled by the current architecture
   `SessionManager` is already dict-compatible to make this clean).
 - Retire the flag-mirror shim in `GameState` (`__getattr__`/`__setattr__`/
   `FLAG_FIELDS`) so code uses `get_flags()`/`_flags` directly — wide (13-file) sweep.
-- Remove dead verbs (`verb_lookaround_old`, `verb_lookaround_llm`) and the `emit_*`
-  dev codegen helpers in `game_state` / `game_verbs`.
-- Fix `create_world.py` — the world-definition dev tool has a pre-existing syntax
-  error (unclosed `{` near line 416) and does not compile. Not used at runtime (the
-  game loads the committed `data/world.json`), but it should be repaired if world
-  regeneration is needed.
+- OPEN (partly done): remove the dead verbs and the `emit_*` dev codegen helpers. `verb_lookaround_llm` is gone;
+  `verb_lookaround_old` (`game_verbs.py`) and `emit_waydefs`/`emit_objdefs` (`game_state.py`) still exist.
+- `create_world.py` — ✅ it **compiles again** (`py_compile` ok, 2026-11-11; it had an unclosed `{` near line 416).
+  Whether it still regenerates a correct `world.json` is unverified. Not used at runtime (the game loads the
+  committed `data/world.json`).
+
+
+---
+
+## Agent player — open ideas (2026-11-11)
+
+The agent player itself is done (`docs/AGENT-SPIELER-erklaert.md`). Possible follow-ups, none scheduled:
+
+- A second model provider (e.g. Claude via the Anthropic API) as another `AgentLLM` implementation in
+  `agent_player/llm.py` — for comparing models.
+- A small script that prints a JSONL trace (`agent_runs/*.jsonl`) as readable text for course material
+  (planned as `spur_anzeigen.py`, not built).
+- Consolidating `Experience.md` (it only grows; the prompt shows the newest 6000 characters).
+- Ambiguous call-names (several objects called "Schalter") are resolved via the first call-name the agent sees.
+- Spectator broadcast (several browsers watching one session) — the design chose "one browser = game + spectator".

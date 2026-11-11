@@ -1,7 +1,9 @@
 # Plan: Agent-Spieler mit Zuschauermodus
 
 Stand: 2026-11-11 · Branch: `Adventure-11-AgentNPC` · Grundlage: `docs/AGENT-SPIELER-AUFTRAG.md`
-Status: **Entwurf – wartet auf Freigabe („go“) durch Chris. Nichts davon ist implementiert.**
+Status: **Umgesetzt** (Meilensteine 1–6 und Nachträge, Stand 2026-11-11). Dies ist das ursprüngliche Planungsdokument;
+wo Code und Plan abweichen, **gilt der Code** — die Abweichungen stehen am Ende („Abweichungen vom Plan“), die
+Beschreibung des Ist-Zustands in `docs/AGENT-SPIELER-erklaert.md`.
 
 ## 0. Entscheidungen aus Phase 0
 
@@ -41,7 +43,7 @@ der Server nicht blockiert.
 
 | # | Datei / Stelle | Änderung | Warum |
 |---|---|---|---|
-| E1 | `webserver/command_engine.py` – `handle_command` / `execute_single_command` | Ergebnis **zurückgeben** bzw. in `session["last_results"]` sammeln (Ergebnistext je ausgeführtem Kommando, inkl. Folge-Kommandos wie `check_pinpad` aus der Rekursion in Schritt 7). Verhalten für Menschen unverändert. | Der Agent braucht das Ergebnis als Werkzeugergebnis; bisher geht es nur per WebSocket raus. |
+| ~~E1~~ *(entfallen: der Mitschnitt aus E2 liefert alle Teilergebnisse)* | `webserver/command_engine.py` – `handle_command` / `execute_single_command` | Ergebnis **zurückgeben** bzw. in `session["last_results"]` sammeln (Ergebnistext je ausgeführtem Kommando, inkl. Folge-Kommandos wie `check_pinpad` aus der Rekursion in Schritt 7). Verhalten für Menschen unverändert. | Der Agent braucht das Ergebnis als Werkzeugergebnis; bisher geht es nur per WebSocket raus. |
 | E2 | `command_engine.py` – die Sendestellen für `command_result` und `npc_actions` | kleiner Helfer `_send(session, ws, payload)`: sendet wie bisher und hängt **zusätzlich** eine Kopie an `session["tap"]`, falls gesetzt (`None` bei Menschen). | Der Agent soll genau die NPC-Meldungen sehen, die der Browser bekommt (Fairness, 4.1) – ohne zweite Quelle. |
 | E3 | `webserver/server.py` – `register_client` | liest `websocket.request.path` (websockets 15) auf `mode=agent`/`save=`; bei Agentenmodus: Name aus `config` statt `ask_for_playername`, `AgentDialogs` statt `WebDialogs`, optional Spielstand laden, Hund gemäß `config`; neue Nachrichtentypen in `handle_client` (`agent_control`, siehe 3). | Einstiegspunkt. Menschlicher Pfad bleibt Zweig `else`. |
 | E4 | `web/websockets.js` + `web/Adventure9.html` | Button „Agent spielen lassen“ (lädt die Seite mit `?mode=agent`), WebSocket-URL mit Query, Eingabezeile im Agentenmodus deaktiviert, neue `case`s für `agent_*` → `agent_panel.js`. | Frontend-Anbindung. |
@@ -295,3 +297,28 @@ in meiner Sandbox nicht (Google-SDK-Import hängt dort) – nur `py_compile` und
 - Laden: Panel-Knopf „📂 Laden“ (🤖 = Spielstand mit Agentengedächtnis) oder URL `?mode=agent&save=<name>`.
 - Gespeichert wird nur zwischen Zügen (nicht mitten in einem laufenden Zug der Engine).
 - Panel: Beamer-Zoom (A−/A+), Tooltips in der Legende.
+
+
+## Abweichungen vom Plan (Stand der Umsetzung, 2026-11-11)
+
+Geprüft gegen den Code; der Plan oben ist in diesen Punkten überholt:
+
+- **E1 entfällt.** `handle_command` gibt nichts zurück; der Agent liest alles aus `session["tap"]` (E2). E2 deckt zusätzlich
+  `manual_popup` und das Minispiel-Ergebnis ab (`webserver/npc_runner.py` sendet über `_send`).
+- **Start/URL.** Zusätzlich zu `?mode=agent`: `&player=llm|fake|skript`, `&save=<slot>`, `&tipp=<text>`; für Menschen
+  `?load=<slot>` (kein Namensdialog). `web/index.html` reicht die Query durch. Der Welcome-Screen bietet die Auswahl
+  (selbst spielen / Agent / laden); die Spielstandliste kommt über `/slots.json` (`webserver/http_server.py`).
+- **Paket.** Zusätzlich zur Liste in Abschnitt 4: `chat.py`, `pin.py`, `spielstand.py`, `experience.py`, `control.py`, `dialogs.py`,
+  `runner.py`, `skript_spieler.py`, `fake_llm.py`, `fake_run.py`. Nicht gebaut: das optionale Skript `spur_anzeigen.py`.
+- **Werkzeuge.** Neu gegenüber der Liste: freie Aktion `spielstand_speichern(notiz)`, Ergebnis-Werkzeug `erfahrung_notieren`
+  (nur beim Resümee), PIN-Werkzeuge (`notizbuch_lesen`, `pin_eingeben`). Nach einem Gespräch gibt es keinen eigenen
+  Notizbuch-Aufruf; die `zusammenfassung` von `gespraech_beenden` wird automatisch ins Notizbuch übernommen.
+- **PIN.** Ein Versuch pro Karteneinsatz (wie beim Menschen), nicht drei.
+- **Minispiel.** Gewürfelt mit Gewichten (`config.MINISPIEL_GEWICHTE`); der Browser zeigt den Kampf als Overlay
+  (`agent_dogfight`, `web/dogfight_overlay.js`), der Server wartet `config.DOGFIGHT_DAUER_S`.
+- **Hund.** Allein `utils.NODOG` entscheidet (keine zweite Einstellung im Agenten-Paket).
+- **Nachrichten.** Statt `agentmessage`: `agent_chat_line` und `agent_chat_end`; `zombie_chat` trägt `readonly: true`.
+  Weitere Typen: `agent_slots`, `agent_dogfight`. `agent_event.kind`: `free`, `move`, `error`, `chat`, `pin`, `text`, `exp`.
+  `agent_control.action`: `start`, `pause`, `resume`, `step`, `round`, `stop`, `tempo`, `hint`, `save`, `slots`.
+- **Zusätzlich gebaut (nicht im Plan):** Zuschauer-Hinweisfeld, Spielstände mit Agentenzustand (siehe Nachtrag Meilenstein 5),
+  `Experience.md` (Lernen von Spiel zu Spiel, git-ignoriert), Agent-Icon und Kampf-Overlay, Beamer-Zoom.
