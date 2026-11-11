@@ -1,6 +1,7 @@
 // zombie_chat.js - Zombie Dialog System für Adventure Game
 
-function zombie_chat(ws, who, whom, initialMessage = null) {
+// readonly = true: Agentenmodus. Das Modal zeigt das Gespräch nur an (der Agent tippt serverseitig).
+function zombie_chat(ws, who, whom, initialMessage = null, readonly = false) {
     console.log('🧟 Zombie Chat wird gestartet...');
 
     // Chat-Array für die Konversation
@@ -14,6 +15,12 @@ function zombie_chat(ws, who, whom, initialMessage = null) {
     // Erstelle das Chat-Overlay
     const overlay = createChatOverlay(who, whom);
     document.body.appendChild(overlay);
+    if (readonly) {
+        // Zuschauermodus: das Modal endet links vom Agenten-Panel. Sonst würde es das Panel (Schritt/Start/Pause)
+        // verdecken, und man müsste das Gespräch wegklicken, um den Agenten weiterlaufen zu lassen.
+        const panel = document.getElementById('agent-panel');
+        if (panel) overlay.style.right = panel.getBoundingClientRect().width + 'px';
+    }
 
     // Referenzen zu wichtigen Elementen
     const chatMessages = overlay.querySelector('#zombie-chat-messages');
@@ -26,8 +33,13 @@ function zombie_chat(ws, who, whom, initialMessage = null) {
         addMessageToChat('zombie', initialMessage, chatMessages);
     }
 
-    // Fokus auf Eingabefeld setzen
-    inputField.focus();
+    // Fokus auf Eingabefeld setzen (im Zuschauermodus: Eingabe ausblenden)
+    if (readonly) {
+        const box = overlay.querySelector('#zombie-chat-input-container');
+        if (box) box.style.display = 'none';
+    } else {
+        inputField.focus();
+    }
 
     // Event Listener für Send-Button
     sendButton.addEventListener('click', sendMessage);
@@ -39,13 +51,22 @@ function zombie_chat(ws, who, whom, initialMessage = null) {
     function handleWebSocketMessage(event) {
         try {
             const data = JSON.parse(event.data);
+            if (readonly && data.type === 'agent_chat_line') {
+                // Zeile des Agenten: erscheint, als hätte ein Mensch sie getippt.
+                addMessageToChat('player', data.text, chatMessages);
+                return;
+            }
+            if (readonly && data.type === 'agent_chat_end') {
+                setTimeout(closeChat, 1500);       // kurz stehen lassen, damit man die letzte Zeile lesen kann
+                return;
+            }
             if (data.zombiemessage !== undefined) {
                 // Zombie-Antwort erhalten
                 chatArray.push({ zombiemessage: data.zombiemessage });
                 addMessageToChat('zombie', data.zombiemessage, chatMessages);
 
                 // Prüfe ob Zombie das Gespräch beendet
-                if (data.zombiemessage.toLowerCase().trim() === 'quit') {
+                if (!readonly && data.zombiemessage.toLowerCase().trim() === 'quit') {
                     closeChat();
                 }
             }
@@ -89,7 +110,7 @@ function zombie_chat(ws, who, whom, initialMessage = null) {
         console.log('🧟 Zombie Chat wird beendet');
 
         // Sende closeChat-Nachricht an Server
-        if (ws && ws.readyState === WebSocket.OPEN) {
+        if (!readonly && ws && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ closeChat: true, zombiechat: chatArray }));
         }
 

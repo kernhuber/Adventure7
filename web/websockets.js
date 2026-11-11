@@ -55,7 +55,8 @@ class AdventureBackend {
         if (status) status.textContent = 'Verbinde...';
 
         try {
-            this.ws = new WebSocket('ws://localhost:8765');
+            // Query (?mode=agent&save=...) durchreichen: der Server entscheidet daran, ob der Agent spielt.
+            this.ws = new WebSocket('ws://localhost:8765/' + window.location.search);
 
             this.ws.onopen = () => {
                 console.log('✅ Verbunden');
@@ -159,7 +160,7 @@ class AdventureBackend {
                 const firstmsg = data.firstmsg;
                 const who = data.who;
                 const whom = data.whom;
-                zombie_chat(this.ws,who, whom,firstmsg);
+                zombie_chat(this.ws,who, whom,firstmsg, data.readonly === true);
                 break;
             case 'playername':
                 askPlayerName().then(playerName => {
@@ -183,6 +184,14 @@ class AdventureBackend {
                 if (typeof showTextPopup === 'function') {
                     showTextPopup(data.title || 'Dokument', data.content || '');
                 }
+                break;
+            case 'agent_status':
+            case 'agent_event':
+            case 'agent_notebook':
+            case 'agent_slots':
+            case 'agent_summary':
+                // Zuschauer-Panel (agent_panel.js) -- nur im Agentenmodus vorhanden.
+                if (typeof agentPanel !== 'undefined') agentPanel.handle(data);
                 break;
             case 'slot_list':
                 // Antwort auf den "Laden"-Button: Spielstand-Liste -> Auswahl-Modal.

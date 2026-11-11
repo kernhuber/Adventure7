@@ -227,6 +227,7 @@
 <body>
     <h1>🏜️ Wüsten-Adventure <span style="color: #cd853f;">🎮 mit Mini-Games</span></h1>
     <div id="connection-status" class="status">Verbinde...</div>
+    <div id="mode-switch" style="text-align:center;margin:6px 0"></div>
 
     <div class="grid">
         <!-- Zeile 1: Aktuelle Szene | Umgebung (gleich groß) -->
@@ -264,7 +265,7 @@
 
 
 
-    <div style="margin-top: 20px;">
+    <div id="input-bar" style="margin-top: 20px;">
         <input type="text" id="user-input" placeholder="Was möchtest du tun?" onkeypress="if(event.key==='Enter') sendCommand()" disabled>
         <button id="send-button" onclick="sendCommand()" disabled>Senden</button>
         <button id="save-button" onclick="showSaveDialog()" title="Spiel speichern" style="padding:10px 14px;font-size:22px;background:#5a4633;color:#f5deb3;border:1px solid #cd853f;cursor:pointer" disabled>💾</button>
@@ -298,6 +299,7 @@
     <script src="zombie_chat.js?v=1.0.16"></script>
     <script src="text_popup.js?v=1.0.16"></script>
     <script src="save_load.js?v=1.0.16"></script>
+    <script src="agent_panel.js?v=1.0.0"></script>
     <script src="spielleitung_modal.js?v=1.0.16"></script>
     <script src="websockets.js?v=1.0.16"></script>
 </body>

@@ -64,6 +64,11 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
 
         dprint(dl.WEBGUI, f"🔌 Neuer Client verbunden: {session_id}")
 
+        # Agentenmodus: Browser verbindet sich mit ws://host:port/?mode=agent[&player=llm|fake|skript][&save=<slot>]
+        # (siehe docs/AGENT-SPIELER-PLAN.md). Sonst spielt wie bisher ein Mensch.
+        agent_mode, agent_spieler, agent_save = self._agent_request(websocket)
+        agent_zustand, agent_meldungen = None, []   # aus einem geladenen Spielstand
+
         if GAME_MODULES_AVAILABLE:
             # Versuche echtes GameState zu verwenden
             try:
@@ -74,7 +79,12 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
 
                 # WebDialogs (PlayerDialogs port) is owned by the web layer now.
                 from web_dialogs import WebDialogs
-                wd = WebDialogs(websocket, session_id)
+                if agent_mode:
+                    # LERNPUNKT: nur das Dialog-Objekt wird ausgetauscht, die Engine bleibt gleich.
+                    from agent_player.dialogs import AgentDialogs
+                    wd = AgentDialogs(websocket, session_id)
+                else:
+                    wd = WebDialogs(websocket, session_id)
                 dprint(dl.WEBGUI, f"✅ GameState erstellt")
 
                 # Spieler erstellen
@@ -107,6 +117,15 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                 else:
                     dprint(dl.WEBGUI,"Kein Hund hinzugefügt - GHOSTMODE")
 
+                # Agentenmodus mit &save=<slot>: Spielstand samt Agentenzustand laden (Format wird geprüft).
+                if agent_mode and agent_save:
+                    from agent_player import spielstand
+                    geladen, agent_zustand, agent_meldungen = spielstand.laden(agent_save, llm)
+                    if geladen is not None:
+                        game = geladen
+                        player = game.players[0]
+                        player.session_id = session_id
+
                 # Konvertiere zu serialisierbarem Format - MIT initialer Narration
                 game_state = serialize_real_game_state(game, session_id=session_id)
 
@@ -124,6 +143,11 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                     "web_dialogs": wd,
                     "scene_cache": game_state.get("scene_description", ""),
                 }
+                if agent_mode:
+                    # Der Runner spielt die Züge; session["tap"] (None = aus) schneidet mit, was der Browser bekommt.
+                    from agent_player.runner import AgentRunner
+                    session["tap"] = None
+                    session["agent"] = AgentRunner(self, websocket, session, session_id, agent_spieler, agent_zustand)
                 self.game_sessions[session_id] = session
                 game.cmd_q = session["cmd_q"]
 
@@ -160,7 +184,25 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
 
         # Sende initialen Zustand
         await self.send_game_state(websocket, self.game_sessions[session_id]["state"])
+        for meldung in agent_meldungen:                # z. B. "Spielstand geladen" oder eine Formatwarnung
+            await websocket.send(json.dumps({"type": "info", "message": meldung}))
         dprint(dl.WEBGUI, f"✅ Client {session_id} initialisiert ({self.game_sessions[session_id]['type']} Modus)")
+
+    @staticmethod
+    def _agent_request(websocket) -> tuple[bool, str, str | None]:
+        """Liest aus der WebSocket-URL, ob der Agent spielen soll (?mode=agent), wer spielt
+        (&player=llm|fake|skript, Standard llm) und ob ab einem Spielstand gestartet wird (&save=<slot>).
+        Ohne Query oder mit anderem Modus spielt ein Mensch."""
+        from urllib.parse import urlparse, parse_qs
+        try:
+            query = parse_qs(urlparse(websocket.request.path).query)
+        except Exception:
+            return False, "llm", None
+        if query.get("mode", [""])[0] != "agent":
+            return False, "llm", None
+        spieler = query.get("player", ["llm"])[0]
+        save = query.get("save", [""])[0].strip() or None
+        return True, (spieler if spieler in ("llm", "fake", "skript") else "llm"), save
 
     async def unregister_client(self, websocket):
         """Client-Verbindung beenden"""
@@ -168,6 +210,9 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
         session_id = str(id(websocket))
 
         if session_id in self.game_sessions:
+            runner = self.game_sessions[session_id].get("agent")
+            if runner is not None:
+                runner.beenden()
             del self.game_sessions[session_id]
 
         dprint(dl.WEBGUI, f"👋 Client {session_id} getrennt")
@@ -200,6 +245,11 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                         await self.handle_command(websocket, data)
                     #elif message_type == 'minigame_result':  # NEUE
                     #    await self.handle_minigame_result(websocket, data)
+                    elif message_type == 'agent_control':
+                        # Steuerung des Agenten (Start/Pause/Einzelschritt/...) aus dem Zuschauer-Panel.
+                        runner = self.game_sessions[str(id(websocket))].get("agent")
+                        if runner is not None:
+                            await runner.behandle_kommando(data)
                     elif message_type == 'list_slots':
                         # GUI "Laden"-Button fragt die vorhandenen Spielstände ab.
                         from webserver.command_engine import _list_slots
