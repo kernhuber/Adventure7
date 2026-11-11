@@ -59,3 +59,6 @@ debug/
 
 # JSONL traces of agent games (agent_player/trace.py)
 /agent_runs/
+
+# Agent memory across games (agent_player/experience.py) - local, not versioned
+/Experience.md

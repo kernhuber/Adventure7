@@ -17,7 +17,7 @@ import time
 import traceback
 
 from utils import dprint, dl
-from agent_player import config, spielstand
+from agent_player import config, experience, spielstand
 from agent_player.context import AgentKontext, TokenLimitErreicht
 from agent_player.control import AgentSteuerung, AgentGestoppt
 from agent_player.loop import spiele_runde
@@ -27,7 +27,8 @@ from agent_player.trace import Spur
 
 
 class AgentRunner:
-    def __init__(self, server, websocket, session: dict, session_id: str, spieler: str = "llm", agent_zustand: dict | None = None):
+    def __init__(self, server, websocket, session: dict, session_id: str, spieler: str = "llm", agent_zustand: dict | None = None,
+                 tipp: str = ""):
         self.server = server          # WebAdventureServer (hat handle_command)
         self.ws = websocket
         self.session = session
@@ -36,7 +37,7 @@ class AgentRunner:
         self.ctx: AgentKontext | None = None
         self.agent_zustand = agent_zustand   # aus einem geladenen Spielstand (bereits geprüft), sonst None
         self.in_zug = False                  # True, solange ein Zug in der Engine läuft (dann nicht speichern)
-        self._hinweis_text = ""        # Hinweis, der kam, bevor der Agent gestartet wurde
+        self._hinweis_text = tipp      # Hinweis (z. B. &tipp= aus der URL), der vor dem Start des Agenten kam
         self.spur: Spur | None = None
         self.steuerung = AgentSteuerung(config.START_TEMPO_MS)
         self.steuerung.bei_warten = self._sende_status
@@ -132,6 +133,15 @@ class AgentRunner:
             self.ctx = ctx
             self.steuerung.bei_warten = ctx.sende_status      # Panel zeigt, wenn der Agent auf eine Freigabe wartet
             ctx.speichere = self._speichere_fuer_agent
+            if config.EXPERIENCE_AKTIV and self.spieler == "llm":      # Wissen aus früheren Spielen
+                ctx.erfahrungen = experience.lesen()
+                if ctx.erfahrungen:
+                    await self._melde({"type": "agent_event", "kind": "exp", "tool": "Experience.md", "args": {},
+                                       "result": f"Erfahrungen aus früheren Spielen geladen ({len(ctx.erfahrungen)} Zeichen).",
+                                       "round": 0, "step": 0})
+            if self._hinweis_text:
+                await self._melde({"type": "agent_event", "kind": "text", "tool": "Zuschauer-Hinweis", "args": {},
+                                   "result": f"{self._hinweis_text}\n(gilt ab der ersten Runde)", "round": 0, "step": 0})
             if self.agent_zustand:                            # aus einem Spielstand: Gedächtnis zurückspielen
                 spielstand.importieren(ctx, self.agent_zustand)
                 await self._melde({"type": "agent_notebook", "text": ctx.notizbuch.lesen()})
@@ -158,6 +168,14 @@ class AgentRunner:
             ende = f"abgebrochen (Fehler: {e})"
             await self._melde({"type": "agent_event", "kind": "error", "tool": "-", "args": {},
                                "result": f"Interner Fehler im Agenten: {e}", "round": self.runde, "step": self.schritt})
+        # Nach einem echten Spielende (oder Rundenlimit): Resümee in Experience.md, wie ein Mensch sich etwas merkt.
+        if (self.ctx is not None and config.EXPERIENCE_AKTIV and self.spieler == "llm"
+                and ende in ("gewonnen", "verloren", "abgebrochen (Rundenlimit)")):
+            try:
+                await experience.resuemee_ziehen(self.ctx, ende)
+            except Exception as e:
+                dprint(dl.AGENT, f"❌ Resümee fehlgeschlagen: {e}")
+                dprint(dl.AGENT, traceback.format_exc())
         await self._beende(ende)
 
     def _erzeuge_llm(self):

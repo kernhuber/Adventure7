@@ -44,6 +44,8 @@ So funktioniert das Spiel für dich:
 - WICHTIG: In jeder Runde siehst du nur die aktuelle Lage, dein Notizbuch und eine kurze Liste deiner letzten Züge.
   Alles andere vergisst du. Schreibe deshalb Wichtiges (Zahlen, Codes, Hinweise, Ideen, was du schon probiert hast,
   wo etwas liegt) ins Notizbuch.
+- Bevor du etwas Riskantes oder Unumkehrbares tust (z. B. etwas zünden, zerstören oder hergeben), speichere mit
+  'spielstand_speichern' und schreibe dir in der 'notiz' eine Warnung für dein späteres Ich.
 - Handle selbstständig; du kannst niemanden um Hilfe bitten. Schreibe kurz, was du denkst, und rufe dann ein Werkzeug auf.
 """
 
@@ -72,6 +74,7 @@ class AgentKontext:
     melde: Callable[[dict], Awaitable[None]]                 # Nachricht an Browser + Spur
     notizbuch: Notizbuch = field(default_factory=Notizbuch)
     verlauf: list[RundenEintrag] = field(default_factory=list)
+    erfahrungen: str = ""              # Inhalt von Experience.md (aus früheren Spielen), steht im System-Prompt
     erinnerung: str = ""                # Notiz aus dem geladenen Spielstand (einmal prominent im Prompt)
     speichere: Callable[[str], str] | None = None   # speichert Spielstand + Agentenzustand; Rückgabe: Meldung
     hinweis: str = ""                   # Zuschauer-Hinweis (Testhilfe), wird einmal in den Prompt übernommen
@@ -85,6 +88,14 @@ class AgentKontext:
     modellaufrufe: int = 0
     orte: set = field(default_factory=set)
 
+    def system_prompt(self) -> str:
+        """System-Prompt, ggf. mit den Erfahrungen aus früheren Spielen (Experience.md)."""
+        if not self.erfahrungen.strip():
+            return SYSTEM_PROMPT
+        return (SYSTEM_PROMPT + "\n=== ERFAHRUNGEN AUS FRÜHEREN SPIELEN (Experience.md) ===\n"
+                "Das ist dein Wissen aus früheren Partien. Nutze es, aber prüfe, ob es zur aktuellen Lage passt.\n\n"
+                + self.erfahrungen + "\n")
+
     def neue_runde(self) -> None:
         ansicht = self.hole_ansicht()
         self.runde = ansicht.get("round", self.runde)
@@ -95,7 +106,7 @@ class AgentKontext:
     async def frage_modell(self, nachrichten: list[Nachricht], werkzeuge: list[Werkzeug]) -> Antwort:
         """Fragt das Modell, verbucht Tokens und zeigt den Freitext des Modells (nur echten Text!)."""
         dprint(dl.AGENT, f"Modell wird gefragt ({len(nachrichten)} Nachrichten, {len(werkzeuge)} Werkzeuge) ...")
-        antwort = await self.llm.frage(SYSTEM_PROMPT, nachrichten, werkzeuge)
+        antwort = await self.llm.frage(self.system_prompt(), nachrichten, werkzeuge)
         dprint(dl.AGENT, f"Modell antwortet: {len(antwort.aufrufe)} Aufruf(e) {[a.name for a in antwort.aufrufe]}, "
                          f"{antwort.tokens_ein + antwort.tokens_aus} Tokens, Text: {antwort.text[:80]!r}")
         verbrauch = antwort.tokens_ein + antwort.tokens_aus

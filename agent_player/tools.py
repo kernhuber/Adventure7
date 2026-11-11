@@ -86,6 +86,14 @@ CHAT_WERKZEUGE: list[Werkzeug] = [
 ]
 
 # =====================================================================================
+# ERFAHRUNGS-WERKZEUG (nur beim Resümee nach dem Spiel, siehe experience.py)
+# =====================================================================================
+ERFAHRUNG_WERKZEUGE: list[Werkzeug] = [
+    Werkzeug("erfahrung_notieren", "Hält eine Erkenntnis für künftige Spiele fest (ein kurzer, konkreter Satz).",
+             (Parameter("erkenntnis", "Was du dir fürs nächste Spiel merkst."),)),
+]
+
+# =====================================================================================
 # PIN-WERKZEUGE (nur, solange das PIN-Pad des Geldautomaten offen ist)
 # =====================================================================================
 PIN_WERKZEUGE: list[Werkzeug] = [

@@ -25,5 +25,12 @@ MAX_TOKENS_GESAMT = None          # None = kein Tokenlimit
 VERLAUF_RUNDEN = 10               # so viele frühere Runden stehen im Prompt
 MAX_CHAT_WORTWECHSEL = 10         # Gesprächslimit (Meilenstein 3)
 
+# --- Experience.md: Gedächtnis über Spiele hinweg (experience.py) ---------------------------------
+EXPERIENCE_AKTIV = True                 # False = Agent schreibt/liest keine Erfahrungen (Experiment: "ohne Lernen")
+EXPERIENCE_DATEI = "Experience.md"      # im Projektordner; man darf sie von Hand bearbeiten
+EXPERIENCE_MAX_ZEICHEN = 6000           # so viel (die neuesten Einträge) steht im Prompt
+EXPERIENCE_MAX_ERKENNTNISSE = 8         # so viele neue Erkenntnisse pro Spiel
+EXPERIENCE_VERLAUF_RUNDEN = 25          # so viele letzte Züge sieht der Agent beim Resümee
+
 # --- Zuschauermodus ----------------------------------------------------------
 START_TEMPO_MS = 800              # Verzögerung zwischen Schritten (im Panel einstellbar)
