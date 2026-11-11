@@ -124,8 +124,13 @@ def _is_savable(obj: Any) -> bool:
     return all(hasattr(obj, a) for a in ("STORE_TYPE", "store_id", "save", "load"))
 
 
-def save_game(gs: Any) -> dict:
+def save_game(gs: Any, agent: dict | None = None) -> dict:
     """Collect the full game into a version'd blob of self-describing envelopes.
+
+    ``agent`` is an optional, opaque dict with the state of an AI agent player (notebook, history ...,
+    see agent_player/spielstand.py). It is stored under the top-level key "agent" with its OWN
+    format tag + version, so the game's SAVE_VERSION does not change: files without it load as
+    before, and older loaders simply ignore the extra key.
 
     Walks the live GameState graph (ways/objects/players) plus the GameState root and the
     LLM — the live graph is the authoritative "what exists now". Returns a JSON-able dict;
@@ -146,7 +151,10 @@ def save_game(gs: Any) -> dict:
     for p in gs.players:                       # non-savable players (e.g. an active explosion) are skipped
         emit(p)
 
-    return {"version": SAVE_VERSION, "envelopes": envelopes}
+    blob: dict = {"version": SAVE_VERSION, "envelopes": envelopes}
+    if agent is not None:
+        blob["agent"] = agent
+    return blob
 
 
 def load_game(blob: dict, *, llm: Any = None) -> Any:
@@ -211,13 +219,22 @@ def load_game(blob: dict, *, llm: Any = None) -> Any:
     return gs
 
 
-def save_to_file(gs: Any, path: str) -> None:
-    """Write a full game save to ``path`` as JSON."""
+def save_to_file(gs: Any, path: str, agent: dict | None = None) -> None:
+    """Write a full game save to ``path`` as JSON (optionally with an agent-state block)."""
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(save_game(gs), f, ensure_ascii=False, indent=2)
+        json.dump(save_game(gs, agent=agent), f, ensure_ascii=False, indent=2)
 
 
 def load_from_file(path: str, *, llm: Any = None) -> Any:
     """Read a game save from ``path`` and rebuild the GameState (caller swaps the ref)."""
     with open(path, encoding="utf-8") as f:
         return load_game(json.load(f), llm=llm)
+
+
+def load_from_file_with_agent(path: str, *, llm: Any = None) -> tuple[Any, dict | None]:
+    """Like load_from_file, but also returns the raw "agent" block (None if the save has none).
+
+    The block is returned UNVALIDATED: its format belongs to agent_player (see pruefen there)."""
+    with open(path, encoding="utf-8") as f:
+        blob = json.load(f)
+    return load_game(blob, llm=llm), blob.get("agent")

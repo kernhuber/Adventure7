@@ -250,3 +250,26 @@ Siehe §9: `narration_cache.cache`, `txt_prev_description`. Sonst nichts.
 5. `GameState.save()`/`load()` (Orchestrierung, Objekt-/Spieler-Set, Verlinkung).
 6. Saver/Loader-Modul (`services/save_load.py`) + Round-trip-Test.
 7. Web-Anbindung (Dialog + `session["game"]`-Tausch).
+
+
+## Erweiterung: Agentenzustand im Spielstand (2026-11-11)
+
+Für den Agent-Spieler (`agent_player/`, siehe `docs/AGENT-SPIELER-PLAN.md`) kann ein Spielstand einen
+optionalen Top-Level-Block `"agent"` tragen:
+
+```json
+{ "version": 1, "envelopes": [ ... ],
+  "agent": { "format": "agent-zustand", "version": 1, "notiz_an_mich": "...", "notizbuch": [...], "verlauf": [...], ... } }
+```
+
+- **Additiv:** `SAVE_VERSION` des Spiels bleibt 1. Dateien ohne `"agent"` laden wie bisher, ältere Loader ignorieren den Block.
+- **Eigene Formatkennung + Version** (`format`, `version`) und eine kurze **Analyse beim Laden**
+  (`agent_player/spielstand.pruefen`): falsches Format, zu neue Version oder Felder vom falschen Typ werden
+  erkannt und gemeldet; der Spielstand wird dann nicht geladen (neues Spiel + Fehlermeldung im Browser).
+  Fehlt der Block ganz, startet der Agent ohne Gedächtnis (Warnung).
+- **API:** `save_game(gs, agent=None)`, `save_to_file(gs, path, agent=None)`, `load_from_file_with_agent(path, llm=)`
+  (liefert den Block ungeprüft zurück; das Format gehört dem Agent-Paket).
+- **Inhalt:** Notizbuch, kurzer Verlauf, letztes Ergebnis/NPC-Meldungen, besuchte Orte, Schrittzähler, und eine
+  **Notiz an das künftige Ich** (`notiz_an_mich`), die der Agent selbst mit der freien Aktion `spielstand_speichern`
+  schreibt – z. B. als Warnung vor einer riskanten Entscheidung. Nach dem Laden steht sie einmal prominent im
+  ersten Prompt und bleibt als Eintrag im Notizbuch. Tokenzähler beginnen bewusst neu.
