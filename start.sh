@@ -8,7 +8,7 @@
 # 'git checkout' stellt zugleich das Upstream-Tracking her, damit 'git pull' funktioniert
 # (ein frischer Klon landet sonst auf 'main' ohne Bezug zu dieser Branch, und pull scheitert).
 # Fehler (lokale Änderungen, kein Netz, kein Git-Repo) sind nicht kritisch -> Skript läuft weiter.
-BRANCH="Adventure-10-2026-07-09-Gemma"
+BRANCH="Adventure-11-AgentNPC"
 git fetch origin 2>/dev/null                 # Remote-Refs holen, damit checkout die Branch kennt
 git checkout "$BRANCH" 2>/dev/null || echo "Hinweis: Branch '$BRANCH' nicht ausgecheckt (lokale Änderungen? kein Git-Repo?)."
 git pull --ff-only 2>/dev/null || echo "Hinweis: 'git pull' übersprungen (nicht kritisch)."

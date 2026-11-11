@@ -9,7 +9,7 @@ REM --- Repo aktualisieren (dient zugleich als Installer/Updater) --------------
 REM Der Spielstand liegt auf dieser Branch -> beim Umzug auf eine neue Branch hier aendern.
 REM 'git checkout' stellt zugleich das Upstream-Tracking her, damit 'git pull' funktioniert
 REM (ein frischer Klon landet sonst auf 'main' ohne Bezug zu dieser Branch). Nicht kritisch.
-set BRANCH=Adventure-10-2026-07-09-Gemma
+set BRANCH=Adventure-11-AgentNPC
 git fetch origin 2>nul
 git checkout %BRANCH% 2>nul
 git pull --ff-only 2>nul

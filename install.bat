@@ -6,7 +6,7 @@ REM
 REM Aufruf:  install.bat
 REM          set GOOGLE_API_KEY=AIza... & install.bat   (nicht-interaktiv, Key aus der Umgebung)
 
-set BRANCH=Adventure-10-2026-07-09-Gemma
+set BRANCH=Adventure-11-AgentNPC
 set REPO=https://github.com/kernhuber/Adventure7.git
 
 REM --- Repository klonen und auf die richtige Branch stellen ----------------------

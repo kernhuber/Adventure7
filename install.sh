@@ -8,7 +8,7 @@
 
 set -e
 
-BRANCH="Adventure-10-2026-07-09-Gemma"
+BRANCH="Adventure-11-AgentNPC"
 REPO="https://github.com/kernhuber/Adventure7.git"
 
 # --- Repository klonen und auf die richtige Branch stellen --------------------------
