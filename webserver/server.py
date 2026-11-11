@@ -66,7 +66,7 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
 
         # Agentenmodus: Browser verbindet sich mit ws://host:port/?mode=agent[&player=llm|fake|skript][&save=<slot>]
         # (siehe docs/AGENT-SPIELER-PLAN.md). Sonst spielt wie bisher ein Mensch.
-        agent_mode, agent_spieler, agent_save = self._agent_request(websocket)
+        agent_mode, agent_spieler, agent_save, agent_tipp = self._agent_request(websocket)
         agent_zustand, agent_meldungen = None, []   # aus einem geladenen Spielstand (Meldungen gehen an den Browser)
         human_load = None if agent_mode else self._load_request(websocket)   # ?load=<slot>: Mensch ab Spielstand
 
@@ -162,7 +162,7 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                     # Der Runner spielt die Züge; session["tap"] (None = aus) schneidet mit, was der Browser bekommt.
                     from agent_player.runner import AgentRunner
                     session["tap"] = None
-                    session["agent"] = AgentRunner(self, websocket, session, session_id, agent_spieler, agent_zustand)
+                    session["agent"] = AgentRunner(self, websocket, session, session_id, agent_spieler, agent_zustand, agent_tipp)
                 self.game_sessions[session_id] = session
                 game.cmd_q = session["cmd_q"]
 
@@ -204,20 +204,22 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
         dprint(dl.WEBGUI, f"✅ Client {session_id} initialisiert ({self.game_sessions[session_id]['type']} Modus)")
 
     @staticmethod
-    def _agent_request(websocket) -> tuple[bool, str, str | None]:
+    def _agent_request(websocket) -> tuple[bool, str, str | None, str]:
         """Liest aus der WebSocket-URL, ob der Agent spielen soll (?mode=agent), wer spielt
-        (&player=llm|fake|skript, Standard llm) und ob ab einem Spielstand gestartet wird (&save=<slot>).
+        (&player=llm|fake|skript, Standard llm), ob ab einem Spielstand gestartet wird (&save=<slot>) und einen
+        optionalen ersten Hinweis an den Agenten (&tipp=<text>).
         Ohne Query oder mit anderem Modus spielt ein Mensch."""
         from urllib.parse import urlparse, parse_qs
         try:
             query = parse_qs(urlparse(websocket.request.path).query)
         except Exception:
-            return False, "llm", None
+            return False, "llm", None, ""
         if query.get("mode", [""])[0] != "agent":
-            return False, "llm", None
+            return False, "llm", None, ""
         spieler = query.get("player", ["llm"])[0]
         save = query.get("save", [""])[0].strip() or None
-        return True, (spieler if spieler in ("llm", "fake", "skript") else "llm"), save
+        tipp = query.get("tipp", [""])[0].strip()[:500]
+        return True, (spieler if spieler in ("llm", "fake", "skript") else "llm"), save, tipp
 
     @staticmethod
     def _load_request(websocket) -> str | None:

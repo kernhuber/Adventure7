@@ -181,6 +181,11 @@ function renderStartChoices(container, onSelf) {
             hinweis.textContent = '🤖 = enthält das Gedächtnis eines Agenten (Notizbuch, Notiz an sich selbst). '
                 + 'Ohne 🤖 startet der Agent ohne Gedächtnis.';
             box.appendChild(hinweis);
+            const tipp = document.createElement('input');
+            tipp.type = 'text';
+            tipp.placeholder = '💬 Tipp an den Agenten (optional)';
+            tipp.style.cssText = 'font:12pt "Courier New",monospace;padding:6px;border:1px solid #8a6d1f;border-radius:6px';
+            box.appendChild(tipp);
             const liste = document.createElement('div');
             liste.style.cssText = 'max-height:320px;overflow-y:auto;text-align:left';
             if (!slots.length) liste.textContent = 'Keine Spielstände vorhanden.';
@@ -199,7 +204,7 @@ function renderStartChoices(container, onSelf) {
                 }
                 zeile.appendChild(mkBtn('👤 selbst spielen', () => go('?load=' + encodeURIComponent(s.name)), true));
                 zeile.appendChild(document.createTextNode(' '));
-                zeile.appendChild(mkBtn('🤖 Agent spielen lassen', () => go('?mode=agent&save=' + encodeURIComponent(s.name)), true));
+                zeile.appendChild(mkBtn('🤖 Agent spielen lassen', () => go('?mode=agent&save=' + encodeURIComponent(s.name) + (tipp.value.trim() ? '&tipp=' + encodeURIComponent(tipp.value.trim()) : '')), true));
                 liste.appendChild(zeile);
             });
             box.appendChild(liste);

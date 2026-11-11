@@ -16,6 +16,7 @@ const agentPanel = (function () {
         error: { label: 'Fehler',       color: '#ff6b6b', hint: 'Ungültiger Aufruf: kostet keine Runde, der Agent versucht es neu.' },
         chat:  { label: 'Chat',         color: '#c792ea', hint: 'Gespräch mit Hund oder Zombie.' },
         pin:   { label: 'PIN',          color: '#ffb347', hint: 'Eingabe am PIN-Pad des Geldautomaten.' },
+        exp:   { label: 'Erfahrung',    color: '#9be3d0', hint: 'Experience.md: was der Agent aus früheren Spielen weiß bzw. nach diesem Spiel festhält.' },
         text:  { label: 'Modelltext',   color: '#aaaaaa', hint: 'Was das Modell tatsächlich ausgibt (keine erfundene Gedankenwiedergabe).' },
     };
     const STATE_TEXT = {
@@ -89,6 +90,11 @@ const agentPanel = (function () {
         box.innerHTML = '<b style="font-size:20px">📂 Spielstand laden (Agentenmodus)</b>'
             + '<div style="font-size:14px;margin:6px 0">🤖 = enthält Gedächtnis des Agenten (Notizbuch, Verlauf, Notiz an sich selbst). '
             + 'Ohne 🤖 startet der Agent ohne Gedächtnis.</div>';
+        const tipp = document.createElement('input');
+        tipp.type = 'text';
+        tipp.placeholder = '💬 Tipp an den Agenten (optional), z. B. „Zünde die Sprengladung nicht im Schuppen“';
+        tipp.style.cssText = 'width:100%;box-sizing:border-box;font-size:15px;padding:6px;margin:6px 0;background:#2b2621;color:#f5deb3;border:1px solid #cd853f;border-radius:4px';
+        box.appendChild(tipp);
         (slots || []).forEach(s => {
             const row = document.createElement('div');
             row.style.cssText = 'margin:6px 0';
@@ -96,6 +102,7 @@ const agentPanel = (function () {
                 const p = new URLSearchParams(window.location.search);
                 p.set('mode', 'agent');
                 p.set('save', s.name);
+                if (tipp.value.trim()) p.set('tipp', tipp.value.trim());
                 window.location.href = window.location.pathname + '?' + p.toString();
             }));
             if (s.agent && s.notiz) {

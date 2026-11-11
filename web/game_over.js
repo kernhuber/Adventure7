@@ -30,7 +30,7 @@ function gameOver(won, text) {
         position: fixed;
         top: 0;
         left: 0;
-        width: 100vw;
+        width: calc(100vw - var(--agent-offset, 0px));   /* Agentenmodus: das Panel bleibt daneben sichtbar und bedienbar */
         height: 100vh;
         z-index: 10000;
         display: flex;
