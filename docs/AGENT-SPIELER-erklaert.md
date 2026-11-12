@@ -234,6 +234,9 @@ gefährlich, nicht im Schuppen zünden!“), schreibt der Agent in die Datei **`
   `config.EXPERIENCE_AKTIV = False` (Experiment: „Lernt der Agent ohne Erinnerung überhaupt?“).
 - **Tipp von außen:** Beim Laden aus dem Welcome-Screen oder dem Panel kann man einen Tipp mitgeben (`&tipp=…`), der
   in der ersten Runde im Prompt steht – so, wie man einem Mitspieler vor einem zweiten Anlauf etwas zuflüstert.
+  Der Tipp steht einmal prominent im Prompt **und** wird als Eintrag ins Notizbuch geschrieben (`context.hinweis_merken`) –
+  sonst wäre er in der nächsten Runde vergessen (die Spur vom 12.11. zeigte genau das). Das gilt auch für Tipps aus dem Panel mitten im Spiel;
+  im Gespräch ist er über das Notizbuch sichtbar.
 - Der System-Prompt rät dem Agenten, **vor riskanten oder unumkehrbaren Aktionen** `spielstand_speichern` zu
   nutzen (mit Warn-Notiz). Ob er es tut, entscheidet er selbst.
 

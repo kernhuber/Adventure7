@@ -17,7 +17,7 @@ import time
 import traceback
 
 from utils import dprint, dl
-from agent_player import config, experience, spielstand
+from agent_player import config, context, experience, spielstand
 from agent_player.context import AgentKontext, TokenLimitErreicht
 from agent_player.control import AgentSteuerung, AgentGestoppt
 from agent_player.loop import spiele_runde
@@ -69,7 +69,8 @@ class AgentRunner:
             return
         self._hinweis_text = text
         if self.ctx is not None:
-            self.ctx.hinweis = text
+            context.hinweis_merken(self.ctx, text)
+            await self._melde({"type": "agent_notebook", "text": self.ctx.notizbuch.lesen()})
         await self._melde({"type": "agent_event", "kind": "text", "tool": "Zuschauer-Hinweis", "args": {},
                            "result": f"{text}\n(gilt ab der nächsten Runde)", "round": self.runde, "step": self.schritt})
 
@@ -145,7 +146,9 @@ class AgentRunner:
             if self.agent_zustand:                            # aus einem Spielstand: Gedächtnis zurückspielen
                 spielstand.importieren(ctx, self.agent_zustand)
                 await self._melde({"type": "agent_notebook", "text": ctx.notizbuch.lesen()})
-            ctx.hinweis = self._hinweis_text
+            if self._hinweis_text:
+                context.hinweis_merken(ctx, self._hinweis_text)
+                await self._melde({"type": "agent_notebook", "text": ctx.notizbuch.lesen()})
             # Gespräche (Zombie/Hund) führt der Agent selbst: AgentDialogs braucht dafür den Kontext.
             if self.session.get("web_dialogs") is not None:
                 self.session["web_dialogs"].ctx = ctx

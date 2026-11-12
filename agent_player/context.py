@@ -129,6 +129,16 @@ class AgentKontext:
                           "model_calls": self.modellaufrufe, "model": self.llm.modell})
 
 
+def hinweis_merken(ctx: AgentKontext, text: str) -> None:
+    """Nimmt einen Tipp von außen auf: einmal prominent im Prompt UND dauerhaft im Notizbuch.
+
+    LERNPUNKT: Was nur in EINER Runde im Prompt steht, ist in der nächsten vergessen (der Prompt wird jede Runde
+    frisch gebaut). Damit ein Tipp wirkt, muss er ins Gedächtnis des Agenten – das Notizbuch. Der Eintrag
+    erscheint auch in Gesprächen, denn `chat_nachricht` zeigt das Notizbuch ebenfalls."""
+    ctx.hinweis = text
+    ctx.notizbuch.schreiben(f"TIPP VON AUSSEN (Runde {ctx.runde}, von einem Zuschauer): {text}")
+
+
 def runden_nachricht(ctx: AgentKontext) -> Nachricht:
     """Baut die erste Nachricht einer Runde: Lage + Notizbuch + kurzer Verlauf (siehe Modul-Doku)."""
     lage = beobachtung_als_text(ctx.hole_ansicht(), ctx.letztes_ergebnis, ctx.npc_meldungen)
@@ -142,7 +152,9 @@ def runden_nachricht(ctx: AgentKontext) -> Nachricht:
     if ctx.hinweis:
         # LERNPUNKT: ein Hinweis von außen ist ein bewusster Eingriff ("human in the loop"): Er steht als
         # eigener, klar gekennzeichneter Abschnitt im Prompt und wird nur EINMAL verwendet.
-        text += f"=== HINWEIS EINES ZUSCHAUERS (du darfst ihm folgen) ===\n{ctx.hinweis}\n\n"
+        text += (f"=== TIPP VON EINEM ZUSCHAUER ===\n{ctx.hinweis}\n"
+                 "Der Tipp kommt von jemandem, der das Spiel kennt. Prüfe ihn und folge ihm, solange du keinen "
+                 "konkreten Gegengrund hast. Er steht jetzt auch in deinem Notizbuch.\n\n")
         ctx.hinweis = ""
     text += "Was tust du in dieser Runde?"
     return Nachricht.vom_nutzer(text)
