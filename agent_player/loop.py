@@ -15,8 +15,6 @@ from agent_player.llm import ToolCall, ToolResult, Message
 from agent_player.observation import observation_as_text, evaluate_events
 from agent_player.tools import FREE_ACTIONS, MOVES, FREE_NAMES, MOVE_NAMES, prepare_move
 
-NUDGE_NO_TOOL = "Du hast kein Werkzeug aufgerufen. Rufe jetzt ein Werkzeug auf – am Ende der Runde einen Zug."
-
 
 @dataclass
 class RoundResult:
@@ -37,7 +35,7 @@ async def play_round(ctx: AgentContext) -> RoundResult:
         messages.append(Message.from_model(response))
         if not response.calls:                                               # Modell hat nur geredet
             ctx.calls_round += 1
-            messages.append(Message.from_user(NUDGE_NO_TOOL))
+            messages.append(Message.from_user(config.NUDGE_NO_TOOL))
             continue
         results = []
         for call in response.calls:
@@ -92,8 +90,7 @@ async def execute_move(ctx: AgentContext, call: ToolCall, function_call: dict) -
 
 async def force_move(ctx: AgentContext, messages: list[Message]) -> RoundResult:
     """Aufruflimit erreicht: Agent auffordern, jetzt zu ziehen; sonst neutraler Zug (wird protokolliert)."""
-    messages.append(Message.from_user(
-        f"Du hast {config.MAX_CALLS_PER_ROUND} Werkzeugaufrufe in dieser Runde verbraucht. Mache JETZT einen Zug."))
+    messages.append(Message.from_user(config.NUDGE_FORCE_MOVE.format(max_calls=config.MAX_CALLS_PER_ROUND)))
     response = await ctx.ask_model(messages, MOVES)
     for call in response.calls:
         if call.name not in MOVE_NAMES:               # jetzt zählen nur noch Züge

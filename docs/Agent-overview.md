@@ -66,7 +66,7 @@ Minispiel, Chat, Game Over. `AgentDialogs` erbt von `WebDialogs` und ersetzt dav
 Das ist der „Hexagon-Port“ aus Step 3 des Refactorings – hier zahlt er sich aus.
 
 ### 2.3 Zugpfad + Mitschnitt – `webserver/command_engine.py`
-- `AgentRunner.fuehre_zug_aus` stellt den `function_call` in `session["cmd_q"]` und ruft `handle_command` auf.
+- `AgentRunner.run_move` stellt den `function_call` in `session["cmd_q"]` und ruft `handle_command` auf.
   Nur der LLM-Parser (Schritt 3 dort) wird übersprungen, alles danach ist der normale Pfad.
 - `CommandEngineMixin._send` kopiert jede an den Browser gesendete Nachricht zusätzlich in `session["tap"]`
   (nur wenn ein Agent mitliest). So bekommt der Agent **exakt** die Meldungen, die auch ein Mensch sähe.
@@ -74,7 +74,7 @@ Das ist der „Hexagon-Port“ aus Step 3 des Refactorings – hier zahlt er sic
 
 ### 2.4 Spielstände – `services/save_load.py`
 `save_game(gs, agent=None)` kennt einen optionalen Top-Level-Block `"agent"` (eigenes Formatkennzeichen
-und eigene Version, geprüft in `agent_player/spielstand.py`). `SAVE_VERSION` des Spiels blieb bei 1.
+und eigene Version, geprüft in `agent_player/savestate.py`). `SAVE_VERSION` des Spiels blieb bei 1.
 Menschen-Spielstände ohne Block laden unverändert.
 
 ### 2.5 Browser – `web/`
@@ -89,20 +89,20 @@ Außerdem: `utils.py` bekam `dl.AGENT` (Debug-Level); `.gitignore` ignoriert `ag
 ## 3. Der Agent von innen: zwei verschachtelte Schleifen
 
 ```
-Äußere Schleife (runner._spiele_agent)         = die Spielrunden
- └─ pro Runde: Innere Schleife (loop.spiele_runde) = die Agentenschleife
+Äußere Schleife (runner._play_agent)         = die Spielrunden
+ └─ pro Runde: Innere Schleife (loop.play_round) = die Agentenschleife
       Modell fragen → Werkzeug ausführen → Ergebnis zurückgeben → wiederholen … bis ein ZUG gewählt wird
- └─ Zug ausführen (fuehre_zug_aus) → Engine rechnet Runde, NPCs ziehen → Ergebnis in Notizbuch/Verlauf
+ └─ Zug ausführen (run_move) → Engine rechnet Runde, NPCs ziehen → Ergebnis in Notizbuch/Verlauf
 ```
 
-**Der Kern** ist `loop.spiele_runde`: bewusst eine einzige, lesbare Funktion. Der Rest des Pakets ist Zubehör.
+**Der Kern** ist `loop.play_round`: bewusst eine einzige, lesbare Funktion. Der Rest des Pakets ist Zubehör.
 
 | Datei | Aufgabe |
 |---|---|
-| `config.py` | alle Einstellungen: Modell (`gemini-2.5-flash`), Limits, Würfelgewichte, Experience |
+| `config.py` | alle Einstellungen (Modell `gemini-2.5-flash`, Limits, Würfelgewichte, Experience) **und alle Prompts**, jeweils mit Kommentar, wofür und wo sie gebraucht werden |
 | `runner.py` | `AgentRunner`: äußere Schleife, Start/Ende, Zug ausführen, Speichern, Resümee |
-| `loop.py` | `spiele_runde`: die innere Agentenschleife; `erzwinge_zug` bei Aufruflimit |
-| `context.py` | `AgentKontext` (Zustand), `SYSTEM_PROMPT`, Prompt-Bausteine, `hinweis_merken` |
+| `loop.py` | `play_round`: die innere Agentenschleife; `force_move` bei Aufruflimit |
+| `context.py` | `AgentContext` (Zustand) und die Funktionen, die aus den Prompts in `config.py` die Nachrichten bauen (`round_message`, `chat_message`, `pin_message`, `remember_tip`) |
 | `tools.py` | Werkzeugliste: **freie Aktionen** (kosten keine Runde) und **Züge** (eine Runde, Pflichtfeld `warum`) |
 | `observation.py` | baut die Sicht des Agenten **nur** aus `session["state"]` und den mitgeschnittenen Nachrichten |
 | `llm.py` | Schnittstelle `AgentLLM.frage(...)`, `GeminiAgentLLM` (synchrones SDK via `asyncio.to_thread`) |
@@ -110,10 +110,10 @@ Außerdem: `utils.py` bekam `dl.AGENT` (Debug-Level); `.gitignore` ignoriert `ag
 | `chat.py`, `pin.py` | Gespräche mit Hund/Zombie, PIN-Pad (NPC-Seite unverändert) |
 | `dialogs.py` | `AgentDialogs` (2.2) |
 | `control.py` | Start/Pause/Einzelschritt/Stopp/Tempo aus dem Panel |
-| `spielstand.py` | Agentenblock in Spielständen: prüfen, importieren, speichern, laden, auflisten |
+| `savestate.py` | Agentenblock in Spielständen: prüfen, importieren, speichern, laden, auflisten |
 | `experience.py` | Lernen von Spiel zu Spiel: `Experience.md` (nur Text, kein Training) |
 | `trace.py` | schreibt `agent_runs/*.jsonl` (jede Aktion zum Nachlesen) |
-| `fake_llm.py`, `fake_run.py`, `skript_spieler.py` | kostenlose Testspieler ohne Gemini |
+| `fake_llm.py`, `fake_run.py`, `script_player.py` | kostenlose Testspieler ohne Gemini |
 
 Regeln, die man kennen sollte:
 - **Fairness:** Der Agent sieht nie `GameState`, interne IDs (`o_…`) oder Flags – nur Anzeigenamen („call-names“).
@@ -133,7 +133,7 @@ Ehrlich aufgelistet – manches ist Absicht (Lehrzweck), manches Preis der Entko
 | Abweichung | Grund / Bewertung |
 |---|---|
 | Eigenes **Paket** statt Dateien im Wurzelverzeichnis | Das Spiel ist flach (`npc_*_state.py`); der Agent ist größer (~1800 Zeilen) und soll als Ganzes lesbar und entfernbar sein. Entspricht dem Muster `webserver/`. |
-| **Deutsche Bezeichner** (`AgentSteuerung`, `spiele_runde`, `fuehre_zug_aus`, `Notizbuch`) | Lehrmaterial auf Deutsch; Engine-Code nutzt überwiegend englische Namen. Bruch im Stil – bewusst, aber unschön für gemischte Lektüre. |
+| ~~Deutsche Bezeichner~~ → **angeglichen (2026-11-13)** | Klassen, Funktionen, Variablen und Modulnamen sind jetzt englisch wie im Engine-Code (`AgentController`, `play_round`, `run_move`, `Notebook`, `savestate.py`, `script_player.py`). **Bewusst deutsch geblieben:** Kommentare und Docstrings (Lehrtext), Prompts, die **Werkzeugnamen und -parameter**, die das Modell sieht (`untersuchen`, `warum`, ...), die Schlüssel im Agentenblock der Spielstände und im Spur-Protokoll (damit alte Spielstände/Spuren lesbar bleiben) und die Nachrichtentypen zum Browser. |
 | `# LERNPUNKT:`-Kommentare und lange Modul-Doku | Unterrichtsfokus; im Engine-Code sind Kommentare sparsamer. |
 | **`asyncio`-Task** neben der Empfangsschleife | Nötig für Pause/Stopp, solange der Agent wartet; die Engine ist ohnehin `async`. |
 | Kopplung über **`session`-Dict** (`session["tap"]`, `session["agent"]`, `web_dialogs.ctx`) | Die Session ist im Web-Layer bereits ein untypisiertes Dict; ein getypter `GameSession` steht im Backlog. Dieses Muster erbt den Mangel. |
@@ -142,20 +142,33 @@ Ehrlich aufgelistet – manches ist Absicht (Lehrzweck), manches Preis der Entko
 | Eigene `AgentLLM`-Schnittstelle neben `LLMClient` | `LLMClient` kennt Befehlsparser/Narration, der Agent braucht *Tool-Calling-Dialog*; eine zweite Schnittstelle war einfacher. Ein Kandidat für spätere Zusammenführung. |
 | `AgentDialogs` **erbt** von `WebDialogs` | Spart Doppelcode (Game-Over-Popup etc.), koppelt aber an die konkrete Web-Klasse statt nur an das Protokoll. |
 
-Falls der Agent stärker an die Konventionen angeglichen werden soll, wären sinnvolle nächste Schritte:
-englische Bezeichner oder (umgekehrt) eine Namenskonvention dokumentieren, den Agentenzustand typisieren
-(statt `session`-Dict), und `AgentLLM` mit `LLMClient` zusammenführen.
+Stand 2026-11-13: Die englischen Bezeichner sind umgesetzt, die Prompts liegen gesammelt in `config.py`.
+Offen (bewusst nicht angefasst, weil es die technische Trennung berühren würde): den Agentenzustand typisieren
+(statt `session`-Dict) und `AgentLLM` mit `LLMClient` zusammenführen.
 
 ---
 
-## 5. Ausprobieren
+## 6. Namen vor und nach der Angleichung (2026-11-13)
 
-```
-http://localhost:8000/?mode=agent                 # Gemini spielt (braucht GOOGLE_API_KEY)
-http://localhost:8000/?mode=agent&player=fake     # Fake-Modell, kostenlos
-http://localhost:8000/?mode=agent&player=skript   # feste Befehlsliste
-http://localhost:8000/?mode=agent&save=<slot>&tipp=<text>
-python -m agent_player.fake_run                   # ohne Browser und ohne Server
-```
+Für alle, die ältere Texte (Plan, Spuren, Gesprächsprotokolle) lesen. Dateien: `spielstand.py` → `savestate.py`,
+`skript_spieler.py` → `script_player.py`; alle anderen Dateinamen blieben.
 
-Nachlesen, was passiert ist: `agent_runs/*.jsonl` (eine Zeile pro Ereignis).
+| früher | jetzt | | früher | jetzt |
+|---|---|---|---|---|
+| `AgentKontext` | `AgentContext` | | `spiele_runde` | `play_round` |
+| `AgentSteuerung` | `AgentController` | | `fuehre_werkzeug_aus` | `run_tool` |
+| `AgentGestoppt` | `AgentStopped` | | `zug_ausfuehren` | `execute_move` |
+| `Werkzeug` | `ToolSpec` | | `erzwinge_zug` | `force_move` |
+| `Aufruf` / `AufrufErgebnis` | `ToolCall` / `ToolResult` | | `fuehre_zug_aus` | `run_move` |
+| `Antwort` / `Nachricht` | `ModelReply` / `Message` | | `zug_vorbereiten` | `prepare_move` |
+| `Notizbuch` | `Notebook` | | `frage` / `frage_modell` | `ask` / `ask_model` |
+| `RundenEintrag` / `RundenErgebnis` | `RoundEntry` / `RoundResult` | | `runden_nachricht` | `round_message` |
+| `Spur` | `Trace` | | `resuemee_ziehen` | `write_summary` |
+| `FREIE_AKTIONEN` / `ZUEGE` | `FREE_ACTIONS` / `MOVES` | | `hinweis_merken` | `remember_tip` |
+| `MAX_AUFRUFE_PRO_RUNDE` | `MAX_CALLS_PER_ROUND` | | `behandle_kommando` | `handle_control_command` |
+
+Felder im Kontext: `notizbuch` → `notebook`, `verlauf` → `history`, `runde` → `round_number`, `schritt` → `step`,
+`hinweis` → `tip`, `erfahrungen` → `lessons`, `letztes_ergebnis` → `last_result`, `npc_meldungen` → `npc_messages`.
+**Unverändert** (Datenformate, nicht Code): Schlüssel im Agentenblock der Spielstände (`notizbuch`, `verlauf`, `notiz_an_mich`, …),
+Spur-Zeilen, Werkzeugnamen/-parameter für das Modell, Nachrichtentypen zum Browser (`agent_event`, …).
+

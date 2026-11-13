@@ -41,7 +41,7 @@ async def run_conversation(ctx: AgentContext, partner: str, npc_reply: NpcReply,
         messages.append(Message.from_model(response))
         if not response.calls:
             exchanges += 1
-            messages.append(Message.from_user("Rufe 'sage' oder 'gespraech_beenden' auf."))
+            messages.append(Message.from_user(config.NUDGE_CHAT_NO_TOOL))
             continue
         results = []
         for call in response.calls:
@@ -87,8 +87,9 @@ async def _say(ctx: AgentContext, partner: str, text: str, chat: list[dict],
 
 async def _wrap_up(ctx: AgentContext, partner: str, messages: list[Message], partner_ended: bool) -> str:
     """Gespräch zu Ende, ohne dass der Agent es selbst beendet hat: einmal nach der Zusammenfassung fragen."""
-    reason = f"{partner} hat das Gespräch beendet." if partner_ended else "Das Gesprächslimit ist erreicht."
-    messages.append(Message.from_user(f"{reason} Rufe jetzt 'gespraech_beenden' mit deiner Zusammenfassung auf."))
+    reason = (config.CHAT_REASON_PARTNER_ENDED.format(partner=partner) if partner_ended
+              else config.CHAT_REASON_LIMIT)
+    messages.append(Message.from_user(config.PROMPT_CHAT_WRAP_UP.format(reason=reason)))
     response = await ctx.ask_model(messages, [CHAT_TOOLS[1]])
     for call in response.calls:
         if call.name == "gespraech_beenden":

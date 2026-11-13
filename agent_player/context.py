@@ -25,31 +25,6 @@ class TokenLimitReached(Exception):
     """Das konfigurierte Tokenlimit für das ganze Spiel ist erreicht."""
 
 
-# Was der Agent über sein Ziel weiß – nur das, was auch ein Spieler zu Beginn liest. Kein Lösungswissen!
-SYSTEM_PROMPT = """Du spielst ein deutschsprachiges Text-Adventure. Deine Spielfigur heißt Agent.
-
-Die Ausgangslage, wie sie jeder Spieler liest: Du radelst als Bote mit deinem Fahrrad unter sengender Sonne
-durch eine endlose Wüste. Bei dir hast du einen Umschlag, den du an ein Ziel bringen musst. Erreicht der Umschlag
-das Ziel nicht, geht die Welt unter. Plötzlich reißt deine Fahrradkette – das Fahrrad funktioniert ohne sie nicht
-mehr. Du bist an einem Ort gestrandet, an dem es Rettung geben könnte.
-
-So funktioniert das Spiel für dich:
-- Du hast zwei Arten von Werkzeugen. FREIE AKTIONEN (Lage lesen, Inventar, Notizbuch, Spielstand speichern) kosten keine Spielzeit.
-  ZÜGE (gehen, nehmen, anwenden, untersuchen, …) kosten genau eine Spielrunde; danach handeln andere Figuren,
-  und dein Durst nimmt zu. Ein Zug beendet deine Runde.
-- Jede Runde: bei Bedarf freie Aktionen, dann genau EINEN Zug. Jeder Zug braucht ein 'warum' (ein Satz).
-- Verwende Namen genau so, wie sie in der Lage stehen (Objekte hier, Begehbare Wege, Inventar).
-- Ein Fehler (z. B. ein unbekannter Name) kostet keine Runde – du siehst die Fehlermeldung und versuchst es neu.
-- Wenn dein Durst-Zähler 0 erreicht, verdurstest du, und das Spiel ist verloren.
-- WICHTIG: In jeder Runde siehst du nur die aktuelle Lage, dein Notizbuch und eine kurze Liste deiner letzten Züge.
-  Alles andere vergisst du. Schreibe deshalb Wichtiges (Zahlen, Codes, Hinweise, Ideen, was du schon probiert hast,
-  wo etwas liegt) ins Notizbuch.
-- Bevor du etwas Riskantes oder Unumkehrbares tust (z. B. etwas zünden, zerstören oder hergeben), speichere mit
-  'spielstand_speichern' und schreibe dir in der 'notiz' eine Warnung für dein späteres Ich.
-- Handle selbstständig; du kannst niemanden um Hilfe bitten. Schreibe kurz, was du denkst, und rufe dann ein Werkzeug auf.
-"""
-
-
 @dataclass
 class RoundEntry:
     """Eine Zeile im kurzen Verlauf."""
@@ -91,10 +66,8 @@ class AgentContext:
     def system_prompt(self) -> str:
         """System-Prompt, ggf. mit den Erfahrungen aus früheren Spielen (Experience.md)."""
         if not self.lessons.strip():
-            return SYSTEM_PROMPT
-        return (SYSTEM_PROMPT + "\n=== ERFAHRUNGEN AUS FRÜHEREN SPIELEN (Experience.md) ===\n"
-                "Das ist dein Wissen aus früheren Partien. Nutze es, aber prüfe, ob es zur aktuellen Lage passt.\n\n"
-                + self.lessons + "\n")
+            return config.SYSTEM_PROMPT
+        return config.SYSTEM_PROMPT + config.PROMPT_LESSONS.format(lessons=self.lessons)
 
     def new_round(self) -> None:
         view = self.get_view()
@@ -140,52 +113,42 @@ def remember_tip(ctx: AgentContext, text: str) -> None:
 
 
 def round_message(ctx: AgentContext) -> Message:
-    """Baut die erste Nachricht einer Runde: Lage + Notizbuch + kurzer Verlauf (siehe Modul-Doku)."""
+    """Baut die erste Nachricht einer Runde: Lage + Notizbuch + kurzer Verlauf (siehe Modul-Doku).
+    Die Texte stehen in config.py (PROMPT_ROUND, ...)."""
     situation = observation_as_text(ctx.get_view(), ctx.last_result, ctx.npc_messages)
     history = [e.as_text() for e in ctx.history[-config.HISTORY_ROUNDS:]]
-    text = (f"=== AKTUELLE LAGE ===\n{situation}\n\n"
-            f"=== DEIN NOTIZBUCH ===\n{ctx.notebook.read()}\n\n"
-            f"=== DEINE LETZTEN ZÜGE ===\n" + ("\n".join(history) if history else "(noch keine)") + "\n\n")
+    text = config.PROMPT_ROUND.format(situation=situation, notebook=ctx.notebook.read(),
+                                      history="\n".join(history) if history else config.PROMPT_NO_HISTORY)
     if ctx.save_memo:
-        text += f"=== ERINNERUNG AUS DEM SPIELSTAND (eine Notiz von dir selbst) ===\n{ctx.save_memo}\n\n"
+        text += config.PROMPT_ROUND_MEMO.format(memo=ctx.save_memo)
         ctx.save_memo = ""
     if ctx.tip:
         # LERNPUNKT: ein Hinweis von außen ist ein bewusster Eingriff ("human in the loop"): Er steht als
         # eigener, klar gekennzeichneter Abschnitt im Prompt und wird nur EINMAL verwendet.
-        text += (f"=== TIPP VON EINEM ZUSCHAUER ===\n{ctx.tip}\n"
-                 "Der Tipp kommt von jemandem, der das Spiel kennt. Prüfe ihn und folge ihm, solange du keinen "
-                 "konkreten Gegengrund hast. Er steht jetzt auch in deinem Notizbuch.\n\n")
+        text += config.PROMPT_ROUND_TIP.format(tip=ctx.tip)
         ctx.tip = ""
-    text += "Was tust du in dieser Runde?"
+    text += config.PROMPT_ROUND_QUESTION
     return Message.from_user(text)
 
 
 def chat_message(ctx: AgentContext, partner: str, chat: list[dict]) -> Message:
-    """Erste Nachricht eines Gesprächs: Lage + Notizbuch + bisheriger Gesprächsverlauf.
+    """Erste Nachricht eines Gesprächs: Lage + Notizbuch + bisheriger Gesprächsverlauf (Text: config.PROMPT_CHAT).
 
     `chat` hat dasselbe Format wie im Browser-Modal: {"zombiemessage": ...} = der Partner (auch beim Hund),
     {"playermessage": ...} = der Agent."""
     situation = observation_as_text(ctx.get_view(), ctx.last_result, ctx.npc_messages)
-    history = []
+    conversation = []
     for line in chat:
         for role, text in line.items():
-            history.append(f"{partner if role == 'zombiemessage' else 'Du'}: {text}")
-    text = (f"=== AKTUELLE LAGE ===\n{situation}\n\n"
-            f"=== DEIN NOTIZBUCH ===\n{ctx.notebook.read()}\n\n"
-            f"=== GESPRÄCH MIT {partner.upper()} BISHER ===\n" + ("\n".join(history) if history else "(noch nichts gesagt)") + "\n\n"
-            f"Du führst gerade ein Gespräch mit {partner}. Jetzt stehen dir nur 'sage' und 'gespraech_beenden' zur Verfügung "
-            f"(keine Spielzüge). Höchstens {config.MAX_CHAT_EXCHANGES} Wortwechsel. Beende das Gespräch, wenn nichts mehr zu "
-            "besprechen ist, und fasse dabei zusammen, was du dir merken willst.")
+            conversation.append(f"{partner if role == 'zombiemessage' else config.PROMPT_CHAT_YOU}: {text}")
+    text = config.PROMPT_CHAT.format(
+        situation=situation, notebook=ctx.notebook.read(), partner=partner, partner_upper=partner.upper(),
+        conversation="\n".join(conversation) if conversation else config.PROMPT_CHAT_NOTHING_SAID,
+        max_exchanges=config.MAX_CHAT_EXCHANGES)
     return Message.from_user(text)
 
 
 def pin_message(ctx: AgentContext) -> Message:
-    """Erste Nachricht, wenn das PIN-Pad offen ist: Lage + Notizbuch + die Regeln des Pads (wie beim Menschen)."""
+    """Erste Nachricht, wenn das PIN-Pad offen ist: Lage + Notizbuch + die Regeln des Pads (Text: config.PROMPT_PIN)."""
     situation = observation_as_text(ctx.get_view(), ctx.last_result, ctx.npc_messages)
-    text = (f"=== AKTUELLE LAGE ===\n{situation}\n\n"
-            f"=== DEIN NOTIZBUCH ===\n{ctx.notebook.read()}\n\n"
-            "Du hast die EC-Karte in den Geldautomaten gesteckt. Auf dem Bildschirm steht: 'Bitte Geheimzahl eingeben.' "
-            "Die Geheimzahl hat vier Ziffern. Das Pad lässt sich nur durch Eingabe von vier Ziffern verlassen. "
-            "Ist die Zahl falsch, musst du die Karte erneut einstecken (das kostet eine weitere Spielrunde). "
-            "Du kannst dein Notizbuch lesen und die Zahl mit 'pin_eingeben' eintippen.")
-    return Message.from_user(text)
+    return Message.from_user(config.PROMPT_PIN.format(situation=situation, notebook=ctx.notebook.read()))

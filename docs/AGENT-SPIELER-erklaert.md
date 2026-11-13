@@ -19,7 +19,7 @@ Modell **einmal pro Runde**, hier läuft eine **Schleife**.
 4. Das Modell „handelt“ also nie selbst: **Es bittet, der Code handelt**, und nur der Code entscheidet, was erlaubt ist.
 5. Alles andere (Gedächtnis, Planung, Fehlerbehandlung) ist Zubehör um diese Schleife.
 
-Die Schleife steht in **einer** Funktion, `loop.spiele_runde`. Sie ist das Lehrstück dieses Pakets.
+Die Schleife steht in **einer** Funktion, `loop.play_round`. Sie ist das Lehrstück dieses Pakets.
 
 ---
 
@@ -28,11 +28,11 @@ Die Schleife steht in **einer** Funktion, `loop.spiele_runde`. Sie ist das Lehrs
 Das Spiel hat Runden (außen). In jeder Runde denkt der Agent in einer eigenen Schleife (innen):
 
 ```
-   ÄUSSERE SCHLEIFE  runner._spiele_agent              (bis Spielende / Rundenlimit / Stopp)
+   ÄUSSERE SCHLEIFE  runner._play_agent              (bis Spielende / Rundenlimit / Stopp)
    ┌──────────────────────────────────────────────────────────────────────────────────┐
    │  Runde n                                                                           │
    │   ┌────────────────────────────────────────────────────────────────────────────┐ │
-   │   │ INNERE SCHLEIFE  loop.spiele_runde                                          │ │
+   │   │ INNERE SCHLEIFE  loop.play_round                                          │ │
    │   │   Prompt frisch bauen (Lage + Notizbuch + letzte Züge)                      │ │
    │   │   ┌─> Modell fragen ──> Werkzeug(e) ausführen ──> Ergebnis zurück ──┐       │ │
    │   │   └──────────────── freie Aktion: nächste Frage ◄────────────────────┘       │ │
@@ -73,15 +73,15 @@ Zentrale Designentscheidung (`tools.py`, drei getrennte Listen, im Code kommenti
 | Kosten | keine Spielrunde | genau **eine** Runde |
 | Die Welt … | bleibt stehen, kein NPC handelt | verändert sich; danach handeln Hund/Zombie, der Durst steigt |
 | Beispiele | `situation_lesen`, `inventar_ansehen`, `notizbuch_lesen`, `notizbuch_schreiben`, `spielstand_speichern`, `was_weiss_ich_ueber` | `gehen`, `nehmen`, `ablegen`, `anwenden`, `untersuchen`, `umsehen`, `geben`, `angreifen`, `ansprechen`, `abwarten` |
-| Ausführung | direkt in `loop.frei_ausfuehren` | durch **denselben Pfad wie ein Menschenbefehl** (`handle_command` → `execute_single_command`) |
+| Ausführung | direkt in `loop.run_free_action` | durch **denselben Pfad wie ein Menschenbefehl** (`handle_command` → `execute_single_command`) |
 
 Das ist wie bei Claude Code: Eine Datei **lesen** ändert nichts (frei); einen Befehl **ausführen** schon (Zug).
 Die Trennung zwingt das Modell, erst nachzudenken und nachzusehen und **dann** zu handeln.
 
 Jeder Zug hat ein Pflichtargument **`warum`** (ein Satz). Es ist keine Spiellogik, sondern damit Zuschauer
-und Log sehen, *warum* der Agent etwas tut. Fehlt es, weist `loop.fuehre_werkzeug_aus` den Aufruf ab.
+und Log sehen, *warum* der Agent etwas tut. Fehlt es, weist `loop.run_tool` den Aufruf ab.
 
-**Ungültige Aufrufe kosten keine Runde.** `tools.zug_vorbereiten` prüft jeden Zug gegen das, was der Agent
+**Ungültige Aufrufe kosten keine Runde.** `tools.prepare_move` prüft jeden Zug gegen das, was der Agent
 sehen kann (Objekte hier, Wege, Inventar, anwesende Figuren) und liefert eine verständliche Fehlermeldung als
 **Werkzeugergebnis** — etwa „'ölkanne' hast du nicht bei dir. Inventar: umschlag, schlüssel.“ Das Modell lernt
 daraus und versucht es neu (siehe Spur unten). Auch ein von der Engine als Systemfehler markierter Zug
@@ -90,7 +90,7 @@ daraus und versucht es neu (siehe Spur unten). Auch ein von der Engine als Syste
 **Warum Verben direkt als Werkzeuge, nicht Freitext an den Parser?** Ein LLM weniger in der Kette (kein
 Parse-Fehler, kein „plausibel, aber falsch“ wie der dokumentierte `gehe`-Teleport), klare Fehlermeldungen,
 und „Welt = Werkzeuge“ wird sichtbar. Weil die Züge am Ende doch durch dieselbe Engine laufen, entsteht keine
-zweite Regelwelt: `runner.fuehre_zug_aus` legt den Zug als `{"function_call": …}` in die Befehlswarteschlange
+zweite Regelwelt: `runner.run_move` legt den Zug als `{"function_call": …}` in die Befehlswarteschlange
 und ruft `handle_command` auf.
 
 ---
@@ -109,14 +109,14 @@ Import von `GameState`):
 **Nicht** sichtbar: `world.json`, Flags, interne `o_`/`p_`-IDs, Obstruction-Funktionen, der Walkthrough, der
 Zustand der NPCs (`zombie_state`, Trust), die PIN, die Debug-Zeilen `dog_message`/`zombie_message`.
 Der Agent kennt nur **Rufnamen**; die Übersetzung Rufname → ID macht die Engine.
-Das Ziel im Systemprompt (`context.SYSTEM_PROMPT`) ist nur das, was der Spieler zu Beginn liest (Bote,
+Das Ziel im Systemprompt (`config.SYSTEM_PROMPT`) ist nur das, was der Spieler zu Beginn liest (Bote,
 Umschlag, gerissene Kette) — kein Lösungswissen.
 
 ---
 
 ## 5. Kontext: frisch pro Runde — statt eines wachsenden Chats
 
-Jede Runde baut den Prompt **neu** (`context.runden_nachricht`): System-Prompt + aktuelle Lage + **Notizbuch** +
+Jede Runde baut den Prompt **neu** (`context.round_message`): System-Prompt + aktuelle Lage + **Notizbuch** +
 die letzten 10 Züge als Einzeiler. Innerhalb der Runde wächst der Kontext mit den Werkzeugergebnissen; nach dem
 Zug wird er **verworfen**. Das ist eine bewusste Entscheidung:
 
@@ -168,11 +168,11 @@ Alle Stellen, an denen das Spiel auf einen Menschen wartet (Name, PIN, Minispiel
 über ein „Dialog“-Objekt, das die Engine als `dialogs=` bekommt. `AgentDialogs` erbt von `WebDialogs` und
 ersetzt:
 
-- **Name:** fest („Agent“, `config.AGENT_SPIELERNAME`).
+- **Name:** fest („Agent“, `config.AGENT_PLAYER_NAME`).
 - **PIN-Pad** (`pin.py`): `pin_eingeben(ziffern)`; der Server prüft `md5(ziffern)` gegen den Hash — wie `pinpad.js`.
   Ein Versuch pro Karteneinsatz; die PIN steht nirgends im Prompt, der Agent muss sie im Notizbuch haben.
 - **Minispiel:** entfällt; das Ergebnis wird **gewürfelt** (`WON` = der Hund gewinnt = Spiel verloren). Gewichte
-  in `config.MINISPIEL_GEWICHTE`. Ein bewusst einfacher Platzhalter: Geschick spielt keine Rolle mehr.
+  in `config.MINIGAME_WEIGHTS`. Ein bewusst einfacher Platzhalter: Geschick spielt keine Rolle mehr.
 
 Das ist ein schönes Beispiel für ein **Port-Muster**: Die Engine fragt nur „den Spieler“; wer das ist, entscheidet
 das Objekt, das man hineinreicht.
@@ -185,7 +185,7 @@ Start: Link **„🤖 Agent spielen lassen“** (oder `http://localhost:8000/?mo
 
 | URL | Wer spielt |
 |---|---|
-| `?mode=agent` | Gemini (`config.AGENT_MODELL`, Standard `gemini-2.5-flash`) |
+| `?mode=agent` | Gemini (`config.AGENT_MODEL`, Standard `gemini-2.5-flash`) |
 | `?mode=agent&player=fake` | Fake-Modell (kostenlos, feste Antworten) |
 | `?mode=agent&player=skript` | Skript-Spieler (feste Befehlsliste, ganz ohne Modell) |
 | `…&save=<name>` | ab einem Spielstand **mit** Agentengedächtnis (siehe 10) |
@@ -207,7 +207,7 @@ Die normale Oberfläche läuft unverändert weiter; rechts das **Agenten-Panel**
 ## 10. Spielstände mit Agentengedächtnis
 
 Ein Agent ist mehr als die Spielwelt: Ohne Notizbuch und Verlauf wäre ein geladener Spielstand für ihn ein
-Fremder. Deshalb hängt am Spielstand ein optionaler Block `"agent"` (`spielstand.py`, `services/save_load.py`),
+Fremder. Deshalb hängt am Spielstand ein optionaler Block `"agent"` (`savestate.py`, `services/save_load.py`),
 mit eigener Formatkennung (`agent-zustand`) und **Version**. Beim Laden wird er **geprüft** (`pruefen`):
 falsches Format, zu neue Version oder falsche Typen werden erkannt, und der Spielstand wird dann nicht geladen.
 
@@ -231,10 +231,10 @@ gefährlich, nicht im Schuppen zünden!“), schreibt der Agent in die Datei **`
 - **Beim nächsten Start** steht die Datei im System-Prompt („ERFAHRUNGEN AUS FRÜHEREN SPIELEN“; die neuesten
   6000 Zeichen). Das „Lernen“ ist also nur **Text, den der Agent schreibt und liest** – kein Training.
 - Die Datei ist normaler Markdown: lesen, falsche Erkenntnisse löschen, eigene Tipps ergänzen. Ausschalten mit
-  `config.EXPERIENCE_AKTIV = False` (Experiment: „Lernt der Agent ohne Erinnerung überhaupt?“).
+  `config.EXPERIENCE_ACTIVE = False` (Experiment: „Lernt der Agent ohne Erinnerung überhaupt?“).
 - **Tipp von außen:** Beim Laden aus dem Welcome-Screen oder dem Panel kann man einen Tipp mitgeben (`&tipp=…`), der
   in der ersten Runde im Prompt steht – so, wie man einem Mitspieler vor einem zweiten Anlauf etwas zuflüstert.
-  Der Tipp steht einmal prominent im Prompt **und** wird als Eintrag ins Notizbuch geschrieben (`context.hinweis_merken`) –
+  Der Tipp steht einmal prominent im Prompt **und** wird als Eintrag ins Notizbuch geschrieben (`context.remember_tip`) –
   sonst wäre er in der nächsten Runde vergessen (die Spur vom 12.11. zeigte genau das). Das gilt auch für Tipps aus dem Panel mitten im Spiel;
   im Gespräch ist er über das Notizbuch sichtbar.
 - Der System-Prompt rät dem Agenten, **vor riskanten oder unumkehrbaren Aktionen** `spielstand_speichern` zu
@@ -323,15 +323,15 @@ nicht im Schuppen zünden!")` gepasst. Ob der Agent das Adventure löst, ist kei
 
 ## 12. Experimente
 
-- **Anderes Modell:** `config.AGENT_MODELL` ändern — oder eine zweite Klasse neben `GeminiAgentLLM` in `llm.py`
+- **Anderes Modell:** `config.AGENT_MODEL` ändern — oder eine zweite Klasse neben `GeminiAgentLLM` in `llm.py`
   schreiben (z. B. Claude über die Anthropic-API). `AgentLLM.frage(system, nachrichten, werkzeuge)` ist die ganze
   Schnittstelle; `loop.py` bleibt unverändert.
-- **Anderes Limit:** `MAX_AUFRUFE_PRO_RUNDE`, `MAX_RUNDEN`, `MAX_TOKENS_GESAMT`, `VERLAUF_RUNDEN`
+- **Anderes Limit:** `MAX_CALLS_PER_ROUND`, `MAX_ROUNDS`, `MAX_TOKENS_TOTAL`, `HISTORY_ROUNDS`
   (z. B. 0 = nur Notizbuch, kein Verlauf).
-- **Ohne Notizbuch:** `notizbuch_schreiben` aus `FREIE_AKTIONEN` nehmen — wie weit kommt der Agent dann?
+- **Ohne Notizbuch:** `notizbuch_schreiben` aus `FREE_ACTIONS` nehmen — wie weit kommt der Agent dann?
 - **Schleife ohne KI:** `./venv/bin/python3 -m agent_player.fake_run` (und mit dem Argument `verzettelt` für das
   Aufruflimit) — dieselbe Schleife, nur kommen die Werkzeugaufrufe aus einer Liste.
-- **Anderes Risiko:** `MINISPIEL_GEWICHTE` (z. B. `(1, 3, 2)`: der Hund gewinnt seltener).
+- **Anderes Risiko:** `MINIGAME_WEIGHTS` (z. B. `(1, 3, 2)`: der Hund gewinnt seltener).
 - **Eingriff:** Per Hinweisfeld Vorschläge machen — und beobachten, ob und wann der Agent ihnen folgt.
 
 ---
@@ -340,7 +340,7 @@ nicht im Schuppen zünden!")` gepasst. Ob der Agent das Adventure löst, ist kei
 
 - **Kein Beweis fürs Lösen.** Der Agent kann das Adventure lösen oder nicht; kein Abnahmekriterium.
 - **Der Vorab-Check ist großzügiger als beim Menschen:** Ein Mensch, der in einen versperrten Weg läuft, verliert
-  eine Runde; dem Agenten sagt `tools.zug_vorbereiten` es vorher, ohne Runde.
+  eine Runde; dem Agenten sagt `tools.prepare_move` es vorher, ohne Runde.
 - **Mehrdeutige Rufnamen** (mehrere Objekte heißen „Schalter“) werden über den ersten Rufnamen aufgelöst, den
   die Beobachtung zeigt.
 - **Die Szenenbeschreibung ist LLM-erzeugt** und kann ausschmücken; der Mensch sieht dasselbe. Deshalb steht die

@@ -8,6 +8,7 @@ muss sie im Spiel gefunden und in sein Notizbuch geschrieben haben (guter Test f
 import hashlib
 
 from utils import dprint, dl
+from agent_player import config
 from agent_player.context import AgentContext, pin_message
 from agent_player.llm import ToolResult, Message
 from agent_player.tools import PIN_TOOLS
@@ -46,7 +47,7 @@ async def solve_pinpad(ctx: AgentContext, expected_hash: str) -> str:
         if response.calls:
             messages.append(Message.tool_results(results))
         else:
-            messages.append(Message.from_user("Rufe 'pin_eingeben' mit vier Ziffern auf."))
+            messages.append(Message.from_user(config.NUDGE_PIN_NO_TOOL))
     return "FAIL"
 
 

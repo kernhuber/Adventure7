@@ -395,24 +395,24 @@ Generator: m" row (`-` for an inactive/0 switch), visible only while at least on
 `http://localhost:8000/?mode=agent` (`&player=fake|skript`, `&save=<slot>`). Design = "Weg 2": the browser session runs
 as usual, only the *inputs* come from the agent (`AgentDialogs` replaces `WebDialogs` for name/PIN/mini-game/chat;
 moves are queued as `function_call`s and run through the normal `handle_command` path, so thirst/NPC turns/game over
-behave exactly as for a human). Core = `loop.spiele_runde` (the inner agent loop, one readable function) inside
-`runner._spiele_agent` (outer round loop). **Free actions** (read/notebook/save, cost no round) vs. **moves** (cost one
+behave exactly as for a human). Core = `loop.play_round` (the inner agent loop, one readable function) inside
+`runner._play_agent` (outer round loop). **Free actions** (read/notebook/save, cost no round) vs. **moves** (cost one
 round, mandatory `warum`) are separate lists in `tools.py`; invalid calls return an error as tool result and cost no
 round. Fairness: `observation.py` builds the agent's view only from `session["state"]` + the messages the browser got
 (`CommandEngineMixin._send` copies them into `session["tap"]`) — never `GameState`/IDs/flags. Context is rebuilt fresh
 every round (situation + notebook + last 10 moves). Chats with dog/zombie run in `chat.py` (NPC side unchanged), the PIN pad in
-`pin.py` (one try per card insert), the dog mini-game is replaced by a dice roll (`config.MINISPIEL_GEWICHTE`). Saves:
+`pin.py` (one try per card insert), the dog mini-game is replaced by a dice roll (`config.MINIGAME_WEIGHTS`). Saves:
 `services/save_load.py` got an optional top-level `"agent"` block with its own format tag + version, validated on load
-(`agent_player/spielstand.py`); the agent can call `spielstand_speichern(notiz)` to leave a note to its future self.
-Config in `agent_player/config.py` (model `gemini-2.5-flash`, limits); dog on/off is `utils.NODOG` only. The model
+(`agent_player/savestate.py`); the agent can call `spielstand_speichern(notiz)` to leave a note to its future self.
+Config **and all prompts** (each with a comment on purpose and place of use) live in `agent_player/config.py` (model `gemini-2.5-flash`, limits); identifiers in the package are English like the rest of the code (comments/docstrings, prompts, the model-facing tool names and the JSON keys of saves/traces stay German — mapping in `docs/Agent-overview.md` §6); dog on/off is `utils.NODOG` only. The model
 interface is `AgentLLM.frage(...)` (`llm.py`), a fake model exists (`python -m agent_player.fake_run`). Traces:
 `agent_runs/*.jsonl` (git-ignored). Spectator panel: `web/agent_panel.js`. ⚠️ Gotchas: the google SDK/venv imports hang in
 Claude's sandbox (use system python + a `utils` stub for tests); `web/index.html` must keep the query string when
 redirecting; the read-only chat modal must end left of the panel (otherwise it blocks the controls).
 
 **Agent learns across games (2026-11-11):** `agent_player/experience.py` — after a finished game the agent writes lessons
-into `Experience.md` (project root, hand-editable; tool `erfahrung_notieren`), and `AgentKontext.system_prompt()` injects the
-newest `config.EXPERIENCE_MAX_ZEICHEN` of it at the next start (off via `config.EXPERIENCE_AKTIV`). Loading a save from the
+into `Experience.md` (project root, hand-editable; tool `erfahrung_notieren`), and `AgentContext.system_prompt()` injects the
+newest `config.EXPERIENCE_MAX_CHARS` of it at the next start (off via `config.EXPERIENCE_ACTIVE`). Loading a save from the
 welcome screen/panel can carry a `&tipp=` hint for the agent. The game-over screen leaves room for the agent panel
 (`--agent-offset`).
 

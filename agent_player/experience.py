@@ -58,19 +58,13 @@ def append_insights(result: str, rounds: int, insights: list[str]) -> list[str]:
 
 async def write_summary(ctx: AgentContext, result: str) -> list[str]:
     """Fragt den Agenten nach dem Spiel nach seinen Erkenntnissen und schreibt sie in Experience.md."""
-    history = "\n".join(e.as_text() for e in ctx.history[-config.EXPERIENCE_HISTORY_ROUNDS:]) or "(keine Züge)"
-    ending = "\n".join([ctx.last_result] + [f"- {m}" for m in ctx.npc_messages]).strip() or "(nichts)"
-    text = (f"=== DAS SPIEL IST ZU ENDE: {result.upper()} (Runde {ctx.round_number}) ===\n\n"
-            f"=== LETZTE MELDUNGEN ===\n{ending}\n\n"
-            f"=== DEIN NOTIZBUCH ===\n{ctx.notebook.read()}\n\n"
-            f"=== DEINE LETZTEN ZÜGE ===\n{history}\n\n"
-            "Ziehe jetzt Resümee – so, wie ein menschlicher Spieler sich nach dem Spiel etwas fürs nächste Mal merkt. "
-            "Was hast du über die Spielwelt gelernt (Orte, Wege, Objekte und was man damit tun kann, Gefahren, Figuren)? "
-            "Was würdest du beim nächsten Mal anders machen? Formuliere jede Erkenntnis als einen kurzen, konkreten, "
-            "allgemeingültigen Satz, z. B. 'Vorsicht: <Aktion> am Ort <X> hat <Folge>.' oder '<Objekt> kann man <Verb> – "
-            "dann passiert <Wirkung>.' Nur, was du in diesem Spiel selbst erlebt oder gelesen hast – nichts erfinden, "
-            "nichts wiederholen, was schon unter 'Erfahrungen aus früheren Spielen' steht. Rufe für jede Erkenntnis "
-            f"'erfahrung_notieren' auf (höchstens {config.EXPERIENCE_MAX_INSIGHTS}).")
+    history = ("\n".join(e.as_text() for e in ctx.history[-config.EXPERIENCE_HISTORY_ROUNDS:])
+               or config.PROMPT_SUMMARY_NO_MOVES)
+    ending = ("\n".join([ctx.last_result] + [f"- {m}" for m in ctx.npc_messages]).strip()
+              or config.PROMPT_SUMMARY_NO_MESSAGES)
+    text = config.PROMPT_SUMMARY.format(result_upper=result.upper(), round_number=ctx.round_number, ending=ending,
+                                        notebook=ctx.notebook.read(), history=history,
+                                        max_insights=config.EXPERIENCE_MAX_INSIGHTS)
     response = await ctx.ask_model([Message.from_user(text)], EXPERIENCE_TOOLS)
     insights = [str(a.args.get("erkenntnis", "")) for a in response.calls if a.name == "erfahrung_notieren"]
     new = append_insights(result, ctx.round_number, insights[:config.EXPERIENCE_MAX_INSIGHTS])

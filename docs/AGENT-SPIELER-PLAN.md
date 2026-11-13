@@ -4,6 +4,9 @@ Stand: 2026-11-11 · Branch: `Adventure-11-AgentNPC` · Grundlage: `docs/AGENT-S
 Status: **Umgesetzt** (Meilensteine 1–6 und Nachträge, Stand 2026-11-11). Dies ist das ursprüngliche Planungsdokument;
 wo Code und Plan abweichen, **gilt der Code** — die Abweichungen stehen am Ende („Abweichungen vom Plan“), die
 Beschreibung des Ist-Zustands in `docs/AGENT-SPIELER-erklaert.md`.
+Achtung: Die Namen im Plan (Dateien, Klassen, Funktionen, Konstanten) sind die **ursprünglichen deutschen**; am 2026-11-13 wurden alle
+Bezeichner im Paket ins Englische umbenannt (z. B. `spielstand.py` → `savestate.py`, `AgentKontext` → `AgentContext`,
+`spiele_runde` → `play_round`) und die Prompts in `config.py` gesammelt. Die Zuordnung steht in `docs/Agent-overview.md`.
 
 ## 0. Entscheidungen aus Phase 0
 
