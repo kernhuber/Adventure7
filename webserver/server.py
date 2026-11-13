@@ -66,8 +66,8 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
 
         # Agentenmodus: Browser verbindet sich mit ws://host:port/?mode=agent[&player=llm|fake|skript][&save=<slot>]
         # (siehe docs/AGENT-SPIELER-PLAN.md). Sonst spielt wie bisher ein Mensch.
-        agent_mode, agent_spieler, agent_save, agent_tipp = self._agent_request(websocket)
-        agent_zustand, agent_meldungen = None, []   # aus einem geladenen Spielstand (Meldungen gehen an den Browser)
+        agent_mode, agent_player_type, agent_save, agent_tip = self._agent_request(websocket)
+        agent_state, agent_messages = None, []   # aus einem geladenen Spielstand (Meldungen gehen an den Browser)
         human_load = None if agent_mode else self._load_request(websocket)   # ?load=<slot>: Mensch ab Spielstand
 
         if GAME_MODULES_AVAILABLE:
@@ -121,10 +121,10 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
 
                 # Agentenmodus mit &save=<slot>: Spielstand samt Agentenzustand laden (Format wird geprüft).
                 if agent_mode and agent_save:
-                    from agent_player import spielstand
-                    geladen, agent_zustand, agent_meldungen = spielstand.laden(agent_save, llm)
-                    if geladen is not None:
-                        game = geladen
+                    from agent_player import savestate
+                    loaded, agent_state, agent_messages = savestate.load_game(agent_save, llm)
+                    if loaded is not None:
+                        game = loaded
                         player = game.players[0]
                         player.session_id = session_id
 
@@ -132,14 +132,14 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                 if human_load:
                     try:
                         from services.save_load import load_from_file
-                        from agent_player.spielstand import pfad_fuer
-                        game = load_from_file(pfad_fuer(human_load), llm=llm)
+                        from agent_player.savestate import path_for
+                        game = load_from_file(path_for(human_load), llm=llm)
                         player = game.players[0]
                         player.session_id = session_id
-                        agent_meldungen.append(f"📂 Spielstand '{human_load}' geladen.")
+                        agent_messages.append(f"📂 Spielstand '{human_load}' geladen.")
                     except Exception as e:
                         dprint(dl.WEBGUI, f"Load-Fehler: {e}")
-                        agent_meldungen.append(f"❌ Laden von '{human_load}' fehlgeschlagen ({e}) – es startet ein neues Spiel.")
+                        agent_messages.append(f"❌ Laden von '{human_load}' fehlgeschlagen ({e}) – es startet ein neues Spiel.")
 
                 # Konvertiere zu serialisierbarem Format - MIT initialer Narration
                 game_state = serialize_real_game_state(game, session_id=session_id)
@@ -162,7 +162,7 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                     # Der Runner spielt die Züge; session["tap"] (None = aus) schneidet mit, was der Browser bekommt.
                     from agent_player.runner import AgentRunner
                     session["tap"] = None
-                    session["agent"] = AgentRunner(self, websocket, session, session_id, agent_spieler, agent_zustand, agent_tipp)
+                    session["agent"] = AgentRunner(self, websocket, session, session_id, agent_player_type, agent_state, agent_tip)
                 self.game_sessions[session_id] = session
                 game.cmd_q = session["cmd_q"]
 
@@ -199,8 +199,8 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
 
         # Sende initialen Zustand
         await self.send_game_state(websocket, self.game_sessions[session_id]["state"])
-        for meldung in agent_meldungen:                # z. B. "Spielstand geladen" oder eine Formatwarnung
-            await websocket.send(json.dumps({"type": "info", "message": meldung}))
+        for notice in agent_messages:                # z. B. "Spielstand geladen" oder eine Formatwarnung
+            await websocket.send(json.dumps({"type": "info", "message": notice}))
         dprint(dl.WEBGUI, f"✅ Client {session_id} initialisiert ({self.game_sessions[session_id]['type']} Modus)")
 
     @staticmethod
@@ -238,7 +238,7 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
         if session_id in self.game_sessions:
             runner = self.game_sessions[session_id].get("agent")
             if runner is not None:
-                runner.beenden()
+                runner.close()
             del self.game_sessions[session_id]
 
         dprint(dl.WEBGUI, f"👋 Client {session_id} getrennt")
@@ -275,7 +275,7 @@ class WebAdventureServer(CommandEngineMixin, NPCRunnerMixin):
                         # Steuerung des Agenten (Start/Pause/Einzelschritt/...) aus dem Zuschauer-Panel.
                         runner = self.game_sessions[str(id(websocket))].get("agent")
                         if runner is not None:
-                            await runner.behandle_kommando(data)
+                            await runner.handle_control_command(data)
                     elif message_type == 'list_slots':
                         # GUI "Laden"-Button fragt die vorhandenen Spielstände ab.
                         from webserver.command_engine import _list_slots

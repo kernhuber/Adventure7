@@ -128,7 +128,7 @@ def save_game(gs: Any, agent: dict | None = None) -> dict:
     """Collect the full game into a version'd blob of self-describing envelopes.
 
     ``agent`` is an optional, opaque dict with the state of an AI agent player (notebook, history ...,
-    see agent_player/spielstand.py). It is stored under the top-level key "agent" with its OWN
+    see agent_player/savestate.py). It is stored under the top-level key "agent" with its OWN
     format tag + version, so the game's SAVE_VERSION does not change: files without it load as
     before, and older loaders simply ignore the extra key.
 
@@ -234,7 +234,7 @@ def load_from_file(path: str, *, llm: Any = None) -> Any:
 def load_from_file_with_agent(path: str, *, llm: Any = None) -> tuple[Any, dict | None]:
     """Like load_from_file, but also returns the raw "agent" block (None if the save has none).
 
-    The block is returned UNVALIDATED: its format belongs to agent_player (see pruefen there)."""
+    The block is returned UNVALIDATED: its format belongs to agent_player (see validate there)."""
     with open(path, encoding="utf-8") as f:
         blob = json.load(f)
     return load_game(blob, llm=llm), blob.get("agent")

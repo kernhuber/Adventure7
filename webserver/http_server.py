@@ -20,10 +20,10 @@ class NoListingHandler(SimpleHTTPRequestHandler):
         return None
 
     def do_GET(self):
-        # Liste der Spielstände für die Startauswahl im Welcome-Screen (agent_player.spielstand.auflisten).
+        # Liste der Spielstände für die Startauswahl im Welcome-Screen (agent_player.savestate.list_saves).
         if self.path.split("?")[0] == "/slots.json":
-            from agent_player.spielstand import auflisten
-            body = json.dumps(auflisten(), ensure_ascii=False).encode("utf-8")
+            from agent_player.savestate import list_saves
+            body = json.dumps(list_saves(), ensure_ascii=False).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))

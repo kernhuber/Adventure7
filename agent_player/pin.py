@@ -8,48 +8,48 @@ muss sie im Spiel gefunden und in sein Notizbuch geschrieben haben (guter Test f
 import hashlib
 
 from utils import dprint, dl
-from agent_player.context import AgentKontext, pin_nachricht
-from agent_player.llm import AufrufErgebnis, Nachricht
-from agent_player.tools import PIN_WERKZEUGE
+from agent_player.context import AgentContext, pin_message
+from agent_player.llm import ToolResult, Message
+from agent_player.tools import PIN_TOOLS
 
-MAX_MODELLAUFRUFE = 6      # Sicherung: das Pad darf den Agenten nicht endlos beschäftigen
+MAX_MODEL_CALLS = 6      # Sicherung: das Pad darf den Agenten nicht endlos beschäftigen
 
 
-async def loese_pinpad(ctx: AgentKontext, erwarteter_hash: str) -> str:
+async def solve_pinpad(ctx: AgentContext, expected_hash: str) -> str:
     """Lässt den Agenten die PIN eingeben. Rückgabe wie beim Browser-Pad: "OK" oder "FAIL"."""
-    nachrichten = [pin_nachricht(ctx)]
-    for _ in range(MAX_MODELLAUFRUFE):
-        antwort = await ctx.frage_modell(nachrichten, PIN_WERKZEUGE)
-        nachrichten.append(Nachricht.vom_modell(antwort))
-        ergebnisse = []
-        for aufruf in antwort.aufrufe:
-            await ctx.steuerung.vor_schritt()
-            ctx.schritt += 1
-            if aufruf.name == "notizbuch_lesen":
-                text = ctx.notizbuch.lesen()
-                await _zeige(ctx, "free", "notizbuch_lesen", {}, text)
-                ergebnisse.append(AufrufErgebnis(aufruf.name, text))
-            elif aufruf.name == "pin_eingeben":
-                ziffern = str(aufruf.args.get("ziffern", "")).strip()
-                if not (ziffern.isdigit() and len(ziffern) == 4):
-                    fehler = "Die Geheimzahl besteht aus genau vier Ziffern."
-                    await _zeige(ctx, "error", "pin_eingeben", {"ziffern": ziffern}, fehler)
-                    ergebnisse.append(AufrufErgebnis(aufruf.name, "FEHLER: " + fehler))
+    messages = [pin_message(ctx)]
+    for _ in range(MAX_MODEL_CALLS):
+        response = await ctx.ask_model(messages, PIN_TOOLS)
+        messages.append(Message.from_model(response))
+        results = []
+        for call in response.calls:
+            await ctx.controller.before_step()
+            ctx.step += 1
+            if call.name == "notizbuch_lesen":
+                text = ctx.notebook.read()
+                await _show(ctx, "free", "notizbuch_lesen", {}, text)
+                results.append(ToolResult(call.name, text))
+            elif call.name == "pin_eingeben":
+                digits = str(call.args.get("ziffern", "")).strip()
+                if not (digits.isdigit() and len(digits) == 4):
+                    error = "Die Geheimzahl besteht aus genau vier Ziffern."
+                    await _show(ctx, "error", "pin_eingeben", {"ziffern": digits}, error)
+                    results.append(ToolResult(call.name, "FEHLER: " + error))
                     continue
-                richtig = hashlib.md5(ziffern.encode()).hexdigest() == erwarteter_hash
-                await _zeige(ctx, "pin", "pin_eingeben", {"ziffern": ziffern},
-                             "Die Zahl stimmt!" if richtig else "Die Zahl ist falsch.")
-                dprint(dl.AGENT, f"🔐 PIN eingegeben: {ziffern} -> {'OK' if richtig else 'FAIL'}")
-                return "OK" if richtig else "FAIL"            # ein Versuch pro Karteneinsatz, wie beim Menschen
+                correct = hashlib.md5(digits.encode()).hexdigest() == expected_hash
+                await _show(ctx, "pin", "pin_eingeben", {"ziffern": digits},
+                             "Die Zahl stimmt!" if correct else "Die Zahl ist falsch.")
+                dprint(dl.AGENT, f"🔐 PIN eingegeben: {digits} -> {'OK' if correct else 'FAIL'}")
+                return "OK" if correct else "FAIL"            # ein Versuch pro Karteneinsatz, wie beim Menschen
             else:
-                ergebnisse.append(AufrufErgebnis(aufruf.name, "FEHLER: Am PIN-Pad gibt es nur 'notizbuch_lesen' und 'pin_eingeben'."))
-        if antwort.aufrufe:
-            nachrichten.append(Nachricht.werkzeug_ergebnisse(ergebnisse))
+                results.append(ToolResult(call.name, "FEHLER: Am PIN-Pad gibt es nur 'notizbuch_lesen' und 'pin_eingeben'."))
+        if response.calls:
+            messages.append(Message.tool_results(results))
         else:
-            nachrichten.append(Nachricht.vom_nutzer("Rufe 'pin_eingeben' mit vier Ziffern auf."))
+            messages.append(Message.from_user("Rufe 'pin_eingeben' mit vier Ziffern auf."))
     return "FAIL"
 
 
-async def _zeige(ctx: AgentKontext, art: str, werkzeug: str, args: dict, text: str) -> None:
-    await ctx.melde({"type": "agent_event", "kind": art, "tool": werkzeug, "args": args, "result": text,
-                     "round": ctx.runde, "step": ctx.schritt})
+async def _show(ctx: AgentContext, kind: str, tool: str, args: dict, text: str) -> None:
+    await ctx.report({"type": "agent_event", "kind": kind, "tool": tool, "args": args, "result": text,
+                     "round": ctx.round_number, "step": ctx.step})

@@ -10,138 +10,138 @@ Eine Agentenschleife ist im Kern genau das: Modell fragen -> Werkzeug ausführen
 from dataclasses import dataclass
 
 from agent_player import config
-from agent_player.context import AgentKontext, RundenEintrag, runden_nachricht
-from agent_player.llm import Aufruf, AufrufErgebnis, Nachricht
-from agent_player.observation import beobachtung_als_text, ereignisse_auswerten
-from agent_player.tools import FREIE_AKTIONEN, ZUEGE, FREIE_NAMEN, ZUG_NAMEN, zug_vorbereiten
+from agent_player.context import AgentContext, RoundEntry, round_message
+from agent_player.llm import ToolCall, ToolResult, Message
+from agent_player.observation import observation_as_text, evaluate_events
+from agent_player.tools import FREE_ACTIONS, MOVES, FREE_NAMES, MOVE_NAMES, prepare_move
 
-HINWEIS_KEIN_WERKZEUG = "Du hast kein Werkzeug aufgerufen. Rufe jetzt ein Werkzeug auf – am Ende der Runde einen Zug."
+NUDGE_NO_TOOL = "Du hast kein Werkzeug aufgerufen. Rufe jetzt ein Werkzeug auf – am Ende der Runde einen Zug."
 
 
 @dataclass
-class RundenErgebnis:
-    zug: str
-    warum: str
-    ergebnis: str
+class RoundResult:
+    move: str
+    why: str
+    result: str
     neutral: bool = False      # True, wenn das Aufruflimit zu einem Ersatzzug geführt hat
 
 
-async def spiele_runde(ctx: AgentKontext) -> RundenErgebnis:
+async def play_round(ctx: AgentContext) -> RoundResult:
     """Eine Spielrunde des Agenten: so lange Werkzeuge nutzen, bis er einen Zug macht."""
-    ctx.neue_runde()
+    ctx.new_round()
     # LERNPUNKT: frischer Kontext je Runde (siehe context.py) – der Verlauf der Runde lebt nur in `nachrichten`.
-    nachrichten = [runden_nachricht(ctx)]
-    werkzeuge = FREIE_AKTIONEN + ZUEGE
-    while ctx.aufrufe_runde < config.MAX_AUFRUFE_PRO_RUNDE:
-        antwort = await ctx.frage_modell(nachrichten, werkzeuge)              # 1. Modell fragen
-        nachrichten.append(Nachricht.vom_modell(antwort))
-        if not antwort.aufrufe:                                               # Modell hat nur geredet
-            ctx.aufrufe_runde += 1
-            nachrichten.append(Nachricht.vom_nutzer(HINWEIS_KEIN_WERKZEUG))
+    messages = [round_message(ctx)]
+    tools = FREE_ACTIONS + MOVES
+    while ctx.calls_round < config.MAX_CALLS_PER_ROUND:
+        response = await ctx.ask_model(messages, tools)              # 1. Modell fragen
+        messages.append(Message.from_model(response))
+        if not response.calls:                                               # Modell hat nur geredet
+            ctx.calls_round += 1
+            messages.append(Message.from_user(NUDGE_NO_TOOL))
             continue
-        ergebnisse = []
-        for aufruf in antwort.aufrufe:
-            await ctx.steuerung.vor_schritt()                                 # Pause / Einzelschritt / Tempo
-            ctx.aufrufe_runde += 1
-            ctx.schritt += 1
-            ergebnis, war_zug = await fuehre_werkzeug_aus(ctx, aufruf)        # 2. Werkzeug ausführen
-            ergebnisse.append(ergebnis)
-            await ctx.sende_status()
-            if war_zug:                                                       # ein Zug beendet die Runde,
-                return RundenErgebnis(aufruf.name, str(aufruf.args.get("warum", "")), ergebnis.text)  # der Kontext wird verworfen
-        nachrichten.append(Nachricht.werkzeug_ergebnisse(ergebnisse))         # 3. Ergebnis zurück ans Modell, dann von vorn
-    return await erzwinge_zug(ctx, nachrichten)                               # Limit erreicht
+        results = []
+        for call in response.calls:
+            await ctx.controller.before_step()                                 # Pause / Einzelschritt / Tempo
+            ctx.calls_round += 1
+            ctx.step += 1
+            result, was_move = await run_tool(ctx, call)        # 2. Werkzeug ausführen
+            results.append(result)
+            await ctx.send_status()
+            if was_move:                                                       # ein Zug beendet die Runde,
+                return RoundResult(call.name, str(call.args.get("warum", "")), result.text)  # der Kontext wird verworfen
+        messages.append(Message.tool_results(results))         # 3. Ergebnis zurück ans Modell, dann von vorn
+    return await force_move(ctx, messages)                               # Limit erreicht
 
 
 # ---------------------------------------------------------------------------------------
 # Hilfsfunktionen (bewusst außerhalb der Schleife, damit diese lesbar bleibt)
 # ---------------------------------------------------------------------------------------
-async def fuehre_werkzeug_aus(ctx: AgentKontext, aufruf: Aufruf) -> tuple[AufrufErgebnis, bool]:
+async def run_tool(ctx: AgentContext, call: ToolCall) -> tuple[ToolResult, bool]:
     """Führt ein Werkzeug aus. Rückgabe: (Ergebnis fürs Modell, wurde ein Zug ausgeführt?)."""
-    if aufruf.name in FREIE_NAMEN:
-        text = frei_ausfuehren(ctx, aufruf)
-        await ctx.melde({"type": "agent_event", "kind": "free", "tool": aufruf.name, "args": aufruf.args,
-                         "result": text, "round": ctx.runde, "step": ctx.schritt})
-        if aufruf.name == "notizbuch_schreiben":
-            await ctx.melde({"type": "agent_notebook", "text": ctx.notizbuch.lesen()})
-        return AufrufErgebnis(aufruf.name, text), False
-    if aufruf.name in ZUG_NAMEN:
-        if not str(aufruf.args.get("warum", "")).strip():
-            return await _fehler(ctx, aufruf, "Jeder Zug braucht das Argument 'warum' (ein Satz).")
-        function_call, fehler = zug_vorbereiten(aufruf.name, aufruf.args, ctx.hole_ansicht())
+    if call.name in FREE_NAMES:
+        text = run_free_action(ctx, call)
+        await ctx.report({"type": "agent_event", "kind": "free", "tool": call.name, "args": call.args,
+                         "result": text, "round": ctx.round_number, "step": ctx.step})
+        if call.name == "notizbuch_schreiben":
+            await ctx.report({"type": "agent_notebook", "text": ctx.notebook.read()})
+        return ToolResult(call.name, text), False
+    if call.name in MOVE_NAMES:
+        if not str(call.args.get("warum", "")).strip():
+            return await _error(ctx, call, "Jeder Zug braucht das Argument 'warum' (ein Satz).")
+        function_call, error = prepare_move(call.name, call.args, ctx.get_view())
         if function_call is None:
-            return await _fehler(ctx, aufruf, fehler)
-        return await zug_ausfuehren(ctx, aufruf, function_call)
-    return await _fehler(ctx, aufruf, f"Unbekanntes Werkzeug '{aufruf.name}'.")
+            return await _error(ctx, call, error)
+        return await execute_move(ctx, call, function_call)
+    return await _error(ctx, call, f"Unbekanntes Werkzeug '{call.name}'.")
 
 
-async def zug_ausfuehren(ctx: AgentKontext, aufruf: Aufruf, function_call: dict) -> tuple[AufrufErgebnis, bool]:
+async def execute_move(ctx: AgentContext, call: ToolCall, function_call: dict) -> tuple[ToolResult, bool]:
     """Schickt einen Zug durch den normalen Rundenpfad (derselbe wie beim Menschen)."""
-    ereignisse = await ctx.fuehre_zug_aus(function_call)
-    a = ereignisse_auswerten(ereignisse)
-    if a.fehler:                                   # Systemfehler der Engine: kostet keine Runde
-        return await _fehler(ctx, aufruf, a.text or "Die Engine hat den Zug abgelehnt.")
-    ctx.letztes_ergebnis, ctx.npc_meldungen = a.text, a.npc_meldungen
-    warum = str(aufruf.args.get("warum", ""))
-    ctx.verlauf.append(RundenEintrag(ctx.runde, f"{aufruf.name} {_args_text(aufruf)}", warum, a.text))
-    anzeige = a.text + ("\n" if a.text and a.npc_meldungen else "") + "\n".join(f"⚠ {m}" for m in a.npc_meldungen)
-    await ctx.melde({"type": "agent_event", "kind": "move", "tool": aufruf.name, "args": _ohne_warum(aufruf.args),
-                     "warum": warum, "result": anzeige, "round": ctx.runde, "step": ctx.schritt})
-    return AufrufErgebnis(aufruf.name, a.text), True
+    events = await ctx.run_move(function_call)
+    a = evaluate_events(events)
+    if a.error:                                   # Systemfehler der Engine: kostet keine Runde
+        return await _error(ctx, call, a.text or "Die Engine hat den Zug abgelehnt.")
+    ctx.last_result, ctx.npc_messages = a.text, a.npc_messages
+    why = str(call.args.get("warum", ""))
+    ctx.history.append(RoundEntry(ctx.round_number, f"{call.name} {_args_text(call)}", why, a.text))
+    display = a.text + ("\n" if a.text and a.npc_messages else "") + "\n".join(f"⚠ {m}" for m in a.npc_messages)
+    await ctx.report({"type": "agent_event", "kind": "move", "tool": call.name, "args": _without_why(call.args),
+                     "warum": why, "result": display, "round": ctx.round_number, "step": ctx.step})
+    return ToolResult(call.name, a.text), True
 
 
-async def erzwinge_zug(ctx: AgentKontext, nachrichten: list[Nachricht]) -> RundenErgebnis:
+async def force_move(ctx: AgentContext, messages: list[Message]) -> RoundResult:
     """Aufruflimit erreicht: Agent auffordern, jetzt zu ziehen; sonst neutraler Zug (wird protokolliert)."""
-    nachrichten.append(Nachricht.vom_nutzer(
-        f"Du hast {config.MAX_AUFRUFE_PRO_RUNDE} Werkzeugaufrufe in dieser Runde verbraucht. Mache JETZT einen Zug."))
-    antwort = await ctx.frage_modell(nachrichten, ZUEGE)
-    for aufruf in antwort.aufrufe:
-        if aufruf.name not in ZUG_NAMEN:               # jetzt zählen nur noch Züge
+    messages.append(Message.from_user(
+        f"Du hast {config.MAX_CALLS_PER_ROUND} Werkzeugaufrufe in dieser Runde verbraucht. Mache JETZT einen Zug."))
+    response = await ctx.ask_model(messages, MOVES)
+    for call in response.calls:
+        if call.name not in MOVE_NAMES:               # jetzt zählen nur noch Züge
             continue
-        await ctx.steuerung.vor_schritt()
-        ctx.schritt += 1
-        ergebnis, war_zug = await fuehre_werkzeug_aus(ctx, aufruf)
-        if war_zug:
-            return RundenErgebnis(aufruf.name, str(aufruf.args.get("warum", "")), ergebnis.text)
-    neutral = Aufruf("umsehen", {"warum": "Limit erreicht – neutraler Ersatzzug"})
-    ctx.schritt += 1
-    ergebnis, _ = await zug_ausfuehren(ctx, neutral, {"function_call": {"name": "umsehen", "args": {}}})
-    return RundenErgebnis("umsehen", neutral.args["warum"], ergebnis.text, neutral=True)
+        await ctx.controller.before_step()
+        ctx.step += 1
+        result, was_move = await run_tool(ctx, call)
+        if was_move:
+            return RoundResult(call.name, str(call.args.get("warum", "")), result.text)
+    neutral = ToolCall("umsehen", {"warum": "Limit erreicht – neutraler Ersatzzug"})
+    ctx.step += 1
+    result, _ = await execute_move(ctx, neutral, {"function_call": {"name": "umsehen", "args": {}}})
+    return RoundResult("umsehen", neutral.args["warum"], result.text, neutral=True)
 
 
-def frei_ausfuehren(ctx: AgentKontext, aufruf: Aufruf) -> str:
+def run_free_action(ctx: AgentContext, call: ToolCall) -> str:
     """Freie Aktionen: lesen/schreiben nur im eigenen Gedächtnis bzw. in der Beobachtung – die Welt bleibt unberührt."""
-    ansicht = ctx.hole_ansicht()
-    if aufruf.name == "situation_lesen":
-        return beobachtung_als_text(ansicht, ctx.letztes_ergebnis, ctx.npc_meldungen)
-    if aufruf.name == "inventar_ansehen":
-        return "Inventar: " + (", ".join(ansicht.get("player", {}).get("inventory", [])) or "leer")
-    if aufruf.name == "notizbuch_lesen":
-        return ctx.notizbuch.lesen()
-    if aufruf.name == "notizbuch_schreiben":
-        ctx.notizbuch.schreiben(str(aufruf.args.get("text", "")))
+    view = ctx.get_view()
+    if call.name == "situation_lesen":
+        return observation_as_text(view, ctx.last_result, ctx.npc_messages)
+    if call.name == "inventar_ansehen":
+        return "Inventar: " + (", ".join(view.get("player", {}).get("inventory", [])) or "leer")
+    if call.name == "notizbuch_lesen":
+        return ctx.notebook.read()
+    if call.name == "notizbuch_schreiben":
+        ctx.notebook.write(str(call.args.get("text", "")))
         return "Notiert."
-    if aufruf.name == "spielstand_speichern":
-        if ctx.speichere is None:
+    if call.name == "spielstand_speichern":
+        if ctx.save is None:
             return "Speichern ist hier nicht möglich."
-        return ctx.speichere(str(aufruf.args.get("notiz", "")))
+        return ctx.save(str(call.args.get("notiz", "")))
     # was_weiss_ich_ueber: nur Notizbuch und eigener Verlauf, NIE die Spielwelt
-    begriff = str(aufruf.args.get("begriff", "")).strip().lower()
-    treffer = [e for e in ctx.notizbuch.eintraege if begriff in e.lower()]
-    treffer += [e.als_text() for e in ctx.verlauf if begriff in e.als_text().lower()]
-    return "\n".join(treffer) if begriff and treffer else f"Zu '{begriff}' steht nichts in deinem Notizbuch oder Verlauf."
+    term = str(call.args.get("begriff", "")).strip().lower()
+    found = [e for e in ctx.notebook.entries if term in e.lower()]
+    found += [e.as_text() for e in ctx.history if term in e.as_text().lower()]
+    return "\n".join(found) if term and found else f"Zu '{term}' steht nichts in deinem Notizbuch oder Verlauf."
 
 
-async def _fehler(ctx: AgentKontext, aufruf: Aufruf, text: str) -> tuple[AufrufErgebnis, bool]:
+async def _error(ctx: AgentContext, call: ToolCall, text: str) -> tuple[ToolResult, bool]:
     """Fehler als Werkzeugergebnis: verständlich, und ohne dass eine Runde vergeht."""
-    await ctx.melde({"type": "agent_event", "kind": "error", "tool": aufruf.name, "args": _ohne_warum(aufruf.args),
-                     "warum": str(aufruf.args.get("warum", "")), "result": text, "round": ctx.runde, "step": ctx.schritt})
-    return AufrufErgebnis(aufruf.name, f"FEHLER (keine Runde verbraucht): {text}"), False
+    await ctx.report({"type": "agent_event", "kind": "error", "tool": call.name, "args": _without_why(call.args),
+                     "warum": str(call.args.get("warum", "")), "result": text, "round": ctx.round_number, "step": ctx.step})
+    return ToolResult(call.name, f"FEHLER (keine Runde verbraucht): {text}"), False
 
 
-def _ohne_warum(args: dict) -> dict:
+def _without_why(args: dict) -> dict:
     return {k: v for k, v in args.items() if k != "warum"}
 
 
-def _args_text(aufruf: Aufruf) -> str:
-    return " ".join(str(v) for v in _ohne_warum(aufruf.args).values())
+def _args_text(call: ToolCall) -> str:
+    return " ".join(str(v) for v in _without_why(call.args).values())

@@ -8,18 +8,18 @@ während der Agent Einträge ANHÄNGT.)
 """
 
 
-class Notizbuch:
+class Notebook:
     def __init__(self) -> None:
-        self.eintraege: list[str] = []
+        self.entries: list[str] = []
 
-    def schreiben(self, text: str) -> None:
+    def write(self, text: str) -> None:
         """Hängt einen Eintrag an (leere Texte werden ignoriert)."""
         text = text.strip()
         if text:
-            self.eintraege.append(text)
+            self.entries.append(text)
 
-    def lesen(self) -> str:
+    def read(self) -> str:
         """Alle Einträge als nummerierte Liste – oder ein Hinweis, dass es leer ist."""
-        if not self.eintraege:
+        if not self.entries:
             return "(Das Notizbuch ist noch leer.)"
-        return "\n".join(f"{i}. {e}" for i, e in enumerate(self.eintraege, start=1))
+        return "\n".join(f"{i}. {e}" for i, e in enumerate(self.entries, start=1))

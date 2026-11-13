@@ -1,13 +1,13 @@
 """Die ÄUSSERE Schleife des Agenten: Zug für Zug durch den normalen Rundenpfad.
 
 LERNPUNKT (zwei verschachtelte Schleifen): Das Spiel kennt Runden – das ist die äußere
-Schleife, hier in `_spiele_agent`. Pro Runde läuft darin die innere Denkschleife des Agenten
-(`loop.spiele_runde`). Der Skript-Spieler (`_spiele_skript`) ersetzt das Denken durch eine feste Liste.
+Schleife, hier in `_play_agent`. Pro Runde läuft darin die innere Denkschleife des Agenten
+(`loop.play_round`). Der Skript-Spieler (`_play_script`) ersetzt das Denken durch eine feste Liste.
 
 Wer spielt, bestimmt die URL: ?mode=agent (Gemini), &player=fake (Fake-Modell, kostenlos),
 &player=skript (feste Befehlsliste aus Meilenstein 1).
 
-LERNPUNKT (kein zweiter Regelpfad): `fuehre_zug_aus` legt den Zug in dieselbe Befehlswarteschlange
+LERNPUNKT (kein zweiter Regelpfad): `run_move` legt den Zug in dieselbe Befehlswarteschlange
 wie ein geparster Menschenbefehl und ruft `handle_command` auf. Durst, Rundenwechsel, NPC-Züge
 und Game Over laufen daher exakt wie bei einem Menschen.
 """
@@ -17,236 +17,236 @@ import time
 import traceback
 
 from utils import dprint, dl
-from agent_player import config, context, experience, spielstand
-from agent_player.context import AgentKontext, TokenLimitErreicht
-from agent_player.control import AgentSteuerung, AgentGestoppt
-from agent_player.loop import spiele_runde
-from agent_player.observation import ereignisse_auswerten
-from agent_player.skript_spieler import SKRIPT
-from agent_player.trace import Spur
+from agent_player import config, context, experience, savestate
+from agent_player.context import AgentContext, TokenLimitReached
+from agent_player.control import AgentController, AgentStopped
+from agent_player.loop import play_round
+from agent_player.observation import evaluate_events
+from agent_player.script_player import SCRIPT
+from agent_player.trace import Trace
 
 
 class AgentRunner:
-    def __init__(self, server, websocket, session: dict, session_id: str, spieler: str = "llm", agent_zustand: dict | None = None,
-                 tipp: str = ""):
+    def __init__(self, server, websocket, session: dict, session_id: str, player: str = "llm", agent_state: dict | None = None,
+                 tip: str = ""):
         self.server = server          # WebAdventureServer (hat handle_command)
         self.ws = websocket
         self.session = session
         self.session_id = session_id
-        self.spieler = spieler         # "llm" | "fake" | "skript"
-        self.ctx: AgentKontext | None = None
-        self.agent_zustand = agent_zustand   # aus einem geladenen Spielstand (bereits geprüft), sonst None
-        self.in_zug = False                  # True, solange ein Zug in der Engine läuft (dann nicht speichern)
-        self._hinweis_text = tipp      # Hinweis (z. B. &tipp= aus der URL), der vor dem Start des Agenten kam
-        self.spur: Spur | None = None
-        self.steuerung = AgentSteuerung(config.START_TEMPO_MS)
-        self.steuerung.bei_warten = self._sende_status
+        self.player = player         # "llm" | "fake" | "skript"
+        self.ctx: AgentContext | None = None
+        self.agent_state = agent_state   # aus einem geladenen Spielstand (bereits geprüft), sonst None
+        self.in_move = False                  # True, solange ein Zug in der Engine läuft (dann nicht speichern)
+        self._tip_text = tip      # Hinweis (z. B. &tipp= aus der URL), der vor dem Start des Agenten kam
+        self.trace: Trace | None = None
+        self.controller = AgentController(config.START_TEMPO_MS)
+        self.controller.on_wait = self._send_status
         self.task: asyncio.Task | None = None
-        self.runde = 0
-        self.schritt = 0
-        self.ende: str | None = None   # None | "finished" | "game_over"
+        self.round_number = 0
+        self.step = 0
+        self.outcome: str | None = None   # None | "finished" | "game_over"
 
     # --- Kommandos aus dem Browser -------------------------------------------
-    async def behandle_kommando(self, data: dict) -> None:
-        aktion = data.get("action", "")
-        if aktion == "save":                       # Zuschauer speichert Spiel + Agentenzustand
-            await self._sende({"type": "info", "message": "💾 " + self.speichere(str(data.get("name", "")))})
+    async def handle_control_command(self, data: dict) -> None:
+        action = data.get("action", "")
+        if action == "save":                       # Zuschauer speichert Spiel + Agentenzustand
+            await self._send({"type": "info", "message": "💾 " + self.save(str(data.get("name", "")))})
             return
-        if aktion == "slots":                      # Liste der Spielstände fürs Lade-Fenster des Panels
-            await self._sende({"type": "agent_slots", "slots": spielstand.auflisten()})
+        if action == "slots":                      # Liste der Spielstände fürs Lade-Fenster des Panels
+            await self._send({"type": "agent_slots", "slots": savestate.list_saves()})
             return
-        if aktion == "hint":                       # Testhilfe: Zuschauer gibt dem Agenten einen Hinweis
-            await self._hinweis(str(data.get("text", "")).strip())
+        if action == "hint":                       # Testhilfe: Zuschauer gibt dem Agenten einen Hinweis
+            await self._tip(str(data.get("text", "")).strip())
             return
-        self.steuerung.kommando(aktion, data.get("delay_ms"))
-        if aktion in ("start", "resume", "step", "round") and self.task is None:
-            self.task = asyncio.create_task(self._spiele_skript() if self.spieler == "skript" else self._spiele_agent())
-        await self._sende_status()
+        self.controller.command(action, data.get("delay_ms"))
+        if action in ("start", "resume", "step", "round") and self.task is None:
+            self.task = asyncio.create_task(self._play_script() if self.player == "skript" else self._play_agent())
+        await self._send_status()
 
-    async def _hinweis(self, text: str) -> None:
+    async def _tip(self, text: str) -> None:
         """Merkt einen Zuschauer-Hinweis für die NÄCHSTE Runde vor (protokolliert, damit man es in der Spur sieht)."""
         if not text:
             return
-        self._hinweis_text = text
+        self._tip_text = text
         if self.ctx is not None:
-            context.hinweis_merken(self.ctx, text)
-            await self._melde({"type": "agent_notebook", "text": self.ctx.notizbuch.lesen()})
-        await self._melde({"type": "agent_event", "kind": "text", "tool": "Zuschauer-Hinweis", "args": {},
-                           "result": f"{text}\n(gilt ab der nächsten Runde)", "round": self.runde, "step": self.schritt})
+            context.remember_tip(self.ctx, text)
+            await self._report({"type": "agent_notebook", "text": self.ctx.notebook.read()})
+        await self._report({"type": "agent_event", "kind": "text", "tool": "Zuschauer-Hinweis", "args": {},
+                           "result": f"{text}\n(gilt ab der nächsten Runde)", "round": self.round_number, "step": self.step})
 
-    def speichere(self, name: str, notiz: str = "") -> str:
+    def save(self, name: str, note: str = "") -> str:
         """Speichert Spielstand + Agentenzustand. Rückgabe: Meldung (Erfolg oder Grund, warum es nicht ging)."""
-        if self.in_zug:
+        if self.in_move:
             return "Gerade läuft ein Zug – bitte gleich noch einmal versuchen."
-        name = spielstand.sicherer_name(name) or time.strftime("agent_%Y%m%d_%H%M%S")
+        name = savestate.safe_name(name) or time.strftime("agent_%Y%m%d_%H%M%S")
         try:
-            spielstand.speichern(self.session["game"], self.ctx, name, notiz)
+            savestate.save_game(self.session["game"], self.ctx, name, note)
         except Exception as e:
             dprint(dl.AGENT, f"❌ Speichern fehlgeschlagen: {e}")
             return f"Speichern fehlgeschlagen: {e}"
-        zusatz = "" if self.ctx is not None else " (ohne Agentenzustand – der Agent hat noch nicht gestartet)"
-        return f"Spielstand '{name}' gespeichert{zusatz}."
+        suffix = "" if self.ctx is not None else " (ohne Agentenzustand – der Agent hat noch nicht gestartet)"
+        return f"Spielstand '{name}' gespeichert{suffix}."
 
-    def _speichere_fuer_agent(self, notiz: str) -> str:
+    def _save_for_agent(self, note: str) -> str:
         """Die freie Aktion 'spielstand_speichern' des Agenten: automatischer Name, seine Notiz kommt mit."""
-        return self.speichere(f"agent_runde{self.ctx.runde}_{time.strftime('%H%M%S')}", notiz)
+        return self.save(f"agent_runde{self.ctx.round_number}_{time.strftime('%H%M%S')}", note)
 
-    def beenden(self) -> None:
+    def close(self) -> None:
         """Beim Trennen des Browsers aufräumen."""
-        self.steuerung.kommando("stop")
+        self.controller.command("stop")
         if self.task is not None:
             self.task.cancel()
 
     # --- Äußere Schleife ------------------------------------------------------
-    async def _spiele_skript(self) -> None:
+    async def _play_script(self) -> None:
         game = self.session["game"]
         try:
-            for schritt in SKRIPT:
-                await self.steuerung.vor_schritt()
-                self.runde = game.time
-                self.schritt += 1
-                ereignisse = await self.fuehre_zug_aus(schritt.als_function_call())
-                await self._zeige_zug(schritt.verb, schritt.args, schritt.warum, ereignisse)
-                self.steuerung.zug_beendet()
+            for step in SCRIPT:
+                await self.controller.before_step()
+                self.round_number = game.time
+                self.step += 1
+                events = await self.run_move(step.as_function_call())
+                await self._show_move(step.verb, step.args, step.why, events)
+                self.controller.move_finished()
                 if game.game_over:
-                    self.ende = "game_over"
+                    self.outcome = "game_over"
                     break
             else:
-                self.ende = "finished"
-        except (AgentGestoppt, asyncio.CancelledError):
+                self.outcome = "finished"
+        except (AgentStopped, asyncio.CancelledError):
             pass
         except Exception as e:
             dprint(dl.AGENT, f"❌ Agent abgestürzt: {e}")
             traceback.print_exc()
             dprint(dl.AGENT, traceback.format_exc())      # auch ins Debug-Log (stderr sieht man nicht immer)
-            await self._sende({"type": "agent_event", "kind": "error", "tool": "-", "args": {},
-                               "result": f"Interner Fehler im Agenten: {e}", "round": self.runde, "step": self.schritt})
-        await self._sende_status()
+            await self._send({"type": "agent_event", "kind": "error", "tool": "-", "args": {},
+                               "result": f"Interner Fehler im Agenten: {e}", "round": self.round_number, "step": self.step})
+        await self._send_status()
 
-    async def _spiele_agent(self) -> None:
+    async def _play_agent(self) -> None:
         """Die äußere Schleife mit echtem Agenten: Runde für Runde, bis das Spiel oder ein Limit endet."""
         game = self.session["game"]
-        self.spur = Spur()
-        ende = "abgebrochen"
+        self.trace = Trace()
+        outcome = "abgebrochen"
         try:
-            ctx = AgentKontext(self._erzeuge_llm(), self.steuerung, lambda: self.session["state"],
-                               self.fuehre_zug_aus, self._melde)
+            ctx = AgentContext(self._create_llm(), self.controller, lambda: self.session["state"],
+                               self.run_move, self._report)
             self.ctx = ctx
-            self.steuerung.bei_warten = ctx.sende_status      # Panel zeigt, wenn der Agent auf eine Freigabe wartet
-            ctx.speichere = self._speichere_fuer_agent
-            if config.EXPERIENCE_AKTIV and self.spieler == "llm":      # Wissen aus früheren Spielen
-                ctx.erfahrungen = experience.lesen()
-                if ctx.erfahrungen:
-                    await self._melde({"type": "agent_event", "kind": "exp", "tool": "Experience.md", "args": {},
-                                       "result": f"Erfahrungen aus früheren Spielen geladen ({len(ctx.erfahrungen)} Zeichen).",
+            self.controller.on_wait = ctx.send_status      # Panel zeigt, wenn der Agent auf eine Freigabe wartet
+            ctx.save = self._save_for_agent
+            if config.EXPERIENCE_ACTIVE and self.player == "llm":      # Wissen aus früheren Spielen
+                ctx.lessons = experience.read()
+                if ctx.lessons:
+                    await self._report({"type": "agent_event", "kind": "exp", "tool": "Experience.md", "args": {},
+                                       "result": f"Erfahrungen aus früheren Spielen geladen ({len(ctx.lessons)} Zeichen).",
                                        "round": 0, "step": 0})
-            if self._hinweis_text:
-                await self._melde({"type": "agent_event", "kind": "text", "tool": "Zuschauer-Hinweis", "args": {},
-                                   "result": f"{self._hinweis_text}\n(gilt ab der ersten Runde)", "round": 0, "step": 0})
-            if self.agent_zustand:                            # aus einem Spielstand: Gedächtnis zurückspielen
-                spielstand.importieren(ctx, self.agent_zustand)
-                await self._melde({"type": "agent_notebook", "text": ctx.notizbuch.lesen()})
-            if self._hinweis_text:
-                context.hinweis_merken(ctx, self._hinweis_text)
-                await self._melde({"type": "agent_notebook", "text": ctx.notizbuch.lesen()})
+            if self._tip_text:
+                await self._report({"type": "agent_event", "kind": "text", "tool": "Zuschauer-Hinweis", "args": {},
+                                   "result": f"{self._tip_text}\n(gilt ab der ersten Runde)", "round": 0, "step": 0})
+            if self.agent_state:                            # aus einem Spielstand: Gedächtnis zurückspielen
+                savestate.import_state(ctx, self.agent_state)
+                await self._report({"type": "agent_notebook", "text": ctx.notebook.read()})
+            if self._tip_text:
+                context.remember_tip(ctx, self._tip_text)
+                await self._report({"type": "agent_notebook", "text": ctx.notebook.read()})
             # Gespräche (Zombie/Hund) führt der Agent selbst: AgentDialogs braucht dafür den Kontext.
             if self.session.get("web_dialogs") is not None:
                 self.session["web_dialogs"].ctx = ctx
-            for _ in range(config.MAX_RUNDEN):
-                await spiele_runde(ctx)                         # innere Schleife (loop.py)
-                self.steuerung.zug_beendet()
+            for _ in range(config.MAX_ROUNDS):
+                await play_round(ctx)                         # innere Schleife (loop.py)
+                self.controller.move_finished()
                 if game.game_over:
-                    ende = "gewonnen" if game.game_won else "verloren"
+                    outcome = "gewonnen" if game.game_won else "verloren"
                     break
             else:
-                ende = "abgebrochen (Rundenlimit)"
-        except (AgentGestoppt, asyncio.CancelledError):
-            ende = "abgebrochen (gestoppt)"
-        except TokenLimitErreicht:
-            ende = "abgebrochen (Tokenlimit)"
+                outcome = "abgebrochen (Rundenlimit)"
+        except (AgentStopped, asyncio.CancelledError):
+            outcome = "abgebrochen (gestoppt)"
+        except TokenLimitReached:
+            outcome = "abgebrochen (Tokenlimit)"
         except Exception as e:
             dprint(dl.AGENT, f"❌ Agent abgestürzt: {e}")
             traceback.print_exc()
             dprint(dl.AGENT, traceback.format_exc())      # auch ins Debug-Log (stderr sieht man nicht immer)
-            ende = f"abgebrochen (Fehler: {e})"
-            await self._melde({"type": "agent_event", "kind": "error", "tool": "-", "args": {},
-                               "result": f"Interner Fehler im Agenten: {e}", "round": self.runde, "step": self.schritt})
+            outcome = f"abgebrochen (Fehler: {e})"
+            await self._report({"type": "agent_event", "kind": "error", "tool": "-", "args": {},
+                               "result": f"Interner Fehler im Agenten: {e}", "round": self.round_number, "step": self.step})
         # Nach einem echten Spielende (oder Rundenlimit): Resümee in Experience.md, wie ein Mensch sich etwas merkt.
-        if (self.ctx is not None and config.EXPERIENCE_AKTIV and self.spieler == "llm"
-                and ende in ("gewonnen", "verloren", "abgebrochen (Rundenlimit)")):
+        if (self.ctx is not None and config.EXPERIENCE_ACTIVE and self.player == "llm"
+                and outcome in ("gewonnen", "verloren", "abgebrochen (Rundenlimit)")):
             try:
-                await experience.resuemee_ziehen(self.ctx, ende)
+                await experience.write_summary(self.ctx, outcome)
             except Exception as e:
                 dprint(dl.AGENT, f"❌ Resümee fehlgeschlagen: {e}")
                 dprint(dl.AGENT, traceback.format_exc())
-        await self._beende(ende)
+        await self._finish(outcome)
 
-    def _erzeuge_llm(self):
+    def _create_llm(self):
         """Wählt das Modell. Import erst hier, damit das Google-SDK nur bei Bedarf geladen wird."""
-        if self.spieler == "fake":
-            from agent_player.fake_llm import FakeAgentLLM, DEMO_ANTWORTEN
-            return FakeAgentLLM(DEMO_ANTWORTEN)
+        if self.player == "fake":
+            from agent_player.fake_llm import FakeAgentLLM, DEMO_REPLIES
+            return FakeAgentLLM(DEMO_REPLIES)
         from agent_player.llm import GeminiAgentLLM
-        return GeminiAgentLLM(config.AGENT_MODELL)
+        return GeminiAgentLLM(config.AGENT_MODEL)
 
-    async def _beende(self, ende: str) -> None:
+    async def _finish(self, outcome: str) -> None:
         """Zusammenfassung an Browser und Spur; letzter Status."""
         ctx = self.ctx
         if ctx is not None:
-            self.runde, self.schritt = ctx.runde, ctx.schritt
-        self.ende = "finished"
-        zusammenfassung = {
-            "type": "agent_summary", "ergebnis": ende, "runden": ctx.runde if ctx else 0,
-            "aufrufe": ctx.schritt if ctx else 0, "modellaufrufe": ctx.modellaufrufe if ctx else 0,
-            "tokens": ctx.tokens_gesamt if ctx else 0, "orte": sorted(ctx.orte) if ctx else [],
+            self.round_number, self.step = ctx.round_number, ctx.step
+        self.outcome = "finished"
+        summary = {
+            "type": "agent_summary", "ergebnis": outcome, "runden": ctx.round_number if ctx else 0,
+            "aufrufe": ctx.step if ctx else 0, "modellaufrufe": ctx.model_calls if ctx else 0,
+            "tokens": ctx.tokens_total if ctx else 0, "orte": sorted(ctx.places) if ctx else [],
             "letzter_ort": self.session["state"].get("player", {}).get("location", "?"),
-            "trace_datei": self.spur.pfad if self.spur else None,
+            "trace_datei": self.trace.file_path if self.trace else None,
         }
-        await self._melde(zusammenfassung)
-        await self._sende_status()
+        await self._report(summary)
+        await self._send_status()
 
-    async def _melde(self, nachricht: dict) -> None:
+    async def _report(self, message: dict) -> None:
         """Nachricht an den Browser UND (außer Statusmeldungen) in die JSONL-Spur."""
-        await self._sende(nachricht)
-        if self.spur is not None and nachricht.get("type") != "agent_status":
-            self.spur.schreibe(nachricht)
+        await self._send(message)
+        if self.trace is not None and message.get("type") != "agent_status":
+            self.trace.write(message)
 
     # --- Ein Zug durch den normalen Rundenpfad --------------------------------
-    async def fuehre_zug_aus(self, function_call: dict) -> list[dict]:
+    async def run_move(self, function_call: dict) -> list[dict]:
         """Führt einen Zug aus und gibt alle Nachrichten zurück, die der Browser dabei bekam.
 
         session["tap"] sammelt (siehe CommandEngineMixin._send) eine Kopie jeder gesendeten
         command_result-/npc_actions-Nachricht: genau das, was auch ein Mensch zu sehen bekäme."""
         self.session["tap"] = []
         self.session["cmd_q"].append(function_call)
-        self.in_zug = True
+        self.in_move = True
         try:
             await self.server.handle_command(self.ws, {"command": ""})
             return self.session["tap"]
         finally:
             self.session["tap"] = None
-            self.in_zug = False
+            self.in_move = False
 
-    async def _zeige_zug(self, verb: str, args: dict, warum: str, ereignisse: list[dict]) -> None:
-        a = ereignisse_auswerten(ereignisse)
-        text = a.text + ("\n" if a.text and a.npc_meldungen else "") + "\n".join(f"⚠ {m}" for m in a.npc_meldungen)
-        fehler = a.fehler
-        await self._sende({"type": "agent_event", "kind": "error" if fehler else "move", "tool": verb,
-                           "args": args, "warum": warum, "result": text,
-                           "round": self.runde, "step": self.schritt})
-        dprint(dl.AGENT, f"Runde {self.runde}: {verb} {args} -> {text[:80]!r}")
+    async def _show_move(self, verb: str, args: dict, why: str, events: list[dict]) -> None:
+        a = evaluate_events(events)
+        text = a.text + ("\n" if a.text and a.npc_messages else "") + "\n".join(f"⚠ {m}" for m in a.npc_messages)
+        error = a.error
+        await self._send({"type": "agent_event", "kind": "error" if error else "move", "tool": verb,
+                           "args": args, "warum": why, "result": text,
+                           "round": self.round_number, "step": self.step})
+        dprint(dl.AGENT, f"Runde {self.round_number}: {verb} {args} -> {text[:80]!r}")
 
     # --- Senden ----------------------------------------------------------------
-    async def _sende_status(self) -> None:
-        zustand = self.steuerung.zustand
-        if self.ende:
-            zustand = self.ende
-        await self._sende({"type": "agent_status", "state": zustand, "round": self.runde,
-                           "step": self.schritt, "tempo_ms": self.steuerung.tempo_ms})
+    async def _send_status(self) -> None:
+        state = self.controller.state
+        if self.outcome:
+            state = self.outcome
+        await self._send({"type": "agent_status", "state": state, "round": self.round_number,
+                           "step": self.step, "tempo_ms": self.controller.tempo_ms})
 
-    async def _sende(self, nachricht: dict) -> None:
+    async def _send(self, message: dict) -> None:
         try:
-            await self.ws.send(json.dumps(nachricht))
+            await self.ws.send(json.dumps(message))
         except Exception as e:
             dprint(dl.AGENT, f"⚠️  Senden an Browser fehlgeschlagen: {e}")
 

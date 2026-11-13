@@ -14,14 +14,14 @@ from typing import Awaitable, Callable
 
 from utils import dprint, dl
 from agent_player import config
-from agent_player.llm import AgentLLM, Antwort, Nachricht
-from agent_player.notebook import Notizbuch
-from agent_player.observation import beobachtung_als_text
-from agent_player.control import AgentSteuerung
-from agent_player.tools import Werkzeug
+from agent_player.llm import AgentLLM, ModelReply, Message
+from agent_player.notebook import Notebook
+from agent_player.observation import observation_as_text
+from agent_player.control import AgentController
+from agent_player.tools import ToolSpec
 
 
-class TokenLimitErreicht(Exception):
+class TokenLimitReached(Exception):
     """Das konfigurierte Tokenlimit für das ganze Spiel ist erreicht."""
 
 
@@ -51,141 +51,141 @@ So funktioniert das Spiel für dich:
 
 
 @dataclass
-class RundenEintrag:
+class RoundEntry:
     """Eine Zeile im kurzen Verlauf."""
-    runde: int
-    zug: str
-    warum: str
-    ergebnis: str
+    round_number: int
+    move: str
+    why: str
+    result: str
 
-    def als_text(self) -> str:
-        kurz = " ".join(self.ergebnis.split())[:140]
-        return f"Runde {self.runde}: {self.zug} – {self.warum} → {kurz or '(kein Ergebnistext)'}"
+    def as_text(self) -> str:
+        short = " ".join(self.result.split())[:140]
+        return f"Runde {self.round_number}: {self.move} – {self.why} → {short or '(kein Ergebnistext)'}"
 
 
 @dataclass
-class AgentKontext:
+class AgentContext:
     """Alles, was die Schleife über das Spiel und sich selbst weiß. Anbindung nach außen nur über
     drei Funktionen – so läuft dieselbe Schleife mit der echten Engine und mit einer Fake-Welt."""
     llm: AgentLLM
-    steuerung: AgentSteuerung
-    hole_ansicht: Callable[[], dict]                         # liefert, was der Browser anzeigt (session["state"])
-    fuehre_zug_aus: Callable[[dict], Awaitable[list[dict]]]  # schickt einen Zug durch den Rundenpfad
-    melde: Callable[[dict], Awaitable[None]]                 # Nachricht an Browser + Spur
-    notizbuch: Notizbuch = field(default_factory=Notizbuch)
-    verlauf: list[RundenEintrag] = field(default_factory=list)
-    erfahrungen: str = ""              # Inhalt von Experience.md (aus früheren Spielen), steht im System-Prompt
-    erinnerung: str = ""                # Notiz aus dem geladenen Spielstand (einmal prominent im Prompt)
-    speichere: Callable[[str], str] | None = None   # speichert Spielstand + Agentenzustand; Rückgabe: Meldung
-    hinweis: str = ""                   # Zuschauer-Hinweis (Testhilfe), wird einmal in den Prompt übernommen
-    letztes_ergebnis: str = ""
-    npc_meldungen: list[str] = field(default_factory=list)
-    runde: int = 0
-    schritt: int = 0
-    aufrufe_runde: int = 0
-    tokens_runde: int = 0
-    tokens_gesamt: int = 0
-    modellaufrufe: int = 0
-    orte: set = field(default_factory=set)
+    controller: AgentController
+    get_view: Callable[[], dict]                         # liefert, was der Browser anzeigt (session["state"])
+    run_move: Callable[[dict], Awaitable[list[dict]]]  # schickt einen Zug durch den Rundenpfad
+    report: Callable[[dict], Awaitable[None]]                 # Nachricht an Browser + Spur
+    notebook: Notebook = field(default_factory=Notebook)
+    history: list[RoundEntry] = field(default_factory=list)
+    lessons: str = ""              # Inhalt von Experience.md (aus früheren Spielen), steht im System-Prompt
+    save_memo: str = ""                # Notiz aus dem geladenen Spielstand (einmal prominent im Prompt)
+    save: Callable[[str], str] | None = None   # speichert Spielstand + Agentenzustand; Rückgabe: Meldung
+    tip: str = ""                   # Zuschauer-Hinweis (Testhilfe), wird einmal in den Prompt übernommen
+    last_result: str = ""
+    npc_messages: list[str] = field(default_factory=list)
+    round_number: int = 0
+    step: int = 0
+    calls_round: int = 0
+    tokens_round: int = 0
+    tokens_total: int = 0
+    model_calls: int = 0
+    places: set = field(default_factory=set)
 
     def system_prompt(self) -> str:
         """System-Prompt, ggf. mit den Erfahrungen aus früheren Spielen (Experience.md)."""
-        if not self.erfahrungen.strip():
+        if not self.lessons.strip():
             return SYSTEM_PROMPT
         return (SYSTEM_PROMPT + "\n=== ERFAHRUNGEN AUS FRÜHEREN SPIELEN (Experience.md) ===\n"
                 "Das ist dein Wissen aus früheren Partien. Nutze es, aber prüfe, ob es zur aktuellen Lage passt.\n\n"
-                + self.erfahrungen + "\n")
+                + self.lessons + "\n")
 
-    def neue_runde(self) -> None:
-        ansicht = self.hole_ansicht()
-        self.runde = ansicht.get("round", self.runde)
-        self.orte.add(ansicht.get("player", {}).get("location", "?"))
-        self.aufrufe_runde = 0
-        self.tokens_runde = 0
+    def new_round(self) -> None:
+        view = self.get_view()
+        self.round_number = view.get("round", self.round_number)
+        self.places.add(view.get("player", {}).get("location", "?"))
+        self.calls_round = 0
+        self.tokens_round = 0
 
-    async def frage_modell(self, nachrichten: list[Nachricht], werkzeuge: list[Werkzeug]) -> Antwort:
+    async def ask_model(self, messages: list[Message], tools: list[ToolSpec]) -> ModelReply:
         """Fragt das Modell, verbucht Tokens und zeigt den Freitext des Modells (nur echten Text!)."""
-        dprint(dl.AGENT, f"Modell wird gefragt ({len(nachrichten)} Nachrichten, {len(werkzeuge)} Werkzeuge) ...")
-        antwort = await self.llm.frage(self.system_prompt(), nachrichten, werkzeuge)
-        dprint(dl.AGENT, f"Modell antwortet: {len(antwort.aufrufe)} Aufruf(e) {[a.name for a in antwort.aufrufe]}, "
-                         f"{antwort.tokens_ein + antwort.tokens_aus} Tokens, Text: {antwort.text[:80]!r}")
-        verbrauch = antwort.tokens_ein + antwort.tokens_aus
-        self.tokens_runde += verbrauch
-        self.tokens_gesamt += verbrauch
-        self.modellaufrufe += 1
-        if antwort.text:
-            await self.melde({"type": "agent_event", "kind": "text", "tool": "Modell", "args": {},
-                              "result": antwort.text, "round": self.runde, "step": self.schritt})
-        await self.sende_status()
-        if config.MAX_TOKENS_GESAMT and self.tokens_gesamt >= config.MAX_TOKENS_GESAMT:
-            raise TokenLimitErreicht()
-        return antwort
+        dprint(dl.AGENT, f"Modell wird gefragt ({len(messages)} Nachrichten, {len(tools)} Werkzeuge) ...")
+        response = await self.llm.ask(self.system_prompt(), messages, tools)
+        dprint(dl.AGENT, f"Modell antwortet: {len(response.calls)} Aufruf(e) {[a.name for a in response.calls]}, "
+                         f"{response.tokens_in + response.tokens_out} Tokens, Text: {response.text[:80]!r}")
+        used = response.tokens_in + response.tokens_out
+        self.tokens_round += used
+        self.tokens_total += used
+        self.model_calls += 1
+        if response.text:
+            await self.report({"type": "agent_event", "kind": "text", "tool": "Modell", "args": {},
+                              "result": response.text, "round": self.round_number, "step": self.step})
+        await self.send_status()
+        if config.MAX_TOKENS_TOTAL and self.tokens_total >= config.MAX_TOKENS_TOTAL:
+            raise TokenLimitReached()
+        return response
 
-    async def sende_status(self) -> None:
-        await self.melde({"type": "agent_status", "state": self.steuerung.zustand, "round": self.runde,
-                          "step": self.schritt, "tempo_ms": self.steuerung.tempo_ms,
-                          "calls_round": self.aufrufe_runde, "calls_limit": config.MAX_AUFRUFE_PRO_RUNDE,
-                          "tokens_round": self.tokens_runde, "tokens_total": self.tokens_gesamt,
-                          "model_calls": self.modellaufrufe, "model": self.llm.modell})
+    async def send_status(self) -> None:
+        await self.report({"type": "agent_status", "state": self.controller.state, "round": self.round_number,
+                          "step": self.step, "tempo_ms": self.controller.tempo_ms,
+                          "calls_round": self.calls_round, "calls_limit": config.MAX_CALLS_PER_ROUND,
+                          "tokens_round": self.tokens_round, "tokens_total": self.tokens_total,
+                          "model_calls": self.model_calls, "model": self.llm.model})
 
 
-def hinweis_merken(ctx: AgentKontext, text: str) -> None:
+def remember_tip(ctx: AgentContext, text: str) -> None:
     """Nimmt einen Tipp von außen auf: einmal prominent im Prompt UND dauerhaft im Notizbuch.
 
     LERNPUNKT: Was nur in EINER Runde im Prompt steht, ist in der nächsten vergessen (der Prompt wird jede Runde
     frisch gebaut). Damit ein Tipp wirkt, muss er ins Gedächtnis des Agenten – das Notizbuch. Der Eintrag
-    erscheint auch in Gesprächen, denn `chat_nachricht` zeigt das Notizbuch ebenfalls."""
-    ctx.hinweis = text
-    ctx.notizbuch.schreiben(f"TIPP VON AUSSEN (Runde {ctx.runde}, von einem Zuschauer): {text}")
+    erscheint auch in Gesprächen, denn `chat_message` zeigt das Notizbuch ebenfalls."""
+    ctx.tip = text
+    ctx.notebook.write(f"TIPP VON AUSSEN (Runde {ctx.round_number}, von einem Zuschauer): {text}")
 
 
-def runden_nachricht(ctx: AgentKontext) -> Nachricht:
+def round_message(ctx: AgentContext) -> Message:
     """Baut die erste Nachricht einer Runde: Lage + Notizbuch + kurzer Verlauf (siehe Modul-Doku)."""
-    lage = beobachtung_als_text(ctx.hole_ansicht(), ctx.letztes_ergebnis, ctx.npc_meldungen)
-    verlauf = [e.als_text() for e in ctx.verlauf[-config.VERLAUF_RUNDEN:]]
-    text = (f"=== AKTUELLE LAGE ===\n{lage}\n\n"
-            f"=== DEIN NOTIZBUCH ===\n{ctx.notizbuch.lesen()}\n\n"
-            f"=== DEINE LETZTEN ZÜGE ===\n" + ("\n".join(verlauf) if verlauf else "(noch keine)") + "\n\n")
-    if ctx.erinnerung:
-        text += f"=== ERINNERUNG AUS DEM SPIELSTAND (eine Notiz von dir selbst) ===\n{ctx.erinnerung}\n\n"
-        ctx.erinnerung = ""
-    if ctx.hinweis:
+    situation = observation_as_text(ctx.get_view(), ctx.last_result, ctx.npc_messages)
+    history = [e.as_text() for e in ctx.history[-config.HISTORY_ROUNDS:]]
+    text = (f"=== AKTUELLE LAGE ===\n{situation}\n\n"
+            f"=== DEIN NOTIZBUCH ===\n{ctx.notebook.read()}\n\n"
+            f"=== DEINE LETZTEN ZÜGE ===\n" + ("\n".join(history) if history else "(noch keine)") + "\n\n")
+    if ctx.save_memo:
+        text += f"=== ERINNERUNG AUS DEM SPIELSTAND (eine Notiz von dir selbst) ===\n{ctx.save_memo}\n\n"
+        ctx.save_memo = ""
+    if ctx.tip:
         # LERNPUNKT: ein Hinweis von außen ist ein bewusster Eingriff ("human in the loop"): Er steht als
         # eigener, klar gekennzeichneter Abschnitt im Prompt und wird nur EINMAL verwendet.
-        text += (f"=== TIPP VON EINEM ZUSCHAUER ===\n{ctx.hinweis}\n"
+        text += (f"=== TIPP VON EINEM ZUSCHAUER ===\n{ctx.tip}\n"
                  "Der Tipp kommt von jemandem, der das Spiel kennt. Prüfe ihn und folge ihm, solange du keinen "
                  "konkreten Gegengrund hast. Er steht jetzt auch in deinem Notizbuch.\n\n")
-        ctx.hinweis = ""
+        ctx.tip = ""
     text += "Was tust du in dieser Runde?"
-    return Nachricht.vom_nutzer(text)
+    return Message.from_user(text)
 
 
-def chat_nachricht(ctx: AgentKontext, partner: str, chat: list[dict]) -> Nachricht:
+def chat_message(ctx: AgentContext, partner: str, chat: list[dict]) -> Message:
     """Erste Nachricht eines Gesprächs: Lage + Notizbuch + bisheriger Gesprächsverlauf.
 
     `chat` hat dasselbe Format wie im Browser-Modal: {"zombiemessage": ...} = der Partner (auch beim Hund),
     {"playermessage": ...} = der Agent."""
-    lage = beobachtung_als_text(ctx.hole_ansicht(), ctx.letztes_ergebnis, ctx.npc_meldungen)
-    verlauf = []
-    for zeile in chat:
-        for rolle, text in zeile.items():
-            verlauf.append(f"{partner if rolle == 'zombiemessage' else 'Du'}: {text}")
-    text = (f"=== AKTUELLE LAGE ===\n{lage}\n\n"
-            f"=== DEIN NOTIZBUCH ===\n{ctx.notizbuch.lesen()}\n\n"
-            f"=== GESPRÄCH MIT {partner.upper()} BISHER ===\n" + ("\n".join(verlauf) if verlauf else "(noch nichts gesagt)") + "\n\n"
+    situation = observation_as_text(ctx.get_view(), ctx.last_result, ctx.npc_messages)
+    history = []
+    for line in chat:
+        for role, text in line.items():
+            history.append(f"{partner if role == 'zombiemessage' else 'Du'}: {text}")
+    text = (f"=== AKTUELLE LAGE ===\n{situation}\n\n"
+            f"=== DEIN NOTIZBUCH ===\n{ctx.notebook.read()}\n\n"
+            f"=== GESPRÄCH MIT {partner.upper()} BISHER ===\n" + ("\n".join(history) if history else "(noch nichts gesagt)") + "\n\n"
             f"Du führst gerade ein Gespräch mit {partner}. Jetzt stehen dir nur 'sage' und 'gespraech_beenden' zur Verfügung "
-            f"(keine Spielzüge). Höchstens {config.MAX_CHAT_WORTWECHSEL} Wortwechsel. Beende das Gespräch, wenn nichts mehr zu "
+            f"(keine Spielzüge). Höchstens {config.MAX_CHAT_EXCHANGES} Wortwechsel. Beende das Gespräch, wenn nichts mehr zu "
             "besprechen ist, und fasse dabei zusammen, was du dir merken willst.")
-    return Nachricht.vom_nutzer(text)
+    return Message.from_user(text)
 
 
-def pin_nachricht(ctx: AgentKontext) -> Nachricht:
+def pin_message(ctx: AgentContext) -> Message:
     """Erste Nachricht, wenn das PIN-Pad offen ist: Lage + Notizbuch + die Regeln des Pads (wie beim Menschen)."""
-    lage = beobachtung_als_text(ctx.hole_ansicht(), ctx.letztes_ergebnis, ctx.npc_meldungen)
-    text = (f"=== AKTUELLE LAGE ===\n{lage}\n\n"
-            f"=== DEIN NOTIZBUCH ===\n{ctx.notizbuch.lesen()}\n\n"
+    situation = observation_as_text(ctx.get_view(), ctx.last_result, ctx.npc_messages)
+    text = (f"=== AKTUELLE LAGE ===\n{situation}\n\n"
+            f"=== DEIN NOTIZBUCH ===\n{ctx.notebook.read()}\n\n"
             "Du hast die EC-Karte in den Geldautomaten gesteckt. Auf dem Bildschirm steht: 'Bitte Geheimzahl eingeben.' "
             "Die Geheimzahl hat vier Ziffern. Das Pad lässt sich nur durch Eingabe von vier Ziffern verlassen. "
             "Ist die Zahl falsch, musst du die Karte erneut einstecken (das kostet eine weitere Spielrunde). "
             "Du kannst dein Notizbuch lesen und die Zahl mit 'pin_eingeben' eintippen.")
-    return Nachricht.vom_nutzer(text)
+    return Message.from_user(text)
